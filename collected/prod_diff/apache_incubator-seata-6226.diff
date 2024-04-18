@@ -1,0 +1,2059 @@
+diff --git a/core/src/main/java/org/apache/seata/core/protocol/ProtocolConstants.java b/core/src/main/java/org/apache/seata/core/protocol/ProtocolConstants.java
+index 4ab61d133..fc88b0950 100644
+--- a/core/src/main/java/org/apache/seata/core/protocol/ProtocolConstants.java
++++ b/core/src/main/java/org/apache/seata/core/protocol/ProtocolConstants.java
+@@ -31,10 +31,20 @@ public interface ProtocolConstants {
+      */
+     byte[] MAGIC_CODE_BYTES = {(byte) 0xda, (byte) 0xda};
+ 
++    /**
++     * Old protocol version
++     */
++    byte VERSION_0 = 0;
++
++    /**
++     * Protocol version
++     */
++    byte VERSION_1 = 1;
++
+     /**
+      * Protocol version
+      */
+-    byte VERSION = 1;
++    byte VERSION = VERSION_1;
+ 
+     /**
+      * Max frame length
+diff --git a/core/src/main/java/org/apache/seata/core/protocol/RpcMessage.java b/core/src/main/java/org/apache/seata/core/protocol/RpcMessage.java
+index 4f0963b20..6a7e4d9da 100644
+--- a/core/src/main/java/org/apache/seata/core/protocol/RpcMessage.java
++++ b/core/src/main/java/org/apache/seata/core/protocol/RpcMessage.java
+@@ -35,6 +35,8 @@ public class RpcMessage implements Serializable {
+     private Map<String, String> headMap = new HashMap<>();
+     private Object body;
+ 
++    private String otherSideVersion;
++
+     /**
+      * Gets id.
+      *
+@@ -169,6 +171,14 @@ public class RpcMessage implements Serializable {
+         this.messageType = messageType;
+     }
+ 
++    public String getOtherSideVersion() {
++        return otherSideVersion;
++    }
++
++    public void setOtherSideVersion(String otherSideVersion) {
++        this.otherSideVersion = otherSideVersion;
++    }
++
+     @Override
+     public String toString() {
+         return StringUtils.toString(this);
+diff --git a/core/src/main/java/org/apache/seata/core/protocol/Version.java b/core/src/main/java/org/apache/seata/core/protocol/Version.java
+index a9be3d9c0..d1a95924c 100644
+--- a/core/src/main/java/org/apache/seata/core/protocol/Version.java
++++ b/core/src/main/java/org/apache/seata/core/protocol/Version.java
+@@ -150,6 +150,16 @@ public class Version {
+         return -1;
+     }
+ 
++    public static byte calcProtocolVersion(String sdkVersion) throws IncompatibleVersionException {
++        long version = convertVersion(sdkVersion);
++        long v0 = convertVersion(VERSION_0_7_1);
++        if (version <= v0) {
++            return ProtocolConstants.VERSION_0;
++        } else {
++            return ProtocolConstants.VERSION_1;
++        }
++    }
++
+     private static long calculatePartValue(String partNumeric, int size, int index) {
+         return Long.parseLong(partNumeric) * Double.valueOf(Math.pow(100, size - index)).longValue();
+     }
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/AbstractNettyRemotingClient.java b/core/src/main/java/org/apache/seata/core/rpc/netty/AbstractNettyRemotingClient.java
+index 2b7b35aca..2901eb8d3 100644
+--- a/core/src/main/java/org/apache/seata/core/rpc/netty/AbstractNettyRemotingClient.java
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/AbstractNettyRemotingClient.java
+@@ -409,10 +409,13 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting
+ 
+         @Override
+         public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
+-            if (!(msg instanceof RpcMessage)) {
+-                return;
++            RpcMessage rpcMessage = null;
++            if (msg instanceof ProtocolRpcMessage) {
++                rpcMessage = ((ProtocolRpcMessage) msg).protocolMsg2RpcMsg();
++                processMessage(ctx, rpcMessage);
++            } else {
++                LOGGER.error("rpcMessage type error");
+             }
+-            processMessage(ctx, (RpcMessage) msg);
+         }
+ 
+         @Override
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/AbstractNettyRemotingServer.java b/core/src/main/java/org/apache/seata/core/rpc/netty/AbstractNettyRemotingServer.java
+index 16758d5ad..9be9e79c3 100644
+--- a/core/src/main/java/org/apache/seata/core/rpc/netty/AbstractNettyRemotingServer.java
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/AbstractNettyRemotingServer.java
+@@ -69,7 +69,7 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting
+         if (channel == null) {
+             throw new RuntimeException("rm client is not connected. dbkey:" + resourceId + ",clientId:" + clientId);
+         }
+-        RpcMessage rpcMessage = buildRequestMessage(msg, ProtocolConstants.MSGTYPE_RESQUEST_SYNC);
++        RpcMessage rpcMessage = buildRequestMessage(channel, msg, ProtocolConstants.MSGTYPE_RESQUEST_SYNC);
+         return super.sendSync(channel, rpcMessage, NettyServerConfig.getRpcRequestTimeout());
+     }
+ 
+@@ -78,7 +78,7 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting
+         if (channel == null) {
+             throw new RuntimeException("client is not connected");
+         }
+-        RpcMessage rpcMessage = buildRequestMessage(msg, ProtocolConstants.MSGTYPE_RESQUEST_SYNC);
++        RpcMessage rpcMessage = buildRequestMessage(channel, msg, ProtocolConstants.MSGTYPE_RESQUEST_SYNC);
+         return super.sendSync(channel, rpcMessage, NettyServerConfig.getRpcRequestTimeout());
+     }
+ 
+@@ -87,7 +87,7 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting
+         if (channel == null) {
+             throw new RuntimeException("client is not connected");
+         }
+-        RpcMessage rpcMessage = buildRequestMessage(msg, ProtocolConstants.MSGTYPE_RESQUEST_ONEWAY);
++        RpcMessage rpcMessage = buildRequestMessage(channel, msg, ProtocolConstants.MSGTYPE_RESQUEST_ONEWAY);
+         super.sendAsync(channel, rpcMessage);
+     }
+ 
+@@ -98,7 +98,7 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting
+             clientChannel = ChannelManager.getSameClientChannel(channel);
+         }
+         if (clientChannel != null) {
+-            RpcMessage rpcMsg = buildResponseMessage(rpcMessage, msg, msg instanceof HeartbeatMessage
++            RpcMessage rpcMsg = buildResponseMessage(channel, rpcMessage, msg, msg instanceof HeartbeatMessage
+                 ? ProtocolConstants.MSGTYPE_HEARTBEAT_RESPONSE
+                 : ProtocolConstants.MSGTYPE_RESPONSE);
+             super.sendAsync(clientChannel, rpcMsg);
+@@ -107,6 +107,22 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting
+         }
+     }
+ 
++
++    private RpcMessage buildResponseMessage(Channel channel, RpcMessage fromRpcMessage, Object msg, byte messageType) {
++        RpcMessage rpcMessage = super.buildResponseMessage(fromRpcMessage, msg, messageType);
++        RpcContext rpcContext = ChannelManager.getContextFromIdentified(channel);
++        rpcMessage.setOtherSideVersion(rpcContext.getVersion());
++        return rpcMessage;
++    }
++
++    protected RpcMessage buildRequestMessage(Channel channel, Object msg, byte messageType) {
++        RpcMessage rpcMessage = super.buildRequestMessage(msg, messageType);
++        RpcContext rpcContext = ChannelManager.getContextFromIdentified(channel);
++        rpcMessage.setOtherSideVersion(rpcContext.getVersion());
++        return rpcMessage;
++    }
++
++
+     @Override
+     public void registerProcessor(int messageType, RemotingProcessor processor, ExecutorService executor) {
+         Pair<RemotingProcessor, ExecutorService> pair = new Pair<>(processor, executor);
+@@ -163,10 +179,13 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting
+          */
+         @Override
+         public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
+-            if (!(msg instanceof RpcMessage)) {
+-                return;
++            RpcMessage rpcMessage = null;
++            if (msg instanceof ProtocolRpcMessage) {
++                rpcMessage = ((ProtocolRpcMessage) msg).protocolMsg2RpcMsg();
++                processMessage(ctx, rpcMessage);
++            } else {
++                LOGGER.error("rpcMessage type error");
+             }
+-            processMessage(ctx, (RpcMessage) msg);
+         }
+ 
+         @Override
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/CompatibleProtocolDecoder.java b/core/src/main/java/org/apache/seata/core/rpc/netty/CompatibleProtocolDecoder.java
+new file mode 100644
+index 000000000..d066984c2
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/CompatibleProtocolDecoder.java
+@@ -0,0 +1,155 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty;
++
++import com.google.common.collect.ImmutableMap;
++import io.netty.buffer.ByteBuf;
++import io.netty.channel.ChannelHandlerContext;
++import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
++import org.apache.seata.core.exception.DecodeException;
++import org.apache.seata.core.protocol.ProtocolConstants;
++import org.apache.seata.core.rpc.netty.v0.ProtocolDecoderV0;
++import org.apache.seata.core.rpc.netty.v1.ProtocolDecoderV1;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++import java.util.Map;
++
++/**
++ * <pre>
++ * (> 0.7.0)
++ * 0     1     2     3     4     5     6     7     8     9    10     11    12    13    14    15    16
++ * +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
++ * |   magic   |Proto|     Full length       |    Head   | Msg |Seria|Compr|     RequestId         |
++ * |   code    |colVer|    (head+body)      |   Length  |Type |lizer|ess  |                       |
++ * +-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+
++ *
++ * (<= 0.7.0)
++ * 0     1     2     3     4           6           8          10           12          14
++ * +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
++ * |   0xdada  |   flag    | typecode/ |                 requestid                     |
++ * |           |           | bodylength|                                               |
++ * +-----------+-----------+-----------+-----------+-----------+-----------+-----------+
++ *
++ * </pre>
++ * <p>
++ * <li>Full Length: include all data </li>
++ * <li>Head Length: include head data from magic code to head map. </li>
++ * <li>Body Length: Full Length - Head Length</li>
++ * </p>
++ */
++public class CompatibleProtocolDecoder extends LengthFieldBasedFrameDecoder {
++
++    private static final Logger LOGGER = LoggerFactory.getLogger(CompatibleProtocolDecoder.class);
++    private static Map<Byte, ProtocolDecoder> protocolDecoderMap;
++
++    public CompatibleProtocolDecoder() {
++        // default is 8M
++        this(ProtocolConstants.MAX_FRAME_LENGTH);
++    }
++
++    public CompatibleProtocolDecoder(int maxFrameLength) {
++        /*
++        int maxFrameLength,      
++        int lengthFieldOffset,  magic code is 2B, and version is 1B, and then FullLength. so value is 3
++        int lengthFieldLength,  FullLength is int(4B). so values is 4
++        int lengthAdjustment,   FullLength include all data and read 7 bytes before, so the left length is (FullLength-7). so values is -7
++        int initialBytesToStrip we will check magic code and version self, so do not strip any bytes. so values is 0
++        */
++        super(maxFrameLength, 3, 4, -7, 0);
++        protocolDecoderMap = ImmutableMap.<Byte, ProtocolDecoder>builder()
++                .put(ProtocolConstants.VERSION_0, new ProtocolDecoderV0())
++                .put(ProtocolConstants.VERSION_1, new ProtocolDecoderV1())
++                .build();
++    }
++
++    @Override
++    protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
++        ByteBuf frame;
++        Object decoded;
++        byte version;
++        try {
++            if (isV0(in)) {
++                decoded = in;
++                version = ProtocolConstants.VERSION_0;
++            } else {
++                decoded = super.decode(ctx, in);
++                version = decideVersion(decoded);
++            }
++
++            if (decoded instanceof ByteBuf) {
++                frame = (ByteBuf) decoded;
++                try {
++                    ProtocolDecoder decoder = protocolDecoderMap.get(version);
++                    if (decoder == null) {
++                        throw new UnsupportedOperationException("Unsupported version: " + version);
++                    }
++                    return decoder.decodeFrame(frame);
++                } finally {
++                    if (version != ProtocolConstants.VERSION_0) {
++                        frame.release();
++                    }
++                }
++            }
++        } catch (Exception exx) {
++            LOGGER.error("Decode frame error, cause: {}", exx.getMessage());
++            throw new DecodeException(exx);
++        }
++        return decoded;
++    }
++
++    protected byte decideVersion(Object in) {
++        if (in instanceof ByteBuf) {
++            ByteBuf frame = (ByteBuf) in;
++            frame.markReaderIndex();
++            byte b0 = frame.readByte();
++            byte b1 = frame.readByte();
++            if (ProtocolConstants.MAGIC_CODE_BYTES[0] != b0
++                    || ProtocolConstants.MAGIC_CODE_BYTES[1] != b1) {
++                throw new IllegalArgumentException("Unknown magic code: " + b0 + ", " + b1);
++            }
++
++            byte version = frame.readByte();
++            frame.resetReaderIndex();
++            return version;
++        }
++        return -1;
++    }
++
++
++    protected boolean isV0(ByteBuf in) {
++        boolean isV0 = false;
++        in.markReaderIndex();
++        byte b0 = in.readByte();
++        byte b1 = in.readByte();
++        // v1/v2/v3 : b2 = version
++        // v0 : 1st byte in FLAG(2byte:0x10/0x20/0x40/0x80)
++        byte b2 = in.readByte();
++        if (ProtocolConstants.MAGIC_CODE_BYTES[0] == b0
++                && ProtocolConstants.MAGIC_CODE_BYTES[1] == b1
++                && 0 == b2) {
++            isV0 = true;
++        }
++
++        in.resetReaderIndex();
++        return isV0;
++    }
++
++    protected boolean isV0(byte version) {
++        return version == ProtocolConstants.VERSION_0;
++    }
++}
+\ No newline at end of file
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/CompatibleProtocolEncoder.java b/core/src/main/java/org/apache/seata/core/rpc/netty/CompatibleProtocolEncoder.java
+new file mode 100644
+index 000000000..eb0a162cd
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/CompatibleProtocolEncoder.java
+@@ -0,0 +1,81 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty;
++
++import com.google.common.collect.ImmutableMap;
++import io.netty.buffer.ByteBuf;
++import io.netty.channel.ChannelHandlerContext;
++import io.netty.handler.codec.MessageToByteEncoder;
++import org.apache.seata.common.util.StringUtils;
++import org.apache.seata.core.protocol.AbstractIdentifyRequest;
++import org.apache.seata.core.protocol.ProtocolConstants;
++import org.apache.seata.core.protocol.RpcMessage;
++import org.apache.seata.core.protocol.Version;
++import org.apache.seata.core.rpc.netty.v0.ProtocolEncoderV0;
++import org.apache.seata.core.rpc.netty.v1.ProtocolEncoderV1;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++import java.util.Map;
++
++/**
++ * Compatible Protocol Encoder
++ * <p>
++ * <li>Full Length: include all data </li>
++ * <li>Head Length: include head data from magic code to head map. </li>
++ * <li>Body Length: Full Length - Head Length</li>
++ * </p>
++ *
++ */
++public class CompatibleProtocolEncoder extends MessageToByteEncoder {
++
++    private static final Logger LOGGER = LoggerFactory.getLogger(CompatibleProtocolEncoder.class);
++
++    private static Map<Byte, ProtocolEncoder> protocolEncoderMap;
++
++    public CompatibleProtocolEncoder() {
++        super();
++        protocolEncoderMap = ImmutableMap.<Byte, ProtocolEncoder>builder()
++                .put(ProtocolConstants.VERSION_0, new ProtocolEncoderV0())
++                .put(ProtocolConstants.VERSION_1, new ProtocolEncoderV1())
++                .build();
++    }
++
++    @Override
++    public void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) {
++        try {
++            if (msg instanceof RpcMessage) {
++                RpcMessage rpcMessage = (RpcMessage) msg;
++                String sdkVersion = rpcMessage.getOtherSideVersion();
++                if(StringUtils.isBlank(sdkVersion)){
++                    sdkVersion = Version.getCurrent();
++                }
++                byte protocolVersion = Version.calcProtocolVersion(sdkVersion);
++                ProtocolEncoder encoder = protocolEncoderMap.get(protocolVersion);
++                if (encoder == null) {
++                    throw new UnsupportedOperationException("Unsupported protocolVersion: " + protocolVersion);
++                }
++
++                encoder.encode(rpcMessage, out);
++            } else {
++                throw new UnsupportedOperationException("Not support this class:" + msg.getClass());
++            }
++        } catch (Throwable e) {
++            LOGGER.error("Encode request error!", e);
++        }
++    }
++}
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/NettyClientBootstrap.java b/core/src/main/java/org/apache/seata/core/rpc/netty/NettyClientBootstrap.java
+index 63b15a746..4867f86bc 100644
+--- a/core/src/main/java/org/apache/seata/core/rpc/netty/NettyClientBootstrap.java
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/NettyClientBootstrap.java
+@@ -35,8 +35,6 @@ import io.netty.util.internal.PlatformDependent;
+ import org.apache.seata.common.exception.FrameworkException;
+ import org.apache.seata.common.thread.NamedThreadFactory;
+ import org.apache.seata.core.rpc.RemotingBootstrap;
+-import org.apache.seata.core.rpc.netty.v1.ProtocolV1Decoder;
+-import org.apache.seata.core.rpc.netty.v1.ProtocolV1Encoder;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+@@ -134,8 +132,8 @@ public class NettyClientBootstrap implements RemotingBootstrap {
+                         new IdleStateHandler(nettyClientConfig.getChannelMaxReadIdleSeconds(),
+                             nettyClientConfig.getChannelMaxWriteIdleSeconds(),
+                             nettyClientConfig.getChannelMaxAllIdleSeconds()))
+-                        .addLast(new ProtocolV1Decoder())
+-                        .addLast(new ProtocolV1Encoder());
++                        .addLast(new CompatibleProtocolDecoder())
++                        .addLast(new CompatibleProtocolEncoder());
+                     if (channelHandlers != null) {
+                         addChannelPipelineLast(ch, channelHandlers);
+                     }
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/NettyServerBootstrap.java b/core/src/main/java/org/apache/seata/core/rpc/netty/NettyServerBootstrap.java
+index 6c9a32588..b847b2a96 100644
+--- a/core/src/main/java/org/apache/seata/core/rpc/netty/NettyServerBootstrap.java
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/NettyServerBootstrap.java
+@@ -37,8 +37,6 @@ import org.apache.seata.common.XID;
+ import org.apache.seata.common.thread.NamedThreadFactory;
+ import org.apache.seata.config.ConfigurationFactory;
+ import org.apache.seata.core.rpc.RemotingBootstrap;
+-import org.apache.seata.core.rpc.netty.v1.ProtocolV1Decoder;
+-import org.apache.seata.core.rpc.netty.v1.ProtocolV1Encoder;
+ import org.apache.seata.discovery.registry.MultiRegistryFactory;
+ import org.apache.seata.discovery.registry.RegistryService;
+ import org.slf4j.Logger;
+@@ -161,8 +159,8 @@ public class NettyServerBootstrap implements RemotingBootstrap {
+                 @Override
+                 public void initChannel(SocketChannel ch) {
+                     ch.pipeline().addLast(new IdleStateHandler(nettyServerConfig.getChannelMaxReadIdleSeconds(), 0, 0))
+-                        .addLast(new ProtocolV1Decoder())
+-                        .addLast(new ProtocolV1Encoder());
++                        .addLast(new CompatibleProtocolDecoder())
++                        .addLast(new CompatibleProtocolEncoder());
+                     if (channelHandlers != null) {
+                         addChannelPipelineLast(ch, channelHandlers);
+                     }
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/ProtocolDecoder.java b/core/src/main/java/org/apache/seata/core/rpc/netty/ProtocolDecoder.java
+new file mode 100644
+index 000000000..42a7c75c0
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/ProtocolDecoder.java
+@@ -0,0 +1,29 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty;
++
++import io.netty.buffer.ByteBuf;
++
++/**
++ * the protocol decoder
++ *
++ **/
++public interface ProtocolDecoder {
++
++    ProtocolRpcMessage decodeFrame(ByteBuf in);
++
++}
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/ProtocolEncoder.java b/core/src/main/java/org/apache/seata/core/rpc/netty/ProtocolEncoder.java
+new file mode 100644
+index 000000000..6c91164ff
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/ProtocolEncoder.java
+@@ -0,0 +1,28 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty;
++
++import io.netty.buffer.ByteBuf;
++import org.apache.seata.core.protocol.RpcMessage;
++
++/**
++ * the protocol encoder
++ *
++ **/
++public interface ProtocolEncoder {
++    void encode(RpcMessage rpcMessage, ByteBuf out);
++}
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/ProtocolRpcMessage.java b/core/src/main/java/org/apache/seata/core/rpc/netty/ProtocolRpcMessage.java
+new file mode 100644
+index 000000000..ba89c508a
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/ProtocolRpcMessage.java
+@@ -0,0 +1,37 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty;
++
++import org.apache.seata.core.protocol.RpcMessage;
++
++/**
++ * The protocol RPC message.
++ */
++public interface ProtocolRpcMessage {
++
++    /**
++     * The protocol message to rpc message.
++     * @return
++     */
++    RpcMessage protocolMsg2RpcMsg();
++
++    /**
++     * The rpc message to protocol message.
++     * @param rpcMessage
++     */
++    void rpcMsg2ProtocolMsg(RpcMessage rpcMessage);
++}
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/v0/MessageCodecV0.java b/core/src/main/java/org/apache/seata/core/rpc/netty/v0/MessageCodecV0.java
+new file mode 100644
+index 000000000..ab1d4f747
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/v0/MessageCodecV0.java
+@@ -0,0 +1,44 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty.v0;
++
++import io.netty.buffer.ByteBuf;
++import org.apache.seata.core.protocol.MessageTypeAware;
++
++/**
++ * The interface Message codec.
++ *
++ */
++public interface MessageCodecV0<T> extends MessageTypeAware {
++
++    /**
++     * Encode byte [ ].
++     *
++     * @return the byte [ ]
++     */
++    byte[] encode();
++
++    /**
++     * Decode boolean.
++     *
++     * @param in the in
++     * @return the boolean
++     */
++    boolean decode(ByteBuf in);
++
++    boolean decode(ByteBuf in, T req);
++}
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolConstantsV0.java b/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolConstantsV0.java
+new file mode 100644
+index 000000000..65b363405
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolConstantsV0.java
+@@ -0,0 +1,31 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty.v0;
++
++/**
++ * protocol v0 constants
++ *
++ **/
++public class ProtocolConstantsV0 {
++    public static short MAGIC = (short)0xdada;
++
++    public static int HEAD_LENGTH = 14;
++    public static final short FLAG_REQUEST = 0x80;
++    public static final short FLAG_ASYNC = 0x40;
++    public static final short FLAG_HEARTBEAT = 0x20;
++    public static final short FLAG_SEATA_CODEC = 0x10;
++}
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolDecoderV0.java b/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolDecoderV0.java
+new file mode 100644
+index 000000000..42e112a2f
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolDecoderV0.java
+@@ -0,0 +1,132 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty.v0;
++
++import io.netty.buffer.ByteBuf;
++import org.apache.seata.core.protocol.HeartbeatMessage;
++
++import org.apache.seata.core.protocol.ProtocolConstants;
++import org.apache.seata.core.rpc.netty.ProtocolDecoder;
++import org.apache.seata.core.serializer.Serializer;
++import org.apache.seata.core.serializer.SerializerServiceLoader;
++import org.apache.seata.core.serializer.SerializerType;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++/**
++ * <pre>
++ *  seata-version < 0.7
++ *  Only used in TC receives a request from RM/TM.
++ * 0     1     2     3     4           6           8          10           12          14         16
++ * +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
++ * |   0xdada  |   flag    | typecode/ |                 requestid                     |           |
++ * |           |           | bodylength|                                               |           |
++ * +-----------+-----------+-----------+-----------+-----------+-----------+-----------+           +
++ * |                                    ... ...                                                    |
++ * +                                                                                               +
++ * |                                     body                                                      |
++ * +                                                                                               +
++ * |                                    ... ...                                                    |
++ * +-----------------------------------------------------------------------------------------------+
++ *
++ * </pre>
++ * <p>
++ * <li>flag: msg type </li>
++ * <li>typecode: action type code </li>
++ * <li>bodylength: body Length </li>
++ * <li>requestid: request id</li>
++ * </p>
++ *
++ * @see ProtocolEncoderV0
++ */
++public class ProtocolDecoderV0 implements ProtocolDecoder {
++
++    private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolDecoderV0.class);
++
++
++    @Override
++    public ProtocolRpcMessageV0 decodeFrame(ByteBuf in) {
++        ProtocolRpcMessageV0 rpcMessage = new ProtocolRpcMessageV0();
++        if (in.readableBytes() < ProtocolConstantsV0.HEAD_LENGTH) {
++            throw new IllegalArgumentException("Nothing to decode.");
++        }
++
++        in.markReaderIndex();
++        short protocol = in.readShort();
++        int flag = (int) in.readShort();
++
++        boolean isHeartbeat = (ProtocolConstantsV0.FLAG_HEARTBEAT & flag) > 0;
++        boolean isRequest = (ProtocolConstantsV0.FLAG_REQUEST & flag) > 0;
++        boolean isSeataCodec = (ProtocolConstantsV0.FLAG_SEATA_CODEC & flag) > 0;
++        rpcMessage.setSeataCodec(isSeataCodec);
++
++        short bodyLength = 0;
++        short typeCode = 0;
++        if (!isSeataCodec) {
++            bodyLength = in.readShort();
++        } else {
++            typeCode = in.readShort();
++        }
++        long msgId = in.readLong();
++        rpcMessage.setId(msgId);
++        if (isHeartbeat) {
++            rpcMessage.setAsync(true);
++            rpcMessage.setHeartbeat(isHeartbeat);
++            rpcMessage.setRequest(isRequest);
++            if (isRequest) {
++                rpcMessage.setBody(HeartbeatMessage.PING);
++            } else {
++                rpcMessage.setBody(HeartbeatMessage.PONG);
++            }
++
++            return rpcMessage;
++        }
++
++        if (bodyLength > 0 && in.readableBytes() < bodyLength) {
++            in.resetReaderIndex();
++            throw new IllegalArgumentException("readableBytes < bodyLength");
++        }
++
++        rpcMessage.setAsync((ProtocolConstantsV0.FLAG_ASYNC & flag) > 0);
++        rpcMessage.setHeartbeat(false);
++        rpcMessage.setRequest(isRequest);
++
++        try {
++            int length = in.readableBytes();
++            byte[] bs = new byte[length];
++            in.readBytes(bs);
++
++            // fill messageType in v0
++            byte[] bs2 = new byte[2 + length];
++            bs2[0] = (byte) (0x00FF & (typeCode >> 8));
++            bs2[1] = (byte) (0x00FF & typeCode);
++            System.arraycopy(bs, 0, bs2, 2, length);
++            byte codecType = isSeataCodec ? SerializerType.SEATA.getCode() : SerializerType.HESSIAN.getCode();
++            Serializer serializer = SerializerServiceLoader.load(SerializerType.getByCode(codecType), ProtocolConstants.VERSION_0);
++            rpcMessage.setBody(serializer.deserialize(bs2));
++        } catch (Exception e) {
++            LOGGER.error("decode error", e);
++            throw e;
++        }
++        if (LOGGER.isDebugEnabled()) {
++            LOGGER.debug("Receive:" + rpcMessage.getBody() + ", messageId:" + msgId);
++        }
++        return rpcMessage;
++    }
++
++
++}
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolEncoderV0.java b/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolEncoderV0.java
+new file mode 100644
+index 000000000..3fc447b28
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolEncoderV0.java
+@@ -0,0 +1,106 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty.v0;
++
++import io.netty.buffer.ByteBuf;
++import org.apache.seata.core.protocol.HeartbeatMessage;
++import org.apache.seata.core.protocol.MessageTypeAware;
++import org.apache.seata.core.protocol.ProtocolConstants;
++import org.apache.seata.core.protocol.RpcMessage;
++import org.apache.seata.core.rpc.netty.ProtocolEncoder;
++import org.apache.seata.core.serializer.Serializer;
++import org.apache.seata.core.serializer.SerializerServiceLoader;
++import org.apache.seata.core.serializer.SerializerType;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++/**
++ * <pre>
++ *  seata-version < 0.7
++ *  Only used in TC send a request to RM/TM.
++ * 0     1     2     3     4           6           8          10           12          14         16
++ * +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
++ * |   0xdada  |   flag    | typecode/ |                 requestid                     |           |
++ * |           |           | bodylength|                                               |           |
++ * +-----------+-----------+-----------+-----------+-----------+-----------+-----------+           +
++ * |                                    ... ...                                                    |
++ * +                                                                                               +
++ * |                                     body                                                      |
++ * +                                                                                               +
++ * |                                    ... ...                                                    |
++ * +-----------------------------------------------------------------------------------------------+
++ *
++ * </pre>
++ * <p>
++ * <li>flag: msg type </li>
++ * <li>typecode: action type code </li>
++ * <li>bodylength: body Length </li>
++ * <li>requestid: request id</li>
++ * </p>
++ *
++ * @see ProtocolDecoderV0
++ */
++public class ProtocolEncoderV0 implements ProtocolEncoder {
++
++    private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolEncoderV0.class);
++
++    @Override
++    public void encode(RpcMessage message, ByteBuf out) {
++        try {
++            byte codec = message.getCodec();
++            ProtocolRpcMessageV0 msg = new ProtocolRpcMessageV0();
++            msg.rpcMsg2ProtocolMsg(message);
++
++            out.writeShort(ProtocolConstantsV0.MAGIC);
++            int flag = (msg.isAsync() ? ProtocolConstantsV0.FLAG_ASYNC : 0)
++                    | (msg.isHeartbeat() ? ProtocolConstantsV0.FLAG_HEARTBEAT : 0)
++                    | (msg.isRequest() ? ProtocolConstantsV0.FLAG_REQUEST : 0)
++                    | (msg.isSeataCodec() ? ProtocolConstantsV0.FLAG_SEATA_CODEC : 0);
++
++            out.writeShort((short) flag);
++
++            if (msg.getBody() instanceof HeartbeatMessage) {
++                out.writeShort((short) 0);
++                out.writeLong(msg.getId());
++                return;
++            }
++
++            byte[] bodyBytes = null;
++            Serializer serializer = SerializerServiceLoader.load(SerializerType.getByCode(codec), ProtocolConstants.VERSION_0);
++            bodyBytes = serializer.serialize(msg.getBody());
++
++            if (msg.isSeataCodec()) {
++                if (msg.getBody() instanceof MessageTypeAware) {
++                    short typeCode = ((MessageTypeAware) msg.getBody()).getTypeCode();
++                    out.writeShort(typeCode);
++                }
++            } else {
++                out.writeShort(bodyBytes.length);
++            }
++            out.writeLong(msg.getId());
++            if (bodyBytes != null) {
++                out.writeBytes(bodyBytes);
++            }
++
++            if (LOGGER.isDebugEnabled()) {
++                LOGGER.debug("Send:" + msg.getBody());
++            }
++        } catch (Throwable e) {
++            LOGGER.error("Encode request error!", e);
++        }
++    }
++}
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolRpcMessageV0.java b/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolRpcMessageV0.java
+new file mode 100644
+index 000000000..cea2d7e6f
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/v0/ProtocolRpcMessageV0.java
+@@ -0,0 +1,203 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty.v0;
++
++import org.apache.seata.core.compressor.CompressorType;
++import org.apache.seata.core.protocol.ProtocolConstants;
++import org.apache.seata.core.protocol.RpcMessage;
++import org.apache.seata.core.rpc.netty.ProtocolRpcMessage;
++import org.apache.seata.core.serializer.SerializerType;
++
++import java.util.concurrent.atomic.AtomicLong;
++
++/**
++ * the protocol v0 rpc message
++ **/
++public class ProtocolRpcMessageV0 implements ProtocolRpcMessage {
++
++    private static AtomicLong NEXT_ID = new AtomicLong(0);
++
++    /**
++     * Gets next message id.
++     *
++     * @return the next message id
++     */
++    public static long getNextMessageId() {
++        return NEXT_ID.incrementAndGet();
++    }
++
++    private long id;
++    private boolean isAsync;
++    private boolean isRequest;
++    private boolean isHeartbeat;
++    private Object body;
++    private byte messageType;
++    private boolean isSeataCodec;
++
++    /**
++     * Gets id.
++     *
++     * @return the id
++     */
++    public long getId() {
++        return id;
++    }
++
++    /**
++     * Sets id.
++     *
++     * @param id the id
++     */
++    public void setId(long id) {
++        this.id = id;
++    }
++
++    /**
++     * Is async boolean.
++     *
++     * @return the boolean
++     */
++    public boolean isAsync() {
++        return isAsync;
++    }
++
++    /**
++     * Sets async.
++     *
++     * @param async the async
++     */
++    public void setAsync(boolean async) {
++        isAsync = async;
++    }
++
++    /**
++     * Is request boolean.
++     *
++     * @return the boolean
++     */
++    public boolean isRequest() {
++        return isRequest;
++    }
++
++    /**
++     * Sets request.
++     *
++     * @param request the request
++     */
++    public void setRequest(boolean request) {
++        isRequest = request;
++    }
++
++    /**
++     * Is heartbeat boolean.
++     *
++     * @return the boolean
++     */
++    public boolean isHeartbeat() {
++        return isHeartbeat;
++    }
++
++    /**
++     * Sets heartbeat.
++     *
++     * @param heartbeat the heartbeat
++     */
++    public void setHeartbeat(boolean heartbeat) {
++        isHeartbeat = heartbeat;
++    }
++
++    /**
++     * Gets body.
++     *
++     * @return the body
++     */
++    public Object getBody() {
++        return body;
++    }
++
++    /**
++     * Sets body.
++     *
++     * @param body the body
++     */
++    public void setBody(Object body) {
++        this.body = body;
++    }
++
++    public boolean isSeataCodec() {
++        return isSeataCodec;
++    }
++
++    public void setSeataCodec(boolean seataCodec) {
++        isSeataCodec = seataCodec;
++    }
++
++    public byte getMessageType() {
++        return messageType;
++    }
++
++    public void setMessageType(byte messageType) {
++        this.messageType = messageType;
++    }
++
++    @Override
++    public RpcMessage protocolMsg2RpcMsg() {
++        RpcMessage rpcMessage = new RpcMessage();
++        rpcMessage.setMessageType(this.messageType);
++        rpcMessage.setCompressor(CompressorType.NONE.getCode());
++
++        byte codecType = this.isSeataCodec ? SerializerType.SEATA.getCode() : SerializerType.HESSIAN.getCode();
++        rpcMessage.setCodec(codecType);
++
++        if (this.isHeartbeat) {
++            if (this.isRequest) {
++                rpcMessage.setMessageType(ProtocolConstants.MSGTYPE_HEARTBEAT_REQUEST);
++            } else {
++                rpcMessage.setMessageType(ProtocolConstants.MSGTYPE_HEARTBEAT_RESPONSE);
++            }
++        } else {
++            if (this.isRequest) {
++                rpcMessage.setMessageType(ProtocolConstants.MSGTYPE_RESQUEST_ONEWAY);
++            } else {
++                rpcMessage.setMessageType(ProtocolConstants.MSGTYPE_RESPONSE);
++            }
++        }
++        rpcMessage.setBody(this.body);
++        rpcMessage.setId((int) this.id);
++        return rpcMessage;
++    }
++
++    @Override
++    public void rpcMsg2ProtocolMsg(RpcMessage rpcMessage) {
++        this.body = rpcMessage.getBody();
++        this.id = rpcMessage.getId();
++        this.isRequest = isRequest(rpcMessage.getMessageType());
++        this.isHeartbeat = isHeartbeat(rpcMessage.getMessageType());
++        this.isSeataCodec = rpcMessage.getCodec() == SerializerType.SEATA.getCode();
++        this.messageType = rpcMessage.getMessageType();
++    }
++
++    private boolean isHeartbeat(byte msgType) {
++        return msgType == ProtocolConstants.MSGTYPE_HEARTBEAT_REQUEST
++                || msgType == ProtocolConstants.MSGTYPE_HEARTBEAT_RESPONSE;
++    }
++
++    private boolean isRequest(byte msgType) {
++        return msgType == ProtocolConstants.MSGTYPE_RESQUEST_ONEWAY
++                || msgType == ProtocolConstants.MSGTYPE_RESQUEST_SYNC;
++    }
++}
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolV1Decoder.java b/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolDecoderV1.java
+similarity index 63%
+rename from core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolV1Decoder.java
+rename to core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolDecoderV1.java
+index 31944d366..4a01b8574 100644
+--- a/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolV1Decoder.java
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolDecoderV1.java
+@@ -16,26 +16,21 @@
+  */
+ package org.apache.seata.core.rpc.netty.v1;
+ 
+-import java.util.Map;
+-
+ import io.netty.buffer.ByteBuf;
+-import io.netty.channel.ChannelHandlerContext;
+-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+-import org.apache.seata.config.Configuration;
+-import org.apache.seata.config.ConfigurationFactory;
+ import org.apache.seata.core.compressor.Compressor;
+ import org.apache.seata.core.compressor.CompressorFactory;
+-import org.apache.seata.core.constants.ConfigurationKeys;
+-import org.apache.seata.core.exception.DecodeException;
+ import org.apache.seata.core.protocol.HeartbeatMessage;
+ import org.apache.seata.core.protocol.ProtocolConstants;
+-import org.apache.seata.core.protocol.RpcMessage;
++import org.apache.seata.core.rpc.netty.ProtocolDecoder;
++import org.apache.seata.core.rpc.netty.ProtocolRpcMessage;
+ import org.apache.seata.core.serializer.Serializer;
+ import org.apache.seata.core.serializer.SerializerServiceLoader;
+ import org.apache.seata.core.serializer.SerializerType;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
++import java.util.Map;
++
+ /**
+  * <pre>
+  * 0     1     2     3     4     5     6     7     8     9    10     11    12    13    14    15    16
+@@ -59,54 +54,17 @@ import org.slf4j.LoggerFactory;
+  * </p>
+  * https://github.com/seata/seata/issues/893
+  *
+- * @see ProtocolV1Encoder
++ * @see ProtocolEncoderV1
++ * @author Geng Zhang
++ * @see ProtocolEncoderV1
+  * @since 0.7.0
+  */
+-public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
+-
+-    private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolV1Decoder.class);
+-    private static final Configuration CONFIG = ConfigurationFactory.getInstance();
+-    private SerializerType serializerType;
+-
+-    public ProtocolV1Decoder() {
+-        // default is 8M
+-        this(ProtocolConstants.MAX_FRAME_LENGTH);
+-    }
++public class ProtocolDecoderV1 implements ProtocolDecoder {
+ 
+-    public ProtocolV1Decoder(int maxFrameLength) {
+-        /*
+-        int maxFrameLength,      
+-        int lengthFieldOffset,  magic code is 2B, and version is 1B, and then FullLength. so value is 3
+-        int lengthFieldLength,  FullLength is int(4B). so values is 4
+-        int lengthAdjustment,   FullLength include all data and read 7 bytes before, so the left length is (FullLength-7). so values is -7
+-        int initialBytesToStrip we will check magic code and version self, so do not strip any bytes. so values is 0
+-        */
+-        super(maxFrameLength, 3, 4, -7, 0);
+-        String serializerName = CONFIG.getConfig(ConfigurationKeys.SERIALIZE_FOR_RPC, SerializerType.SEATA.name());
+-        this.serializerType = SerializerType.getByName(serializerName);
+-    }
++    private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolDecoderV1.class);
+ 
+     @Override
+-    protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
+-        Object decoded;
+-        try {
+-            decoded = super.decode(ctx, in);
+-            if (decoded instanceof ByteBuf) {
+-                ByteBuf frame = (ByteBuf)decoded;
+-                try {
+-                    return decodeFrame(frame);
+-                } finally {
+-                    frame.release();
+-                }
+-            }
+-        } catch (Exception exx) {
+-            LOGGER.error("Decode frame error, cause: {}", exx.getMessage());
+-            throw new DecodeException(exx);
+-        }
+-        return decoded;
+-    }
+-
+-    public Object decodeFrame(ByteBuf frame) {
++    public ProtocolRpcMessage decodeFrame(ByteBuf frame) {
+         byte b0 = frame.readByte();
+         byte b1 = frame.readByte();
+         if (ProtocolConstants.MAGIC_CODE_BYTES[0] != b0
+@@ -115,7 +73,6 @@ public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
+         }
+ 
+         byte version = frame.readByte();
+-        // TODO  check version compatible here
+ 
+         int fullLength = frame.readInt();
+         short headLength = frame.readShort();
+@@ -124,7 +81,7 @@ public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
+         byte compressorType = frame.readByte();
+         int requestId = frame.readInt();
+ 
+-        RpcMessage rpcMessage = new RpcMessage();
++        ProtocolRpcMessageV1 rpcMessage = new ProtocolRpcMessageV1();
+         rpcMessage.setCodec(codecType);
+         rpcMessage.setId(requestId);
+         rpcMessage.setCompressor(compressorType);
+@@ -149,13 +106,8 @@ public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
+                 frame.readBytes(bs);
+                 Compressor compressor = CompressorFactory.getCompressor(compressorType);
+                 bs = compressor.decompress(bs);
+-                SerializerType protocolType = SerializerType.getByCode(rpcMessage.getCodec());
+-                if (this.serializerType.equals(protocolType)) {
+-                    Serializer serializer = SerializerServiceLoader.load(protocolType);
+-                    rpcMessage.setBody(serializer.deserialize(bs));
+-                } else {
+-                    throw new IllegalArgumentException("SerializerType not match");
+-                }
++                Serializer serializer = SerializerServiceLoader.load(SerializerType.getByCode(rpcMessage.getCodec()), version);
++                rpcMessage.setBody(serializer.deserialize(bs));
+             }
+         }
+ 
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolV1Encoder.java b/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolEncoderV1.java
+similarity index 53%
+rename from core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolV1Encoder.java
+rename to core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolEncoderV1.java
+index 54b1abd9f..14cbcdb55 100644
+--- a/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolV1Encoder.java
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolEncoderV1.java
+@@ -17,8 +17,7 @@
+ package org.apache.seata.core.rpc.netty.v1;
+ 
+ import io.netty.buffer.ByteBuf;
+-import io.netty.channel.ChannelHandlerContext;
+-import io.netty.handler.codec.MessageToByteEncoder;
++import org.apache.seata.core.rpc.netty.ProtocolEncoder;
+ import org.apache.seata.core.serializer.Serializer;
+ import org.apache.seata.core.compressor.Compressor;
+ import org.apache.seata.core.compressor.CompressorFactory;
+@@ -54,68 +53,70 @@ import java.util.Map;
+  * </p>
+  * https://github.com/seata/seata/issues/893
+  *
+- * @see ProtocolV1Decoder
++ * @author Geng Zhang
++ * @see ProtocolDecoderV1
+  * @since 0.7.0
+  */
+-public class ProtocolV1Encoder extends MessageToByteEncoder {
++public class ProtocolEncoderV1 implements ProtocolEncoder {
+ 
+-    private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolV1Encoder.class);
++    private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolEncoderV1.class);
+ 
+-    @Override
+-    public void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) {
+-        try {
+ 
+-            if (msg instanceof RpcMessage) {
+-                RpcMessage rpcMessage = (RpcMessage) msg;
++    public void encode(RpcMessage message, ByteBuf out) {
++        try {
+ 
+-                int fullLength = ProtocolConstants.V1_HEAD_LENGTH;
+-                int headLength = ProtocolConstants.V1_HEAD_LENGTH;
++            ProtocolRpcMessageV1 rpcMessage = new ProtocolRpcMessageV1();
++            rpcMessage.rpcMsg2ProtocolMsg(message);
+ 
+-                byte messageType = rpcMessage.getMessageType();
+-                out.writeBytes(ProtocolConstants.MAGIC_CODE_BYTES);
+-                out.writeByte(ProtocolConstants.VERSION);
+-                // full Length(4B) and head length(2B) will fix in the end. 
+-                out.writerIndex(out.writerIndex() + 6);
+-                out.writeByte(messageType);
+-                out.writeByte(rpcMessage.getCodec());
+-                out.writeByte(rpcMessage.getCompressor());
+-                out.writeInt(rpcMessage.getId());
++            int fullLength = ProtocolConstants.V1_HEAD_LENGTH;
++            int headLength = ProtocolConstants.V1_HEAD_LENGTH;
+ 
+-                // direct write head with zero-copy
+-                Map<String, String> headMap = rpcMessage.getHeadMap();
+-                if (headMap != null && !headMap.isEmpty()) {
+-                    int headMapBytesLength = HeadMapSerializer.getInstance().encode(headMap, out);
+-                    headLength += headMapBytesLength;
+-                    fullLength += headMapBytesLength;
+-                }
++            byte messageType = rpcMessage.getMessageType();
++            out.writeBytes(ProtocolConstants.MAGIC_CODE_BYTES);
++            out.writeByte(ProtocolConstants.VERSION_1);
++            // full Length(4B) and head length(2B) will fix in the end.
++            out.writerIndex(out.writerIndex() + 6);
++            out.writeByte(messageType);
++            out.writeByte(rpcMessage.getCodec());
++            out.writeByte(rpcMessage.getCompressor());
++            out.writeInt(rpcMessage.getId());
+ 
+-                byte[] bodyBytes = null;
+-                if (messageType != ProtocolConstants.MSGTYPE_HEARTBEAT_REQUEST
+-                        && messageType != ProtocolConstants.MSGTYPE_HEARTBEAT_RESPONSE) {
+-                    // heartbeat has no body
+-                    Serializer serializer = SerializerServiceLoader.load(SerializerType.getByCode(rpcMessage.getCodec()));
+-                    bodyBytes = serializer.serialize(rpcMessage.getBody());
+-                    Compressor compressor = CompressorFactory.getCompressor(rpcMessage.getCompressor());
+-                    bodyBytes = compressor.compress(bodyBytes);
+-                    fullLength += bodyBytes.length;
+-                }
++            // direct write head with zero-copy
++            Map<String, String> headMap = rpcMessage.getHeadMap();
++            if (headMap != null && !headMap.isEmpty()) {
++                int headMapBytesLength = HeadMapSerializer.getInstance().encode(headMap, out);
++                headLength += headMapBytesLength;
++                fullLength += headMapBytesLength;
++            }
+ 
+-                if (bodyBytes != null) {
+-                    out.writeBytes(bodyBytes);
+-                }
++            byte[] bodyBytes = null;
++            if (messageType != ProtocolConstants.MSGTYPE_HEARTBEAT_REQUEST
++                    && messageType != ProtocolConstants.MSGTYPE_HEARTBEAT_RESPONSE) {
++                // heartbeat has no body
++                Serializer serializer = SerializerServiceLoader.load(SerializerType.getByCode(rpcMessage.getCodec()), ProtocolConstants.VERSION_1);
++                bodyBytes = serializer.serialize(rpcMessage.getBody());
++                Compressor compressor = CompressorFactory.getCompressor(rpcMessage.getCompressor());
++                bodyBytes = compressor.compress(bodyBytes);
++                fullLength += bodyBytes.length;
++            }
+ 
+-                // fix fullLength and headLength
+-                int writeIndex = out.writerIndex();
+-                // skip magic code(2B) + version(1B)
+-                out.writerIndex(writeIndex - fullLength + 3);
+-                out.writeInt(fullLength);
+-                out.writeShort(headLength);
+-                out.writerIndex(writeIndex);
+-            } else {
+-                throw new UnsupportedOperationException("Not support this class:" + msg.getClass());
++            if (bodyBytes != null) {
++                out.writeBytes(bodyBytes);
+             }
++
++            // fix fullLength and headLength
++            int writeIndex = out.writerIndex();
++            // skip magic code(2B) + version(1B)
++            out.writerIndex(writeIndex - fullLength + 3);
++            out.writeInt(fullLength);
++            out.writeShort(headLength);
++            out.writerIndex(writeIndex);
++
++
+         } catch (Throwable e) {
+             LOGGER.error("Encode request error!", e);
++            // todo
++            throw e;
+         }
+     }
+ }
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolRpcMessageV1.java b/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolRpcMessageV1.java
+new file mode 100644
+index 000000000..10668cbdc
+--- /dev/null
++++ b/core/src/main/java/org/apache/seata/core/rpc/netty/v1/ProtocolRpcMessageV1.java
+@@ -0,0 +1,195 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.seata.core.rpc.netty.v1;
++
++import org.apache.seata.common.util.StringUtils;
++import org.apache.seata.core.protocol.RpcMessage;
++import org.apache.seata.core.rpc.netty.ProtocolRpcMessage;
++
++import java.util.HashMap;
++import java.util.Map;
++
++/**
++ * protocol v1 rpc message
++ **/
++public class ProtocolRpcMessageV1 implements ProtocolRpcMessage {
++    private int id;
++    private byte messageType;
++    private byte codec;
++    private byte compressor;
++    private Map<String, String> headMap = new HashMap<>();
++    private Object body;
++
++    /**
++     * Gets id.
++     *
++     * @return the id
++     */
++    public int getId() {
++        return id;
++    }
++
++    /**
++     * Sets id.
++     *
++     * @param id the id
++     */
++    public void setId(int id) {
++        this.id = id;
++    }
++
++    /**
++     * Gets body.
++     *
++     * @return the body
++     */
++    public Object getBody() {
++        return body;
++    }
++
++    /**
++     * Sets body.
++     *
++     * @param body the body
++     */
++    public void setBody(Object body) {
++        this.body = body;
++    }
++
++    /**
++     * Gets codec.
++     *
++     * @return the codec
++     */
++    public byte getCodec() {
++        return codec;
++    }
++
++    /**
++     * Sets codec.
++     *
++     * @param codec the codec
++     * @return the codec
++     */
++    public void setCodec(byte codec) {
++        this.codec = codec;
++    }
++
++    /**
++     * Gets compressor.
++     *
++     * @return the compressor
++     */
++    public byte getCompressor() {
++        return compressor;
++    }
++
++    /**
++     * Sets compressor.
++     *
++     * @param compressor the compressor
++     * @return the compressor
++     */
++    public void setCompressor(byte compressor) {
++        this.compressor = compressor;
++    }
++
++    /**
++     * Gets head map.
++     *
++     * @return the head map
++     */
++    public Map<String, String> getHeadMap() {
++        return headMap;
++    }
++
++    /**
++     * Sets head map.
++     *
++     * @param headMap the head map
++     * @return the head map
++     */
++    public void setHeadMap(Map<String, String> headMap) {
++        this.headMap = headMap;
++    }
++
++    /**
++     * Gets head.
++     *
++     * @param headKey the head key
++     * @return the head
++     */
++    public String getHead(String headKey) {
++        return headMap.get(headKey);
++    }
++
++    /**
++     * Put head.
++     *
++     * @param headKey   the head key
++     * @param headValue the head value
++     */
++    public void putHead(String headKey, String headValue) {
++        headMap.put(headKey, headValue);
++    }
++
++    /**
++     * Gets message type.
++     *
++     * @return the message type
++     */
++    public byte getMessageType() {
++        return messageType;
++    }
++
++    /**
++     * Sets message type.
++     *
++     * @param messageType the message type
++     */
++    public void setMessageType(byte messageType) {
++        this.messageType = messageType;
++    }
++
++    @Override
++    public String toString() {
++        return StringUtils.toString(this);
++    }
++
++    @Override
++    public RpcMessage protocolMsg2RpcMsg() {
++        RpcMessage rpcMessage = new RpcMessage();
++        rpcMessage.setId(this.id);
++        rpcMessage.setMessageType(this.messageType);
++        rpcMessage.setCodec(this.codec);
++        rpcMessage.setCompressor(this.compressor);
++        rpcMessage.setHeadMap(this.headMap);
++        rpcMessage.setBody(this.body);
++        return rpcMessage;
++    }
++
++
++    @Override
++    public void rpcMsg2ProtocolMsg(RpcMessage rpcMessage) {
++        this.body = rpcMessage.getBody();
++        this.headMap = rpcMessage.getHeadMap();
++        this.id = rpcMessage.getId();
++        this.messageType = rpcMessage.getMessageType();
++        this.codec = rpcMessage.getCodec();
++        this.compressor = rpcMessage.getCompressor();
++    }
++}
+diff --git a/core/src/main/java/org/apache/seata/core/rpc/processor/server/RegTmProcessor.java b/core/src/main/java/org/apache/seata/core/rpc/processor/server/RegTmProcessor.java
+index 0afee867f..b63ae2d84 100644
+--- a/core/src/main/java/org/apache/seata/core/rpc/processor/server/RegTmProcessor.java
++++ b/core/src/main/java/org/apache/seata/core/rpc/processor/server/RegTmProcessor.java
+@@ -89,8 +89,8 @@ public class RegTmProcessor implements RemotingProcessor {
+         }
+         remotingServer.sendAsyncResponse(rpcMessage, ctx.channel(), response);
+         if (isSuccess && LOGGER.isInfoEnabled()) {
+-            LOGGER.info("TM register success,message:{},channel:{},client version:{}", message, ctx.channel(),
+-                message.getVersion());
++            LOGGER.info("TM register success,message:{},channel:{},client version:{},client protocol-version:{}"
++                    , message, ctx.channel(), message.getVersion(), rpcMessage.getSdkVersion());
+         }
+     }
+ 
+diff --git a/core/src/main/java/org/apache/seata/core/serializer/SerializerServiceLoader.java b/core/src/main/java/org/apache/seata/core/serializer/SerializerServiceLoader.java
+index d13856b61..567f3ff55 100644
+--- a/core/src/main/java/org/apache/seata/core/serializer/SerializerServiceLoader.java
++++ b/core/src/main/java/org/apache/seata/core/serializer/SerializerServiceLoader.java
+@@ -20,15 +20,18 @@ import org.apache.seata.common.loader.EnhancedServiceLoader;
+ import org.apache.seata.common.loader.EnhancedServiceNotFoundException;
+ import org.apache.seata.common.util.ReflectionUtil;
+ 
++import java.util.HashMap;
++import java.util.Map;
++
+ /**
+  * The Service Loader for the interface {@link Serializer}
+- *
+  */
+ public final class SerializerServiceLoader {
+ 
+     private SerializerServiceLoader() {
+     }
+ 
++    private final static Map<String, Serializer> SERIALIZER_MAP = new HashMap<>();
+ 
+     private static final String PROTOBUF_SERIALIZER_CLASS_NAME = "org.apache.seata.serializer.protobuf.ProtobufSerializer";
+ 
+@@ -39,7 +42,7 @@ public final class SerializerServiceLoader {
+      * @return the service of {@link Serializer}
+      * @throws EnhancedServiceNotFoundException the enhanced service not found exception
+      */
+-    public static Serializer load(SerializerType type) throws EnhancedServiceNotFoundException {
++    public static Serializer load(SerializerType type, byte version) throws EnhancedServiceNotFoundException {
+         if (type == SerializerType.PROTOBUF) {
+             try {
+                 ReflectionUtil.getClassByName(PROTOBUF_SERIALIZER_CLASS_NAME);
+@@ -48,6 +51,24 @@ public final class SerializerServiceLoader {
+                         "Please manually reference 'org.apache.seata:seata-serializer-protobuf' dependency ", e);
+             }
+         }
+-        return EnhancedServiceLoader.load(Serializer.class, type.name());
++
++        String key = serialzerKey(type, version);
++        Serializer serializer = SERIALIZER_MAP.get(key);
++        if (serializer == null) {
++            if (type == SerializerType.SEATA) {
++                serializer = EnhancedServiceLoader.load(Serializer.class, type.name(), new Object[]{version});
++            } else {
++                serializer = EnhancedServiceLoader.load(Serializer.class, type.name());
++            }
++            SERIALIZER_MAP.put(key, serializer);
++        }
++        return serializer;
++    }
++
++    private static String serialzerKey(SerializerType type, byte version) {
++        if (type == SerializerType.SEATA) {
++            return type.name() + version;
++        }
++        return type.name();
+     }
+-}
++}
+\ No newline at end of file
+diff --git a/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/MessageCodecFactory.java b/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/MessageCodecFactory.java
+index e7a555621..2675751cd 100644
+--- a/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/MessageCodecFactory.java
++++ b/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/MessageCodecFactory.java
+@@ -80,7 +80,6 @@ import org.apache.seata.core.protocol.transaction.UndoLogDeleteRequest;
+ 
+ /**
+  * The type Message codec factory.
+- *
+  */
+ public class MessageCodecFactory {
+ 
+@@ -95,8 +94,8 @@ public class MessageCodecFactory {
+      * @param abstractMessage the abstract message
+      * @return the message codec
+      */
+-    public static MessageSeataCodec getMessageCodec(AbstractMessage abstractMessage) {
+-        return getMessageCodec(abstractMessage.getTypeCode());
++    public static MessageSeataCodec getMessageCodec(AbstractMessage abstractMessage, byte version) {
++        return getMessageCodec(abstractMessage.getTypeCode(), version);
+     }
+ 
+     /**
+@@ -105,14 +104,14 @@ public class MessageCodecFactory {
+      * @param typeCode the type code
+      * @return the msg instance by code
+      */
+-    public static MessageSeataCodec getMessageCodec(short typeCode) {
++    public static MessageSeataCodec getMessageCodec(short typeCode, byte version) {
+         MessageSeataCodec msgCodec = null;
+         switch (typeCode) {
+             case MessageType.TYPE_SEATA_MERGE:
+-                msgCodec = new MergedWarpMessageCodec();
++                msgCodec = new MergedWarpMessageCodec(version);
+                 break;
+             case MessageType.TYPE_SEATA_MERGE_RESULT:
+-                msgCodec = new MergeResultMessageCodec();
++                msgCodec = new MergeResultMessageCodec(version);
+                 break;
+             case MessageType.TYPE_REG_CLT:
+                 msgCodec = new RegisterTMRequestCodec();
+@@ -136,7 +135,7 @@ public class MessageCodecFactory {
+                 msgCodec = new GlobalReportRequestCodec();
+                 break;
+             case MessageType.TYPE_BATCH_RESULT_MSG:
+-                msgCodec = new BatchResultMessageCodec();
++                msgCodec = new BatchResultMessageCodec(version);
+                 break;
+             default:
+                 break;
+@@ -147,7 +146,7 @@ public class MessageCodecFactory {
+         }
+ 
+         try {
+-            msgCodec = getMergeRequestMessageSeataCodec(typeCode);
++            msgCodec = getMergeRequestMessageSeataCodec(typeCode, version);
+         } catch (Exception exx) {
+         }
+ 
+@@ -155,7 +154,7 @@ public class MessageCodecFactory {
+             return msgCodec;
+         }
+ 
+-        msgCodec = getMergeResponseMessageSeataCodec(typeCode);
++        msgCodec = getMergeResponseMessageSeataCodec(typeCode, version);
+ 
+         return msgCodec;
+     }
+@@ -166,7 +165,7 @@ public class MessageCodecFactory {
+      * @param typeCode the type code
+      * @return the merge request instance by code
+      */
+-    protected static MessageSeataCodec getMergeRequestMessageSeataCodec(int typeCode) {
++    protected static MessageSeataCodec getMergeRequestMessageSeataCodec(int typeCode, byte version) {
+         switch (typeCode) {
+             case MessageType.TYPE_GLOBAL_BEGIN:
+                 return new GlobalBeginRequestCodec();
+@@ -195,7 +194,7 @@ public class MessageCodecFactory {
+      * @param typeCode the type code
+      * @return the merge response instance by code
+      */
+-    protected static MessageSeataCodec getMergeResponseMessageSeataCodec(int typeCode) {
++    protected static MessageSeataCodec getMergeResponseMessageSeataCodec(int typeCode, byte version) {
+         switch (typeCode) {
+             case MessageType.TYPE_GLOBAL_BEGIN_RESULT:
+                 return new GlobalBeginResponseCodec();
+diff --git a/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/SeataSerializer.java b/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/SeataSerializer.java
+index b21b78a11..53b36da42 100644
+--- a/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/SeataSerializer.java
++++ b/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/SeataSerializer.java
+@@ -16,52 +16,149 @@
+  */
+ package org.apache.seata.serializer.seata;
+ 
+-import java.nio.ByteBuffer;
+-
+ import io.netty.buffer.ByteBuf;
+ import io.netty.buffer.Unpooled;
+ import org.apache.seata.common.loader.LoadLevel;
++import org.apache.seata.common.loader.Scope;
+ import org.apache.seata.common.util.BufferUtils;
+ import org.apache.seata.core.protocol.AbstractMessage;
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.core.serializer.Serializer;
+ 
++import java.nio.ByteBuffer;
++
+ /**
+  * The Seata codec.
+- *
+  */
+-@LoadLevel(name = "SEATA")
++@LoadLevel(name = "SEATA", scope = Scope.PROTOTYPE)
+ public class SeataSerializer implements Serializer {
++    Serializer versionSeataSerializer;
++
++    public SeataSerializer(Byte version) {
++        if (version == ProtocolConstants.VERSION_0) {
++            versionSeataSerializer = SeataSerializerV0.getInstance();
++        } else if (version == ProtocolConstants.VERSION_1) {
++            versionSeataSerializer = SeataSerializerV1.getInstance();
++        }
++        if (versionSeataSerializer == null) {
++            throw new UnsupportedOperationException("version is not supported");
++        }
++    }
+ 
+     @Override
+     public <T> byte[] serialize(T t) {
+-        if (!(t instanceof AbstractMessage)) {
+-            throw new IllegalArgumentException("AbstractMessage isn't available.");
+-        }
+-        AbstractMessage abstractMessage = (AbstractMessage)t;
+-        //typecode
+-        short typecode = abstractMessage.getTypeCode();
+-        //msg codec
+-        MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typecode);
+-        //get empty ByteBuffer
+-        ByteBuf out = Unpooled.buffer(1024);
+-        //msg encode
+-        messageCodec.encode(t, out);
+-        byte[] body = new byte[out.readableBytes()];
+-        out.readBytes(body);
+-
+-        //typecode + body
+-        ByteBuffer byteBuffer = ByteBuffer.allocate(2 + body.length);
+-        byteBuffer.putShort(typecode);
+-        byteBuffer.put(body);
+-
+-        BufferUtils.flip(byteBuffer);
+-        byte[] content = new byte[byteBuffer.limit()];
+-        byteBuffer.get(content);
+-        return content;
++        return versionSeataSerializer.serialize(t);
+     }
+ 
+     @Override
+     public <T> T deserialize(byte[] bytes) {
++        return versionSeataSerializer.deserialize(bytes);
++    }
++
++
++    static class SeataSerializerV1 implements Serializer {
++
++        private static SeataSerializerV1 instance;
++
++        private SeataSerializerV1() {
++        }
++
++        public static SeataSerializerV1 getInstance() {
++            if (instance == null) {
++                synchronized (SeataSerializerV1.class) {
++                    instance = new SeataSerializerV1();
++                }
++            }
++            return instance;
++        }
++
++        @Override
++        public <T> byte[] serialize(T t) {
++            if (!(t instanceof AbstractMessage)) {
++                throw new IllegalArgumentException("AbstractMessage isn't available.");
++            }
++            AbstractMessage abstractMessage = (AbstractMessage) t;
++            //type code
++            short typecode = abstractMessage.getTypeCode();
++            //msg codec
++            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typecode, ProtocolConstants.VERSION_1);
++            //get empty ByteBuffer
++            ByteBuf out = Unpooled.buffer(1024);
++            //msg encode
++            messageCodec.encode(t, out);
++            byte[] body = new byte[out.readableBytes()];
++            out.readBytes(body);
++
++            ByteBuffer byteBuffer;
++
++            //typecode + body
++            byteBuffer = ByteBuffer.allocate(2 + body.length);
++            byteBuffer.putShort(typecode);
++            byteBuffer.put(body);
++
++            BufferUtils.flip(byteBuffer);
++            byte[] content = new byte[byteBuffer.limit()];
++            byteBuffer.get(content);
++            return content;
++        }
++
++        @Override
++        public <T> T deserialize(byte[] bytes) {
++            return deserializeByVersion(bytes, ProtocolConstants.VERSION_1);
++        }
++    }
++    static class SeataSerializerV0 implements Serializer {
++
++        private static SeataSerializerV0 instance;
++
++        private SeataSerializerV0() {
++        }
++
++        public static SeataSerializerV0 getInstance() {
++            if (instance == null) {
++                synchronized (SeataSerializerV0.class) {
++                    instance = new SeataSerializerV0();
++                }
++            }
++            return instance;
++        }
++
++        @Override
++        public <T> byte[] serialize(T t) {
++            if (!(t instanceof AbstractMessage)) {
++                throw new IllegalArgumentException("AbstractMessage isn't available.");
++            }
++            AbstractMessage abstractMessage = (AbstractMessage) t;
++            //type code
++            short typecode = abstractMessage.getTypeCode();
++            //msg codec
++            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typecode, ProtocolConstants.VERSION_0);
++            //get empty ByteBuffer
++            ByteBuf out = Unpooled.buffer(1024);
++            //msg encode
++            messageCodec.encode(t, out);
++            byte[] body = new byte[out.readableBytes()];
++            out.readBytes(body);
++
++            ByteBuffer byteBuffer;
++            byteBuffer = ByteBuffer.allocate(body.length);
++
++            byteBuffer.put(body);
++
++            BufferUtils.flip(byteBuffer);
++            byte[] content = new byte[byteBuffer.limit()];
++            byteBuffer.get(content);
++            return content;
++        }
++
++        @Override
++        public <T> T deserialize(byte[] bytes) {
++            return deserializeByVersion(bytes, ProtocolConstants.VERSION_0);
++        }
++
++    }
++
++    private static <T> T deserializeByVersion(byte[] bytes, byte version) {
+         if (bytes == null || bytes.length == 0) {
+             throw new IllegalArgumentException("Nothing to decode.");
+         }
+@@ -78,10 +175,9 @@ public class SeataSerializer implements Serializer {
+         //new Messgae
+         AbstractMessage abstractMessage = MessageCodecFactory.getMessage(typecode);
+         //get messageCodec
+-        MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typecode);
++        MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typecode, version);
+         //decode
+         messageCodec.decode(abstractMessage, in);
+-        return (T)abstractMessage;
++        return (T) abstractMessage;
+     }
+-
+ }
+diff --git a/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/BatchResultMessageCodec.java b/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/BatchResultMessageCodec.java
+index 4d6c1105c..ba6d9774e 100644
+--- a/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/BatchResultMessageCodec.java
++++ b/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/BatchResultMessageCodec.java
+@@ -35,6 +35,11 @@ import org.apache.seata.serializer.seata.MessageSeataCodec;
+  */
+ public class BatchResultMessageCodec extends AbstractMessageCodec {
+ 
++    private byte version;
++
++    public BatchResultMessageCodec(byte version) {
++        this.version = version;
++    }
+     @Override
+     public Class<?> getMessageClassType() {
+         return BatchResultMessage.class;
+@@ -53,7 +58,7 @@ public class BatchResultMessageCodec extends AbstractMessageCodec {
+         for (final AbstractMessage msg : msgs) {
+             final ByteBuf subBuffer = Unpooled.buffer(1024);
+             short typeCode = msg.getTypeCode();
+-            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode);
++            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode, version);
+             messageCodec.encode(msg, subBuffer);
+             buffer.writeShort(msg.getTypeCode());
+             buffer.writeBytes(subBuffer);
+@@ -107,7 +112,7 @@ public class BatchResultMessageCodec extends AbstractMessageCodec {
+         for (int idx = 0; idx < msgNum; idx++) {
+             short typeCode = byteBuffer.getShort();
+             AbstractMessage abstractResultMessage = MessageCodecFactory.getMessage(typeCode);
+-            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode);
++            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode, version);
+             messageCodec.decode(abstractResultMessage, byteBuffer);
+             msgs.add((AbstractResultMessage) abstractResultMessage);
+         }
+diff --git a/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/MergeResultMessageCodec.java b/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/MergeResultMessageCodec.java
+index ac5bc411c..590a42e22 100644
+--- a/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/MergeResultMessageCodec.java
++++ b/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/MergeResultMessageCodec.java
+@@ -31,6 +31,11 @@ import org.apache.seata.core.protocol.MergeResultMessage;
+  */
+ public class MergeResultMessageCodec extends AbstractMessageCodec {
+ 
++    private byte version;
++
++    public MergeResultMessageCodec(byte version) {
++        this.version = version;
++    }
+     @Override
+     public Class<?> getMessageClassType() {
+         return MergeResultMessage.class;
+@@ -48,7 +53,7 @@ public class MergeResultMessageCodec extends AbstractMessageCodec {
+             short typeCode = msg.getTypeCode();
+             //put typeCode
+             out.writeShort(typeCode);
+-            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode);
++            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode, version);
+             messageCodec.encode(msg, out);
+         }
+ 
+@@ -91,7 +96,7 @@ public class MergeResultMessageCodec extends AbstractMessageCodec {
+         for (int idx = 0; idx < msgNum; idx++) {
+             short typeCode = byteBuffer.getShort();
+             AbstractMessage abstractResultMessage = MessageCodecFactory.getMessage(typeCode);
+-            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode);
++            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode, version);
+             messageCodec.decode(abstractResultMessage, byteBuffer);
+             msgs[idx] = (AbstractResultMessage)abstractResultMessage;
+         }
+diff --git a/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/MergedWarpMessageCodec.java b/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/MergedWarpMessageCodec.java
+index 6e71ed016..40bbcd05a 100644
+--- a/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/MergedWarpMessageCodec.java
++++ b/serializer/seata-serializer-seata/src/main/java/org/apache/seata/serializer/seata/protocol/MergedWarpMessageCodec.java
+@@ -33,6 +33,11 @@ import org.apache.seata.core.protocol.MergedWarpMessage;
+  */
+ public class MergedWarpMessageCodec extends AbstractMessageCodec {
+ 
++    private byte version;
++
++    public MergedWarpMessageCodec(byte version) {
++        this.version = version;
++    }
+     @Override
+     public Class<?> getMessageClassType() {
+         return MergedWarpMessage.class;
+@@ -51,7 +56,7 @@ public class MergedWarpMessageCodec extends AbstractMessageCodec {
+         for (final AbstractMessage msg : msgs) {
+             final ByteBuf subBuffer = Unpooled.buffer(1024);
+             short typeCode = msg.getTypeCode();
+-            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode);
++            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode, version);
+             messageCodec.encode(msg, subBuffer);
+             buffer.writeShort(msg.getTypeCode());
+             buffer.writeBytes(subBuffer);
+@@ -97,7 +102,7 @@ public class MergedWarpMessageCodec extends AbstractMessageCodec {
+         for (int idx = 0; idx < msgNum; idx++) {
+             short typeCode = byteBuffer.getShort();
+             AbstractMessage abstractMessage = MessageCodecFactory.getMessage(typeCode);
+-            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode);
++            MessageSeataCodec messageCodec = MessageCodecFactory.getMessageCodec(typeCode, version);
+             messageCodec.decode(abstractMessage, byteBuffer);
+             msgs.add(abstractMessage);
+         }

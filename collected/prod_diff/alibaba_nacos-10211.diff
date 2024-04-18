@@ -1,0 +1,145 @@
+diff --git a/client/src/main/java/com/alibaba/nacos/client/env/DefaultSettingPropertySource.java b/client/src/main/java/com/alibaba/nacos/client/env/DefaultSettingPropertySource.java
+deleted file mode 100644
+index 6990e0e472..0000000000
+--- a/client/src/main/java/com/alibaba/nacos/client/env/DefaultSettingPropertySource.java
++++ /dev/null
+@@ -1,63 +0,0 @@
+-/*
+- * Copyright 1999-2022 Alibaba Group Holding Ltd.
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *      http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-package com.alibaba.nacos.client.env;
+-
+-import com.alibaba.nacos.common.utils.ResourceUtils;
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+-
+-import java.io.InputStream;
+-import java.util.Properties;
+-
+-class DefaultSettingPropertySource extends AbstractPropertySource {
+-    
+-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSettingPropertySource.class);
+-    
+-    private static final String DEFAULT_SETTING_PATH = "classpath:nacos_default_setting.properties";
+-    
+-    private final Properties defaultSetting = new Properties();
+-    
+-    DefaultSettingPropertySource() {
+-        try (final InputStream inputStream = ResourceUtils.getResourceUrl(DEFAULT_SETTING_PATH).openStream()) {
+-            defaultSetting.load(inputStream);
+-        } catch (Exception e) {
+-            LOGGER.error("load default setting failed", e);
+-        }
+-    }
+-    
+-    @Override
+-    SourceType getType() {
+-        return SourceType.DEFAULT_SETTING;
+-    }
+-    
+-    @Override
+-    String getProperty(String key) {
+-        return defaultSetting.getProperty(key);
+-    }
+-    
+-    @Override
+-    boolean containsKey(String key) {
+-        return defaultSetting.containsKey(key);
+-    }
+-    
+-    @Override
+-    Properties asProperties() {
+-        Properties properties = new Properties();
+-        properties.putAll(defaultSetting);
+-        return properties;
+-    }
+-}
+diff --git a/client/src/main/java/com/alibaba/nacos/client/env/SearchableProperties.java b/client/src/main/java/com/alibaba/nacos/client/env/SearchableProperties.java
+index 6925222b97..80226fa1c0 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/env/SearchableProperties.java
++++ b/client/src/main/java/com/alibaba/nacos/client/env/SearchableProperties.java
+@@ -43,15 +43,12 @@ class SearchableProperties implements NacosClientProperties {
+     
+     private static final SystemEnvPropertySource SYSTEM_ENV_PROPERTY_SOURCE = new SystemEnvPropertySource();
+     
+-    private static final DefaultSettingPropertySource DEFAULT_SETTING_PROPERTY_SOURCE = new DefaultSettingPropertySource();
+-    
+     private static final List<SourceType> SEARCH_ORDER;
+     
+     private static final CompositeConverter CONVERTER = new CompositeConverter();
+     
+     static {
+-        List<SourceType> initOrder = Arrays.asList(SourceType.PROPERTIES, SourceType.JVM, SourceType.ENV,
+-                SourceType.DEFAULT_SETTING);
++        List<SourceType> initOrder = Arrays.asList(SourceType.PROPERTIES, SourceType.JVM, SourceType.ENV);
+         
+         String firstEnv = JVM_ARGS_PROPERTY_SOURCE.getProperty(Constants.SysEnv.NACOS_ENV_FIRST);
+         if (StringUtils.isBlank(firstEnv)) {
+@@ -61,7 +58,7 @@ class SearchableProperties implements NacosClientProperties {
+         if (StringUtils.isNotBlank(firstEnv)) {
+             try {
+                 final SourceType sourceType = SourceType.valueOf(firstEnv.toUpperCase());
+-                if (!sourceType.equals(SourceType.PROPERTIES) && !sourceType.equals(SourceType.DEFAULT_SETTING)) {
++                if (!sourceType.equals(SourceType.PROPERTIES)) {
+                     final int index = initOrder.indexOf(sourceType);
+                     final SourceType replacedSourceType = initOrder.set(0, sourceType);
+                     initOrder.set(index, replacedSourceType);
+@@ -93,8 +90,7 @@ class SearchableProperties implements NacosClientProperties {
+     
+     private SearchableProperties(PropertiesPropertySource propertiesPropertySource) {
+         this.propertiesPropertySource = propertiesPropertySource;
+-        this.propertySources = build(propertiesPropertySource, JVM_ARGS_PROPERTY_SOURCE, SYSTEM_ENV_PROPERTY_SOURCE,
+-                DEFAULT_SETTING_PROPERTY_SOURCE);
++        this.propertySources = build(propertiesPropertySource, JVM_ARGS_PROPERTY_SOURCE, SYSTEM_ENV_PROPERTY_SOURCE);
+     }
+     
+     @Override
+@@ -119,8 +115,6 @@ class SearchableProperties implements NacosClientProperties {
+                 return SYSTEM_ENV_PROPERTY_SOURCE.getProperty(key);
+             case PROPERTIES:
+                 return this.propertiesPropertySource.getProperty(key);
+-            case DEFAULT_SETTING:
+-                return DEFAULT_SETTING_PROPERTY_SOURCE.getProperty(key);
+             default:
+                 return this.getProperty(key);
+         }
+diff --git a/client/src/main/java/com/alibaba/nacos/client/env/SourceType.java b/client/src/main/java/com/alibaba/nacos/client/env/SourceType.java
+index 91f0eb5e3a..0331bde6c2 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/env/SourceType.java
++++ b/client/src/main/java/com/alibaba/nacos/client/env/SourceType.java
+@@ -32,9 +32,5 @@ public enum SourceType {
+     /**
+      * get value from system environment.
+      */
+-    ENV,
+-    /**
+-     * get value from default setting.
+-     */
+-    DEFAULT_SETTING
++    ENV
+ }
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/utils/InitUtils.java b/client/src/main/java/com/alibaba/nacos/client/naming/utils/InitUtils.java
+index d2da7e3549..50a2a923f3 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/utils/InitUtils.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/utils/InitUtils.java
+@@ -105,7 +105,6 @@ public class InitUtils {
+      */
+     public static String initEndpoint(final NacosClientProperties properties) {
+         if (properties == null) {
+-            
+             return "";
+         }
+         // Whether to enable domain name resolution rules

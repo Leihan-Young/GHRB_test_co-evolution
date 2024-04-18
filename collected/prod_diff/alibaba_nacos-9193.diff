@@ -1,0 +1,63 @@
+diff --git a/common/src/main/java/com/alibaba/nacos/common/notify/Event.java b/common/src/main/java/com/alibaba/nacos/common/notify/Event.java
+index 408b7a84b5..0939b5bc79 100644
+--- a/common/src/main/java/com/alibaba/nacos/common/notify/Event.java
++++ b/common/src/main/java/com/alibaba/nacos/common/notify/Event.java
+@@ -27,11 +27,11 @@ import java.util.concurrent.atomic.AtomicLong;
+  */
+ @SuppressWarnings({"PMD.AbstractClassShouldStartWithAbstractNamingRule"})
+ public abstract class Event implements Serializable {
+-
++    
+     private static final long serialVersionUID = -3731383194964997493L;
+-
++    
+     private static final AtomicLong SEQUENCE = new AtomicLong(0);
+-
++    
+     private final long sequence = SEQUENCE.getAndIncrement();
+     
+     /**
+@@ -51,5 +51,15 @@ public abstract class Event implements Serializable {
+     public String scope() {
+         return null;
+     }
++    
++    /**
++     * Whether is plugin event. If so, the event can be dropped when no publish and subscriber without any hint. Default
++     * false
++     *
++     * @return {@code true} if is plugin event, otherwise {@code false}
++     */
++    public boolean isPluginEvent() {
++        return false;
++    }
+ }
+ 
+diff --git a/common/src/main/java/com/alibaba/nacos/common/notify/NotifyCenter.java b/common/src/main/java/com/alibaba/nacos/common/notify/NotifyCenter.java
+index 60d019aecc..293fa26cbe 100644
+--- a/common/src/main/java/com/alibaba/nacos/common/notify/NotifyCenter.java
++++ b/common/src/main/java/com/alibaba/nacos/common/notify/NotifyCenter.java
+@@ -301,6 +301,9 @@ public class NotifyCenter {
+         if (publisher != null) {
+             return publisher.publish(event);
+         }
++        if (event.isPluginEvent()) {
++            return true;
++        }
+         LOGGER.warn("There are no [{}] publishers for this event, please register", topic);
+         return false;
+     }
+diff --git a/common/src/main/java/com/alibaba/nacos/common/trace/event/naming/NamingTraceEvent.java b/common/src/main/java/com/alibaba/nacos/common/trace/event/naming/NamingTraceEvent.java
+index ca195d811c..7aa1d8877d 100644
+--- a/common/src/main/java/com/alibaba/nacos/common/trace/event/naming/NamingTraceEvent.java
++++ b/common/src/main/java/com/alibaba/nacos/common/trace/event/naming/NamingTraceEvent.java
+@@ -31,4 +31,9 @@ public class NamingTraceEvent extends TraceEvent {
+             String serviceNamespace, String serviceGroup, String name) {
+         super(eventType, eventTime, serviceNamespace, serviceGroup, name);
+     }
++    
++    @Override
++    public boolean isPluginEvent() {
++        return true;
++    }
+ }

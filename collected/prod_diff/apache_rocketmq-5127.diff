@@ -1,0 +1,42 @@
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/RemotingCommand.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/RemotingCommand.java
+index 631ad75bf..10a51ed20 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/RemotingCommand.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/RemotingCommand.java
+@@ -28,6 +28,7 @@ import java.lang.annotation.Annotation;
+ import java.lang.reflect.Field;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Modifier;
++import java.nio.Buffer;
+ import java.nio.ByteBuffer;
+ import java.util.Arrays;
+ import java.util.HashMap;
+@@ -499,7 +500,7 @@ public class RemotingCommand {
+         // header data
+         result.put(headerData);
+ 
+-        result.flip();
++        ((Buffer)result).flip();
+ 
+         return result;
+     }
+diff --git a/tools/src/main/java/org/apache/rocketmq/tools/monitor/MonitorService.java b/tools/src/main/java/org/apache/rocketmq/tools/monitor/MonitorService.java
+index b2970d977..3269ae126 100644
+--- a/tools/src/main/java/org/apache/rocketmq/tools/monitor/MonitorService.java
++++ b/tools/src/main/java/org/apache/rocketmq/tools/monitor/MonitorService.java
+@@ -196,14 +196,14 @@ public class MonitorService {
+         ConsumeStats cs = null;
+         try {
+             cs = defaultMQAdminExt.examineConsumeStats(consumerGroup);
+-        } catch (Exception e) {
++        } catch (Exception ignore) {
+             return;
+         }
+ 
+         ConsumerConnection cc = null;
+         try {
+             cc = defaultMQAdminExt.examineConsumerConnectionInfo(consumerGroup);
+-        } catch (Exception e) {
++        } catch (Exception ignore) {
+             return;
+         }
+ 

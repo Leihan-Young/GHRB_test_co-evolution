@@ -1,0 +1,12 @@
+diff --git a/api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java b/api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java
+index 1dc6dddaa1..1f40409ede 100644
+--- a/api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java
++++ b/api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java
+@@ -57,6 +57,7 @@ public class ErrorResponse extends Response {
+         }
+         ErrorResponse response = new ErrorResponse();
+         response.setErrorInfo(errorCode, exception.getMessage());
++        response.setResultCode(errorCode);
+         return response;
+     }
+     

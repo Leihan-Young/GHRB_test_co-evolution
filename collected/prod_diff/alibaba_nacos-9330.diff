@@ -1,0 +1,211 @@
+diff --git a/api/src/main/java/com/alibaba/nacos/api/naming/NamingService.java b/api/src/main/java/com/alibaba/nacos/api/naming/NamingService.java
+index be6170cd54..d27ad5bd04 100644
+--- a/api/src/main/java/com/alibaba/nacos/api/naming/NamingService.java
++++ b/api/src/main/java/com/alibaba/nacos/api/naming/NamingService.java
+@@ -107,6 +107,17 @@ public interface NamingService {
+      */
+     void batchRegisterInstance(String serviceName, String groupName, List<Instance> instances) throws NacosException;
+     
++    /**
++     * batch deRegister instance to service with specified instance properties.
++     *
++     * @param serviceName name of service
++     * @param groupName   group of service
++     * @param instances   instances to deRegister
++     * @throws NacosException nacos exception
++     * @since 2.2.0
++     */
++    void batchDeregisterInstance(String serviceName, String groupName, List<Instance> instances) throws NacosException;
++    
+     /**
+      * deregister instance from a service.
+      *
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/NacosNamingService.java b/client/src/main/java/com/alibaba/nacos/client/naming/NacosNamingService.java
+index 5a9a37598e..bed4737e1c 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/NacosNamingService.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/NacosNamingService.java
+@@ -156,6 +156,13 @@ public class NacosNamingService implements NamingService {
+         clientProxy.batchRegisterService(serviceName, groupName, instances);
+     }
+     
++    @Override
++    public void batchDeregisterInstance(String serviceName, String groupName, List<Instance> instances)
++            throws NacosException {
++        NamingUtils.batchCheckInstanceIsLegal(instances);
++        clientProxy.batchDeregisterService(serviceName, groupName, instances);
++    }
++    
+     @Override
+     public void deregisterInstance(String serviceName, String ip, int port) throws NacosException {
+         deregisterInstance(serviceName, ip, port, Constants.DEFAULT_CLUSTER_NAME);
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxy.java b/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxy.java
+index c46adf3247..f24cdda35e 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxy.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxy.java
+@@ -55,6 +55,17 @@ public interface NamingClientProxy extends Closeable {
+      */
+     void batchRegisterService(String serviceName, String groupName, List<Instance> instances) throws NacosException;
+     
++    /**
++     * Batch register instance to service with specified instance properties.
++     *
++     * @param serviceName service name
++     * @param groupName   group name
++     * @param instances   deRegister instance
++     * @throws NacosException nacos exception
++     * @since 2.2.0
++     */
++    void batchDeregisterService(String serviceName, String groupName, List<Instance> instances) throws NacosException;
++    
+     /**
+      * Deregister instance from a service.
+      *
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegate.java b/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegate.java
+index f7af0cd6c3..f3b65ac6b6 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegate.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegate.java
+@@ -107,6 +107,17 @@ public class NamingClientProxyDelegate implements NamingClientProxy {
+         NAMING_LOGGER.info("batchRegisterInstance instances: {} ,serviceName: {} finish.", instances, serviceName);
+     }
+     
++    @Override
++    public void batchDeregisterService(String serviceName, String groupName, List<Instance> instances)
++            throws NacosException {
++        NAMING_LOGGER.info("batch DeregisterInstance instances: {} ,serviceName: {} begin.", instances, serviceName);
++        if (CollectionUtils.isEmpty(instances)) {
++            NAMING_LOGGER.warn("batch DeregisterInstance instances is Empty:{}", instances);
++        }
++        grpcClientProxy.batchDeregisterService(serviceName, groupName, instances);
++        NAMING_LOGGER.info("batch DeregisterInstance instances: {} ,serviceName: {} finish.", instances, serviceName);
++    }
++    
+     @Override
+     public void deregisterService(String serviceName, String groupName, Instance instance) throws NacosException {
+         getExecuteClientProxy(instance).deregisterService(serviceName, groupName, instance);
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxy.java b/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxy.java
+index a83dfb3828..85adb40080 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxy.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxy.java
+@@ -33,6 +33,7 @@ import com.alibaba.nacos.api.naming.remote.response.BatchInstanceResponse;
+ import com.alibaba.nacos.api.naming.remote.response.QueryServiceResponse;
+ import com.alibaba.nacos.api.naming.remote.response.ServiceListResponse;
+ import com.alibaba.nacos.api.naming.remote.response.SubscribeServiceResponse;
++import com.alibaba.nacos.api.naming.utils.NamingUtils;
+ import com.alibaba.nacos.api.remote.RemoteConstants;
+ import com.alibaba.nacos.api.remote.response.Response;
+ import com.alibaba.nacos.api.remote.response.ResponseCode;
+@@ -42,6 +43,8 @@ import com.alibaba.nacos.client.naming.cache.ServiceInfoHolder;
+ import com.alibaba.nacos.client.naming.event.ServerListChangedEvent;
+ import com.alibaba.nacos.client.naming.remote.AbstractNamingClientProxy;
+ import com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoService;
++import com.alibaba.nacos.client.naming.remote.gprc.redo.data.BatchInstanceRedoData;
++import com.alibaba.nacos.client.naming.remote.gprc.redo.data.InstanceRedoData;
+ import com.alibaba.nacos.client.security.SecurityProxy;
+ import com.alibaba.nacos.common.notify.Event;
+ import com.alibaba.nacos.common.notify.NotifyCenter;
+@@ -49,14 +52,18 @@ import com.alibaba.nacos.common.remote.ConnectionType;
+ import com.alibaba.nacos.common.remote.client.RpcClient;
+ import com.alibaba.nacos.common.remote.client.RpcClientFactory;
+ import com.alibaba.nacos.common.remote.client.ServerListFactory;
++import com.alibaba.nacos.common.utils.CollectionUtils;
+ import com.alibaba.nacos.common.utils.JacksonUtils;
+ 
++import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Properties;
+ import java.util.Set;
+ import java.util.UUID;
++import java.util.function.Function;
++import java.util.stream.Collectors;
+ 
+ import static com.alibaba.nacos.client.utils.LogUtils.NAMING_LOGGER;
+ 
+@@ -124,6 +131,50 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
+         doBatchRegisterService(serviceName, groupName, instances);
+     }
+     
++    @Override
++    public void batchDeregisterService(String serviceName, String groupName, List<Instance> instances)
++            throws NacosException {
++        List<Instance> retainInstance = getRetainInstance(serviceName, groupName, instances);
++        batchRegisterService(serviceName, groupName, retainInstance);
++    }
++    
++    /**
++     * Get instance list that need to be deregistered.
++     * @param serviceName   service name
++     * @param groupName    group name
++     * @param instances   instance list
++     * @return  instance list that need to be deregistered.
++     */
++    private List<Instance> getRetainInstance(String serviceName, String groupName, List<Instance> instances) throws NacosException {
++        if (CollectionUtils.isEmpty(instances)) {
++            throw new NacosException(NacosException.INVALID_PARAM,
++                    String.format("[Batch deRegistration] need deRegister instance is empty, instances: %s,", instances));
++        }
++        String combinedServiceName = NamingUtils.getGroupedName(serviceName, groupName);
++        InstanceRedoData instanceRedoData = redoService.getRegisteredInstancesBykey(combinedServiceName);
++        if (!(instanceRedoData instanceof BatchInstanceRedoData)) {
++            throw new NacosException(NacosException.INVALID_PARAM,
++                    String.format("[Batch deRegistration] batch deRegister is not BatchInstanceRedoData type , instances: %s,", instances));
++        }
++        
++        BatchInstanceRedoData batchInstanceRedoData = (BatchInstanceRedoData) instanceRedoData;
++        List<Instance> allInstance = batchInstanceRedoData.getInstances();
++        if (CollectionUtils.isEmpty(allInstance)) {
++            throw new NacosException(NacosException.INVALID_PARAM,
++                    String.format("[Batch deRegistration] not found all registerInstance , serviceName：%s , groupName: %s", serviceName, groupName));
++        }
++        
++        Map<Instance, Instance> instanceMap = instances
++                .stream().collect(Collectors.toMap(Function.identity(), Function.identity()));
++        List<Instance> retainInstances = new ArrayList<>();
++        for (Instance instance : allInstance) {
++            if (!instanceMap.containsKey(instance)) {
++                retainInstances.add(instance);
++            }
++        }
++        return retainInstances;
++    }
++    
+     /**
+      * Execute batch register operation.
+      *
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoService.java b/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoService.java
+index 4b68b6e3bc..a355999c88 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoService.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoService.java
+@@ -277,6 +277,14 @@ public class NamingGrpcRedoService implements ConnectionEventListener {
+         return result;
+     }
+     
++    /**
++     * get Cache service.
++     * @return cache service
++     */
++    public InstanceRedoData getRegisteredInstancesBykey(String combinedServiceName) {
++        return registeredInstances.get(combinedServiceName);
++    }
++    
+     /**
+      * Shutdown redo service.
+      */
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/remote/http/NamingHttpClientProxy.java b/client/src/main/java/com/alibaba/nacos/client/naming/remote/http/NamingHttpClientProxy.java
+index 2622d0f8cc..3f6c5f4a7e 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/remote/http/NamingHttpClientProxy.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/remote/http/NamingHttpClientProxy.java
+@@ -172,6 +172,12 @@ public class NamingHttpClientProxy extends AbstractNamingClientProxy {
+         throw new UnsupportedOperationException("Do not support persistent instances to perform batch registration methods.");
+     }
+     
++    @Override
++    public void batchDeregisterService(String serviceName, String groupName, List<Instance> instances)
++            throws NacosException {
++        throw new UnsupportedOperationException("Do not support persistent instances to perform batch de registration methods.");
++    }
++    
+     @Override
+     public void deregisterService(String serviceName, String groupName, Instance instance) throws NacosException {
+         NAMING_LOGGER

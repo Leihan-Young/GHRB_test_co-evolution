@@ -1,0 +1,7 @@
+{
+  "issue_id": 6691,
+  "issue_url": "https://github.com/apache/rocketmq/issues/6691",
+  "title": "Support reentrant pop orderly for broker",
+  "description": "<p dir=\"auto\">See more in <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1695700745\" data-permission-text=\"Title is private\" data-url=\"https://github.com/apache/rocketmq/issues/6690\" data-hovercard-type=\"issue\" data-hovercard-url=\"/apache/rocketmq/issues/6690/hovercard\" href=\"https://github.com/apache/rocketmq/issues/6690\">#6690</a></p>",
+  "description_text": "See more in #6690"
+}

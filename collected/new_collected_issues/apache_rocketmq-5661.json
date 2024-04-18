@@ -1,0 +1,7 @@
+{
+  "issue_id": 5660,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5660",
+  "title": "Optimize LagCalculationIT",
+  "description": "<p dir=\"auto\">Use <code class=\"notranslate\">awaitility</code> instead of <code class=\"notranslate\">Thread#sleep</code></p>",
+  "description_text": "Use awaitility instead of Thread#sleep"
+}

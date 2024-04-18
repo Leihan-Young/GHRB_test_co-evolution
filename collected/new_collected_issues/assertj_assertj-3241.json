@@ -1,0 +1,7 @@
+{
+  "issue_id": 2018,
+  "issue_url": "https://github.com/assertj/assertj/issues/2018",
+  "title": "Try java 14 records with recursive comparison",
+  "description": "<h4 dir=\"auto\">Summary</h4>\n<p dir=\"auto\">The recursive comparison relied on reflection to find the values to compare, let's check it that works properly with java 14 records with bare name properties enabled or disabled.</p>",
+  "description_text": "Summary\nThe recursive comparison relied on reflection to find the values to compare, let's check it that works properly with java 14 records with bare name properties enabled or disabled."
+}

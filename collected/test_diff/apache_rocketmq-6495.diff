@@ -1,0 +1,1572 @@
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredDispatcherTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredDispatcherBaseTest.java
+similarity index 90%
+rename from tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredDispatcherTest.java
+rename to tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredDispatcherBaseTest.java
+index b5c4e9d06..ba9e2d550 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredDispatcherTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredDispatcherBaseTest.java
+@@ -33,7 +33,6 @@ import org.apache.rocketmq.tieredstore.container.TieredConsumeQueue;
+ import org.apache.rocketmq.tieredstore.container.TieredContainerManager;
+ import org.apache.rocketmq.tieredstore.container.TieredMessageQueueContainer;
+ import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
+-import org.apache.rocketmq.tieredstore.mock.MemoryFileSegment;
+ import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
+ import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
+ import org.apache.rocketmq.tieredstore.util.MessageBufferUtilTest;
+@@ -41,22 +40,25 @@ import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
+ import org.junit.After;
+ import org.junit.Assert;
+ import org.junit.Before;
++import org.junit.Ignore;
+ import org.junit.Test;
+ import org.mockito.Mockito;
+ 
+-public class TieredDispatcherTest {
++@Ignore
++public abstract class TieredDispatcherBaseTest {
+     private TieredMessageStoreConfig storeConfig;
+     private MessageQueue mq;
+     private TieredMetadataStore metadataStore;
+ 
+-    private final String storePath = FileUtils.getTempDirectory() + File.separator + "tiered_store_unit_test" + UUID.randomUUID();
++    protected final String storePath = FileUtils.getTempDirectory() + File.separator + "tiered_store_unit_test" + UUID.randomUUID();
++
++    public abstract TieredMessageStoreConfig createTieredMessageStoreConfig();
++
++    public abstract TieredFileSegment createTieredFileSegment(TieredFileSegment.FileSegmentType type, MessageQueue mq, long baseOffset, TieredMessageStoreConfig storeConfig);
+ 
+     @Before
+     public void setUp() {
+-        storeConfig = new TieredMessageStoreConfig();
+-        storeConfig.setStorePathRootDir(storePath);
+-        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.mock.MemoryFileSegmentWithoutCheck");
+-        storeConfig.setBrokerName(storeConfig.getBrokerName());
++        storeConfig = createTieredMessageStoreConfig();
+         mq = new MessageQueue("TieredMessageQueueContainerTest", storeConfig.getBrokerName(), 0);
+         metadataStore = TieredStoreUtil.getMetadataStore(storeConfig);
+         TieredStoreExecutor.init();
+@@ -73,11 +75,11 @@ public class TieredDispatcherTest {
+     @Test
+     public void testDispatch() {
+         metadataStore.addQueue(mq, 6);
+-        MemoryFileSegment segment = new MemoryFileSegment(TieredFileSegment.FileSegmentType.COMMIT_LOG, mq, 1000, storeConfig);
++        TieredFileSegment segment = createTieredFileSegment(TieredFileSegment.FileSegmentType.COMMIT_LOG, mq, 1000, storeConfig);
+         segment.initPosition(segment.getSize());
+         metadataStore.updateFileSegment(segment);
+         metadataStore.updateFileSegment(segment);
+-        segment = new MemoryFileSegment(TieredFileSegment.FileSegmentType.CONSUME_QUEUE, mq, 6 * TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE, storeConfig);
++        segment = createTieredFileSegment(TieredFileSegment.FileSegmentType.CONSUME_QUEUE, mq, 6 * TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE, storeConfig);
+         metadataStore.updateFileSegment(segment);
+ 
+         TieredContainerManager containerManager = TieredContainerManager.getInstance(storeConfig);
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageFetcherTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageFetcherBaseTest.java
+similarity index 97%
+rename from tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageFetcherTest.java
+rename to tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageFetcherBaseTest.java
+index ddcc9fa6c..2158d6d44 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageFetcherTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageFetcherBaseTest.java
+@@ -47,21 +47,29 @@ import org.junit.After;
+ import org.junit.Assert;
+ import org.junit.Assume;
+ import org.junit.Before;
++import org.junit.Ignore;
+ import org.junit.Test;
+ 
+-public class TieredMessageFetcherTest {
+-    private TieredMessageStoreConfig storeConfig;
++@Ignore
++public abstract class TieredMessageFetcherBaseTest {
++    protected TieredMessageStoreConfig storeConfig;
+     private MessageQueue mq;
+ 
+     private final String storePath = FileUtils.getTempDirectory() + File.separator + "tiered_store_unit_test" + UUID.randomUUID();
+ 
++    public abstract void setTieredBackendProvider();
++
+     @Before
+     public void setUp() {
+         storeConfig = new TieredMessageStoreConfig();
++        setTieredBackendProvider();
+         storeConfig.setStorePathRootDir(storePath);
+         storeConfig.setBrokerName(storeConfig.getBrokerName());
+         storeConfig.setReadAheadCacheExpireDuration(Long.MAX_VALUE);
+-        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.mock.MemoryFileSegmentWithoutCheck");
++        storeConfig.setObjectStoreRegion("ap-northeast-1");
++        storeConfig.setObjectStoreBucket("rocketmq-lcy");
++        storeConfig.setBrokerName(storeConfig.getBrokerName());
++        storeConfig.setBrokerClusterName("test-cluster");
+         storeConfig.setTieredStoreIndexFileMaxHashSlotNum(2);
+         storeConfig.setTieredStoreIndexFileMaxIndexNum(3);
+         mq = new MessageQueue("TieredMessageFetcherTest", storeConfig.getBrokerName(), 0);
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageStoreTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageStoreTest.java
+index c37ce2c85..a6d1d1512 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageStoreTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageStoreTest.java
+@@ -85,7 +85,7 @@ public class TieredMessageStoreTest {
+         brokerConfig.setBrokerName("broker");
+         configuration = new Configuration(LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME), "/tmp/rmqut/config", storeConfig, brokerConfig);
+         Properties properties = new Properties();
+-        properties.setProperty("tieredBackendServiceProvider", "org.apache.rocketmq.tieredstore.mock.MemoryFileSegment");
++        properties.setProperty("tieredBackendServiceProvider", "org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegment");
+         configuration.registerConfig(properties);
+         MessageStorePluginContext context = new MessageStorePluginContext(new MessageStoreConfig(), null, null, brokerConfig, configuration);
+ 
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredContainerManagerTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredContainerManagerTest.java
+index ec074b176..c690929d5 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredContainerManagerTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredContainerManagerTest.java
+@@ -44,7 +44,7 @@ public class TieredContainerManagerTest {
+     public void setUp() {
+         storeConfig = new TieredMessageStoreConfig();
+         storeConfig.setStorePathRootDir(storePath);
+-        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.mock.MemoryFileSegment");
++        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegment");
+         storeConfig.setBrokerName(storeConfig.getBrokerName());
+         mq = new MessageQueue("TieredContainerManagerTest", storeConfig.getBrokerName(), 0);
+         metadataStore = TieredStoreUtil.getMetadataStore(storeConfig);
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredFileQueueTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredFileQueueTest.java
+index 60f751a62..8f2375167 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredFileQueueTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredFileQueueTest.java
+@@ -25,7 +25,7 @@ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.tieredstore.TieredStoreTestUtil;
+ import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
+ import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
+-import org.apache.rocketmq.tieredstore.mock.MemoryFileSegment;
++import org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegment;
+ import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
+ import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
+ import org.junit.After;
+@@ -43,7 +43,7 @@ public class TieredFileQueueTest {
+     public void setUp() {
+         storeConfig = new TieredMessageStoreConfig();
+         storeConfig.setStorePathRootDir(storePath);
+-        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.mock.MemoryFileSegment");
++        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegment");
+         queue = new MessageQueue("TieredFileQueueTest", storeConfig.getBrokerName(), 0);
+     }
+ 
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredIndexFileTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredIndexFileTest.java
+index 6a114e7ca..5fb6251f6 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredIndexFileTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredIndexFileTest.java
+@@ -47,7 +47,7 @@ public class TieredIndexFileTest {
+     public void setUp() {
+         storeConfig = new TieredMessageStoreConfig();
+         storeConfig.setStorePathRootDir(storePath);
+-        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.mock.MemoryFileSegmentWithoutCheck");
++        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegment");
+         storeConfig.setTieredStoreIndexFileMaxHashSlotNum(2);
+         storeConfig.setTieredStoreIndexFileMaxIndexNum(3);
+         mq = new MessageQueue("TieredIndexFileTest", storeConfig.getBrokerName(), 1);
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredMessageQueueContainerTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredMessageQueueContainerTest.java
+index ccfe18bd3..4ed5b0069 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredMessageQueueContainerTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredMessageQueueContainerTest.java
+@@ -30,7 +30,7 @@ import org.apache.rocketmq.tieredstore.common.BoundaryType;
+ import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
+ import org.apache.rocketmq.tieredstore.metadata.QueueMetadata;
+ import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
+-import org.apache.rocketmq.tieredstore.mock.MemoryFileSegment;
++import org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegment;
+ import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
+ import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
+ import org.apache.rocketmq.tieredstore.util.MessageBufferUtilTest;
+@@ -51,7 +51,7 @@ public class TieredMessageQueueContainerTest {
+     public void setUp() {
+         storeConfig = new TieredMessageStoreConfig();
+         storeConfig.setStorePathRootDir(storePath);
+-        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.mock.MemoryFileSegment");
++        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegment");
+         storeConfig.setCommitLogRollingInterval(0);
+         storeConfig.setCommitLogRollingMinimumSize(999);
+         mq = new MessageQueue("TieredMessageQueueContainerTest", storeConfig.getBrokerName(), 0);
+@@ -138,7 +138,7 @@ public class TieredMessageQueueContainerTest {
+ 
+     @Test
+     public void testBinarySearchInQueueByTime() throws ClassNotFoundException, NoSuchMethodException {
+-        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.mock.MemoryFileSegmentWithoutCheck");
++        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegmentWithoutCheck");
+ 
+         TieredMessageQueueContainer container = new TieredMessageQueueContainer(mq, storeConfig);
+         container.initOffset(50);
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/metadata/MetadataStoreTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/metadata/MetadataStoreTest.java
+index 96539d1c4..db1e9f0f9 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/metadata/MetadataStoreTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/metadata/MetadataStoreTest.java
+@@ -29,7 +29,7 @@ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.tieredstore.TieredStoreTestUtil;
+ import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
+ import org.apache.rocketmq.tieredstore.container.TieredCommitLog;
+-import org.apache.rocketmq.tieredstore.mock.MemoryFileSegment;
++import org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegment;
+ import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
+ import org.junit.After;
+ import org.junit.Assert;
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsManagerTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsManagerTest.java
+index 170728d4b..b41c2e879 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsManagerTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsManagerTest.java
+@@ -41,7 +41,7 @@ public class TieredStoreMetricsManagerTest {
+     @Test
+     public void init() {
+         TieredMessageStoreConfig storeConfig = new TieredMessageStoreConfig();
+-        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.mock.MemoryFileSegment");
++        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegment");
+         TieredStoreMetricsManager.init(OpenTelemetrySdk.builder().build().getMeter(""),
+             null, storeConfig, new TieredMessageFetcher(storeConfig), null);
+     }
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/MockTieredFileSegmentInputStream.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/MockTieredFileSegmentInputStream.java
+new file mode 100644
+index 000000000..a6566b7de
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/MockTieredFileSegmentInputStream.java
+@@ -0,0 +1,54 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider;
++
++import java.io.InputStream;
++import java.nio.ByteBuffer;
++import java.util.List;
++import org.apache.rocketmq.tieredstore.provider.inputstream.TieredFileSegmentInputStream;
++
++public class MockTieredFileSegmentInputStream extends TieredFileSegmentInputStream {
++
++    private final InputStream inputStream;
++
++    public MockTieredFileSegmentInputStream(InputStream inputStream) {
++        super(null, null, Integer.MAX_VALUE);
++        this.inputStream = inputStream;
++    }
++
++    @Override
++    public int read() {
++        int res = -1;
++        try {
++            res = inputStream.read();
++        } catch (Exception e) {
++            return -1;
++        }
++        return res;
++    }
++
++    @Override
++    public List<ByteBuffer> getUploadBufferList() {
++        return null;
++    }
++
++    @Override
++    public ByteBuffer getCodaBuffer() {
++        return null;
++    }
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegmentTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegmentBaseTest.java
+similarity index 82%
+rename from tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegmentTest.java
+rename to tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegmentBaseTest.java
+index 79b1883ad..a81976a82 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegmentTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegmentBaseTest.java
+@@ -18,23 +18,27 @@ package org.apache.rocketmq.tieredstore.provider;
+ 
+ import java.nio.ByteBuffer;
+ import java.util.concurrent.CompletableFuture;
+-import org.apache.rocketmq.common.message.MessageQueue;
+-import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++
+ import org.apache.rocketmq.tieredstore.container.TieredCommitLog;
+ import org.apache.rocketmq.tieredstore.container.TieredConsumeQueue;
+-import org.apache.rocketmq.tieredstore.mock.MemoryFileSegment;
++import org.apache.rocketmq.tieredstore.provider.inputstream.TieredFileSegmentInputStream;
+ import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
+ import org.apache.rocketmq.tieredstore.util.MessageBufferUtilTest;
+ import org.junit.Assert;
++import org.junit.Ignore;
+ import org.junit.Test;
++import org.mockito.Mockito;
++
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyBoolean;
++import static org.mockito.ArgumentMatchers.anyInt;
++import static org.mockito.ArgumentMatchers.anyLong;
+ 
+-public class TieredFileSegmentTest {
++@Ignore
++public abstract class TieredFileSegmentBaseTest {
+     public int baseOffset = 1000;
+ 
+-    public TieredFileSegment createFileSegment(TieredFileSegment.FileSegmentType fileType) {
+-        return new MemoryFileSegment(fileType, new MessageQueue("TieredFileSegmentTest", new TieredMessageStoreConfig().getBrokerName(), 0),
+-            baseOffset, new TieredMessageStoreConfig());
+-    }
++    public abstract TieredFileSegment createFileSegment(TieredFileSegment.FileSegmentType fileType);
+ 
+     @Test
+     public void testCommitLog() {
+@@ -115,29 +119,38 @@ public class TieredFileSegmentTest {
+     @Test
+     public void testCommitFailed() {
+         long startTime = System.currentTimeMillis();
+-        MemoryFileSegment segment = (MemoryFileSegment) createFileSegment(TieredFileSegment.FileSegmentType.COMMIT_LOG);
++        TieredFileSegment segment = Mockito.spy(createFileSegment(TieredFileSegment.FileSegmentType.COMMIT_LOG));
+         long lastSize = segment.getSize();
+         segment.append(MessageBufferUtilTest.buildMockedMessageBuffer(), 0);
+         segment.append(MessageBufferUtilTest.buildMockedMessageBuffer(), 0);
+ 
+-        segment.blocker = new CompletableFuture<>();
++        CompletableFuture<Void> blocker = new CompletableFuture<>();
++        Mockito.doAnswer(invocation -> {
++            blocker.join();
++            CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
++            completableFuture.completeExceptionally(new RuntimeException("commit failed"));
++            return completableFuture;
++        }).when(segment).commit0(any(TieredFileSegmentInputStream.class), anyLong(), anyInt(), anyBoolean());
++
+         new Thread(() -> {
+             try {
+                 Thread.sleep(1000);
+             } catch (InterruptedException e) {
+                 Assert.fail(e.getMessage());
+             }
++            // append msg3
+             ByteBuffer buffer = MessageBufferUtilTest.buildMockedMessageBuffer();
+             buffer.putLong(MessageBufferUtil.STORE_TIMESTAMP_POSITION, startTime);
+             segment.append(buffer, 0);
+-            segment.blocker.complete(false);
++            // blocker complete, commit failed
++            blocker.complete(null);
+         }).start();
+ 
++        // first time try to commit these 2 messages but stuck for while until msg3 is appended, and then this commit failed
+         segment.commit();
+-        segment.blocker.join();
+ 
+-        segment.blocker = new CompletableFuture<>();
+-        segment.blocker.complete(true);
++        // second time commit, expect success
++        Mockito.doCallRealMethod().when(segment).commit0(any(TieredFileSegmentInputStream.class), anyLong(), anyInt(), anyBoolean());
+         segment.commit();
+ 
+         Assert.assertEquals(baseOffset + lastSize + MessageBufferUtilTest.MSG_LEN * 3, segment.getMaxOffset());
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/mock/MemoryFileSegment.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/MemoryFileSegment.java
+similarity index 97%
+rename from tieredstore/src/test/java/org/apache/rocketmq/tieredstore/mock/MemoryFileSegment.java
+rename to tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/MemoryFileSegment.java
+index 3c47d1cb8..2d0eba6e3 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/mock/MemoryFileSegment.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/MemoryFileSegment.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.tieredstore.mock;
++package org.apache.rocketmq.tieredstore.provider.memory;
+ 
+ import java.io.File;
+ import java.nio.ByteBuffer;
+@@ -71,6 +71,11 @@ public class MemoryFileSegment extends TieredFileSegment {
+ 
+     }
+ 
++    @Override
++    public void sealFile() {
++
++    }
++
+     @Override
+     public CompletableFuture<ByteBuffer> read0(long position, int length) {
+         ByteBuffer buffer = memStore.duplicate();
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/mock/MemoryFileSegmentWithoutCheck.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/MemoryFileSegmentWithoutCheck.java
+similarity index 97%
+rename from tieredstore/src/test/java/org/apache/rocketmq/tieredstore/mock/MemoryFileSegmentWithoutCheck.java
+rename to tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/MemoryFileSegmentWithoutCheck.java
+index 741a38c81..2c49c8847 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/mock/MemoryFileSegmentWithoutCheck.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/MemoryFileSegmentWithoutCheck.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.tieredstore.mock;
++package org.apache.rocketmq.tieredstore.provider.memory;
+ 
+ import java.util.concurrent.CompletableFuture;
+ import java.util.concurrent.ExecutionException;
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/TieredDispatcherForMemoryTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/TieredDispatcherForMemoryTest.java
+new file mode 100644
+index 000000000..b938e2689
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/TieredDispatcherForMemoryTest.java
+@@ -0,0 +1,40 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.memory;
++
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.tieredstore.TieredDispatcherBaseTest;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++
++public class TieredDispatcherForMemoryTest extends TieredDispatcherBaseTest {
++    @Override
++    public TieredMessageStoreConfig createTieredMessageStoreConfig() {
++        TieredMessageStoreConfig storeConfig = new TieredMessageStoreConfig();
++        storeConfig.setStorePathRootDir(storePath);
++        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegmentWithoutCheck");
++        storeConfig.setBrokerName(storeConfig.getBrokerName());
++        storeConfig.setBrokerClusterName("test-cluster");
++        return storeConfig;
++    }
++
++    @Override
++    public TieredFileSegment createTieredFileSegment(TieredFileSegment.FileSegmentType type, MessageQueue mq, long baseOffset, TieredMessageStoreConfig storeConfig) {
++        return new MemoryFileSegmentWithoutCheck(type, mq, baseOffset, storeConfig);
++    }
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/TieredFileSegmentForMemoryTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/TieredFileSegmentForMemoryTest.java
+new file mode 100644
+index 000000000..f1e33d44b
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/TieredFileSegmentForMemoryTest.java
+@@ -0,0 +1,33 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.memory;
++
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegmentBaseTest;
++
++public class TieredFileSegmentForMemoryTest extends TieredFileSegmentBaseTest {
++
++    @Override
++    public TieredFileSegment createFileSegment(TieredFileSegment.FileSegmentType fileType) {
++        return new MemoryFileSegment(fileType, new MessageQueue("TieredFileSegmentTest", new TieredMessageStoreConfig().getBrokerName(), 0),
++                baseOffset, new TieredMessageStoreConfig());
++    }
++
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/TieredMessageFetcherForMemoryTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/TieredMessageFetcherForMemoryTest.java
+new file mode 100644
+index 000000000..04112dac2
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/memory/TieredMessageFetcherForMemoryTest.java
+@@ -0,0 +1,27 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.memory;
++
++import org.apache.rocketmq.tieredstore.TieredMessageFetcherBaseTest;
++
++public class TieredMessageFetcherForMemoryTest extends TieredMessageFetcherBaseTest {
++    @Override
++    public void setTieredBackendProvider() {
++        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.provider.memory.MemoryFileSegmentWithoutCheck");
++    }
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/MockS3AsyncClient.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/MockS3AsyncClient.java
+new file mode 100644
+index 000000000..1ddd6576d
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/MockS3AsyncClient.java
+@@ -0,0 +1,221 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import com.adobe.testing.s3mock.junit4.S3MockRule;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.junit.ClassRule;
++import software.amazon.awssdk.core.ResponseBytes;
++import software.amazon.awssdk.core.async.AsyncRequestBody;
++import software.amazon.awssdk.core.async.AsyncResponseTransformer;
++import software.amazon.awssdk.core.sync.RequestBody;
++import software.amazon.awssdk.core.sync.ResponseTransformer;
++import software.amazon.awssdk.services.s3.S3AsyncClient;
++import software.amazon.awssdk.services.s3.S3Client;
++import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest;
++import software.amazon.awssdk.services.s3.model.AbortMultipartUploadResponse;
++import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
++import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadResponse;
++import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
++import software.amazon.awssdk.services.s3.model.CreateBucketResponse;
++import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
++import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
++import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
++import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
++import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
++import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
++import software.amazon.awssdk.services.s3.model.GetObjectRequest;
++import software.amazon.awssdk.services.s3.model.GetObjectResponse;
++import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
++import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
++import software.amazon.awssdk.services.s3.model.PutObjectRequest;
++import software.amazon.awssdk.services.s3.model.PutObjectResponse;
++import software.amazon.awssdk.services.s3.model.UploadPartCopyRequest;
++import software.amazon.awssdk.services.s3.model.UploadPartCopyResponse;
++
++import java.lang.reflect.Field;
++import java.nio.ByteBuffer;
++import java.util.LinkedList;
++import java.util.List;
++import java.util.concurrent.CompletableFuture;
++import java.util.function.Consumer;
++
++public class MockS3AsyncClient implements S3AsyncClient {
++
++    @ClassRule
++    public static final S3MockRule S3_MOCK_RULE = S3MockRule.builder().silent().build();
++
++    public static TieredStorageS3Client getMockTieredStorageS3Client(TieredMessageStoreConfig config,
++        S3MockStarterTestImpl s3MockApplication) {
++        TieredStorageS3Client tieredStorageS3Client = null;
++        try {
++            tieredStorageS3Client = new TieredStorageS3Client(config);
++            S3Client s3Client = s3MockApplication.createS3ClientV2();
++            S3AsyncClient asyncClient = new MockS3AsyncClient(s3Client);
++            Field clientField = tieredStorageS3Client.getClass().getDeclaredField("client");
++            clientField.setAccessible(true);
++            clientField.set(tieredStorageS3Client, asyncClient);
++            s3Client.createBucket(CreateBucketRequest.builder().bucket(config.getObjectStoreBucket()).build());
++        } catch (Exception ignore) {
++
++        }
++        return tieredStorageS3Client;
++    }
++
++    private final S3Client s3Client;
++
++    public MockS3AsyncClient(S3Client s3Client) {
++        this.s3Client = s3Client;
++    }
++
++    @Override
++    public String serviceName() {
++        return null;
++    }
++
++    @Override
++    public void close() {
++        this.s3Client.close();
++    }
++
++    @Override
++    public CompletableFuture<CreateBucketResponse> createBucket(CreateBucketRequest createBucketRequest) {
++        return CompletableFuture.completedFuture(this.s3Client.createBucket(createBucketRequest));
++    }
++
++    @Override
++    public CompletableFuture<PutObjectResponse> putObject(PutObjectRequest putObjectRequest,
++        AsyncRequestBody requestBody) {
++        List<ByteBuffer> list = new LinkedList<>();
++        CompletableFuture<Void> future = requestBody.subscribe(bytebuffer -> {
++            list.add(bytebuffer);
++        });
++        future.join();
++        Integer len = list.stream().map(a -> a.limit()).reduce((a, b) -> a + b).get();
++        ByteBuffer realByteBuffer = ByteBuffer.allocate(len);
++        for (int i = 0; i < list.size(); i++) {
++            ByteBuffer byteBuffer = list.get(i);
++            byteBuffer.rewind();
++            realByteBuffer.put(byteBuffer);
++        }
++        realByteBuffer.flip();
++        RequestBody body = RequestBody.fromByteBuffer(realByteBuffer);
++        return CompletableFuture.completedFuture(this.s3Client.putObject(putObjectRequest, body));
++    }
++
++    @Override
++    public CompletableFuture<ListObjectsV2Response> listObjectsV2(
++        Consumer<ListObjectsV2Request.Builder> listObjectsV2Request) {
++        ListObjectsV2Request request = ListObjectsV2Request.builder().applyMutation(listObjectsV2Request).build();
++        return this.listObjectsV2(request);
++    }
++
++    @Override
++    public CompletableFuture<ListObjectsV2Response> listObjectsV2(ListObjectsV2Request listObjectsV2Request) {
++        return CompletableFuture.completedFuture(this.s3Client.listObjectsV2(listObjectsV2Request));
++    }
++
++    @Override
++    public CompletableFuture<DeleteObjectResponse> deleteObject(
++        Consumer<DeleteObjectRequest.Builder> deleteObjectRequest) {
++        DeleteObjectRequest request = DeleteObjectRequest.builder().applyMutation(deleteObjectRequest).build();
++        return this.deleteObject(request);
++    }
++
++    @Override
++    public CompletableFuture<DeleteObjectResponse> deleteObject(DeleteObjectRequest deleteObjectRequest) {
++        return CompletableFuture.completedFuture(this.s3Client.deleteObject(deleteObjectRequest));
++    }
++
++    @Override
++    public CompletableFuture<DeleteObjectsResponse> deleteObjects(
++        Consumer<DeleteObjectsRequest.Builder> deleteObjectsRequest) {
++        DeleteObjectsRequest request = DeleteObjectsRequest.builder().applyMutation(deleteObjectsRequest).build();
++        return this.deleteObjects(request);
++    }
++
++    @Override
++    public CompletableFuture<DeleteObjectsResponse> deleteObjects(DeleteObjectsRequest deleteObjectsRequest) {
++        return CompletableFuture.completedFuture(this.s3Client.deleteObjects(deleteObjectsRequest));
++    }
++
++    @Override
++    public <T> CompletableFuture<T> getObject(Consumer<GetObjectRequest.Builder> getObjectRequest,
++        AsyncResponseTransformer<GetObjectResponse, T> asyncResponseTransformer) {
++        GetObjectRequest request = GetObjectRequest.builder().applyMutation(getObjectRequest).build();
++        return this.getObject(request, asyncResponseTransformer);
++    }
++
++    @Override
++    public <T> CompletableFuture<T> getObject(GetObjectRequest getObjectRequest,
++        AsyncResponseTransformer<GetObjectResponse, T> asyncResponseTransformer) {
++        ResponseBytes<GetObjectResponse> resp = this.s3Client.getObject(getObjectRequest, ResponseTransformer.toBytes());
++        return CompletableFuture.completedFuture((T) resp);
++    }
++
++    @Override
++    public CompletableFuture<CreateMultipartUploadResponse> createMultipartUpload(
++        Consumer<CreateMultipartUploadRequest.Builder> createMultipartUploadRequest) {
++        CreateMultipartUploadRequest request = CreateMultipartUploadRequest.builder().applyMutation(createMultipartUploadRequest).build();
++        return this.createMultipartUpload(request);
++    }
++
++    @Override
++    public CompletableFuture<CreateMultipartUploadResponse> createMultipartUpload(
++        CreateMultipartUploadRequest createMultipartUploadRequest) {
++        return CompletableFuture.completedFuture(this.s3Client.createMultipartUpload(createMultipartUploadRequest));
++    }
++
++    @Override
++    public CompletableFuture<UploadPartCopyResponse> uploadPartCopy(
++        Consumer<UploadPartCopyRequest.Builder> uploadPartCopyRequest) {
++        UploadPartCopyRequest request = UploadPartCopyRequest.builder().applyMutation(uploadPartCopyRequest).build();
++        return this.uploadPartCopy(request);
++    }
++
++    @Override
++    public CompletableFuture<UploadPartCopyResponse> uploadPartCopy(UploadPartCopyRequest uploadPartCopyRequest) {
++        return CompletableFuture.completedFuture(this.s3Client.uploadPartCopy(uploadPartCopyRequest));
++    }
++
++    @Override
++    public CompletableFuture<CompleteMultipartUploadResponse> completeMultipartUpload(
++        Consumer<CompleteMultipartUploadRequest.Builder> completeMultipartUploadRequest) {
++        CompleteMultipartUploadRequest request = CompleteMultipartUploadRequest.builder().applyMutation(completeMultipartUploadRequest).build();
++        return this.completeMultipartUpload(request);
++    }
++
++    @Override
++    public CompletableFuture<CompleteMultipartUploadResponse> completeMultipartUpload(
++        CompleteMultipartUploadRequest completeMultipartUploadRequest) {
++        return CompletableFuture.completedFuture(this.s3Client.completeMultipartUpload(completeMultipartUploadRequest));
++    }
++
++    @Override
++    public CompletableFuture<AbortMultipartUploadResponse> abortMultipartUpload(
++        Consumer<AbortMultipartUploadRequest.Builder> abortMultipartUploadRequest) {
++        AbortMultipartUploadRequest request = AbortMultipartUploadRequest.builder().applyMutation(abortMultipartUploadRequest).build();
++        return S3AsyncClient.super.abortMultipartUpload(request);
++    }
++
++    @Override
++    public CompletableFuture<AbortMultipartUploadResponse> abortMultipartUpload(
++        AbortMultipartUploadRequest abortMultipartUploadRequest) {
++        return CompletableFuture.completedFuture(this.s3Client.abortMultipartUpload(abortMultipartUploadRequest));
++    }
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/MockS3TestBase.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/MockS3TestBase.java
+new file mode 100644
+index 000000000..fabd0bebb
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/MockS3TestBase.java
+@@ -0,0 +1,69 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import com.adobe.testing.s3mock.S3MockApplication;
++import org.apache.commons.io.FileUtils;
++import org.apache.rocketmq.common.UtilAll;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.junit.Assert;
++
++import java.io.File;
++import java.lang.reflect.Field;
++import java.util.HashMap;
++import java.util.Map;
++import java.util.UUID;
++
++public class MockS3TestBase {
++
++    public static final String STORE_BASE_PATH = FileUtils.getTempDirectory() + File.separator + "MockS3TestBase-";
++
++    protected S3MockStarterTestImpl s3MockStater;
++
++    private String rootPath;
++
++    protected void startMockedS3() {
++        Map<String, Object> properties = new HashMap<String, Object>();
++        properties.put(S3MockApplication.PROP_HTTP_PORT, S3MockApplication.RANDOM_PORT);
++        properties.put(S3MockApplication.PROP_HTTPS_PORT, S3MockApplication.RANDOM_PORT);
++        rootPath = STORE_BASE_PATH + UUID.randomUUID();
++        properties.put(S3MockApplication.PROP_ROOT_DIRECTORY, rootPath);
++        properties.put(S3MockApplication.PROP_INITIAL_BUCKETS, "rocketmq_lcy");
++
++        TieredMessageStoreConfig config = new TieredMessageStoreConfig();
++        config.setObjectStoreRegion("ap-northeast-1");
++        config.setObjectStoreBucket("rocketmq-lcy");
++        config.setObjectStoreAccessKey("");
++        config.setObjectStoreSecretKey("");
++        s3MockStater = new S3MockStarterTestImpl(properties);
++        s3MockStater.start();
++        TieredStorageS3Client client = MockS3AsyncClient.getMockTieredStorageS3Client(config, s3MockStater);
++        try {
++            Field instanceField = TieredStorageS3Client.class.getDeclaredField("instance");
++            instanceField.setAccessible(true);
++            instanceField.set(null, client);
++        } catch (Exception e) {
++            Assert.fail(e.getMessage());
++        }
++    }
++
++    protected void clearMockS3Data() {
++        this.s3MockStater.stop();
++        UtilAll.deleteFile(new File(rootPath));
++    }
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentMetadataTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentMetadataTest.java
+new file mode 100644
+index 000000000..78910be1c
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentMetadataTest.java
+@@ -0,0 +1,54 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import org.junit.Assert;
++import org.junit.Test;
++
++public class S3FileSegmentMetadataTest {
++
++    @Test
++    public void testBasicOperation() {
++        S3FileSegmentMetadata metadata = new S3FileSegmentMetadata();
++        // valid chunk adding
++        Assert.assertTrue(metadata.addChunk(new ChunkMetadata("test", 0, 10)));
++        Assert.assertTrue(metadata.addChunk(new ChunkMetadata("test", 10, 10)));
++        Assert.assertEquals(0, metadata.getStartPosition());
++        Assert.assertEquals(19, metadata.getEndPosition());
++        Assert.assertEquals(20, metadata.getSize());
++        Assert.assertEquals(2, metadata.getChunkCount());
++        Assert.assertFalse(metadata.isSealed());
++
++        // invalid chunk adding
++        Assert.assertFalse(metadata.addChunk(new ChunkMetadata("test", 0, 10)));
++
++        // seal
++        metadata.setSegment(new ChunkMetadata("test", 0, 10));
++        Assert.assertTrue(metadata.isSealed());
++        Assert.assertEquals(0, metadata.getStartPosition());
++        Assert.assertEquals(9, metadata.getEndPosition());
++        Assert.assertEquals(10, metadata.getSize());
++        Assert.assertEquals(2, metadata.getChunkCount());
++
++        // remove all chunks
++        metadata.removeAllChunks();
++        Assert.assertEquals(0, metadata.getChunkCount());
++
++    }
++
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentTest.java
+new file mode 100644
+index 000000000..d1f2095da
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentTest.java
+@@ -0,0 +1,236 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import com.adobe.testing.s3mock.S3MockApplication;
++import java.util.Arrays;
++import java.util.List;
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.exception.TieredStoreErrorCode;
++import org.apache.rocketmq.tieredstore.exception.TieredStoreException;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.provider.inputstream.TieredFileSegmentInputStream;
++import org.apache.rocketmq.tieredstore.provider.inputstream.TieredFileSegmentInputStreamFactory;
++import org.junit.After;
++import org.junit.Assert;
++import org.junit.Before;
++import org.junit.Ignore;
++import org.junit.Test;
++
++import java.io.ByteArrayInputStream;
++import java.io.File;
++import java.nio.ByteBuffer;
++import java.util.HashMap;
++import java.util.Map;
++import java.util.concurrent.CompletionException;
++
++import static org.apache.rocketmq.tieredstore.util.TieredStoreUtil.MB;
++
++@Ignore
++public class S3FileSegmentTest extends MockS3TestBase {
++
++    private static final TieredMessageStoreConfig CONFIG = new TieredMessageStoreConfig();
++
++    static {
++        CONFIG.setBrokerClusterName("test-cluster");
++        CONFIG.setBrokerName("test-broker");
++        CONFIG.setObjectStoreRegion("ap-northeast-1");
++        CONFIG.setObjectStoreBucket("rocketmq-lcy");
++        CONFIG.setObjectStoreAccessKey("");
++        CONFIG.setObjectStoreSecretKey("");
++    }
++
++    private static final Map<String, Object> PROPERTIES = new HashMap<String, Object>();
++
++    static {
++        PROPERTIES.put(S3MockApplication.PROP_HTTP_PORT, S3MockApplication.RANDOM_PORT);
++        PROPERTIES.put(S3MockApplication.PROP_HTTPS_PORT, S3MockApplication.RANDOM_PORT);
++        PROPERTIES.put(S3MockApplication.PROP_INITIAL_BUCKETS, CONFIG.getObjectStoreBucket());
++    }
++
++    private static final MessageQueue MQ = new MessageQueue();
++
++    static {
++        MQ.setBrokerName("test-broker");
++        MQ.setQueueId(0);
++        MQ.setTopic("test-topic");
++    }
++
++    private static final long BASE_OFFSET = 1024;
++
++    private static final TieredFileSegment.FileSegmentType TYPE = TieredFileSegment.FileSegmentType.CONSUME_QUEUE;
++
++    private S3FileSegment segment;
++
++    @Before
++    public void setUp() {
++        startMockedS3();
++        segment = new S3FileSegment(TYPE, MQ, BASE_OFFSET, CONFIG);
++    }
++
++    @After
++    public void tearDown() {
++        clearMockS3Data();
++    }
++
++    @Test
++    public void testNewInstance() {
++        S3FileSegmentMetadata metadata = segment.getMetadata();
++        Assert.assertEquals(0, metadata.getSize());
++    }
++
++    @Test
++    public void testCommit() {
++        TieredFileSegmentInputStream inputStream = buildMockedInputStream("hello".getBytes());
++        segment.commit0(inputStream, 0, 5, false).join();
++        ByteBuffer read = segment.read0(0, 5).join();
++        Assert.assertEquals("hello", new String(read.array()));
++        Assert.assertEquals(5, segment.getSize());
++        Assert.assertEquals(0, segment.getMetadata().getStartPosition());
++        Assert.assertEquals(4, segment.getMetadata().getEndPosition());
++    }
++
++    @Test
++    public void testCommitAndRestart() {
++        TieredFileSegmentInputStream inputStream = buildMockedInputStream("hello".getBytes());
++        segment.commit0(inputStream, 0, 5, false).join();
++        ByteBuffer read = segment.read0(0, 5).join();
++        Assert.assertEquals("hello", new String(read.array()));
++        Assert.assertEquals(5, segment.getSize());
++        Assert.assertEquals(0, segment.getMetadata().getStartPosition());
++        Assert.assertEquals(4, segment.getMetadata().getEndPosition());
++
++        segment = new S3FileSegment(TYPE, MQ, BASE_OFFSET, CONFIG);
++        Assert.assertEquals(5, segment.getSize());
++        Assert.assertEquals(0, segment.getMetadata().getStartPosition());
++        Assert.assertEquals(4, segment.getMetadata().getEndPosition());
++        read = segment.read0(0, 5).join();
++        Assert.assertEquals("hello", new String(read.array()));
++    }
++
++    @Test
++    public void testRestartWithInvalidChunks() {
++        // write invalid chunks
++        TieredStorageS3Client client = TieredStorageS3Client.getInstance(CONFIG);
++        client.writeChunk(segment.getChunkPath() + File.separator + "chunk-" + 0, new ByteArrayInputStream("hello".getBytes()), 5).join();
++        client.writeChunk(segment.getChunkPath() + File.separator + "chunk-" + 1, new ByteArrayInputStream("world".getBytes()), 5).join();
++
++        // initialize invalid chunks
++        Assert.assertThrows(RuntimeException.class, () -> segment = new S3FileSegment(TYPE, MQ, BASE_OFFSET, CONFIG));
++    }
++
++    @Test
++    public void testRestartWithInvalidSegments() {
++        // write two segments
++        TieredStorageS3Client client = TieredStorageS3Client.getInstance(CONFIG);
++        client.writeChunk(segment.getSegmentPath() + File.separator + "segment-" + 0, new ByteArrayInputStream("hello".getBytes()), 5).join();
++        client.writeChunk(segment.getSegmentPath() + File.separator + "segment-" + 1, new ByteArrayInputStream("world".getBytes()), 5).join();
++
++        // initialize invalid segments
++        Assert.assertThrows(RuntimeException.class, () -> segment = new S3FileSegment(TYPE, MQ, BASE_OFFSET, CONFIG));
++    }
++
++    @Test
++    public void testCommitAndDelete() {
++        TieredFileSegmentInputStream inputStream = buildMockedInputStream("hello".getBytes());
++        segment.commit0(inputStream, 0, 5, false).join();
++        ByteBuffer read = segment.read0(0, 5).join();
++        Assert.assertEquals("hello", new String(read.array()));
++        segment.destroyFile();
++        segment = new S3FileSegment(TYPE, MQ, BASE_OFFSET, CONFIG);
++        Assert.assertEquals(0, segment.getSize());
++        Assert.assertEquals(-1, segment.getMetadata().getStartPosition());
++        Assert.assertEquals(-1, segment.getMetadata().getEndPosition());
++        Assert.assertTrue(segment.read0(0, 5).isCompletedExceptionally());
++    }
++
++    @Test
++    public void testBackwardCommitPosition() {
++        // write first chunk: "hello", size = 5, position: [0, 4]
++        TieredFileSegmentInputStream inputStream = buildMockedInputStream("hello".getBytes());
++        Assert.assertTrue(segment.commit0(inputStream, 0, 5, false).join());
++        ByteBuffer read = segment.read0(0, 5).join();
++        Assert.assertEquals("hello", new String(read.array()));
++        // write second chunk: ",world", size = 6, position: [5, 10]
++        inputStream = buildMockedInputStream(",world".getBytes());
++        Assert.assertTrue(segment.commit0(inputStream, 5, 6, false).join());
++        read = segment.read0(0, 11).join();
++        Assert.assertEquals("hello,world", new String(read.array()));
++        // write third chunk: " and lcy", size = 8, position: [11, 18]
++        inputStream = buildMockedInputStream(" and lcy".getBytes());
++        Assert.assertTrue(segment.commit0(inputStream, 11, 8, false).join());
++        read = segment.read0(0, 19).join();
++        Assert.assertEquals("hello,world and lcy", new String(read.array()));
++        // write a chunk from position 2, size = 2, data: "he", position: [2, 3]
++        inputStream = buildMockedInputStream("he".getBytes());
++        TieredStoreException exception = null;
++        try {
++            segment.commit0(inputStream, 2, 2, false).join();
++        } catch (CompletionException e) {
++            Throwable cause = e.getCause();
++            Assert.assertTrue(cause instanceof TieredStoreException);
++            exception = (TieredStoreException) cause;
++            Assert.assertEquals(TieredStoreErrorCode.ILLEGAL_OFFSET, exception.getErrorCode());
++            Assert.assertEquals(19, exception.getPosition());
++        }
++        Assert.assertNotNull(exception);
++    }
++
++    @Test
++    public void testSeal() throws Exception {
++        CONFIG.setEnableMerge(true);
++        int unit = (int) (5 * MB);
++        ByteBuffer byteBuffer = ByteBuffer.allocate(unit);
++        for (int i = 0; i < unit; i++) {
++            byteBuffer.put((byte) i);
++        }
++        byte[] array = byteBuffer.array();
++        for (int i = 0; i < 2; i++) {
++            TieredFileSegmentInputStream inputStream = buildMockedInputStream(array);
++            segment.commit0(inputStream, i * unit, unit, false).join();
++        }
++        // seal
++        segment.sealFile();
++        Thread.sleep(3000);
++
++        Assert.assertTrue(segment.isSealed());
++        S3FileSegmentMetadata metadata = segment.getMetadata();
++        Assert.assertEquals(0, metadata.getChunkCount());
++        Assert.assertEquals(0, metadata.getStartPosition());
++        Assert.assertEquals(2 * unit - 1, metadata.getEndPosition());
++        Assert.assertEquals(2 * unit, metadata.getSize());
++        TieredStoreException exception = null;
++        try {
++            segment.commit0(buildMockedInputStream("lcy".getBytes()), 2 * unit, 3, false).join();
++        } catch (CompletionException e) {
++            Throwable cause = e.getCause();
++            Assert.assertTrue(cause instanceof TieredStoreException);
++            exception = (TieredStoreException) cause;
++            Assert.assertEquals(TieredStoreErrorCode.SEGMENT_SEALED, exception.getErrorCode());
++        }
++        Assert.assertNotNull(exception);
++        CONFIG.setEnableMerge(false);
++    }
++
++    private TieredFileSegmentInputStream buildMockedInputStream(byte[] bytes) {
++        List<ByteBuffer> uploadBuffers = Arrays.asList(ByteBuffer.wrap(bytes));
++        return TieredFileSegmentInputStreamFactory.build(TieredFileSegment.FileSegmentType.CONSUME_QUEUE, 0, uploadBuffers, null, bytes.length);
++    }
++
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3MockStarterTestImpl.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3MockStarterTestImpl.java
+new file mode 100644
+index 000000000..f8a624d36
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3MockStarterTestImpl.java
+@@ -0,0 +1,38 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import com.adobe.testing.s3mock.testsupport.common.S3MockStarter;
++
++import java.util.Map;
++
++public class S3MockStarterTestImpl extends S3MockStarter {
++    protected S3MockStarterTestImpl(Map<String, Object> properties) {
++        super(properties);
++    }
++
++    @Override
++    protected void start() {
++        super.start();
++    }
++
++    @Override
++    protected void stop() {
++        super.stop();
++    }
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredDispatcherForS3Test.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredDispatcherForS3Test.java
+new file mode 100644
+index 000000000..89bf38377
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredDispatcherForS3Test.java
+@@ -0,0 +1,62 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.tieredstore.TieredDispatcherBaseTest;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++
++import java.io.IOException;
++import org.junit.Ignore;
++
++@Ignore
++public class TieredDispatcherForS3Test extends TieredDispatcherBaseTest {
++
++    private MockS3TestBase mockS3TestBase = new MockS3TestBase();
++
++    @Override
++    public TieredMessageStoreConfig createTieredMessageStoreConfig() {
++        TieredMessageStoreConfig storeConfig = new TieredMessageStoreConfig();
++        storeConfig.setStorePathRootDir(storePath);
++        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.provider.s3.S3FileSegment");
++        storeConfig.setBrokerName(storeConfig.getBrokerName());
++        storeConfig.setBrokerClusterName("test-cluster");
++        storeConfig.setObjectStoreRegion("ap-northeast-1");
++        storeConfig.setObjectStoreBucket("rocketmq-lcy");
++        return storeConfig;
++    }
++
++    @Override
++    public TieredFileSegment createTieredFileSegment(TieredFileSegment.FileSegmentType type, MessageQueue mq,
++        long baseOffset, TieredMessageStoreConfig storeConfig) {
++        return new S3FileSegment(type, mq, baseOffset, storeConfig);
++    }
++
++    @Override
++    public void setUp() {
++        mockS3TestBase.startMockedS3();
++        super.setUp();
++    }
++
++    @Override
++    public void tearDown() throws IOException {
++        super.tearDown();
++        mockS3TestBase.clearMockS3Data();
++    }
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredFileSegmentForS3Test.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredFileSegmentForS3Test.java
+new file mode 100644
+index 000000000..943811899
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredFileSegmentForS3Test.java
+@@ -0,0 +1,58 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegmentBaseTest;
++import org.junit.After;
++import org.junit.Before;
++import org.junit.Ignore;
++
++@Ignore
++public class TieredFileSegmentForS3Test extends TieredFileSegmentBaseTest {
++
++    private MockS3TestBase mockS3TestBase = new MockS3TestBase();
++
++    private static final TieredMessageStoreConfig CONFIG = new TieredMessageStoreConfig();
++
++    static {
++        CONFIG.setBrokerClusterName("test-cluster");
++        CONFIG.setBrokerName("test-broker");
++        CONFIG.setObjectStoreRegion("ap-northeast-1");
++        CONFIG.setObjectStoreBucket("rocketmq-lcy");
++        CONFIG.setObjectStoreAccessKey("");
++        CONFIG.setObjectStoreSecretKey("");
++    }
++
++    public TieredFileSegment createFileSegment(TieredFileSegment.FileSegmentType fileType) {
++        return new S3FileSegment(fileType, new MessageQueue("TieredFileSegmentTest", CONFIG.getBrokerName(), 0),
++            baseOffset, CONFIG);
++    }
++
++    @Before
++    public void setUp() {
++        mockS3TestBase.startMockedS3();
++    }
++
++    @After
++    public void tearDown() {
++        mockS3TestBase.clearMockS3Data();
++    }
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredMessageFetcherForS3Test.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredMessageFetcherForS3Test.java
+new file mode 100644
+index 000000000..809d73d06
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredMessageFetcherForS3Test.java
+@@ -0,0 +1,46 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import org.apache.rocketmq.tieredstore.TieredMessageFetcherBaseTest;
++
++import java.io.IOException;
++import org.junit.Ignore;
++
++@Ignore
++public class TieredMessageFetcherForS3Test extends TieredMessageFetcherBaseTest {
++
++    private MockS3TestBase mockS3TestBase = new MockS3TestBase();
++
++    @Override
++    public void setTieredBackendProvider() {
++        storeConfig.setTieredBackendServiceProvider("org.apache.rocketmq.tieredstore.provider.s3.S3FileSegment");
++    }
++
++    @Override
++    public void setUp() {
++        mockS3TestBase.startMockedS3();
++        super.setUp();
++    }
++
++    @Override
++    public void tearDown() throws IOException {
++        super.tearDown();
++        mockS3TestBase.clearMockS3Data();
++    }
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredStorageS3ClientTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredStorageS3ClientTest.java
+new file mode 100644
+index 000000000..35750d056
+--- /dev/null
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredStorageS3ClientTest.java
+@@ -0,0 +1,169 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.junit.After;
++import org.junit.Assert;
++import org.junit.Before;
++import org.junit.Ignore;
++import org.junit.Test;
++
++import java.io.ByteArrayInputStream;
++import java.io.File;
++import java.io.InputStream;
++import java.nio.ByteBuffer;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.concurrent.CompletableFuture;
++
++import static org.apache.rocketmq.tieredstore.util.TieredStoreUtil.MB;
++
++@Ignore
++public class TieredStorageS3ClientTest extends MockS3TestBase {
++
++    private static final TieredMessageStoreConfig CONFIG = new TieredMessageStoreConfig();
++
++    private static final String BASE_DIR = "123/c/b/t/0/CommitLog/seg-0";
++
++    static {
++        CONFIG.setBrokerClusterName("test-cluster");
++        CONFIG.setBrokerName("test-broker");
++        CONFIG.setObjectStoreRegion("ap-northeast-1");
++        CONFIG.setObjectStoreBucket("rocketmq-lcy");
++        CONFIG.setObjectStoreAccessKey("");
++        CONFIG.setObjectStoreSecretKey("");
++    }
++
++    private TieredStorageS3Client client;
++
++    @Before
++    public void setUp() {
++        startMockedS3();
++        client = MockS3AsyncClient.getMockTieredStorageS3Client(CONFIG, s3MockStater);
++    }
++
++    @After
++    public void tearDown() {
++        clearMockS3Data();
++    }
++
++    @Test
++    public void testWriteChunk() {
++        InputStream inputStream = new ByteArrayInputStream("test".getBytes());
++        String chunkName = BASE_DIR + File.separator + "chunk-0";
++        CompletableFuture<Boolean> completableFuture = client.writeChunk(chunkName, inputStream, 4);
++        Assert.assertTrue(completableFuture.join());
++    }
++
++    @Test
++    public void testReadChunk() {
++        InputStream inputStream = new ByteArrayInputStream("test".getBytes());
++        String chunkName = BASE_DIR + File.separator + "chunk-0";
++        CompletableFuture<Boolean> completableFuture = client.writeChunk(chunkName, inputStream, 4);
++        Assert.assertTrue(completableFuture.join());
++        byte[] bytes = client.readChunk(chunkName, 0, 4).join();
++        Assert.assertEquals("test", new String(bytes));
++    }
++
++    @Test
++    public void testListChunks() {
++        for (int i = 0; i < 10; i++) {
++            String chunkName = BASE_DIR + File.separator + "chunk-" + (i * 5);
++            InputStream inputStream = new ByteArrayInputStream(("test" + i).getBytes());
++            CompletableFuture<Boolean> completableFuture = client.writeChunk(chunkName, inputStream, 5);
++            Assert.assertTrue(completableFuture.join());
++        }
++        List<ChunkMetadata> chunks = client.listChunks(BASE_DIR).join();
++        Assert.assertEquals(10, chunks.size());
++        for (int i = 0; i < 10; i++) {
++            ChunkMetadata chunkMetadata = chunks.get(i);
++            String chunkName = BASE_DIR + File.separator + "chunk-" + (i * 5);
++            Assert.assertEquals(chunkName, chunkMetadata.getChunkName());
++            Assert.assertEquals(i * 5, chunkMetadata.getStartPosition());
++            Assert.assertEquals(5, chunkMetadata.getChunkSize());
++        }
++    }
++
++    @Test
++    public void testExist() {
++        String chunkName = BASE_DIR + File.separator + "chunk-0";
++        Assert.assertFalse(client.exist(chunkName).join());
++
++        InputStream inputStream = new ByteArrayInputStream("test".getBytes());
++        CompletableFuture<Boolean> completableFuture = client.writeChunk(chunkName, inputStream, 4);
++        Assert.assertTrue(completableFuture.join());
++
++        Assert.assertTrue(client.exist(chunkName).join());
++    }
++
++    @Test
++    public void testDeleteObjects() {
++        for (int i = 0; i < 10; i++) {
++            String chunkName = BASE_DIR + File.separator + "chunk-" + (i * 5);
++            InputStream inputStream = new ByteArrayInputStream(("test" + i).getBytes());
++            CompletableFuture<Boolean> completableFuture = client.writeChunk(chunkName, inputStream, 5);
++            Assert.assertTrue(completableFuture.join());
++        }
++        List<ChunkMetadata> chunks = client.listChunks(BASE_DIR).join();
++        Assert.assertEquals(10, chunks.size());
++        for (int i = 0; i < 10; i++) {
++            ChunkMetadata chunkMetadata = chunks.get(i);
++            String chunkName = BASE_DIR + File.separator + "chunk-" + (i * 5);
++            Assert.assertEquals(chunkName, chunkMetadata.getChunkName());
++            Assert.assertEquals(i * 5, chunkMetadata.getStartPosition());
++            Assert.assertEquals(5, chunkMetadata.getChunkSize());
++        }
++
++        List<String> undeleted = client.deleteObjects(BASE_DIR).join();
++        Assert.assertTrue(undeleted.isEmpty());
++
++        chunks = client.listChunks(BASE_DIR).join();
++        Assert.assertEquals(0, chunks.size());
++    }
++
++    @Test
++    public void testMergeAllChunksIntoSegment() {
++        int unit = (int) (5 * MB);
++        List<ChunkMetadata> chunks = new ArrayList<>(2);
++        ByteBuffer byteBuffer = ByteBuffer.allocate(unit);
++        for (int i = 0; i < unit; i++) {
++            byteBuffer.put((byte) i);
++        }
++        byte[] bytes = byteBuffer.array();
++        for (int i = 0; i < 2; i++) {
++            String chunkName = BASE_DIR + File.separator + "chunk-" + (i * unit);
++            chunks.add(new ChunkMetadata(chunkName, i * unit, unit));
++            InputStream inputStream = new ByteArrayInputStream(bytes);
++            CompletableFuture<Boolean> completableFuture = client.writeChunk(chunkName, inputStream, unit);
++            Assert.assertTrue(completableFuture.join());
++        }
++        String segName = BASE_DIR + File.separator + "segment-0";
++        Boolean merged = this.client.mergeAllChunksIntoSegment(chunks, segName).join();
++        Assert.assertTrue(merged);
++        byte[] segBytes = this.client.readChunk(segName, 0, 2 * unit).join();
++        Assert.assertEquals(2 * unit, segBytes.length);
++        for (int i = 0; i < 2; i++) {
++            int offset = i * unit;
++            for (int j = 0; j < unit; j++) {
++                Assert.assertEquals(bytes[j], segBytes[j + offset]);
++            }
++        }
++    }
++
++}
+diff --git a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/util/MessageBufferUtilTest.java b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/util/MessageBufferUtilTest.java
+index befd401ff..c16ffa4cb 100644
+--- a/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/util/MessageBufferUtilTest.java
++++ b/tieredstore/src/test/java/org/apache/rocketmq/tieredstore/util/MessageBufferUtilTest.java
+@@ -112,6 +112,31 @@ public class MessageBufferUtilTest {
+     }
+ 
+ 
++    public static void verifyMockedMessageBuffer(ByteBuffer buffer, int phyOffset) {
++        Assert.assertEquals(MSG_LEN, buffer.remaining());
++        Assert.assertEquals(MSG_LEN, buffer.getInt());
++        Assert.assertEquals(MessageDecoder.MESSAGE_MAGIC_CODE_V2, buffer.getInt());
++        Assert.assertEquals(3, buffer.getInt());
++        Assert.assertEquals(4, buffer.getInt());
++        Assert.assertEquals(5, buffer.getInt());
++        Assert.assertEquals(6, buffer.getLong());
++        Assert.assertEquals(phyOffset, buffer.getLong());
++        Assert.assertEquals(8, buffer.getInt());
++        Assert.assertEquals(9, buffer.getLong());
++        Assert.assertEquals(10, buffer.getLong());
++        Assert.assertEquals(11, buffer.getLong());
++        Assert.assertEquals(10, buffer.getLong());
++        Assert.assertEquals(13, buffer.getInt());
++        Assert.assertEquals(14, buffer.getLong());
++        Assert.assertEquals(0, buffer.getInt());
++        Assert.assertEquals(0, buffer.getShort());
++        buffer.rewind();
++        Map<String, String> properties = MessageBufferUtil.getProperties(buffer);
++        Assert.assertEquals("uk", properties.get(MessageConst.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX));
++        Assert.assertEquals("uservalue0", properties.get("userkey"));
++    }
++
++
+     @Test
+     public void testGetTotalSize() {
+         ByteBuffer buffer = buildMockedMessageBuffer();

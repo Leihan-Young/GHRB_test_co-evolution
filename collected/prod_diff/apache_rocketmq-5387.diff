@@ -1,0 +1,388 @@
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoLockManager.java b/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoLockManager.java
+new file mode 100644
+index 000000000..3cd8dcdb1
+--- /dev/null
++++ b/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoLockManager.java
+@@ -0,0 +1,185 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.broker.offset;
++
++import com.google.common.annotations.VisibleForTesting;
++import com.google.common.base.MoreObjects;
++import com.google.common.base.Objects;
++import io.netty.util.HashedWheelTimer;
++import io.netty.util.Timeout;
++import io.netty.util.Timer;
++import io.netty.util.TimerTask;
++import java.util.Map;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.TimeUnit;
++import org.apache.rocketmq.broker.BrokerController;
++import org.apache.rocketmq.common.ThreadFactoryImpl;
++import org.apache.rocketmq.common.constant.LoggerName;
++import org.apache.rocketmq.logging.InternalLogger;
++import org.apache.rocketmq.logging.InternalLoggerFactory;
++
++public class ConsumerOrderInfoLockManager {
++    private static final InternalLogger POP_LOGGER = InternalLoggerFactory.getLogger(LoggerName.ROCKETMQ_POP_LOGGER_NAME);
++    private final BrokerController brokerController;
++    private final Map<Key, Timeout> timeoutMap = new ConcurrentHashMap<>();
++    private final Timer timer;
++    private static final int TIMER_TICK_MS = 100;
++
++    public ConsumerOrderInfoLockManager(BrokerController brokerController) {
++        this.brokerController = brokerController;
++        this.timer = new HashedWheelTimer(
++            new ThreadFactoryImpl("ConsumerOrderInfoLockManager_"),
++            TIMER_TICK_MS, TimeUnit.MILLISECONDS);
++    }
++
++    /**
++     * when ConsumerOrderInfoManager load from disk, recover data
++     */
++    public void recover(Map<String/* topic@group*/, ConcurrentHashMap<Integer/*queueId*/, ConsumerOrderInfoManager.OrderInfo>> table) {
++        if (!this.brokerController.getBrokerConfig().isEnableNotifyAfterPopOrderLockRelease()) {
++            return;
++        }
++        for (Map.Entry<String, ConcurrentHashMap<Integer, ConsumerOrderInfoManager.OrderInfo>> entry : table.entrySet()) {
++            String topicAtGroup = entry.getKey();
++            ConcurrentHashMap<Integer/*queueId*/, ConsumerOrderInfoManager.OrderInfo> qs = entry.getValue();
++            String[] arrays = ConsumerOrderInfoManager.decodeKey(topicAtGroup);
++            if (arrays.length != 2) {
++                continue;
++            }
++            String topic = arrays[0];
++            String group = arrays[1];
++            for (Map.Entry<Integer, ConsumerOrderInfoManager.OrderInfo> qsEntry : qs.entrySet()) {
++                Long lockFreeTimestamp = qsEntry.getValue().getLockFreeTimestamp();
++                if (lockFreeTimestamp == null || lockFreeTimestamp <= System.currentTimeMillis()) {
++                    continue;
++                }
++                this.updateLockFreeTimestamp(topic, group, qsEntry.getKey(), lockFreeTimestamp);
++            }
++        }
++    }
++
++    public void updateLockFreeTimestamp(String topic, String group, int queueId, ConsumerOrderInfoManager.OrderInfo orderInfo) {
++        this.updateLockFreeTimestamp(topic, group, queueId, orderInfo.getLockFreeTimestamp());
++    }
++
++    public void updateLockFreeTimestamp(String topic, String group, int queueId, Long lockFreeTimestamp) {
++        if (!this.brokerController.getBrokerConfig().isEnableNotifyAfterPopOrderLockRelease()) {
++            return;
++        }
++        if (lockFreeTimestamp == null) {
++            return;
++        }
++        try {
++            this.timeoutMap.compute(new Key(topic, group, queueId), (key, oldTimeout) -> {
++                try {
++                    long delay = lockFreeTimestamp - System.currentTimeMillis();
++                    Timeout newTimeout = this.timer.newTimeout(new NotifyLockFreeTimerTask(key), delay, TimeUnit.MILLISECONDS);
++                    if (oldTimeout != null) {
++                        // cancel prev timerTask
++                        oldTimeout.cancel();
++                    }
++                    return newTimeout;
++                } catch (Exception e) {
++                    POP_LOGGER.warn("add timeout task failed. key:{}, lockFreeTimestamp:{}", key, lockFreeTimestamp, e);
++                    return oldTimeout;
++                }
++            });
++        } catch (Exception e) {
++            POP_LOGGER.error("unexpect error when updateLockFreeTimestamp. topic:{}, group:{}, queueId:{}, lockFreeTimestamp:{}",
++                topic, group, queueId, lockFreeTimestamp, e);
++        }
++    }
++
++    protected void notifyLockIsFree(Key key) {
++        try {
++            this.brokerController.getPopMessageProcessor().notifyLongPollingRequestIfNeed(key.topic, key.group, key.queueId);
++        } catch (Exception e) {
++            POP_LOGGER.error("unexpect error when notifyLockIsFree. key:{}", key, e);
++        }
++    }
++
++    public void shutdown() {
++        this.timer.stop();
++    }
++
++    @VisibleForTesting
++    protected Map<Key, Timeout> getTimeoutMap() {
++        return timeoutMap;
++    }
++
++    private class NotifyLockFreeTimerTask implements TimerTask {
++
++        private final Key key;
++
++        private NotifyLockFreeTimerTask(Key key) {
++            this.key = key;
++        }
++
++        @Override
++        public void run(Timeout timeout) throws Exception {
++            if (timeout.isCancelled() || !brokerController.getBrokerConfig().isEnableNotifyAfterPopOrderLockRelease()) {
++                return;
++            }
++            notifyLockIsFree(key);
++            timeoutMap.computeIfPresent(key, (key1, curTimeout) -> {
++                if (curTimeout == timeout) {
++                    // remove from map
++                    return null;
++                }
++                return curTimeout;
++            });
++        }
++    }
++
++    private static class Key {
++        private final String topic;
++        private final String group;
++        private final int queueId;
++
++        public Key(String topic, String group, int queueId) {
++            this.topic = topic;
++            this.group = group;
++            this.queueId = queueId;
++        }
++
++        @Override
++        public boolean equals(Object o) {
++            if (this == o) {
++                return true;
++            }
++            if (o == null || getClass() != o.getClass()) {
++                return false;
++            }
++            Key key = (Key) o;
++            return queueId == key.queueId && Objects.equal(topic, key.topic) && Objects.equal(group, key.group);
++        }
++
++        @Override
++        public int hashCode() {
++            return Objects.hashCode(topic, group, queueId);
++        }
++
++        @Override
++        public String toString() {
++            return MoreObjects.toStringHelper(this)
++                .add("topic", topic)
++                .add("group", group)
++                .add("queueId", queueId)
++                .toString();
++        }
++    }
++}
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java b/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java
+index 894a6c373..5b0bb9760 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java
+@@ -17,6 +17,7 @@
+ package org.apache.rocketmq.broker.offset;
+ 
+ import com.alibaba.fastjson.annotation.JSONField;
++import com.google.common.annotations.VisibleForTesting;
+ import com.google.common.base.MoreObjects;
+ import java.util.ArrayList;
+ import java.util.HashMap;
+@@ -45,6 +46,7 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+     private ConcurrentHashMap<String/* topic@group*/, ConcurrentHashMap<Integer/*queueId*/, OrderInfo>> table =
+         new ConcurrentHashMap<>(128);
+ 
++    private transient ConsumerOrderInfoLockManager consumerOrderInfoLockManager;
+     private transient BrokerController brokerController;
+ 
+     public ConsumerOrderInfoManager() {
+@@ -52,6 +54,7 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+ 
+     public ConsumerOrderInfoManager(BrokerController brokerController) {
+         this.brokerController = brokerController;
++        this.consumerOrderInfoLockManager = new ConsumerOrderInfoLockManager(brokerController);
+     }
+ 
+     public ConcurrentHashMap<String, ConcurrentHashMap<Integer, OrderInfo>> getTable() {
+@@ -70,6 +73,12 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+         return key.split(TOPIC_GROUP_SEPARATOR);
+     }
+ 
++    private void updateLockFreeTimestamp(String topic, String group, int queueId, OrderInfo orderInfo) {
++        if (consumerOrderInfoLockManager != null) {
++            consumerOrderInfoLockManager.updateLockFreeTimestamp(topic, group, queueId, orderInfo);
++        }
++    }
++
+     /**
+      * update the message list received
+      *
+@@ -128,6 +137,7 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+         // for compatibility
+         // the old pop sdk use queueId to get consumedTimes from orderCountInfo
+         ExtraInfoUtil.buildQueueIdOrderCountInfo(orderInfoBuilder, isRetry, queueId, minConsumedTimes);
++        updateLockFreeTimestamp(topic, group, queueId, orderInfo);
+     }
+ 
+     public boolean checkBlock(String topic, String group, int queueId, long invisibleTime) {
+@@ -204,6 +214,7 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+         orderInfo.setCommitOffsetBit(orderInfo.commitOffsetBit | (1L << i));
+         long nextOffset = orderInfo.getNextOffset();
+ 
++        updateLockFreeTimestamp(topic, group, queueId, orderInfo);
+         return nextOffset;
+     }
+ 
+@@ -235,6 +246,7 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+         }
+ 
+         orderInfo.updateOffsetNextVisibleTime(queueOffset, nextVisibleTime);
++        updateLockFreeTimestamp(topic, group, queueId, orderInfo);
+     }
+ 
+     protected void autoClean() {
+@@ -312,6 +324,9 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+             ConsumerOrderInfoManager obj = RemotingSerializable.fromJson(jsonString, ConsumerOrderInfoManager.class);
+             if (obj != null) {
+                 this.table = obj.table;
++                if (this.consumerOrderInfoLockManager != null) {
++                    this.consumerOrderInfoLockManager.recover(this.table);
++                }
+             }
+         }
+     }
+@@ -322,6 +337,17 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+         return RemotingSerializable.toJson(this, prettyFormat);
+     }
+ 
++    public void shutdown() {
++        if (this.consumerOrderInfoLockManager != null) {
++            this.consumerOrderInfoLockManager.shutdown();
++        }
++    }
++
++    @VisibleForTesting
++    protected ConsumerOrderInfoLockManager getConsumerOrderInfoLockManager() {
++        return consumerOrderInfoLockManager;
++    }
++
+     public static class OrderInfo {
+         private long popTime;
+         /**
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
+index df85fc7e9..1a5401b2c 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
+@@ -153,6 +153,24 @@ public class PopMessageProcessor implements NettyRequestProcessor {
+         return pollingMap;
+     }
+ 
++    public void notifyLongPollingRequestIfNeed(String topic, String group, int queueId) {
++        long popBufferOffset = this.brokerController.getPopMessageProcessor().getPopBufferMergeService().getLatestOffset(topic, group, queueId);
++        long consumerOffset = this.brokerController.getConsumerOffsetManager().queryOffset(group, topic, queueId);
++        long maxOffset = this.brokerController.getMessageStore().getMaxOffsetInQueue(topic, queueId);
++        long offset = Math.max(popBufferOffset, consumerOffset);
++        if (maxOffset > offset) {
++            boolean notifySuccess = this.brokerController.getPopMessageProcessor().notifyMessageArriving(topic, group, -1);
++            if (!notifySuccess) {
++                // notify pop queue
++                notifySuccess = this.brokerController.getPopMessageProcessor().notifyMessageArriving(topic, group, queueId);
++            }
++            if (this.brokerController.getBrokerConfig().isEnablePopLog()) {
++                POP_LOGGER.info("notify long polling request. topic:{}, group:{}, queueId:{}, success:{}",
++                    topic, group, queueId, notifySuccess);
++            }
++        }
++    }
++
+     public void notifyMessageArriving(final String topic, final int queueId) {
+         ConcurrentHashMap<String, Byte> cids = topicCidMap.get(topic);
+         if (cids == null) {
+@@ -166,10 +184,10 @@ public class PopMessageProcessor implements NettyRequestProcessor {
+         }
+     }
+ 
+-    public void notifyMessageArriving(final String topic, final String cid, final int queueId) {
++    public boolean notifyMessageArriving(final String topic, final String cid, final int queueId) {
+         ConcurrentSkipListSet<PopRequest> remotingCommands = pollingMap.get(KeyBuilder.buildPollingKey(topic, cid, queueId));
+         if (remotingCommands == null || remotingCommands.isEmpty()) {
+-            return;
++            return false;
+         }
+         PopRequest popRequest = remotingCommands.pollFirst();
+         //clean inactive channel
+@@ -179,21 +197,21 @@ public class PopMessageProcessor implements NettyRequestProcessor {
+         }
+ 
+         if (popRequest == null) {
+-            return;
++            return false;
+         }
+         totalPollingNum.decrementAndGet();
+         if (brokerController.getBrokerConfig().isEnablePopLog()) {
+             POP_LOGGER.info("lock release , new msg arrive , wakeUp : {}", popRequest);
+         }
+-        wakeUp(popRequest);
++        return wakeUp(popRequest);
+     }
+ 
+-    private void wakeUp(final PopRequest request) {
++    private boolean wakeUp(final PopRequest request) {
+         if (request == null || !request.complete()) {
+-            return;
++            return false;
+         }
+         if (!request.getChannel().isActive()) {
+-            return;
++            return false;
+         }
+         Runnable run = new Runnable() {
+             @Override
+@@ -227,6 +245,7 @@ public class PopMessageProcessor implements NettyRequestProcessor {
+             }
+         };
+         this.brokerController.getPullMessageExecutor().submit(new RequestTask(run, request.getChannel(), request.getRemotingCommand()));
++        return true;
+     }
+ 
+     private RemotingCommand processRequest(final Channel channel, RemotingCommand request)
+diff --git a/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java b/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java
+index dbb320afc..07b18457c 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java
++++ b/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java
+@@ -225,6 +225,7 @@ public class BrokerConfig extends BrokerIdentity {
+     private int popCkStayBufferTimeOut = 3 * 1000;
+     private int popCkMaxBufferSize = 200000;
+     private int popCkOffsetMaxQueueSize = 20000;
++    private boolean enableNotifyAfterPopOrderLockRelease = true;
+ 
+     private boolean realTimeNotifyConsumerChange = true;
+ 
+@@ -1253,6 +1254,14 @@ public class BrokerConfig extends BrokerIdentity {
+         this.enableNetWorkFlowControl = enableNetWorkFlowControl;
+     }
+ 
++    public boolean isEnableNotifyAfterPopOrderLockRelease() {
++        return enableNotifyAfterPopOrderLockRelease;
++    }
++
++    public void setEnableNotifyAfterPopOrderLockRelease(boolean enableNotifyAfterPopOrderLockRelease) {
++        this.enableNotifyAfterPopOrderLockRelease = enableNotifyAfterPopOrderLockRelease;
++    }
++
+     public boolean isRealTimeNotifyConsumerChange() {
+         return realTimeNotifyConsumerChange;
+     }

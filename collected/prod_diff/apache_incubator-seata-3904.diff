@@ -1,0 +1,429 @@
+diff --git a/core/src/main/java/io/seata/core/event/EventBus.java b/core/src/main/java/io/seata/core/event/EventBus.java
+index 8fb8e7df0..ae15d5ba9 100644
+--- a/core/src/main/java/io/seata/core/event/EventBus.java
++++ b/core/src/main/java/io/seata/core/event/EventBus.java
+@@ -15,15 +15,44 @@
+  */
+ package io.seata.core.event;
+ 
++import java.util.Set;
++
+ /**
+  * The interface for event bus.
+  *
+  * @author zhengyangyong
+  */
+ public interface EventBus {
++    /**
++     * Register.
++     *
++     * @param subscriber the subscriber
++     */
+     void register(Object subscriber);
+ 
++    /**
++     * Unregister.
++     *
++     * @param subscriber the subscriber
++     */
+     void unregister(Object subscriber);
+ 
++    /**
++     * Unregister all.
++     */
++    void unregisterAll();
++
++    /**
++     * Post.
++     *
++     * @param event the event
++     */
+     void post(Event event);
++
++    /**
++     * Gets subscribers.
++     *
++     * @return the subscribers
++     */
++    Set<Object> getSubscribers();
+ }
+diff --git a/core/src/main/java/io/seata/core/event/GlobalTransactionEvent.java b/core/src/main/java/io/seata/core/event/GlobalTransactionEvent.java
+index bf209ce15..dbff00f33 100644
+--- a/core/src/main/java/io/seata/core/event/GlobalTransactionEvent.java
++++ b/core/src/main/java/io/seata/core/event/GlobalTransactionEvent.java
+@@ -112,4 +112,11 @@ public class GlobalTransactionEvent implements Event {
+         this.endTime = endTime;
+         this.status = status;
+     }
++
++    @Override
++    public String toString() {
++        return "GlobalTransactionEvent{" + "id=" + id + ", role='" + role + '\'' + ", name='" + name + '\''
++            + ", applicationId='" + applicationId + '\'' + ", group='" + group + '\'' + ", beginTime=" + beginTime
++            + ", endTime=" + endTime + ", status=" + status + '}';
++    }
+ }
+diff --git a/core/src/main/java/io/seata/core/event/GuavaEventBus.java b/core/src/main/java/io/seata/core/event/GuavaEventBus.java
+index 8db0d8c0e..6f76f38bc 100644
+--- a/core/src/main/java/io/seata/core/event/GuavaEventBus.java
++++ b/core/src/main/java/io/seata/core/event/GuavaEventBus.java
+@@ -15,7 +15,9 @@
+  */
+ package io.seata.core.event;
+ 
++import java.util.Set;
+ import java.util.concurrent.ArrayBlockingQueue;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.ExecutorService;
+ import java.util.concurrent.ThreadPoolExecutor;
+ import java.util.concurrent.TimeUnit;
+@@ -32,6 +34,7 @@ import org.slf4j.LoggerFactory;
+ public class GuavaEventBus implements EventBus {
+     private static final Logger LOGGER = LoggerFactory.getLogger(GuavaEventBus.class);
+     private final com.google.common.eventbus.EventBus eventBus;
++    private static Set<Object> subscriberSet = ConcurrentHashMap.newKeySet();
+ 
+     public GuavaEventBus(String identifier) {
+         this(identifier, false);
+@@ -42,7 +45,7 @@ public class GuavaEventBus implements EventBus {
+             this.eventBus = new com.google.common.eventbus.EventBus(identifier);
+         } else {
+             final ExecutorService eventExecutor = new ThreadPoolExecutor(1, 1, Integer.MAX_VALUE, TimeUnit.MILLISECONDS,
+-                new ArrayBlockingQueue<>(2048), new NamedThreadFactory(identifier, 1), (r, executor) -> {
++                new ArrayBlockingQueue<>(2048), new NamedThreadFactory(identifier, 1, true), (r, executor) -> {
+ 
+                 LOGGER.warn("eventBus executor queue is full, size:{}", executor.getQueue().size());
+             });
+@@ -52,16 +55,33 @@ public class GuavaEventBus implements EventBus {
+ 
+     @Override
+     public void register(Object subscriber) {
+-        this.eventBus.register(subscriber);
++        if (subscriberSet.add(subscriber)) {
++            this.eventBus.register(subscriber);
++        }
+     }
+ 
+     @Override
+     public void unregister(Object subscriber) {
+-        this.eventBus.unregister(subscriber);
++        if (subscriberSet.remove(subscriber)) {
++            this.eventBus.unregister(subscriber);
++        }
++    }
++
++
++    @Override
++    public void unregisterAll() {
++        for (Object subscriber : subscriberSet) {
++            unregister(subscriber);
++        }
+     }
+ 
+     @Override
+     public void post(Event event) {
+         this.eventBus.post(event);
+     }
++
++    @Override
++    public Set<Object> getSubscribers() {
++        return subscriberSet;
++    }
+ }
+diff --git a/core/src/main/java/io/seata/core/rpc/netty/NettyServerBootstrap.java b/core/src/main/java/io/seata/core/rpc/netty/NettyServerBootstrap.java
+index 71e400ff7..3216001a9 100644
+--- a/core/src/main/java/io/seata/core/rpc/netty/NettyServerBootstrap.java
++++ b/core/src/main/java/io/seata/core/rpc/netty/NettyServerBootstrap.java
+@@ -134,6 +134,7 @@ public class NettyServerBootstrap implements RemotingBootstrap {
+             LOGGER.error("listen port: {} is invalid, will use default port:{}", port, SERVICE_DEFAULT_PORT);
+             port = SERVICE_DEFAULT_PORT;
+         }
++        listenPort = port;
+         return port;
+     }
+ 
+@@ -165,7 +166,8 @@ public class NettyServerBootstrap implements RemotingBootstrap {
+             });
+ 
+         try {
+-            this.serverBootstrap.bind(listenPort).sync();
++            this.serverBootstrap.bind(getListenPort()).sync();
++            XID.setPort(getListenPort());
+             LOGGER.info("Server started, service listen port: {}", getListenPort());
+             RegistryFactory.getInstance().register(new InetSocketAddress(XID.getIpAddress(), XID.getPort()));
+             initialized.set(true);
+@@ -191,7 +193,7 @@ public class NettyServerBootstrap implements RemotingBootstrap {
+             this.eventLoopGroupBoss.shutdownGracefully();
+             this.eventLoopGroupWorker.shutdownGracefully();
+         } catch (Exception exx) {
+-            LOGGER.error(exx.getMessage());
++            LOGGER.error("shutdown execute error:{}",exx.getMessage(),exx);
+         }
+     }
+ }
+diff --git a/metrics/seata-metrics-api/src/main/java/io/seata/metrics/registry/Registry.java b/metrics/seata-metrics-api/src/main/java/io/seata/metrics/registry/Registry.java
+index 9efaf5a31..1382c88c5 100644
+--- a/metrics/seata-metrics-api/src/main/java/io/seata/metrics/registry/Registry.java
++++ b/metrics/seata-metrics-api/src/main/java/io/seata/metrics/registry/Registry.java
+@@ -39,4 +39,6 @@ public interface Registry {
+     Timer getTimer(Id id);
+ 
+     Iterable<Measurement> measure();
++
++    void clearUp();
+ }
+diff --git a/metrics/seata-metrics-registry-compact/src/main/java/io/seata/metrics/registry/compact/CompactRegistry.java b/metrics/seata-metrics-registry-compact/src/main/java/io/seata/metrics/registry/compact/CompactRegistry.java
+index 4487b4e6d..62156f44b 100644
+--- a/metrics/seata-metrics-registry-compact/src/main/java/io/seata/metrics/registry/compact/CompactRegistry.java
++++ b/metrics/seata-metrics-registry-compact/src/main/java/io/seata/metrics/registry/compact/CompactRegistry.java
+@@ -72,4 +72,9 @@ public class CompactRegistry implements Registry {
+                 .forEachRemaining(meter -> meter.measure().forEach(measurements::add));
+         return measurements;
+     }
++
++    @Override
++    public void clearUp() {
++        METERS.clear();
++    }
+ }
+diff --git a/server/src/main/java/io/seata/server/Server.java b/server/src/main/java/io/seata/server/Server.java
+index ee51720e3..3fe0ae23f 100644
+--- a/server/src/main/java/io/seata/server/Server.java
++++ b/server/src/main/java/io/seata/server/Server.java
+@@ -64,7 +64,6 @@ public class Server {
+         } else {
+             XID.setIpAddress(NetUtil.getLocalIp());
+         }
+-        XID.setPort(parameterParser.getPort());
+ 
+         //initialize the metrics
+         MetricsManager.get().init();
+@@ -81,7 +80,7 @@ public class Server {
+         //log store mode : file, db, redis
+         SessionHolder.init(parameterParser.getSessionStoreMode());
+         LockerManagerFactory.init(parameterParser.getLockStoreMode());
+-        DefaultCoordinator coordinator = new DefaultCoordinator(nettyRemotingServer);
++        DefaultCoordinator coordinator = DefaultCoordinator.getInstance(nettyRemotingServer);
+         coordinator.init();
+         nettyRemotingServer.setHandler(coordinator);
+         // register ShutdownHook
+diff --git a/server/src/main/java/io/seata/server/coordinator/DefaultCoordinator.java b/server/src/main/java/io/seata/server/coordinator/DefaultCoordinator.java
+index 745088648..8ba617bc7 100644
+--- a/server/src/main/java/io/seata/server/coordinator/DefaultCoordinator.java
++++ b/server/src/main/java/io/seata/server/coordinator/DefaultCoordinator.java
+@@ -22,12 +22,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
+ import java.util.concurrent.TimeUnit;
+ 
+ import io.netty.channel.Channel;
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+-import org.slf4j.MDC;
+-import io.seata.server.session.GlobalSession;
+-import io.seata.server.session.SessionHelper;
+-import io.seata.server.session.SessionHolder;
+ import io.seata.common.thread.NamedThreadFactory;
+ import io.seata.common.util.CollectionUtils;
+ import io.seata.common.util.DurationUtil;
+@@ -67,10 +61,16 @@ import io.seata.core.rpc.netty.ChannelManager;
+ import io.seata.core.rpc.netty.NettyRemotingServer;
+ import io.seata.server.AbstractTCInboundHandler;
+ import io.seata.server.event.EventBusManager;
++import io.seata.server.session.GlobalSession;
++import io.seata.server.session.SessionHelper;
++import io.seata.server.session.SessionHolder;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++import org.slf4j.MDC;
+ 
++import static io.seata.common.Constants.ASYNC_COMMITTING;
+ import static io.seata.common.Constants.RETRY_COMMITTING;
+ import static io.seata.common.Constants.RETRY_ROLLBACKING;
+-import static io.seata.common.Constants.ASYNC_COMMITTING;
+ import static io.seata.common.Constants.TX_TIMEOUT_CHECK;
+ import static io.seata.common.Constants.UNDOLOG_DELETE;
+ 
+@@ -143,22 +143,35 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+     private final ScheduledThreadPoolExecutor undoLogDelete = new ScheduledThreadPoolExecutor(1,
+             new NamedThreadFactory("UndoLogDelete", 1));
+ 
+-    private final RemotingServer remotingServer;
++    private RemotingServer remotingServer;
+ 
+     private final DefaultCore core;
+ 
+     private final EventBus eventBus = EventBusManager.get();
+ 
++    private static volatile DefaultCoordinator instance;
++
+     /**
+      * Instantiates a new Default coordinator.
+      *
+      * @param remotingServer the remoting server
+      */
+-    public DefaultCoordinator(RemotingServer remotingServer) {
++    private DefaultCoordinator(RemotingServer remotingServer) {
+         this.remotingServer = remotingServer;
+         this.core = new DefaultCore(remotingServer);
+     }
+ 
++    public static DefaultCoordinator getInstance(RemotingServer remotingServer) {
++        if (null == instance) {
++            synchronized (DefaultCoordinator.class) {
++                if (null == instance) {
++                    instance = new DefaultCoordinator(remotingServer);
++                }
++            }
++        }
++        return instance;
++    }
++
+     @Override
+     protected void doGlobalBegin(GlobalBeginRequest request, GlobalBeginResponse response, RpcContext rpcContext)
+             throws TransactionException {
+@@ -452,4 +465,12 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+         // 3. last destroy SessionHolder
+         SessionHolder.destroy();
+     }
++
++    /**
++     * only used for mock test
++     * @param remotingServer
++     */
++    public void setRemotingServer(RemotingServer remotingServer) {
++        this.remotingServer = remotingServer;
++    }
+ }
+diff --git a/server/src/main/java/io/seata/server/event/EventBusManager.java b/server/src/main/java/io/seata/server/event/EventBusManager.java
+index c8324386c..5500bc759 100644
+--- a/server/src/main/java/io/seata/server/event/EventBusManager.java
++++ b/server/src/main/java/io/seata/server/event/EventBusManager.java
+@@ -25,7 +25,7 @@ import io.seata.core.event.GuavaEventBus;
+  */
+ public class EventBusManager {
+     private static class SingletonHolder {
+-        private static EventBus INSTANCE = new GuavaEventBus("tc");
++        private static EventBus INSTANCE = new GuavaEventBus("tc",true);
+     }
+ 
+     public static EventBus get() {
+diff --git a/server/src/main/java/io/seata/server/lock/distributed/DistributedLockerFactory.java b/server/src/main/java/io/seata/server/lock/distributed/DistributedLockerFactory.java
+index a459050ce..2222e9a81 100644
+--- a/server/src/main/java/io/seata/server/lock/distributed/DistributedLockerFactory.java
++++ b/server/src/main/java/io/seata/server/lock/distributed/DistributedLockerFactory.java
+@@ -15,17 +15,16 @@
+  */
+ package io.seata.server.lock.distributed;
+ 
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+-
+ import io.seata.common.loader.EnhancedServiceLoader;
+ import io.seata.common.loader.EnhancedServiceNotFoundException;
+ import io.seata.core.store.DefaultDistributedLocker;
+ import io.seata.core.store.DistributedLocker;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ 
+ /**
++ * @author zhongxiang.wang
+  * @description Distributed locker factory
+- * @author  zhongxiang.wang
+  */
+ public class DistributedLockerFactory {
+ 
+@@ -47,7 +46,9 @@ public class DistributedLockerFactory {
+             synchronized (DistributedLocker.class) {
+                 if (DISTRIBUTED_LOCKER == null) {
+                     try {
+-                        DISTRIBUTED_LOCKER = EnhancedServiceLoader.load(DistributedLocker.class, lockerType);
++                        if (!"file".equals(lockerType)) {
++                            DISTRIBUTED_LOCKER = EnhancedServiceLoader.load(DistributedLocker.class, lockerType);
++                        }
+                     } catch (EnhancedServiceNotFoundException ex) {
+                         LOGGER.error("Get distributed locker failed:{}", ex.getMessage(), ex);
+                     }
+@@ -59,4 +60,8 @@ public class DistributedLockerFactory {
+         }
+         return DISTRIBUTED_LOCKER;
+     }
++
++    public static void cleanLocker() {
++        DISTRIBUTED_LOCKER = null;
++    }
+ }
+diff --git a/server/src/main/java/io/seata/server/metrics/MetricsSubscriber.java b/server/src/main/java/io/seata/server/metrics/MetricsSubscriber.java
+index 5607112b9..99cb3f030 100644
+--- a/server/src/main/java/io/seata/server/metrics/MetricsSubscriber.java
++++ b/server/src/main/java/io/seata/server/metrics/MetricsSubscriber.java
+@@ -15,16 +15,19 @@
+  */
+ package io.seata.server.metrics;
+ 
+-import com.google.common.eventbus.Subscribe;
+-import io.seata.core.event.GlobalTransactionEvent;
+-import io.seata.core.model.GlobalStatus;
+-import io.seata.metrics.registry.Registry;
+-
+ import java.util.HashMap;
+ import java.util.Map;
+ import java.util.concurrent.TimeUnit;
+ import java.util.function.Consumer;
+ 
++import com.google.common.eventbus.Subscribe;
++import io.seata.core.event.GlobalTransactionEvent;
++import io.seata.core.model.GlobalStatus;
++import io.seata.metrics.registry.Registry;
++import io.seata.server.event.EventBusManager;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
+ import static io.seata.metrics.IdConstants.APP_ID_KEY;
+ import static io.seata.metrics.IdConstants.GROUP_KEY;
+ 
+@@ -34,6 +37,8 @@ import static io.seata.metrics.IdConstants.GROUP_KEY;
+  * @author zhengyangyong
+  */
+ public class MetricsSubscriber {
++
++    private static final Logger LOGGER = LoggerFactory.getLogger(MetricsSubscriber.class);
+     private final Registry registry;
+ 
+     private final Map<GlobalStatus, Consumer<GlobalTransactionEvent>> consumers;
+@@ -52,9 +57,14 @@ public class MetricsSubscriber {
+     }
+ 
+     private void processGlobalStatusBegin(GlobalTransactionEvent event) {
+-        registry.getCounter(MeterIdConstants.COUNTER_ACTIVE
+-                .withTag(APP_ID_KEY, event.getApplicationId())
+-                .withTag(GROUP_KEY, event.getGroup())).increase(1);
++        if (LOGGER.isDebugEnabled()) {
++            LOGGER.debug("accept new event,xid:{},event:{}", event.getId(), event);
++            for (Object object : EventBusManager.get().getSubscribers()) {
++                LOGGER.debug("subscribe:{},threadName:{}", object.toString(), Thread.currentThread().getName());
++            }
++        }
++        registry.getCounter(MeterIdConstants.COUNTER_ACTIVE.withTag(APP_ID_KEY, event.getApplicationId())
++            .withTag(GROUP_KEY, event.getGroup())).increase(1);
+     }
+ 
+     private void processGlobalStatusCommitted(GlobalTransactionEvent event) {
+@@ -119,4 +129,19 @@ public class MetricsSubscriber {
+             consumers.get(event.getStatus()).accept(event);
+         }
+     }
++
++    @Override
++    public boolean equals(Object obj) {
++        return this.getClass().getName().equals(obj.getClass().getName());
++    }
++
++    /**
++     * PMD check
++     * SuppressWarnings("checkstyle:EqualsHashCode")
++     * @return
++     */
++    @Override
++    public int hashCode() {
++        return super.hashCode();
++    }
+ }

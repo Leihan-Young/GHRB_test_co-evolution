@@ -1,0 +1,430 @@
+diff --git a/api/src/main/java/com/alibaba/nacos/api/ability/constant/AbilityKey.java b/api/src/main/java/com/alibaba/nacos/api/ability/constant/AbilityKey.java
+index 6ce1937c4d..fd3baef3e8 100644
+--- a/api/src/main/java/com/alibaba/nacos/api/ability/constant/AbilityKey.java
++++ b/api/src/main/java/com/alibaba/nacos/api/ability/constant/AbilityKey.java
+@@ -18,8 +18,8 @@ package com.alibaba.nacos.api.ability.constant;
+ 
+ import java.util.Collection;
+ import java.util.Collections;
+-import java.util.Map;
+ import java.util.HashMap;
++import java.util.Map;
+ import java.util.stream.Collectors;
+ 
+ /**
+@@ -30,6 +30,12 @@ import java.util.stream.Collectors;
+  * @date 2022/8/31 12:27
+  **/
+ public enum AbilityKey {
++
++    /**
++     * Server support register or deregister persistent instance by grpc.
++     */
++    SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC("supportPersistentInstanceByGrpc",
++            "support persistent instance by grpc", AbilityMode.SERVER),
+     
+     /**
+      * For Test temporarily.
+diff --git a/api/src/main/java/com/alibaba/nacos/api/ability/register/impl/ServerAbilities.java b/api/src/main/java/com/alibaba/nacos/api/ability/register/impl/ServerAbilities.java
+index 2fa8f9693c..14922877f6 100644
+--- a/api/src/main/java/com/alibaba/nacos/api/ability/register/impl/ServerAbilities.java
++++ b/api/src/main/java/com/alibaba/nacos/api/ability/register/impl/ServerAbilities.java
+@@ -45,6 +45,7 @@ public class ServerAbilities extends AbstractAbilityRegistry {
+          *
+          */
+         // put ability here, which you want current server supports
++        supportedAbilities.put(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC, true);
+     }
+     
+     /**.
+diff --git a/api/src/main/java/com/alibaba/nacos/api/naming/remote/request/PersistentInstanceRequest.java b/api/src/main/java/com/alibaba/nacos/api/naming/remote/request/PersistentInstanceRequest.java
+new file mode 100644
+index 0000000000..444c87efcd
+--- /dev/null
++++ b/api/src/main/java/com/alibaba/nacos/api/naming/remote/request/PersistentInstanceRequest.java
+@@ -0,0 +1,56 @@
++/*
++ * Copyright 1999-2018 Alibaba Group Holding Ltd.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.alibaba.nacos.api.naming.remote.request;
++
++import com.alibaba.nacos.api.naming.pojo.Instance;
++
++/**
++ * Nacos persistent instances request.
++ *
++ * @author blake.qiu
++ */
++public class PersistentInstanceRequest extends AbstractNamingRequest {
++
++    private String type;
++
++    private Instance instance;
++
++    public PersistentInstanceRequest() {
++    }
++
++    public PersistentInstanceRequest(String namespace, String serviceName, String groupName, String type, Instance instance) {
++        super(namespace, serviceName, groupName);
++        this.type = type;
++        this.instance = instance;
++    }
++
++    public String getType() {
++        return this.type;
++    }
++
++    public void setType(String type) {
++        this.type = type;
++    }
++
++    public Instance getInstance() {
++        return instance;
++    }
++
++    public void setInstance(Instance instance) {
++        this.instance = instance;
++    }
++}
+diff --git a/api/src/main/java/com/alibaba/nacos/api/naming/utils/NamingUtils.java b/api/src/main/java/com/alibaba/nacos/api/naming/utils/NamingUtils.java
+index 7c88abc70a..3f3e280f04 100644
+--- a/api/src/main/java/com/alibaba/nacos/api/naming/utils/NamingUtils.java
++++ b/api/src/main/java/com/alibaba/nacos/api/naming/utils/NamingUtils.java
+@@ -138,6 +138,10 @@ public class NamingUtils {
+      * @throws NacosException if check failed, throw exception
+      */
+     public static void checkInstanceIsLegal(Instance instance) throws NacosException {
++        if (null == instance) {
++            throw new NacosApiException(NacosException.INVALID_PARAM, ErrorCode.INSTANCE_ERROR,
++                    "Instance can not be null.");
++        }
+         if (instance.getInstanceHeartBeatTimeOut() < instance.getInstanceHeartBeatInterval()
+                 || instance.getIpDeleteTimeout() < instance.getInstanceHeartBeatInterval()) {
+             throw new NacosApiException(NacosException.INVALID_PARAM, ErrorCode.INSTANCE_ERROR,
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/NacosNamingService.java b/client/src/main/java/com/alibaba/nacos/client/naming/NacosNamingService.java
+index 18583cc8f9..b03c2efd3a 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/NacosNamingService.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/NacosNamingService.java
+@@ -194,6 +194,7 @@ public class NacosNamingService implements NamingService {
+     
+     @Override
+     public void deregisterInstance(String serviceName, String groupName, Instance instance) throws NacosException {
++        NamingUtils.checkInstanceIsLegal(instance);
+         checkAndStripGroupNamePrefix(instance, groupName);
+         clientProxy.deregisterService(serviceName, groupName, instance);
+     }
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegate.java b/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegate.java
+index 65c17560d4..05d66bf249 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegate.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegate.java
+@@ -16,6 +16,7 @@
+ 
+ package com.alibaba.nacos.client.naming.remote;
+ 
++import com.alibaba.nacos.api.ability.constant.AbilityKey;
+ import com.alibaba.nacos.api.exception.NacosException;
+ import com.alibaba.nacos.api.naming.pojo.Instance;
+ import com.alibaba.nacos.api.naming.pojo.ListView;
+@@ -194,7 +195,10 @@ public class NamingClientProxyDelegate implements NamingClientProxy {
+     }
+     
+     private NamingClientProxy getExecuteClientProxy(Instance instance) {
+-        return instance.isEphemeral() ? grpcClientProxy : httpClientProxy;
++        if (instance.isEphemeral() || grpcClientProxy.isAbilitySupportedByServer(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC)) {
++            return grpcClientProxy;
++        }
++        return httpClientProxy;
+     }
+     
+     @Override
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxy.java b/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxy.java
+index 95ade8be1b..640af4eccf 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxy.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxy.java
+@@ -16,6 +16,8 @@
+ 
+ package com.alibaba.nacos.client.naming.remote.gprc;
+ 
++import com.alibaba.nacos.api.ability.constant.AbilityKey;
++import com.alibaba.nacos.api.ability.constant.AbilityStatus;
+ import com.alibaba.nacos.api.common.Constants;
+ import com.alibaba.nacos.api.exception.NacosException;
+ import com.alibaba.nacos.api.naming.CommonParams;
+@@ -27,6 +29,7 @@ import com.alibaba.nacos.api.naming.remote.NamingRemoteConstants;
+ import com.alibaba.nacos.api.naming.remote.request.AbstractNamingRequest;
+ import com.alibaba.nacos.api.naming.remote.request.BatchInstanceRequest;
+ import com.alibaba.nacos.api.naming.remote.request.InstanceRequest;
++import com.alibaba.nacos.api.naming.remote.request.PersistentInstanceRequest;
+ import com.alibaba.nacos.api.naming.remote.request.ServiceListRequest;
+ import com.alibaba.nacos.api.naming.remote.request.ServiceQueryRequest;
+ import com.alibaba.nacos.api.naming.remote.request.SubscribeServiceRequest;
+@@ -129,6 +132,14 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
+     public void registerService(String serviceName, String groupName, Instance instance) throws NacosException {
+         NAMING_LOGGER.info("[REGISTER-SERVICE] {} registering service {} with instance {}", namespaceId, serviceName,
+                 instance);
++        if (instance.isEphemeral()) {
++            registerServiceForEphemeral(serviceName, groupName, instance);
++        } else {
++            doRegisterServiceForPersistent(serviceName, groupName, instance);
++        }
++    }
++
++    private void registerServiceForEphemeral(String serviceName, String groupName, Instance instance) throws NacosException {
+         redoService.cacheInstanceForRedo(serviceName, groupName, instance);
+         doRegisterService(serviceName, groupName, instance);
+     }
+@@ -239,10 +250,32 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
+         redoService.instanceRegistered(serviceName, groupName);
+     }
+     
++    /**
++     * Execute register operation for persistent instance.
++     *
++     * @param serviceName name of service
++     * @param groupName   group of service
++     * @param instance    instance to register
++     * @throws NacosException nacos exception
++     */
++    public void doRegisterServiceForPersistent(String serviceName, String groupName, Instance instance) throws NacosException {
++        PersistentInstanceRequest request = new PersistentInstanceRequest(namespaceId, serviceName, groupName,
++                NamingRemoteConstants.REGISTER_INSTANCE, instance);
++        requestToServer(request, Response.class);
++    }
++
+     @Override
+     public void deregisterService(String serviceName, String groupName, Instance instance) throws NacosException {
+         NAMING_LOGGER.info("[DEREGISTER-SERVICE] {} deregistering service {} with instance: {}", namespaceId,
+                 serviceName, instance);
++        if (instance.isEphemeral()) {
++            deregisterServiceForEphemeral(serviceName, groupName, instance);
++        } else {
++            doDeregisterServiceForPersistent(serviceName, groupName, instance);
++        }
++    }
++
++    private void deregisterServiceForEphemeral(String serviceName, String groupName, Instance instance) throws NacosException {
+         String key = NamingUtils.getGroupedName(serviceName, groupName);
+         InstanceRedoData instanceRedoData = redoService.getRegisteredInstancesByKey(key);
+         if (instanceRedoData instanceof BatchInstanceRedoData) {
+@@ -271,6 +304,20 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
+         requestToServer(request, Response.class);
+         redoService.instanceDeregistered(serviceName, groupName);
+     }
++
++    /**
++     * Execute deregister operation for persistent instance.
++     *
++     * @param serviceName service name
++     * @param groupName   group name
++     * @param instance    instance
++     * @throws NacosException nacos exception
++     */
++    public void doDeregisterServiceForPersistent(String serviceName, String groupName, Instance instance) throws NacosException {
++        PersistentInstanceRequest request = new PersistentInstanceRequest(namespaceId, serviceName, groupName,
++                NamingRemoteConstants.DE_REGISTER_INSTANCE, instance);
++        requestToServer(request, Response.class);
++    }
+     
+     @Override
+     public void updateInstance(String serviceName, String groupName, Instance instance) throws NacosException {
+@@ -384,6 +431,16 @@ public class NamingGrpcClientProxy extends AbstractNamingClientProxy {
+         return rpcClient.isRunning();
+     }
+     
++    /**
++     * Determine whether nacos-server supports the capability.
++     *
++     * @param abilityKey ability key
++     * @return true if supported, otherwise false
++     */
++    public boolean isAbilitySupportedByServer(AbilityKey abilityKey) {
++        return rpcClient.getConnectionAbility(abilityKey) == AbilityStatus.SUPPORTED;
++    }
++    
+     private <T extends Response> T requestToServer(AbstractNamingRequest request, Class<T> responseClass)
+             throws NacosException {
+         Response response = null;
+diff --git a/client/src/main/java/com/alibaba/nacos/client/naming/remote/http/NamingHttpClientProxy.java b/client/src/main/java/com/alibaba/nacos/client/naming/remote/http/NamingHttpClientProxy.java
+index 3e008e3d70..e2c831d7d8 100644
+--- a/client/src/main/java/com/alibaba/nacos/client/naming/remote/http/NamingHttpClientProxy.java
++++ b/client/src/main/java/com/alibaba/nacos/client/naming/remote/http/NamingHttpClientProxy.java
+@@ -268,7 +268,6 @@ public class NamingHttpClientProxy extends AbstractNamingClientProxy {
+     
+     @Override
+     public boolean serverHealthy() {
+-        
+         try {
+             String result = reqApi(UtilAndComs.nacosUrlBase + "/operator/metrics", new HashMap<>(8), HttpMethod.GET);
+             JsonNode json = JacksonUtils.toObj(result);
+diff --git a/core/src/main/java/com/alibaba/nacos/core/paramcheck/impl/PersistentInstanceRequestParamExtractor.java b/core/src/main/java/com/alibaba/nacos/core/paramcheck/impl/PersistentInstanceRequestParamExtractor.java
+new file mode 100644
+index 0000000000..0bf60813b8
+--- /dev/null
++++ b/core/src/main/java/com/alibaba/nacos/core/paramcheck/impl/PersistentInstanceRequestParamExtractor.java
+@@ -0,0 +1,55 @@
++/*
++ * Copyright 1999-2023 Alibaba Group Holding Ltd.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.alibaba.nacos.core.paramcheck.impl;
++
++import com.alibaba.nacos.api.naming.pojo.Instance;
++import com.alibaba.nacos.api.naming.remote.request.PersistentInstanceRequest;
++import com.alibaba.nacos.api.remote.request.Request;
++import com.alibaba.nacos.common.paramcheck.ParamInfo;
++import com.alibaba.nacos.core.paramcheck.AbstractRpcParamExtractor;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Param extractor for {@link com.alibaba.nacos.api.naming.remote.request.PersistentInstanceRequest}.
++ *
++ * @author blake.qiu
++ */
++public class PersistentInstanceRequestParamExtractor extends AbstractRpcParamExtractor {
++    
++    @Override
++    public List<ParamInfo> extractParam(Request request) {
++        PersistentInstanceRequest req = (PersistentInstanceRequest) request;
++        ParamInfo paramInfo = new ParamInfo();
++        paramInfo.setNamespaceId(req.getNamespace());
++        paramInfo.setServiceName(req.getServiceName());
++        paramInfo.setGroup(req.getGroupName());
++        Instance instance = req.getInstance();
++        ArrayList<ParamInfo> paramInfos = new ArrayList<>();
++        if (instance == null) {
++            paramInfos.add(paramInfo);
++            return paramInfos;
++        }
++        paramInfo.setIp(instance.getIp());
++        paramInfo.setPort(String.valueOf(instance.getPort()));
++        paramInfo.setCluster(instance.getClusterName());
++        paramInfo.setMetadata(instance.getMetadata());
++        paramInfos.add(paramInfo);
++        return paramInfos;
++    }
++}
+diff --git a/naming/src/main/java/com/alibaba/nacos/naming/remote/rpc/handler/PersistentInstanceRequestHandler.java b/naming/src/main/java/com/alibaba/nacos/naming/remote/rpc/handler/PersistentInstanceRequestHandler.java
+new file mode 100644
+index 0000000000..3d862219af
+--- /dev/null
++++ b/naming/src/main/java/com/alibaba/nacos/naming/remote/rpc/handler/PersistentInstanceRequestHandler.java
+@@ -0,0 +1,92 @@
++/*
++ * Copyright 1999-2018 Alibaba Group Holding Ltd.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.alibaba.nacos.naming.remote.rpc.handler;
++
++import com.alibaba.nacos.api.exception.NacosException;
++import com.alibaba.nacos.api.naming.pojo.Instance;
++import com.alibaba.nacos.api.naming.remote.NamingRemoteConstants;
++import com.alibaba.nacos.api.naming.remote.request.PersistentInstanceRequest;
++import com.alibaba.nacos.api.naming.remote.response.InstanceResponse;
++import com.alibaba.nacos.api.remote.request.RequestMeta;
++import com.alibaba.nacos.auth.annotation.Secured;
++import com.alibaba.nacos.common.notify.NotifyCenter;
++import com.alibaba.nacos.common.trace.DeregisterInstanceReason;
++import com.alibaba.nacos.common.trace.event.naming.DeregisterInstanceTraceEvent;
++import com.alibaba.nacos.common.trace.event.naming.RegisterInstanceTraceEvent;
++import com.alibaba.nacos.core.control.TpsControl;
++import com.alibaba.nacos.core.paramcheck.ExtractorManager;
++import com.alibaba.nacos.core.paramcheck.impl.PersistentInstanceRequestParamExtractor;
++import com.alibaba.nacos.core.remote.RequestHandler;
++import com.alibaba.nacos.naming.core.v2.client.impl.IpPortBasedClient;
++import com.alibaba.nacos.naming.core.v2.pojo.Service;
++import com.alibaba.nacos.naming.core.v2.service.impl.PersistentClientOperationServiceImpl;
++import com.alibaba.nacos.naming.utils.InstanceUtil;
++import com.alibaba.nacos.plugin.auth.constant.ActionTypes;
++import org.springframework.stereotype.Component;
++
++/**
++ * Persistent instance request handler.
++ *
++ * @author blake.qiu
++ */
++@Component
++public class PersistentInstanceRequestHandler extends RequestHandler<PersistentInstanceRequest, InstanceResponse> {
++
++    private final PersistentClientOperationServiceImpl clientOperationService;
++
++    public PersistentInstanceRequestHandler(PersistentClientOperationServiceImpl clientOperationService) {
++        this.clientOperationService = clientOperationService;
++    }
++
++    @Override
++    @TpsControl(pointName = "RemoteNamingInstanceRegisterDeregister", name = "RemoteNamingInstanceRegisterDeregister")
++    @Secured(action = ActionTypes.WRITE)
++    @ExtractorManager.Extractor(rpcExtractor = PersistentInstanceRequestParamExtractor.class)
++    public InstanceResponse handle(PersistentInstanceRequest request, RequestMeta meta) throws NacosException {
++        Service service = Service.newService(request.getNamespace(), request.getGroupName(), request.getServiceName(),
++                false);
++        InstanceUtil.setInstanceIdIfEmpty(request.getInstance(), service.getGroupedServiceName());
++        switch (request.getType()) {
++            case NamingRemoteConstants.REGISTER_INSTANCE:
++                return registerInstance(service, request, meta);
++            case NamingRemoteConstants.DE_REGISTER_INSTANCE:
++                return deregisterInstance(service, request, meta);
++            default:
++                throw new NacosException(NacosException.INVALID_PARAM,
++                        String.format("Unsupported request type %s", request.getType()));
++        }
++    }
++    
++    private InstanceResponse registerInstance(Service service, PersistentInstanceRequest request, RequestMeta meta) {
++        Instance instance = request.getInstance();
++        String clientId = IpPortBasedClient.getClientId(instance.toInetAddr(), false);
++        clientOperationService.registerInstance(service, instance, clientId);
++        NotifyCenter.publishEvent(new RegisterInstanceTraceEvent(System.currentTimeMillis(), meta.getClientIp(), true,
++                service.getNamespace(), service.getGroup(), service.getName(), instance.getIp(), instance.getPort()));
++        return new InstanceResponse(NamingRemoteConstants.REGISTER_INSTANCE);
++    }
++    
++    private InstanceResponse deregisterInstance(Service service, PersistentInstanceRequest request, RequestMeta meta) {
++        Instance instance = request.getInstance();
++        String clientId = IpPortBasedClient.getClientId(instance.toInetAddr(), false);
++        clientOperationService.deregisterInstance(service, instance, clientId);
++        NotifyCenter.publishEvent(new DeregisterInstanceTraceEvent(System.currentTimeMillis(), meta.getClientIp(), true,
++                DeregisterInstanceReason.REQUEST, service.getNamespace(), service.getGroup(), service.getName(),
++                instance.getIp(), instance.getPort()));
++        return new InstanceResponse(NamingRemoteConstants.DE_REGISTER_INSTANCE);
++    }
++}

@@ -1,0 +1,615 @@
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/CompositeConfiguration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/CompositeConfiguration.java
+index 6212108a2b..1653e96134 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/CompositeConfiguration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/CompositeConfiguration.java
+@@ -89,20 +89,4 @@ public class CompositeConfiguration implements Configuration {
+         return null;
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        for (Configuration config : configList) {
+-            try {
+-                Object value = config.getProperty(key, defaultValue);
+-                if (!ConfigurationUtils.isEmptyValue(value)) {
+-                    return value;
+-                }
+-            } catch (Exception e) {
+-                logger.error("Error when trying to get value for key " + key + " from " + config + ", " +
+-                    "will continue to try the next one.");
+-            }
+-        }
+-        return defaultValue;
+-    }
+-
+ }
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/Configuration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/Configuration.java
+index 6a4f3ba7ae..5c3988ab02 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/Configuration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/Configuration.java
+@@ -127,19 +127,18 @@ public interface Configuration {
+      * Gets a property from the configuration. The default value will return if the configuration doesn't contain
+      * the mapping for the specified key.
+      *
+-     * @param key          property to retrieve
++     * @param key property to retrieve
+      * @param defaultValue default value
+      * @return the value to which this configuration maps the specified key, or default value if the configuration
+      * contains no mapping for this key.
+      */
+     default Object getProperty(String key, Object defaultValue) {
+-        return getInternalProperty(key, defaultValue);
++        Object value = getInternalProperty(key);
++        return value != null ? value : defaultValue;
+     }
+ 
+     Object getInternalProperty(String key);
+ 
+-    Object getInternalProperty(String key, Object defaultValue);
+-
+     /**
+      * Check if the configuration contains the specified key.
+      *
+@@ -154,12 +153,9 @@ public interface Configuration {
+ 
+     default <T> T convert(Class<T> cls, String key, T defaultValue) {
+         // we only process String properties for now
+-        Object value = getProperty(key, defaultValue);
++        String value = (String) getProperty(key);
+ 
+-        if (!String.class.isInstance(value)) {
+-            if (cls.isInstance(value)) {
+-                return cls.cast(value);
+-            }
++        if (value == null) {
+             return defaultValue;
+         }
+ 
+@@ -168,26 +164,24 @@ public interface Configuration {
+             return cls.cast(value);
+         }
+ 
+-        String str = (String) value;
+-
+         if (Boolean.class.equals(cls) || Boolean.TYPE.equals(cls)) {
+-            obj = Boolean.valueOf(str);
++            obj = Boolean.valueOf(value);
+         } else if (Number.class.isAssignableFrom(cls) || cls.isPrimitive()) {
+             if (Integer.class.equals(cls) || Integer.TYPE.equals(cls)) {
+-                obj = Integer.valueOf(str);
++                obj = Integer.valueOf(value);
+             } else if (Long.class.equals(cls) || Long.TYPE.equals(cls)) {
+-                obj = Long.valueOf(str);
++                obj = Long.valueOf(value);
+             } else if (Byte.class.equals(cls) || Byte.TYPE.equals(cls)) {
+-                obj = Byte.valueOf(str);
++                obj = Byte.valueOf(value);
+             } else if (Short.class.equals(cls) || Short.TYPE.equals(cls)) {
+-                obj = Short.valueOf(str);
++                obj = Short.valueOf(value);
+             } else if (Float.class.equals(cls) || Float.TYPE.equals(cls)) {
+-                obj = Float.valueOf(str);
++                obj = Float.valueOf(value);
+             } else if (Double.class.equals(cls) || Double.TYPE.equals(cls)) {
+-                obj = Double.valueOf(str);
++                obj = Double.valueOf(value);
+             }
+         } else if (cls.isEnum()) {
+-            obj = Enum.valueOf(cls.asSubclass(Enum.class), str);
++            obj = Enum.valueOf(cls.asSubclass(Enum.class), value);
+         }
+ 
+         return cls.cast(obj);
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/Environment.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/Environment.java
+index 785eb11e8e..de7ec54b9a 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/Environment.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/Environment.java
+@@ -81,7 +81,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
+     public void initialize() throws IllegalStateException {
+         if (initialized.compareAndSet(false, true)) {
+             this.propertiesConfiguration = new PropertiesConfiguration(scopeModel);
+-            this.systemConfiguration = new SystemConfiguration(scopeModel);
++            this.systemConfiguration = new SystemConfiguration();
+             this.environmentConfiguration = new EnvironmentConfiguration();
+             this.externalConfiguration = new InmemoryConfiguration("ExternalConfig");
+             this.appExternalConfiguration = new InmemoryConfiguration("AppExternalConfig");
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/EnvironmentConfiguration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/EnvironmentConfiguration.java
+index c95e92864e..227b180897 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/EnvironmentConfiguration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/EnvironmentConfiguration.java
+@@ -34,19 +34,6 @@ public class EnvironmentConfiguration implements Configuration {
+         return value;
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        String value = System.getenv(key);
+-        if (StringUtils.isEmpty(value)) {
+-            value = System.getenv(StringUtils.toOSStyleKey(key));
+-        }
+-
+-        if (StringUtils.isEmpty(value)) {
+-            return defaultValue;
+-        }
+-        return value;
+-    }
+-
+     public Map<String, String> getProperties() {
+         return System.getenv();
+     }
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/InmemoryConfiguration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/InmemoryConfiguration.java
+index 6fc1d01c80..92d808de9f 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/InmemoryConfiguration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/InmemoryConfiguration.java
+@@ -45,16 +45,6 @@ public class InmemoryConfiguration implements Configuration {
+         return store.get(key);
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        Object v = store.get(key);
+-        if (v != null) {
+-            return v;
+-        } else {
+-            return defaultValue;
+-        }
+-    }
+-
+     /**
+      * Add one property into the store, the previous value will be replaced if the key exists
+      */
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/OrderedPropertiesConfiguration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/OrderedPropertiesConfiguration.java
+index dbf0719429..191320ed7f 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/OrderedPropertiesConfiguration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/OrderedPropertiesConfiguration.java
+@@ -68,16 +68,6 @@ public class OrderedPropertiesConfiguration implements Configuration {
+         return properties.getProperty(key);
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        Object v = properties.getProperty(key);
+-        if (v != null){
+-            return v;
+-        }else {
+-            return defaultValue;
+-        }
+-    }
+-
+     public void setProperty(String key, String value) {
+         properties.setProperty(key, value);
+     }
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/PrefixedConfiguration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/PrefixedConfiguration.java
+index 0220a1ecf1..e23e6601ec 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/PrefixedConfiguration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/PrefixedConfiguration.java
+@@ -42,17 +42,4 @@ public class PrefixedConfiguration implements Configuration {
+         return null;
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        if (StringUtils.isBlank(prefix)) {
+-            return origin.getInternalProperty(key, defaultValue);
+-        }
+-
+-        Object value = origin.getInternalProperty(prefix + "." + key, defaultValue);
+-        if (!ConfigurationUtils.isEmptyValue(value)) {
+-            return value;
+-        }
+-        return null;
+-    }
+-
+ }
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/PropertiesConfiguration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/PropertiesConfiguration.java
+index 9d4ed79234..e215dfb799 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/PropertiesConfiguration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/PropertiesConfiguration.java
+@@ -49,16 +49,6 @@ public class PropertiesConfiguration implements Configuration {
+         return properties.getProperty(key);
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        Object v = properties.getProperty(key);
+-        if (v != null){
+-            return v;
+-        }else {
+-            return defaultValue;
+-        }
+-    }
+-
+     public void setProperty(String key, String value) {
+         properties.setProperty(key, value);
+     }
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/SystemConfiguration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/SystemConfiguration.java
+index e1cb9d0c7e..8341fd4e15 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/SystemConfiguration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/SystemConfiguration.java
+@@ -17,94 +17,19 @@
+ package org.apache.dubbo.common.config;
+ 
+ 
+-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+-import org.apache.dubbo.common.logger.LoggerFactory;
+-import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+-import org.apache.dubbo.rpc.model.ScopeModel;
+-import org.apache.dubbo.rpc.model.ScopeModelUtil;
+-
+ import java.util.Map;
+-import java.util.Properties;
+-import java.util.Set;
+-import java.util.concurrent.ConcurrentHashMap;
+-import java.util.concurrent.ScheduledExecutorService;
+-import java.util.concurrent.TimeUnit;
+ 
+ /**
+- * FIXME: is this really necessary? PropertiesConfiguration should have already covered this:
+- *
+- * @See ConfigUtils#getProperty(String)
+- * @see PropertiesConfiguration
++ * Configuration from system properties
+  */
+ public class SystemConfiguration implements Configuration {
+ 
+-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SystemConfiguration.class);
+-
+-    private final Map<String, Object> cache = new ConcurrentHashMap<>();
+-
+-    private final ScheduledExecutorService sharedScheduledExecutor;
+-
+-    public SystemConfiguration(ScopeModel scopeModel) {
+-        sharedScheduledExecutor = ScopeModelUtil.getFrameworkModel(scopeModel).getBeanFactory()
+-            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
+-        sharedScheduledExecutor.scheduleWithFixedDelay(() -> {
+-            if (!cache.isEmpty()) {
+-                Set<String> keys = cache.keySet();
+-                keys.forEach((key) -> overwriteCache(key, System.getProperty(key)));
+-            }
+-        }, 60000, 60000, TimeUnit.MILLISECONDS);
+-    }
+-
+     @Override
+     public Object getInternalProperty(String key) {
+-        if (cache.containsKey(key)) {
+-            return cache.get(key);
+-        } else {
+-            Object val = System.getProperty(key);
+-            if (val != null) {
+-                cache.putIfAbsent(key, val);
+-            }
+-            return val;
+-        }
++        return System.getProperty(key);
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        if (cache.containsKey(key)) {
+-            return cache.get(key);
+-        } else {
+-            Object val = System.getProperty(key);
+-            if (val != null) {
+-                cache.putIfAbsent(key, val);
+-            } else {
+-                val = defaultValue;
+-                if (defaultValue != null) {
+-                    cache.putIfAbsent(key, defaultValue);
+-                }
+-            }
+-            return val;
+-        }
+-    }
+-
+-    public void overwriteCache(String key, Object value) {
+-        if (value != null) {
+-            cache.put(key, value);
+-        }
+-    }
+-
+-    public void clearCache() {
+-        cache.clear();
+-    }
+-
+-
+     public Map<String, String> getProperties() {
+-        Properties properties = System.getProperties();
+-        Map<String, String> res = new ConcurrentHashMap<>(properties.size());
+-        try {
+-            res.putAll((Map) properties);
+-        } catch (Exception e) {
+-            logger.warn("System property get failed", e);
+-        }
+-        return res;
++        return (Map) System.getProperties();
+     }
+ }
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/AbstractDynamicConfiguration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/AbstractDynamicConfiguration.java
+index 71a959dab7..afd1cac989 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/AbstractDynamicConfiguration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/AbstractDynamicConfiguration.java
+@@ -120,11 +120,6 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
+         return null;
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        return null;
+-    }
+-
+     @Override
+     public final void close() throws Exception {
+         try {
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/nop/NopDynamicConfiguration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/nop/NopDynamicConfiguration.java
+index f834ed7ff7..0f08705189 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/nop/NopDynamicConfiguration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/nop/NopDynamicConfiguration.java
+@@ -36,11 +36,6 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
+         return null;
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        return null;
+-    }
+-
+     @Override
+     public void addListener(String key, String group, ConfigurationListener listener) {
+         // no-op
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/wrapper/CompositeDynamicConfiguration.java b/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/wrapper/CompositeDynamicConfiguration.java
+index c1ee02d05e..d9f6e3d30d 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/wrapper/CompositeDynamicConfiguration.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/config/configcenter/wrapper/CompositeDynamicConfiguration.java
+@@ -75,11 +75,6 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
+         return iterateConfigOperation(configuration -> configuration.getInternalProperty(key));
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        return iterateConfigOperation(configuration -> configuration.getInternalProperty(key, defaultValue));
+-    }
+-
+     @Override
+     public boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
+         boolean publishedAll = true;
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/config/context/ConfigConfigurationAdapter.java b/dubbo-common/src/main/java/org/apache/dubbo/config/context/ConfigConfigurationAdapter.java
+index 15599e4cfb..2b141e8a8b 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/config/context/ConfigConfigurationAdapter.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/config/context/ConfigConfigurationAdapter.java
+@@ -42,16 +42,6 @@ public class ConfigConfigurationAdapter implements Configuration {
+         return metaData.get(key);
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        Object v = metaData.get(key);
+-        if (v != null) {
+-            return v;
+-        } else {
+-            return defaultValue;
+-        }
+-    }
+-
+     public Map<String, String> getProperties() {
+         return metaData;
+     }
+diff --git a/dubbo-configcenter/dubbo-configcenter-apollo/src/main/java/org/apache/dubbo/configcenter/support/apollo/ApolloDynamicConfiguration.java b/dubbo-configcenter/dubbo-configcenter-apollo/src/main/java/org/apache/dubbo/configcenter/support/apollo/ApolloDynamicConfiguration.java
+index a6e503debe..9525f7ce7e 100644
+--- a/dubbo-configcenter/dubbo-configcenter-apollo/src/main/java/org/apache/dubbo/configcenter/support/apollo/ApolloDynamicConfiguration.java
++++ b/dubbo-configcenter/dubbo-configcenter-apollo/src/main/java/org/apache/dubbo/configcenter/support/apollo/ApolloDynamicConfiguration.java
+@@ -47,8 +47,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
+ import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
+ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+ import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
+-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
+ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CLOSE_CONNECT_APOLLO;
++import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
+ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NOT_EFFECT_EMPTY_RULE_APOLLO;
+ 
+ /**
+@@ -215,16 +215,6 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
+         return dubboConfig.getProperty(key, null);
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        Object v = dubboConfig.getProperty(key, null);
+-        if (v != null) {
+-            return v;
+-        } else {
+-            return defaultValue;
+-        }
+-    }
+-
+     /**
+      * Ignores the group parameter.
+      *
+diff --git a/dubbo-configcenter/dubbo-configcenter-nacos/src/main/java/org/apache/dubbo/configcenter/support/nacos/NacosDynamicConfiguration.java b/dubbo-configcenter/dubbo-configcenter-nacos/src/main/java/org/apache/dubbo/configcenter/support/nacos/NacosDynamicConfiguration.java
+index bc95620220..2f43c85f27 100644
+--- a/dubbo-configcenter/dubbo-configcenter-nacos/src/main/java/org/apache/dubbo/configcenter/support/nacos/NacosDynamicConfiguration.java
++++ b/dubbo-configcenter/dubbo-configcenter-nacos/src/main/java/org/apache/dubbo/configcenter/support/nacos/NacosDynamicConfiguration.java
+@@ -220,17 +220,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
+         return null;
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        Object v = defaultValue;
+-        try {
+-            v = configService.getConfig(key, DEFAULT_GROUP, getDefaultTimeout());
+-        } catch (NacosException e) {
+-            logger.error(e.getMessage());
+-        }
+-        return v;
+-    }
+-
+     @Override
+     public boolean publishConfig(String key, String group, String content) {
+         boolean published = false;
+diff --git a/dubbo-configcenter/dubbo-configcenter-zookeeper/src/main/java/org/apache/dubbo/configcenter/support/zookeeper/ZookeeperDynamicConfiguration.java b/dubbo-configcenter/dubbo-configcenter-zookeeper/src/main/java/org/apache/dubbo/configcenter/support/zookeeper/ZookeeperDynamicConfiguration.java
+index 4836012aa1..4836ed1b2f 100644
+--- a/dubbo-configcenter/dubbo-configcenter-zookeeper/src/main/java/org/apache/dubbo/configcenter/support/zookeeper/ZookeeperDynamicConfiguration.java
++++ b/dubbo-configcenter/dubbo-configcenter-zookeeper/src/main/java/org/apache/dubbo/configcenter/support/zookeeper/ZookeeperDynamicConfiguration.java
+@@ -85,16 +85,6 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration
+         return zkClient.getContent(buildPathKey("", key));
+     }
+ 
+-    @Override
+-    public Object getInternalProperty(String key, Object defaultValue) {
+-        Object v = zkClient.getContent(buildPathKey("", key));
+-        if (v != null) {
+-            return v;
+-        } else {
+-            return defaultValue;
+-        }
+-    }
+-
+     @Override
+     protected void doClose() throws Exception {
+         // remove data listener
+diff --git a/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/AsyncRpcResult.java b/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/AsyncRpcResult.java
+index afd8d86837..4814ce0acc 100644
+--- a/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/AsyncRpcResult.java
++++ b/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/AsyncRpcResult.java
+@@ -66,6 +66,11 @@ public class AsyncRpcResult implements Result {
+ 
+     private CompletableFuture<AppResponse> responseFuture;
+ 
++    /**
++     * Whether set future to Thread Local when invocation mode is sync
++     */
++    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
++
+     public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
+         this.responseFuture = future;
+         this.invocation = invocation;
+@@ -211,11 +216,7 @@ public class AsyncRpcResult implements Result {
+             fn.accept(v, t);
+         });
+ 
+-        // Whether set future to Thread Local when invocation mode is sync
+-        String setFutureWhenSync = invocation.getModuleModel().getModelEnvironment().getSystemConfiguration()
+-            .getString(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true");
+-
+-        if (Boolean.parseBoolean(setFutureWhenSync) || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
++        if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+             // Necessary! update future in context, see https://github.com/apache/dubbo/issues/9461
+             RpcContext.getServiceContext().setFuture(new FutureAdapter<>(this.responseFuture));
+         }
+diff --git a/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/filter/AccessLogFilter.java b/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/filter/AccessLogFilter.java
+index f9243c76df..3433fb4dc6 100644
+--- a/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/filter/AccessLogFilter.java
++++ b/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/filter/AccessLogFilter.java
+@@ -81,7 +81,7 @@ public class AccessLogFilter implements Filter {
+ 
+     private AtomicBoolean scheduled = new AtomicBoolean();
+ 
+-    private final String LINE_SEPARATOR =  System.getProperty("line.separator");
++    private static final String LINE_SEPARATOR = "line.separator";
+ 
+     /**
+      * Default constructor initialize demon thread for writing into access log file with names with access log key
+@@ -173,7 +173,7 @@ public class AccessLogFilter implements Filter {
+         try {
+             while (!logQueue.isEmpty()) {
+                 writer.write(logQueue.poll().getLogMessage());
+-                writer.write(LINE_SEPARATOR);
++                writer.write(System.getProperty(LINE_SEPARATOR));
+             }
+         } finally {
+             writer.flush();
+diff --git a/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/protocol/AbstractInvoker.java b/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/protocol/AbstractInvoker.java
+index fe668d65b9..ee04a1ded8 100644
+--- a/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/protocol/AbstractInvoker.java
++++ b/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/protocol/AbstractInvoker.java
+@@ -87,6 +87,11 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
+      */
+     private boolean destroyed = false;
+ 
++    /**
++     * Whether set future to Thread Local when invocation mode is sync
++     */
++    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
++
+     // -- Constructor
+ 
+     public AbstractInvoker(Class<T> type, URL url) {
+@@ -237,11 +242,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
+             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
+         }
+ 
+-        // Whether set future to Thread Local when invocation mode is sync
+-        String setFutureWhenSync = invocation.getModuleModel().getModelEnvironment().getSystemConfiguration()
+-            .getString(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true");
+-
+-        if (Boolean.parseBoolean(setFutureWhenSync) || invocation.getInvokeMode() != InvokeMode.SYNC) {
++        if (setFutureWhenSync || invocation.getInvokeMode() != InvokeMode.SYNC) {
+             // set server context
+             RpcContext.getServiceContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
+         }
+diff --git a/dubbo-rpc/dubbo-rpc-dubbo/src/main/java/org/apache/dubbo/rpc/protocol/dubbo/DecodeableRpcInvocation.java b/dubbo-rpc/dubbo-rpc-dubbo/src/main/java/org/apache/dubbo/rpc/protocol/dubbo/DecodeableRpcInvocation.java
+index af997afe7d..c24bd27817 100644
+--- a/dubbo-rpc/dubbo-rpc-dubbo/src/main/java/org/apache/dubbo/rpc/protocol/dubbo/DecodeableRpcInvocation.java
++++ b/dubbo-rpc/dubbo-rpc-dubbo/src/main/java/org/apache/dubbo/rpc/protocol/dubbo/DecodeableRpcInvocation.java
+@@ -17,7 +17,6 @@
+ package org.apache.dubbo.rpc.protocol.dubbo;
+ 
+ 
+-import org.apache.dubbo.common.config.ConfigurationUtils;
+ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+ import org.apache.dubbo.common.logger.LoggerFactory;
+ import org.apache.dubbo.common.serialize.Cleanable;
+@@ -38,7 +37,6 @@ import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
+ import org.apache.dubbo.rpc.model.MethodDescriptor;
+ import org.apache.dubbo.rpc.model.ModuleModel;
+ import org.apache.dubbo.rpc.model.ProviderModel;
+-import org.apache.dubbo.rpc.model.ScopeModel;
+ import org.apache.dubbo.rpc.model.ServiceDescriptor;
+ import org.apache.dubbo.rpc.support.RpcUtils;
+ 
+@@ -136,17 +134,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
+ 
+         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
+         try {
+-            ScopeModel scopeModel = channel.getUrl().getScopeModel();
+-            if (scopeModel instanceof ModuleModel) {
+-                scopeModel = scopeModel.getParent();
+-            } else {
+-                scopeModel = ApplicationModel.defaultModel();
+-            }
+-            String serializationSecurityCheck = ConfigurationUtils.getSystemConfiguration(
+-                scopeModel).getString(SERIALIZATION_SECURITY_CHECK_KEY, "true");
+-
+-
+-            if (Boolean.parseBoolean(serializationSecurityCheck)) {
++            if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
+                 CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
+             }
+             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
+diff --git a/dubbo-serialization/dubbo-serialization-hessian2/src/main/java/org/apache/dubbo/common/serialize/hessian2/dubbo/DefaultHessian2FactoryInitializer.java b/dubbo-serialization/dubbo-serialization-hessian2/src/main/java/org/apache/dubbo/common/serialize/hessian2/dubbo/DefaultHessian2FactoryInitializer.java
+index ce0baccd02..cca8697030 100644
+--- a/dubbo-serialization/dubbo-serialization-hessian2/src/main/java/org/apache/dubbo/common/serialize/hessian2/dubbo/DefaultHessian2FactoryInitializer.java
++++ b/dubbo-serialization/dubbo-serialization-hessian2/src/main/java/org/apache/dubbo/common/serialize/hessian2/dubbo/DefaultHessian2FactoryInitializer.java
+@@ -24,7 +24,7 @@ public class DefaultHessian2FactoryInitializer extends AbstractHessian2FactoryIn
+     @Override
+     protected SerializerFactory createSerializerFactory() {
+         Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory();
+-        hessian2SerializerFactory.setAllowNonSerializable(Boolean.parseBoolean(ALLOW_NON_SERIALIZABLE));
++        hessian2SerializerFactory.setAllowNonSerializable(Boolean.parseBoolean(System.getProperty("dubbo.hessian.allowNonSerializable", "false")));
+         hessian2SerializerFactory.getClassFactory().allow("org.apache.dubbo.*");
+         return hessian2SerializerFactory;
+     }
+diff --git a/dubbo-serialization/dubbo-serialization-hessian2/src/main/java/org/apache/dubbo/common/serialize/hessian2/dubbo/Hessian2FactoryInitializer.java b/dubbo-serialization/dubbo-serialization-hessian2/src/main/java/org/apache/dubbo/common/serialize/hessian2/dubbo/Hessian2FactoryInitializer.java
+index 2095587b4e..842888cf1b 100644
+--- a/dubbo-serialization/dubbo-serialization-hessian2/src/main/java/org/apache/dubbo/common/serialize/hessian2/dubbo/Hessian2FactoryInitializer.java
++++ b/dubbo-serialization/dubbo-serialization-hessian2/src/main/java/org/apache/dubbo/common/serialize/hessian2/dubbo/Hessian2FactoryInitializer.java
+@@ -27,9 +27,7 @@ import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+ @SPI(value = "default", scope = ExtensionScope.FRAMEWORK)
+ public interface Hessian2FactoryInitializer {
+     String ALLOW = System.getProperty("dubbo.application.hessian2.allow");
+-
+     String DENY = System.getProperty("dubbo.application.hessian2.deny");
+-
+     String WHITELIST = System.getProperty("dubbo.application.hessian2.whitelist");
+ 
+     String ALLOW_NON_SERIALIZABLE = System.getProperty("dubbo.hessian.allowNonSerializable", "false");

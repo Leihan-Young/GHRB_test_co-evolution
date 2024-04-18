@@ -1,0 +1,49 @@
+diff --git a/client/src/test/java/com/alibaba/nacos/client/naming/NacosNamingServiceTest.java b/client/src/test/java/com/alibaba/nacos/client/naming/NacosNamingServiceTest.java
+index 6be6dd88b8..1835bf3b80 100644
+--- a/client/src/test/java/com/alibaba/nacos/client/naming/NacosNamingServiceTest.java
++++ b/client/src/test/java/com/alibaba/nacos/client/naming/NacosNamingServiceTest.java
+@@ -116,6 +116,27 @@ public class NacosNamingServiceTest {
+                         instances -> CollectionUtils.isEqualCollection(instanceList, instances)));
+     }
+     
++    @Test
++    public void testBatchDeRegisterInstance() throws NacosException {
++        Instance instance = new Instance();
++        String serviceName = "service1";
++        String ip = "1.1.1.1";
++        int port = 10000;
++        instance.setServiceName(serviceName);
++        instance.setEphemeral(true);
++        instance.setPort(port);
++        instance.setIp(ip);
++        List<Instance> instanceList = new ArrayList<>();
++        instanceList.add(instance);
++        //when
++        try {
++            client.batchDeregisterInstance(serviceName, Constants.DEFAULT_GROUP, instanceList);
++        } catch (Exception e) {
++            Assert.assertTrue(e instanceof NacosException);
++            Assert.assertTrue(e.getMessage().contains("not found"));
++        }
++    }
++    
+     @Test
+     public void testRegisterInstance2() throws NacosException {
+         //given
+diff --git a/client/src/test/java/com/alibaba/nacos/client/naming/remote/AbstractNamingClientProxyTest.java b/client/src/test/java/com/alibaba/nacos/client/naming/remote/AbstractNamingClientProxyTest.java
+index 96e237272e..e001599cec 100644
+--- a/client/src/test/java/com/alibaba/nacos/client/naming/remote/AbstractNamingClientProxyTest.java
++++ b/client/src/test/java/com/alibaba/nacos/client/naming/remote/AbstractNamingClientProxyTest.java
+@@ -109,6 +109,12 @@ public class AbstractNamingClientProxyTest {
+         
+         }
+     
++        @Override
++        public void batchDeregisterService(String serviceName, String groupName, List<Instance> instances)
++                throws NacosException {
++        
++        }
++    
+         @Override
+         public void deregisterService(String serviceName, String groupName, Instance instance) throws NacosException {
+         

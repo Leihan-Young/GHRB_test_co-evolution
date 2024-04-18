@@ -1,0 +1,169 @@
+{
+  "1": {
+    "commit_src": "cdb11448ac09b2a4f83efb96b971e88ee717657c",
+    "commit_tgt": "b8bd1cb90d3722d91c8f9cd830e7ebd289258fc7",
+    "changed_tests": [
+      "common/src/test/java/com/alibaba/nacos/common/remote/client/RpcClientTest.java"
+    ],
+    "refer_PR": "alibaba_nacos-9080",
+    "test_src": ".com.alibaba.nacos.common.remote.client.RpcClientTest#testHealthCheck",
+    "test_tgt": [
+      ".com.alibaba.nacos.common.remote.client.RpcClientTest#testHealthCheck"
+    ],
+    "focal_path": "common/src/main/java/com/alibaba/nacos/common/remote/client/RpcClient.java#healthCheck",
+    "focal_src": "    private boolean healthCheck() {\n        HealthCheckRequest healthCheckRequest = new HealthCheckRequest();\n        if (this.currentConnection == null) {\n            return false;\n        }\n        int reTryTimes = healthCheckRetryTimes;\n        while (reTryTimes > 0) {\n            reTryTimes--;\n            try {\n                Response response = this.currentConnection.request(healthCheckRequest, healthCheckTimeOut);\n                // not only check server is ok, also check connection is register.\n                return response != null && response.isSuccess();\n            } catch (NacosException e) {\n                // ignore\n            }\n        }\n        return false;\n    }\n",
+    "focal_tgt": "    private boolean healthCheck() {\n        HealthCheckRequest healthCheckRequest = new HealthCheckRequest();\n        if (this.currentConnection == null) {\n            return false;\n        }\n        int reTryTimes = healthCheckRetryTimes;\n        while (reTryTimes >= 0) {\n            reTryTimes--;\n            try {\n                Response response = this.currentConnection.request(healthCheckRequest, healthCheckTimeOut);\n                // not only check server is ok, also check connection is register.\n                return response != null && response.isSuccess();\n            } catch (NacosException e) {\n                // ignore\n            }\n        }\n        return false;\n    }\n",
+    "test_id": 1
+  },
+  "2": {
+    "commit_src": "04fe7eab2fa20423e09d2019da18fba3fa4b6191",
+    "commit_tgt": "45165f7c065ff33f6a875b6c7babf2b09cb9a752",
+    "changed_tests": [
+      "core/src/test/java/com/alibaba/nacos/core/cluster/MemberUtilTest.java",
+      "core/src/test/java/com/alibaba/nacos/core/cluster/ServerMemberManagerTest.java",
+      "core/src/test/java/com/alibaba/nacos/core/controller/NacosClusterControllerTest.java"
+    ],
+    "refer_PR": "alibaba_nacos-9228",
+    "test_src": ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testReport",
+    "test_tgt": [
+      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testSelf",
+      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testListNodes",
+      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testListSimpleNodes",
+      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testGetHealth",
+      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testReport",
+      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testLeave"
+    ],
+    "focal_path": "core/src/main/java/com/alibaba/nacos/core/controller/NacosClusterController.java#report",
+    "focal_src": "    /**\n     * Other nodes return their own metadata information.\n     *\n     * @param node {@link Member}\n     * @return {@link RestResult}\n     */\n    @PostMapping(value = {\"/report\"})\n    public RestResult<String> report(@RequestBody Member node) {\n        if (!node.check()) {\n            return RestResultUtils.failedWithMsg(400, \"Node information is illegal\");\n        }\n        LoggerUtils.printIfDebugEnabled(Loggers.CLUSTER, \"node state report, receive info : {}\", node);\n        node.setState(NodeState.UP);\n        node.setFailAccessCnt(0);\n        \n        boolean result = memberManager.update(node);\n        \n        return RestResultUtils.success(Boolean.toString(result));\n    }\n",
+    "focal_tgt": "    /**\n     * Other nodes return their own metadata information.\n     *\n     * @param node {@link Member}\n     * @return {@link RestResult}\n     */\n    @PostMapping(value = {\"/report\"})\n    public RestResult<String> report(@RequestBody Member node) {\n        if (!node.check()) {\n            return RestResultUtils.failedWithMsg(400, \"Node information is illegal\");\n        }\n        LoggerUtils.printIfDebugEnabled(Loggers.CLUSTER, \"node state report, receive info : {}\", node);\n        node.setState(NodeState.UP);\n        node.setFailAccessCnt(0);\n        memberManager.update(node);\n        return RestResultUtils.success(JacksonUtils.toJson(memberManager.getSelf()));\n    }\n",
+    "test_id": 2
+  },
+  "3": {
+    "commit_src": "86cf2082a9eb7ad2f63a339238deff5d1c344369",
+    "commit_tgt": "37d45ad8b62eb8733dd18adc4187d2e1bff65220",
+    "changed_tests": [
+      "common/src/test/java/com/alibaba/nacos/common/remote/client/RpcClientTest.java"
+    ],
+    "refer_PR": "alibaba_nacos-10958",
+    "test_src": ".com.alibaba.nacos.common.remote.client.RpcClientTest#testRequestFutureWhenRetryReachMaxRetryTimesThenSwitchServer",
+    "test_tgt": [
+      ".com.alibaba.nacos.common.remote.client.RpcClientTest#testRequestFutureWhenRetryReachMaxRetryTimesThenSwitchServer"
+    ],
+    "focal_path": "common/src/main/java/com/alibaba/nacos/common/remote/client/RpcClient.java#requestFuture",
+    "focal_src": "    /**\n     * send async request.\n     *\n     * @param request request.\n     * @return request future.\n     */\n    public RequestFuture requestFuture(Request request) throws NacosException {\n        int retryTimes = 0;\n        long start = System.currentTimeMillis();\n        Exception exceptionToThrow = null;\n        while (retryTimes < rpcClientConfig.retryTimes()\n                && System.currentTimeMillis() < start + rpcClientConfig.timeOutMills()) {\n            boolean waitReconnect = false;\n            try {\n                if (this.currentConnection == null || !isRunning()) {\n                    waitReconnect = true;\n                    throw new NacosException(NacosException.CLIENT_DISCONNECT, \"Client not connected.\");\n                }\n                return this.currentConnection.requestFuture(request);\n            } catch (Exception e) {\n                if (waitReconnect) {\n                    try {\n                        // wait client to reconnect.\n                        Thread.sleep(100L);\n                    } catch (Exception exception) {\n                        // Do nothing.\n                    }\n                }\n                LoggerUtils.printIfErrorEnabled(LOGGER,\n                        \"[{}] Send request fail, request = {}, retryTimes = {}, errorMessage = {}\",\n                        rpcClientConfig.name(), request, retryTimes, e.getMessage());\n                exceptionToThrow = e;\n                \n            }\n            retryTimes++;\n        }\n        \n        if (rpcClientStatus.compareAndSet(RpcClientStatus.RUNNING, RpcClientStatus.UNHEALTHY)) {\n            switchServerAsyncOnRequestFail();\n        }\n        \n        if (exceptionToThrow != null) {\n            throw (exceptionToThrow instanceof NacosException) ? (NacosException) exceptionToThrow\n                    : new NacosException(SERVER_ERROR, exceptionToThrow);\n        } else {\n            throw new NacosException(SERVER_ERROR, \"Request future fail, unknown error\");\n        }\n        \n    }\n",
+    "focal_tgt": "    /**\n     * send async request.\n     *\n     * @param request request.\n     * @return request future.\n     */\n    public RequestFuture requestFuture(Request request) throws NacosException {\n        int retryTimes = 0;\n        long start = System.currentTimeMillis();\n        Exception exceptionToThrow = null;\n        while (retryTimes <= rpcClientConfig.retryTimes()\n                && System.currentTimeMillis() < start + rpcClientConfig.timeOutMills()) {\n            boolean waitReconnect = false;\n            try {\n                if (this.currentConnection == null || !isRunning()) {\n                    waitReconnect = true;\n                    throw new NacosException(NacosException.CLIENT_DISCONNECT, \"Client not connected.\");\n                }\n                return this.currentConnection.requestFuture(request);\n            } catch (Exception e) {\n                if (waitReconnect) {\n                    try {\n                        // wait client to reconnect.\n                        Thread.sleep(100L);\n                    } catch (Exception exception) {\n                        // Do nothing.\n                    }\n                }\n                LoggerUtils.printIfErrorEnabled(LOGGER,\n                        \"[{}] Send request fail, request = {}, retryTimes = {}, errorMessage = {}\",\n                        rpcClientConfig.name(), request, retryTimes, e.getMessage());\n                exceptionToThrow = e;\n                \n            }\n            retryTimes++;\n        }\n        \n        if (rpcClientStatus.compareAndSet(RpcClientStatus.RUNNING, RpcClientStatus.UNHEALTHY)) {\n            switchServerAsyncOnRequestFail();\n        }\n        \n        if (exceptionToThrow != null) {\n            throw (exceptionToThrow instanceof NacosException) ? (NacosException) exceptionToThrow\n                    : new NacosException(SERVER_ERROR, exceptionToThrow);\n        } else {\n            throw new NacosException(SERVER_ERROR, \"Request future fail, unknown error\");\n        }\n        \n    }\n",
+    "test_id": 3
+  },
+  "4": {
+    "commit_src": "7911eb03dbe3f2616edf8b4accd9dcb1d6eef3d7",
+    "commit_tgt": "d85e3f7f314d532825d0d942d1598d633eddc3e1",
+    "changed_tests": [
+      "sys/src/test/java/com/alibaba/nacos/sys/utils/PropertiesUtilTest.java"
+    ],
+    "refer_PR": "alibaba_nacos-11240",
+    "test_src": ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefixForMap",
+    "test_tgt": [
+      ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefixForMap",
+      ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefix",
+      ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testHandleSpringBinder"
+    ],
+    "focal_path": "sys/src/main/java/com/alibaba/nacos/sys/utils/PropertiesUtil.java#getPropertiesWithPrefixForMap",
+    "focal_src": "    public static Map<String, Object> getPropertiesWithPrefixForMap(Environment environment, String prefix)\n            throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {\n        return handleSpringBinder(environment, prefix, Map.class);\n    }\n",
+    "focal_tgt": "    public static Map<String, Object> getPropertiesWithPrefixForMap(Environment environment, String prefix) {\n        return handleSpringBinder(environment, prefix, Map.class);\n    }\n",
+    "test_id": 4
+  },
+  "5": {
+    "commit_src": "7911eb03dbe3f2616edf8b4accd9dcb1d6eef3d7",
+    "commit_tgt": "d85e3f7f314d532825d0d942d1598d633eddc3e1",
+    "changed_tests": [
+      "sys/src/test/java/com/alibaba/nacos/sys/utils/PropertiesUtilTest.java"
+    ],
+    "refer_PR": "alibaba_nacos-11240",
+    "test_src": ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefix",
+    "test_tgt": [
+      ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefixForMap",
+      ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefix",
+      ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testHandleSpringBinder"
+    ],
+    "focal_path": "sys/src/main/java/com/alibaba/nacos/sys/utils/PropertiesUtil.java#getPropertiesWithPrefix",
+    "focal_src": "    public static Properties getPropertiesWithPrefix(Environment environment, String prefix)\n            throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {\n        return handleSpringBinder(environment, prefix, Properties.class);\n    }\n",
+    "focal_tgt": "    public static Properties getPropertiesWithPrefix(Environment environment, String prefix) {\n        return handleSpringBinder(environment, prefix, Properties.class);\n    }\n",
+    "test_id": 5
+  },
+  "6": {
+    "commit_src": "3a1f0c297e37608035514a98ebc51133daad7863",
+    "commit_tgt": "6461aeb719ceb4ee0fb3cb7c4fbcff6b56ce539a",
+    "changed_tests": [
+      "api/src/test/java/com/alibaba/nacos/api/remote/response/ErrorResponseTest.java"
+    ],
+    "refer_PR": "alibaba_nacos-11893",
+    "test_src": ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode",
+    "test_tgt": [
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException"
+    ],
+    "focal_path": "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build",
+    "focal_src": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        return response;\n    }\n",
+    "focal_tgt": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        response.setResultCode(errorCode);\n        return response;\n    }\n",
+    "test_id": 6
+  },
+  "7": {
+    "commit_src": "3a1f0c297e37608035514a98ebc51133daad7863",
+    "commit_tgt": "6461aeb719ceb4ee0fb3cb7c4fbcff6b56ce539a",
+    "changed_tests": [
+      "api/src/test/java/com/alibaba/nacos/api/remote/response/ErrorResponseTest.java"
+    ],
+    "refer_PR": "alibaba_nacos-11893",
+    "test_src": ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
+    "test_tgt": [
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException"
+    ],
+    "focal_path": "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build",
+    "focal_src": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        return response;\n    }\n",
+    "focal_tgt": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        response.setResultCode(errorCode);\n        return response;\n    }\n",
+    "test_id": 7
+  },
+  "8": {
+    "commit_src": "3a1f0c297e37608035514a98ebc51133daad7863",
+    "commit_tgt": "6461aeb719ceb4ee0fb3cb7c4fbcff6b56ce539a",
+    "changed_tests": [
+      "api/src/test/java/com/alibaba/nacos/api/remote/response/ErrorResponseTest.java"
+    ],
+    "refer_PR": "alibaba_nacos-11893",
+    "test_src": ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
+    "test_tgt": [
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException"
+    ],
+    "focal_path": "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build",
+    "focal_src": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        return response;\n    }\n",
+    "focal_tgt": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        response.setResultCode(errorCode);\n        return response;\n    }\n",
+    "test_id": 8
+  },
+  "9": {
+    "commit_src": "3a1f0c297e37608035514a98ebc51133daad7863",
+    "commit_tgt": "6461aeb719ceb4ee0fb3cb7c4fbcff6b56ce539a",
+    "changed_tests": [
+      "api/src/test/java/com/alibaba/nacos/api/remote/response/ErrorResponseTest.java"
+    ],
+    "refer_PR": "alibaba_nacos-11893",
+    "test_src": ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException",
+    "test_tgt": [
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException"
+    ],
+    "focal_path": "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build",
+    "focal_src": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        return response;\n    }\n",
+    "focal_tgt": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        response.setResultCode(errorCode);\n        return response;\n    }\n",
+    "test_id": 9
+  }
+}

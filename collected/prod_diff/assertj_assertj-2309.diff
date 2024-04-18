@@ -1,0 +1,142 @@
+diff --git a/src/main/java/org/assertj/core/api/AbstractCharSequenceAssert.java b/src/main/java/org/assertj/core/api/AbstractCharSequenceAssert.java
+index 4efb6e7e2..ca5316295 100644
+--- a/src/main/java/org/assertj/core/api/AbstractCharSequenceAssert.java
++++ b/src/main/java/org/assertj/core/api/AbstractCharSequenceAssert.java
+@@ -649,18 +649,41 @@ public abstract class AbstractCharSequenceAssert<SELF extends AbstractCharSequen
+    * <pre><code class='java'> assertThat(&quot;Gandalf the grey&quot;).contains(&quot;alf&quot;);
+    * assertThat(&quot;Gandalf the grey&quot;).contains(&quot;alf&quot;, &quot;grey&quot;);</code></pre>
+    *
+-   * @param values the Strings to look for.
++   * @param values the values to look for.
+    * @return {@code this} assertion object.
+    * @throws NullPointerException if the given list of values is {@code null}.
+    * @throws IllegalArgumentException if the list of given values is empty.
+    * @throws AssertionError if the actual {@code CharSequence} is {@code null}.
+-   * @throws AssertionError if the actual {@code CharSequence} does not contain all the given strings.
++   * @throws AssertionError if the actual {@code CharSequence} does not contain all the given values.
+    */
+   public SELF contains(CharSequence... values) {
+     strings.assertContains(info, actual, values);
+     return myself;
+   }
+ 
++  /**
++   * Verifies that the actual {@code CharSequence} contains any of the given values.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertions will pass
++   * assertThat(&quot;Gandalf the grey&quot;).containsAnyOf(&quot;grey&quot;, &quot;black&quot;);
++   *
++   * // assertions will fail
++   * assertThat(&quot;Gandalf the grey&quot;).containsAnyOf(&quot;white&quot;, &quot;black&quot;);</code></pre>
++   *
++   * @param values the values to look for.
++   * @return {@code this} assertion object.
++   * @throws NullPointerException if the given list of values is {@code null}.
++   * @throws IllegalArgumentException if the list of given values is empty.
++   * @throws AssertionError if the actual {@code CharSequence} is {@code null}.
++   * @throws AssertionError if the actual {@code CharSequence} does not contain any of the given values.
++   * @since 3.21.0
++   */
++  public SELF containsAnyOf(CharSequence... values) {
++    strings.assertContainsAnyOf(info, actual, values);
++    return myself;
++  }
++
+   /**
+    * Verifies that the actual {@code CharSequence} contains all the {@code CharSequence}s of the given Iterable.
+    * <p>
+@@ -668,7 +691,7 @@ public abstract class AbstractCharSequenceAssert<SELF extends AbstractCharSequen
+    * <pre><code class='java'> assertThat(&quot;Gandalf the grey&quot;).contains(Arrays.asList(&quot;alf&quot;));
+    * assertThat(&quot;Gandalf the grey&quot;).contains(Arrays.asList(&quot;alf&quot;, &quot;grey&quot;));</code></pre>
+    *
+-   * @param values the Strings to look for.
++   * @param values the values to look for.
+    * @return {@code this} assertion object.
+    * @throws NullPointerException if the given list of values is {@code null}.
+    * @throws IllegalArgumentException if the list of given values is empty.
+@@ -833,12 +856,12 @@ public abstract class AbstractCharSequenceAssert<SELF extends AbstractCharSequen
+    * // assertion fails:
+    * assertThat(&quot;Gandalf the grey&quot;).containsIgnoringWhitespaces(&quot;alF&quot;)</code></pre>
+    *
+-   * @param values the Strings to look for.
++   * @param values the values to look for.
+    * @return {@code this} assertion object.
+    * @throws NullPointerException if the given list of values is {@code null}.
+    * @throws IllegalArgumentException if the list of given values is empty.
+    * @throws AssertionError if the actual {@code CharSequence} is {@code null}.
+-   * @throws AssertionError if the actual {@code CharSequence} does not contain all the given strings.
++   * @throws AssertionError if the actual {@code CharSequence} does not contain all the given values.
+    */
+   public SELF containsIgnoringWhitespaces(CharSequence... values) {
+     strings.assertContainsIgnoringWhitespaces(info, actual, values);
+diff --git a/src/main/java/org/assertj/core/error/ShouldContainAnyOf.java b/src/main/java/org/assertj/core/error/ShouldContainAnyOf.java
+index c7ba91dce..0246ba83e 100644
+--- a/src/main/java/org/assertj/core/error/ShouldContainAnyOf.java
++++ b/src/main/java/org/assertj/core/error/ShouldContainAnyOf.java
+@@ -13,26 +13,32 @@
+ package org.assertj.core.error;
+ 
+ import org.assertj.core.internal.ComparisonStrategy;
+-import org.assertj.core.internal.StandardComparisonStrategy;
+ 
+ public class ShouldContainAnyOf extends BasicErrorMessageFactory {
+ 
++  private static final String DEFAULT_FORMAT = "%nExpecting actual:%n" +
++                                              "  %s%n" +
++                                              "to contain at least one of the following elements:%n" +
++                                              "  %s%n" +
++                                              "but none were found";
++
++  private static final String FORMAT_WITH_COMPARISON_STRATEGY = DEFAULT_FORMAT + " %s";
++
+   public static ErrorMessageFactory shouldContainAnyOf(Object actual, Object expected,
+                                                        ComparisonStrategy comparisonStrategy) {
+     return new ShouldContainAnyOf(actual, expected, comparisonStrategy);
+   }
+ 
+   public static ErrorMessageFactory shouldContainAnyOf(Object actual, Object expected) {
+-    return shouldContainAnyOf(actual, expected, StandardComparisonStrategy.instance());
++    return new ShouldContainAnyOf(actual, expected);
+   }
+ 
+   private ShouldContainAnyOf(Object actual, Object expected, ComparisonStrategy comparisonStrategy) {
+-    super("%nExpecting actual:%n" +
+-          "  %s%n" +
+-          "to contain at least one of the following elements:%n" +
+-          "  %s%n" +
+-          "but none were found %s",
+-          actual, expected, comparisonStrategy);
++    super(FORMAT_WITH_COMPARISON_STRATEGY, actual, expected, comparisonStrategy);
++  }
++
++  private ShouldContainAnyOf(Object actual, Object expected) {
++    super(DEFAULT_FORMAT, actual, expected);
+   }
+ 
+ }
+diff --git a/src/main/java/org/assertj/core/internal/Strings.java b/src/main/java/org/assertj/core/internal/Strings.java
+index 1c535f8b6..24022e978 100644
+--- a/src/main/java/org/assertj/core/internal/Strings.java
++++ b/src/main/java/org/assertj/core/internal/Strings.java
+@@ -34,6 +34,7 @@ import static org.assertj.core.error.ShouldBeMixedCase.shouldBeMixedCase;
+ import static org.assertj.core.error.ShouldBeNullOrEmpty.shouldBeNullOrEmpty;
+ import static org.assertj.core.error.ShouldBeSubstring.shouldBeSubstring;
+ import static org.assertj.core.error.ShouldBeUpperCase.shouldBeUpperCase;
++import static org.assertj.core.error.ShouldContainAnyOf.shouldContainAnyOf;
+ import static org.assertj.core.error.ShouldContainCharSequence.shouldContain;
+ import static org.assertj.core.error.ShouldContainCharSequence.shouldContainIgnoringCase;
+ import static org.assertj.core.error.ShouldContainCharSequence.shouldContainIgnoringWhitespaces;
+@@ -474,6 +475,12 @@ public class Strings {
+     throw failures.failure(info, shouldContain(actual, values, notFound, comparisonStrategy));
+   }
+ 
++  public void assertContainsAnyOf(AssertionInfo info, CharSequence actual, CharSequence[] values) {
++    doCommonCheckForCharSequence(info, actual, values);
++    boolean found = stream(values).anyMatch(value -> stringContains(actual, value));
++    if (!found) throw failures.failure(info, shouldContainAnyOf(actual, values, comparisonStrategy));
++  }
++
+   /**
+    * Verifies that the given {@code CharSequence} contains only digits.
+    *

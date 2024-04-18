@@ -1,0 +1,7 @@
+{
+  "issue_id": 16982,
+  "issue_url": "https://github.com/OpenAPITools/openapi-generator/issues/16982",
+  "title": "[BUG][POSTMAN] Random order of the Postman requests",
+  "description": "<p dir=\"auto\">The generated Postman collection presents the requests in a random order, for example:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"/users\n/groups\n/users/{id}\n/groups/{id}\"><pre class=\"notranslate\"><code class=\"notranslate\">/users\n/groups\n/users/{id}\n/groups/{id}\n</code></pre></div>\n<p dir=\"auto\">The generator should sort the requests by <code class=\"notranslate\">path</code> to make sure Postman displays all requests for a given endpoint together, for example:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"/groups\n/groups/{id}\n/users\n/users/{id}\"><pre class=\"notranslate\"><code class=\"notranslate\">/groups\n/groups/{id}\n/users\n/users/{id}\n</code></pre></div>",
+  "description_text": "The generated Postman collection presents the requests in a random order, for example:\n/users\n/groups\n/users/{id}\n/groups/{id}\n\nThe generator should sort the requests by path to make sure Postman displays all requests for a given endpoint together, for example:\n/groups\n/groups/{id}\n/users\n/users/{id}\n"
+}

@@ -1,0 +1,927 @@
+diff --git a/rm-datasource/src/test/java/io/seata/rm/RMHandlerATTest.java b/rm-datasource/src/test/java/io/seata/rm/RMHandlerATTest.java
+index 3ae96f51d..f3d34f25c 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/RMHandlerATTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/RMHandlerATTest.java
+@@ -22,7 +22,10 @@ import io.seata.rm.datasource.undo.UndoLogManager;
+ import org.junit.jupiter.api.Test;
+ 
+ import java.sql.Connection;
++import java.sql.SQLException;
++import java.util.Date;
+ 
++import static org.mockito.ArgumentMatchers.anyInt;
+ import static org.mockito.Mockito.mock;
+ import static org.mockito.Mockito.verify;
+ import static org.mockito.Mockito.times;
+@@ -41,30 +44,26 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+ class RMHandlerATTest {
+ 
+     @Test
+-    void hasUndoLogTableTest() {
+-        RMHandlerAT handler = buildHandler(true);
++    void testNormalDeleteUndoLogTable() throws SQLException {
++        RMHandlerAT handler = buildHandler(false);
+         UndoLogDeleteRequest request = buildRequest();
+         int testTimes = 5;
+         for (int i = 0; i < testTimes; i++) {
+             handler.handle(request);
+         }
+-        verify(handler, times(1)).checkUndoLogTableExist(any());
+         verify(handler, times(testTimes)).deleteUndoLog(any(), any(), any());
+     }
+ 
+     @Test
+-    void noUndoLogTableTest() {
+-        RMHandlerAT handler = buildHandler(false);
++    void testErrorDeleteUndoLogTable() throws SQLException {
++        RMHandlerAT handler = buildHandler(true);
+         UndoLogDeleteRequest request = buildRequest();
+-        int testTimes = 5;
+-        for (int i = 0; i < testTimes; i++) {
+-            handler.handle(request);
+-        }
+-        verify(handler, times(1)).checkUndoLogTableExist(any());
+-        verify(handler, never()).deleteUndoLog(any(), any(), any());
++        request.setSaveDays((short) -1);
++        handler.handle(request);
++        verify(handler, times(1)).deleteUndoLog(any(), any(), any());
+     }
+ 
+-    private RMHandlerAT buildHandler(boolean hasUndoLogTable) {
++    private RMHandlerAT buildHandler(boolean errorDeleteUndologTable) throws SQLException {
+         RMHandlerAT handler = spy(new RMHandlerAT());
+         DataSourceManager dataSourceManager = mock(DataSourceManager.class);
+         doReturn(dataSourceManager).when(handler).getResourceManager();
+@@ -78,9 +77,14 @@ class RMHandlerATTest {
+         });
+ 
+         UndoLogManager manager = mock(UndoLogManager.class);
+-        when(manager.hasUndoLogTable(any())).thenReturn(hasUndoLogTable);
++        when(manager.hasUndoLogTable(any())).thenReturn(true);
+         doReturn(manager).when(handler).getUndoLogManager(any());
+ 
++        if (errorDeleteUndologTable) {
++            when(manager.deleteUndoLogByLogCreated(any(Date.class), anyInt(), any(Connection.class)))
++                    .thenThrow(new SQLException());
++        }
++
+         return handler;
+     }
+ 
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/DataSourceProxyTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/DataSourceProxyTest.java
+index d8da5d26a..e351f674b 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/DataSourceProxyTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/DataSourceProxyTest.java
+@@ -16,6 +16,7 @@
+ package io.seata.rm.datasource;
+ 
+ import java.lang.reflect.Field;
++import java.sql.Connection;
+ import java.sql.SQLException;
+ import javax.sql.DataSource;
+ 
+@@ -23,8 +24,17 @@ import com.alibaba.druid.pool.DruidDataSource;
+ import io.seata.rm.datasource.mock.MockDataSource;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.sql.struct.TableMetaCacheFactory;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.Test;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.*;
+ 
+ /**
+  * @author ph3636
+@@ -34,7 +44,6 @@ public class DataSourceProxyTest {
+     @Test
+     public void test_constructor() {
+         DataSource dataSource = new MockDataSource();
+-
+         DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSource);
+         Assertions.assertEquals(dataSourceProxy.getTargetDataSource(), dataSource);
+ 
+@@ -42,6 +51,42 @@ public class DataSourceProxyTest {
+         Assertions.assertEquals(dataSourceProxy2.getTargetDataSource(), dataSource);
+     }
+ 
++    @Test
++    public void testNotSupportDb() {
++        final MockDriver mockDriver = new MockDriver();
++        final String username = "username";
++        final String jdbcUrl = "jdbc:mock:xxx";
++
++        // create data source
++        final DruidDataSource dataSource = new DruidDataSource();
++        dataSource.setUrl(jdbcUrl);
++        dataSource.setDriver(mockDriver);
++        dataSource.setUsername(username);
++        dataSource.setPassword("password");
++
++        Throwable throwable = Assertions.assertThrows(IllegalStateException.class, () -> new DataSourceProxy(dataSource));
++        assertThat(throwable).hasMessageContaining("AT mode don't support the the dbtype");
++    }
++
++
++    @Test
++    public void testUndologTableNotExist() {
++        DataSource dataSource = new MockDataSource();
++
++        MockedStatic<UndoLogManagerFactory> undoLogManagerFactoryMockedStatic = Mockito.mockStatic(UndoLogManagerFactory.class);
++
++        MySQLUndoLogManager mysqlUndoLogManager = mock(MySQLUndoLogManager.class);
++        undoLogManagerFactoryMockedStatic.when(()->UndoLogManagerFactory.getUndoLogManager(anyString()))
++                .thenReturn(mysqlUndoLogManager);
++
++        doReturn(false).when(mysqlUndoLogManager).hasUndoLogTable(any(Connection.class));
++
++        Throwable throwable = Assertions.assertThrows(IllegalStateException.class, () -> new DataSourceProxy(dataSource));
++        undoLogManagerFactoryMockedStatic.close();
++
++        assertThat(throwable).hasMessageContaining("table not exist");
++    }
++
+     @Test
+     public void getResourceIdTest() throws SQLException, NoSuchFieldException, IllegalAccessException {
+         // Disable 'DataSourceProxy.tableMetaExecutor' to prevent unit tests from being affected
+@@ -62,7 +107,7 @@ public class DataSourceProxyTest {
+         dataSource.setPassword("password");
+ 
+         // create data source proxy
+-        final DataSourceProxy proxy = new DataSourceProxy(dataSource);
++        final DataSourceProxy proxy = getDataSourceProxy(dataSource);
+ 
+         // get fields
+         Field resourceIdField = proxy.getClass().getDeclaredField("resourceId");
+@@ -124,4 +169,17 @@ public class DataSourceProxyTest {
+             jdbcUrlField.set(proxy, jdbcUrl);
+         }
+     }
++
++    // to skip the db & undolog table check
++    public static DataSourceProxy getDataSourceProxy(DataSource dataSource) {
++        try (MockedStatic<UndoLogManagerFactory> undoLogManagerFactoryMockedStatic = Mockito.mockStatic(UndoLogManagerFactory.class)) {
++            MySQLUndoLogManager mysqlUndoLogManager = mock(MySQLUndoLogManager.class);
++            undoLogManagerFactoryMockedStatic.when(() -> UndoLogManagerFactory.getUndoLogManager(anyString())).thenReturn(mysqlUndoLogManager);
++
++            doReturn(true).when(mysqlUndoLogManager).hasUndoLogTable(any(Connection.class));
++
++            // create data source proxy
++            return new DataSourceProxy(dataSource);
++        }
++    }
+ }
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/PreparedStatementProxyTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/PreparedStatementProxyTest.java
+index cd7c58cb9..3ef88b2e1 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/PreparedStatementProxyTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/PreparedStatementProxyTest.java
+@@ -44,6 +44,8 @@ import io.seata.rm.datasource.mock.MockBlob;
+ import io.seata.rm.datasource.mock.MockClob;
+ import io.seata.rm.datasource.mock.MockConnection;
+ import io.seata.rm.datasource.mock.MockDriver;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.sqlparser.SQLRecognizerFactory;
+ import io.seata.sqlparser.SqlParserType;
+ import io.seata.sqlparser.druid.DruidDelegatingSQLRecognizerFactory;
+@@ -54,6 +56,12 @@ import io.seata.sqlparser.util.JdbcConstants;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.Test;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import javax.sql.DataSource;
++
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+  * @author will
+@@ -86,8 +94,7 @@ public class PreparedStatementProxyTest {
+         DruidDataSource dataSource = new DruidDataSource();
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+-
+-        DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSource);
++        DataSourceProxy dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         ConnectionProxy connectionProxy = new ConnectionProxy(dataSourceProxy, dataSource.getConnection().getConnection());
+ 
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/StatementProxyTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/StatementProxyTest.java
+index 8260ef81e..54646a9dd 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/StatementProxyTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/StatementProxyTest.java
+@@ -31,6 +31,8 @@ import io.seata.common.loader.EnhancedServiceLoader;
+ import io.seata.rm.datasource.mock.MockConnection;
+ import io.seata.rm.datasource.mock.MockDriver;
+ 
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.sqlparser.SQLRecognizerFactory;
+ import io.seata.sqlparser.SqlParserType;
+ import io.seata.sqlparser.druid.DruidDelegatingSQLRecognizerFactory;
+@@ -44,6 +46,10 @@ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.MethodOrderer;
+ import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.api.TestMethodOrder;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+  * @author will
+@@ -78,7 +84,7 @@ public class StatementProxyTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSource);
++        DataSourceProxy dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         ConnectionProxy connectionProxy = new ConnectionProxy(dataSourceProxy,
+             dataSource.getConnection().getConnection());
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/DeleteExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/DeleteExecutorTest.java
+index 838e73a34..b3b5ed105 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/DeleteExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/DeleteExecutorTest.java
+@@ -29,13 +29,23 @@ import com.alibaba.druid.util.JdbcConstants;
+ import com.google.common.collect.Lists;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.StatementProxy;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.sql.struct.TableRecords;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.sqlparser.druid.mysql.MySQLDeleteRecognizer;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.Test;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import javax.sql.DataSource;
++
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.when;
+ 
+ /**
+  * @author will
+@@ -66,7 +76,7 @@ public class DeleteExecutorTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSource);
++        DataSourceProxy dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+         try {
+             Field field = dataSourceProxy.getClass().getDeclaredField("dbType");
+             field.setAccessible(true);
+@@ -101,4 +111,5 @@ public class DeleteExecutorTest {
+         TableRecords tableRecords = deleteExecutor.beforeImage();
+         Assertions.assertEquals(0, deleteExecutor.afterImage(tableRecords).size());
+     }
++
+ }
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MultiExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MultiExecutorTest.java
+index 332bde498..980aee46f 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MultiExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MultiExecutorTest.java
+@@ -24,6 +24,9 @@ import java.util.Objects;
+ import java.util.Set;
+ import java.util.stream.Collectors;
+ 
++import io.seata.rm.datasource.DataSourceProxyTest;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.Test;
+@@ -44,6 +47,14 @@ import io.seata.rm.datasource.undo.SQLUndoLog;
+ import io.seata.sqlparser.SQLRecognizer;
+ import io.seata.sqlparser.SQLType;
+ import io.seata.sqlparser.util.JdbcConstants;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import javax.sql.DataSource;
++
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
+ 
+ public class MultiExecutorTest {
+ 
+@@ -73,7 +84,8 @@ public class MultiExecutorTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSource);
++        DataSourceProxy dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
++
+         try {
+             Field field = dataSourceProxy.getClass().getDeclaredField("dbType");
+             field.setAccessible(true);
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/PlainExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/PlainExecutorTest.java
+index 7a2e545b6..22b18549c 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/PlainExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/PlainExecutorTest.java
+@@ -24,6 +24,7 @@ import com.alibaba.druid.pool.DruidDataSource;
+ import com.google.common.collect.Lists;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.StatementProxy;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import org.junit.jupiter.api.BeforeEach;
+@@ -56,7 +57,8 @@ public class PlainExecutorTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSource);
++        DataSourceProxy dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
++
+         ConnectionProxy connectionProxy = new ConnectionProxy(dataSourceProxy, dataSource.getConnection().getConnection());
+         MockStatementBase mockStatement = new MockStatement(dataSource.getConnection().getConnection());
+         StatementProxy statementProxy = new StatementProxy(connectionProxy, mockStatement);
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/SelectForUpdateExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/SelectForUpdateExecutorTest.java
+index 46d4ca0f7..c53d382f1 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/SelectForUpdateExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/SelectForUpdateExecutorTest.java
+@@ -28,14 +28,21 @@ import com.google.common.collect.Lists;
+ import io.seata.core.context.RootContext;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.StatementProxy;
+ import io.seata.rm.datasource.mock.MockConnectionProxy;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.mock.MockLockConflictConnectionProxy;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.sqlparser.druid.mysql.MySQLSelectForUpdateRecognizer;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.Test;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+  * @author will
+@@ -69,7 +76,8 @@ public class SelectForUpdateExecutorTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSource);
++        DataSourceProxy dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
++
+         try {
+             Field field = dataSourceProxy.getClass().getDeclaredField("dbType");
+             field.setAccessible(true);
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateExecutorTest.java
+index c25df6f4e..973ae530a 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateExecutorTest.java
+@@ -30,13 +30,22 @@ import com.alibaba.druid.util.JdbcConstants;
+ import com.google.common.collect.Lists;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.StatementProxy;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.sql.struct.TableRecords;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.sqlparser.druid.mysql.MySQLUpdateRecognizer;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.Test;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import javax.sql.DataSource;
++
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+  * @author will
+@@ -68,7 +77,8 @@ public class UpdateExecutorTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSource);
++        DataSourceProxy dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
++
+         try {
+             Field field = dataSourceProxy.getClass().getDeclaredField("dbType");
+             field.setAccessible(true);
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateJoinExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateJoinExecutorTest.java
+index 971dfd033..fbde0a4bd 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateJoinExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateJoinExecutorTest.java
+@@ -29,13 +29,20 @@ import com.alibaba.druid.util.JdbcConstants;
+ import com.google.common.collect.Lists;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.StatementProxy;
+ import io.seata.rm.datasource.exec.mysql.MySQLUpdateJoinExecutor;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.sql.struct.TableRecords;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.sqlparser.druid.mysql.MySQLUpdateRecognizer;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.Test;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+  * @author renliangyu857
+@@ -81,7 +88,7 @@ public class UpdateJoinExecutorTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSource);
++        DataSourceProxy dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+         try {
+             Field field = dataSourceProxy.getClass().getDeclaredField("dbType");
+             field.setAccessible(true);
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/TableRecordsTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/TableRecordsTest.java
+index 61714ca77..bc02c6401 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/TableRecordsTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/TableRecordsTest.java
+@@ -15,26 +15,25 @@
+  */
+ package io.seata.rm.datasource.sql.struct;
+ 
+-import java.sql.ResultSet;
+-import java.sql.SQLException;
+-import java.sql.Types;
+-import java.util.List;
+-
+-import io.seata.rm.datasource.exception.TableMetaException;
+-import io.seata.sqlparser.struct.TableMeta;
+-import org.junit.jupiter.api.Assertions;
+-import org.junit.jupiter.api.BeforeEach;
+-import org.junit.jupiter.api.Test;
+-
+ import com.alibaba.druid.mock.MockStatement;
+ import com.alibaba.druid.mock.MockStatementBase;
+ import com.alibaba.druid.pool.DruidDataSource;
+ import com.google.common.collect.Lists;
+-
+ import io.seata.common.exception.ShouldNeverHappenException;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
++import io.seata.rm.datasource.exception.TableMetaException;
+ import io.seata.rm.datasource.mock.MockDriver;
++import io.seata.sqlparser.struct.TableMeta;
+ import io.seata.sqlparser.util.JdbcConstants;
++import org.junit.jupiter.api.Assertions;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++
++import java.sql.ResultSet;
++import java.sql.SQLException;
++import java.sql.Types;
++import java.util.List;
+ 
+ /**
+  * the table records test
+@@ -102,8 +101,9 @@ public class TableRecordsTest {
+         DruidDataSource dataSource = new DruidDataSource();
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
++
+         MockStatementBase mockStatement = new MockStatement(dataSource.getConnection().getConnection());
+-        DataSourceProxy proxy = new DataSourceProxy(dataSource);
++        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         TableMeta tableMeta = TableMetaCacheFactory.getTableMetaCache(JdbcConstants.MYSQL).getTableMeta(proxy.getPlainConnection(),
+             "table_records_test", proxy.getResourceId());
+@@ -122,7 +122,7 @@ public class TableRecordsTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+         MockStatementBase mockStatement = new MockStatement(dataSource.getConnection().getConnection());
+-        DataSourceProxy proxy = new DataSourceProxy(dataSource);
++        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         TableMeta tableMeta = TableMetaCacheFactory.getTableMetaCache(JdbcConstants.MYSQL).getTableMeta(proxy.getPlainConnection(),
+             "table_records_test", proxy.getResourceId());
+@@ -141,7 +141,7 @@ public class TableRecordsTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+         MockStatementBase mockStatement = new MockStatement(dataSource.getConnection().getConnection());
+-        DataSourceProxy proxy = new DataSourceProxy(dataSource);
++        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         TableMeta tableMeta = TableMetaCacheFactory.getTableMetaCache(JdbcConstants.MYSQL).getTableMeta(proxy.getPlainConnection(),
+                 "table_records_test", proxy.getResourceId());
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/DmTableMetaCacheTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/DmTableMetaCacheTest.java
+index e4319ea5b..8973b1305 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/DmTableMetaCacheTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/DmTableMetaCacheTest.java
+@@ -17,6 +17,7 @@ package io.seata.rm.datasource.sql.struct.cache;
+ 
+ import com.alibaba.druid.pool.DruidDataSource;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.sql.struct.TableMetaCacheFactory;
+ import io.seata.sqlparser.struct.TableMeta;
+@@ -65,7 +66,7 @@ public class DmTableMetaCacheTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy proxy = new DataSourceProxy(dataSource);
++        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         TableMetaCache tableMetaCache = TableMetaCacheFactory.getTableMetaCache(JdbcConstants.DM);
+ 
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/MariadbTableMetaCacheTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/MariadbTableMetaCacheTest.java
+index a13c9991c..01144502b 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/MariadbTableMetaCacheTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/MariadbTableMetaCacheTest.java
+@@ -19,6 +19,9 @@ import java.sql.SQLException;
+ import java.sql.Types;
+ import java.util.Collections;
+ 
++import io.seata.rm.datasource.DataSourceProxyTest;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.sqlparser.struct.ColumnMeta;
+ import io.seata.sqlparser.struct.IndexMeta;
+ import io.seata.sqlparser.struct.IndexType;
+@@ -34,6 +37,10 @@ import io.seata.rm.datasource.DataSourceProxy;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.sql.struct.TableMetaCacheFactory;
+ import io.seata.sqlparser.util.JdbcConstants;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+  * The table meta fetch test.
+@@ -84,7 +91,7 @@ public class MariadbTableMetaCacheTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy proxy = new DataSourceProxy(dataSource);
++        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         TableMeta tableMeta = getTableMetaCache().getTableMeta(proxy.getPlainConnection(), "mt1", proxy.getResourceId());
+ 
+@@ -133,7 +140,7 @@ public class MariadbTableMetaCacheTest {
+         druidDataSource.setUrl("jdbc:mock:xxx");
+         druidDataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy dataSourceProxy = new DataSourceProxy(druidDataSource);
++        DataSourceProxy dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(druidDataSource);
+ 
+         TableMeta tableMeta = getTableMetaCache().getTableMeta(dataSourceProxy.getPlainConnection(), "t1",
+             dataSourceProxy.getResourceId());
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/MysqlTableMetaCacheTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/MysqlTableMetaCacheTest.java
+index 56928aa6d..0dbe2400e 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/MysqlTableMetaCacheTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/MysqlTableMetaCacheTest.java
+@@ -19,6 +19,9 @@ import java.sql.SQLException;
+ import java.sql.Types;
+ import java.util.Collections;
+ 
++import io.seata.rm.datasource.DataSourceProxyTest;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.Test;
+ 
+@@ -34,6 +37,13 @@ import io.seata.sqlparser.struct.TableMeta;
+ import io.seata.sqlparser.struct.TableMetaCache;
+ import io.seata.rm.datasource.sql.struct.TableMetaCacheFactory;
+ import io.seata.sqlparser.util.JdbcConstants;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import javax.sql.DataSource;
++
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.mock;
+ 
+ /**
+  * The table meta fetch test.
+@@ -84,7 +94,7 @@ public class MysqlTableMetaCacheTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy proxy = new DataSourceProxy(dataSource);
++        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         TableMeta tableMeta = getTableMetaCache().getTableMeta(proxy.getPlainConnection(), "mt1", proxy.getResourceId());
+ 
+@@ -133,7 +143,7 @@ public class MysqlTableMetaCacheTest {
+         druidDataSource.setUrl("jdbc:mock:xxx");
+         druidDataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy dataSourceProxy = new DataSourceProxy(druidDataSource);
++        DataSourceProxy dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(druidDataSource);
+ 
+         TableMeta tableMeta = getTableMetaCache().getTableMeta(dataSourceProxy.getPlainConnection(), "t1",
+             dataSourceProxy.getResourceId());
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/OracleTableMetaCacheTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/OracleTableMetaCacheTest.java
+index 8d3aa2abc..fd7877aca 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/OracleTableMetaCacheTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/OracleTableMetaCacheTest.java
+@@ -18,6 +18,9 @@ package io.seata.rm.datasource.sql.struct.cache;
+ import java.sql.SQLException;
+ import java.sql.Types;
+ 
++import io.seata.rm.datasource.DataSourceProxyTest;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.Test;
+ 
+@@ -29,6 +32,10 @@ import io.seata.sqlparser.struct.TableMeta;
+ import io.seata.sqlparser.struct.TableMetaCache;
+ import io.seata.rm.datasource.sql.struct.TableMetaCacheFactory;
+ import io.seata.sqlparser.util.JdbcConstants;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+   * @author will.zjw
+@@ -65,7 +72,7 @@ public class OracleTableMetaCacheTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy proxy = new DataSourceProxy(dataSource);
++        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         TableMetaCache tableMetaCache = TableMetaCacheFactory.getTableMetaCache(JdbcConstants.ORACLE);
+ 
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/PostgresqlTableMetaCacheTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/PostgresqlTableMetaCacheTest.java
+index 2098629e8..bf1a116c4 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/PostgresqlTableMetaCacheTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/PostgresqlTableMetaCacheTest.java
+@@ -18,6 +18,9 @@ package io.seata.rm.datasource.sql.struct.cache;
+ import java.sql.SQLException;
+ import java.sql.Types;
+ 
++import io.seata.rm.datasource.DataSourceProxyTest;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.Test;
+ 
+@@ -29,6 +32,12 @@ import io.seata.sqlparser.struct.TableMeta;
+ import io.seata.sqlparser.struct.TableMetaCache;
+ import io.seata.rm.datasource.sql.struct.TableMetaCacheFactory;
+ import io.seata.sqlparser.util.JdbcConstants;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import javax.sql.DataSource;
++
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+   * @author will.zjw
+@@ -65,7 +74,7 @@ public class PostgresqlTableMetaCacheTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy proxy = new DataSourceProxy(dataSource);
++        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         TableMetaCache tableMetaCache = TableMetaCacheFactory.getTableMetaCache(JdbcConstants.POSTGRESQL);
+ 
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/SqlServerTableMetaCacheTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/SqlServerTableMetaCacheTest.java
+index cb0b49e2f..4cb0f26d8 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/SqlServerTableMetaCacheTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/SqlServerTableMetaCacheTest.java
+@@ -22,7 +22,10 @@ import java.util.Collections;
+ import com.alibaba.druid.pool.DruidDataSource;
+ import io.seata.common.exception.ShouldNeverHappenException;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.mock.MockDriver;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.sqlparser.struct.ColumnMeta;
+ import io.seata.sqlparser.struct.IndexMeta;
+ import io.seata.sqlparser.struct.IndexType;
+@@ -32,6 +35,13 @@ import io.seata.rm.datasource.sql.struct.TableMetaCacheFactory;
+ import io.seata.sqlparser.util.JdbcConstants;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.Test;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import javax.sql.DataSource;
++
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.mock;
+ 
+ /**
+  * @author GoodBoyCoder
+@@ -82,7 +92,7 @@ public class SqlServerTableMetaCacheTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        DataSourceProxy proxy = new DataSourceProxy(dataSource);
++        DataSourceProxy proxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+ 
+         TableMeta tableMeta = getTableMetaCache().getTableMeta(proxy.getPlainConnection(), "m.mt1", proxy.getResourceId());
+ 
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/undo/BaseH2Test.java b/rm-datasource/src/test/java/io/seata/rm/datasource/undo/BaseH2Test.java
+index 9a84c5e08..412cc06bb 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/undo/BaseH2Test.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/undo/BaseH2Test.java
+@@ -18,6 +18,8 @@ package io.seata.rm.datasource.undo;
+ import io.seata.common.util.IOUtil;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.sqlparser.struct.ColumnMeta;
+ import io.seata.rm.datasource.sql.struct.Field;
+ import io.seata.rm.datasource.sql.struct.KeyType;
+@@ -29,14 +31,17 @@ import org.h2.store.fs.FileUtils;
+ import org.junit.jupiter.api.AfterAll;
+ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.BeforeEach;
++import org.mockito.MockedStatic;
+ import org.mockito.Mockito;
+ 
++import javax.sql.DataSource;
+ import java.sql.ResultSet;
+ import java.sql.SQLException;
+ import java.sql.Statement;
+ import java.sql.Types;
+ import java.util.Arrays;
+ 
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+  * @author Geng Zhang
+@@ -58,7 +63,8 @@ public abstract class BaseH2Test {
+         dataSource.setUrl("jdbc:h2:./db_store/test_undo");
+         dataSource.setUsername("sa");
+         dataSource.setPassword("");
+-        dataSourceProxy = new DataSourceProxy(dataSource);
++        dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
++
+         connection = dataSourceProxy.getConnection();
+ 
+         tableMeta = mockTableMeta();
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/undo/mariadb/MariadbUndoLogManagerTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/undo/mariadb/MariadbUndoLogManagerTest.java
+index 9af77f5eb..a80799cdb 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/undo/mariadb/MariadbUndoLogManagerTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/undo/mariadb/MariadbUndoLogManagerTest.java
+@@ -25,6 +25,8 @@ import java.util.Collections;
+ import java.util.Date;
+ import java.util.List;
+ 
++import io.seata.rm.datasource.DataSourceProxyTest;
++import io.seata.rm.datasource.undo.*;
+ import io.seata.sqlparser.struct.TableMeta;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.BeforeAll;
+@@ -42,11 +44,6 @@ import io.seata.rm.datasource.DataSourceProxy;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.sql.struct.Row;
+ import io.seata.rm.datasource.sql.struct.TableRecords;
+-import io.seata.rm.datasource.undo.AbstractUndoLogManager;
+-import io.seata.rm.datasource.undo.BranchUndoLog;
+-import io.seata.rm.datasource.undo.SQLUndoLog;
+-import io.seata.rm.datasource.undo.UndoLogParser;
+-import io.seata.rm.datasource.undo.UndoLogParserFactory;
+ import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.rm.datasource.undo.parser.JacksonUndoLogParser;
+ import io.seata.sqlparser.SQLRecognizerFactory;
+@@ -56,6 +53,13 @@ import io.seata.sqlparser.druid.DruidDelegatingSQLRecognizerFactory;
+ import io.seata.sqlparser.druid.SQLOperateRecognizerHolder;
+ import io.seata.sqlparser.druid.SQLOperateRecognizerHolderFactory;
+ import io.seata.sqlparser.util.JdbcConstants;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import javax.sql.DataSource;
++
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.when;
+ 
+ /**
+  * @author funkye
+@@ -100,7 +104,8 @@ public class MariadbUndoLogManagerTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        dataSourceProxy = new DataSourceProxy(dataSource);
++        dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
++
+         connectionProxy = new ConnectionProxy(dataSourceProxy, dataSource.getConnection().getConnection());
+         undoLogManager = new MariadbUndoLogManager();
+         tableMeta = new TableMeta();
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/undo/mysql/MySQLUndoLogManagerTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/undo/mysql/MySQLUndoLogManagerTest.java
+index 367dc94a8..aa6ceeb16 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/undo/mysql/MySQLUndoLogManagerTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/undo/mysql/MySQLUndoLogManagerTest.java
+@@ -33,15 +33,12 @@ import io.seata.common.loader.EnhancedServiceLoader;
+ import io.seata.rm.datasource.ConnectionContext;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.sql.struct.Row;
++import io.seata.rm.datasource.undo.*;
+ import io.seata.sqlparser.struct.TableMeta;
+ import io.seata.rm.datasource.sql.struct.TableRecords;
+-import io.seata.rm.datasource.undo.AbstractUndoLogManager;
+-import io.seata.rm.datasource.undo.BranchUndoLog;
+-import io.seata.rm.datasource.undo.SQLUndoLog;
+-import io.seata.rm.datasource.undo.UndoLogParser;
+-import io.seata.rm.datasource.undo.UndoLogParserFactory;
+ import io.seata.rm.datasource.undo.parser.JacksonUndoLogParser;
+ import io.seata.sqlparser.SQLRecognizerFactory;
+ import io.seata.sqlparser.SQLType;
+@@ -54,6 +51,12 @@ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import javax.sql.DataSource;
++
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+  * @author will
+@@ -98,7 +101,8 @@ public class MySQLUndoLogManagerTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        dataSourceProxy = new DataSourceProxy(dataSource);
++        dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
++
+         connectionProxy = new ConnectionProxy(dataSourceProxy, dataSource.getConnection().getConnection());
+         undoLogManager = new MySQLUndoLogManager();
+         tableMeta = new TableMeta();
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/undo/polardbx/PolarDBXUndoLogManagerTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/undo/polardbx/PolarDBXUndoLogManagerTest.java
+index e80575b7e..cb8b2a41a 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/undo/polardbx/PolarDBXUndoLogManagerTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/undo/polardbx/PolarDBXUndoLogManagerTest.java
+@@ -32,15 +32,13 @@ import io.seata.common.loader.EnhancedServiceLoader;
+ import io.seata.rm.datasource.ConnectionContext;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.sql.struct.Row;
+ import io.seata.rm.datasource.sql.struct.TableRecords;
+-import io.seata.rm.datasource.undo.AbstractUndoLogManager;
+-import io.seata.rm.datasource.undo.BranchUndoLog;
+-import io.seata.rm.datasource.undo.SQLUndoLog;
+-import io.seata.rm.datasource.undo.UndoLogParser;
+-import io.seata.rm.datasource.undo.UndoLogParserFactory;
++import io.seata.rm.datasource.undo.*;
+ 
++import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.rm.datasource.undo.parser.JacksonUndoLogParser;
+ import io.seata.sqlparser.SQLType;
+ import io.seata.sqlparser.druid.SQLOperateRecognizerHolder;
+@@ -51,6 +49,12 @@ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
++import org.mockito.MockedStatic;
++import org.mockito.Mockito;
++
++import javax.sql.DataSource;
++
++import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+  * Undo log manager test for PolarDB-X
+@@ -95,7 +99,7 @@ public class PolarDBXUndoLogManagerTest {
+         dataSource.setUrl("jdbc:mock:xxx");
+         dataSource.setDriver(mockDriver);
+ 
+-        dataSourceProxy = new DataSourceProxy(dataSource);
++        dataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+         connectionProxy = new ConnectionProxy(dataSourceProxy, dataSource.getConnection().getConnection());
+         undoLogManager = new PolarDBXUndoLogManager();
+         tableMeta = new TableMeta();

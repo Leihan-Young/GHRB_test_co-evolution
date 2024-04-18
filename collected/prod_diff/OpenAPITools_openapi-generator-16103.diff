@@ -1,0 +1,714 @@
+diff --git a/modules/openapi-generator-cli/src/main/java/org/openapitools/codegen/cmd/ConfigHelp.java b/modules/openapi-generator-cli/src/main/java/org/openapitools/codegen/cmd/ConfigHelp.java
+index 95a94832fb9..d3f3a9c824f 100644
+--- a/modules/openapi-generator-cli/src/main/java/org/openapitools/codegen/cmd/ConfigHelp.java
++++ b/modules/openapi-generator-cli/src/main/java/org/openapitools/codegen/cmd/ConfigHelp.java
+@@ -80,6 +80,9 @@ public class ConfigHelp extends OpenApiGeneratorCommand {
+     @Option(name = {"--inline-schema-options"}, title = "inline schema options", description = "options for handling inline schemas in inline model resolver")
+     private Boolean inlineSchemaOptions;
+ 
++    @Option(name = {"--name-mappings"}, title = "property/parameter name mappings", description = "displays the property/parameter name mappings (none)")
++    private Boolean nameMappings;
++
+     @Option(name = {"--openapi-normalizer"}, title = "openapi normalizer rules", description = "displays the OpenAPI normalizer rules (none)")
+     private Boolean openapiNormalizer;
+ 
+@@ -497,6 +500,18 @@ public class ConfigHelp extends OpenApiGeneratorCommand {
+             sb.append(newline);
+         }
+ 
++        if (Boolean.TRUE.equals(nameMappings)) {
++            sb.append(newline).append("PROPERTY, PARAMETER NAME MAPPING").append(newline).append(newline);
++            Map<String, String> map = config.nameMapping()
++                    .entrySet()
++                    .stream()
++                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> {
++                        throw new IllegalStateException(String.format(Locale.ROOT, "Duplicated options! %s and %s", a, b));
++                    }, TreeMap::new));
++            writePlainTextFromMap(sb, map, optIndent, optNestedIndent, "property, parameter name", "Mapped to");
++            sb.append(newline);
++        }
++
+         if (Boolean.TRUE.equals(openapiNormalizer)) {
+             sb.append(newline).append("OPENAPI NORMALIZER RULES").append(newline).append(newline);
+             Map<String, String> map = config.openapiNormalizer()
+diff --git a/modules/openapi-generator-cli/src/main/java/org/openapitools/codegen/cmd/Generate.java b/modules/openapi-generator-cli/src/main/java/org/openapitools/codegen/cmd/Generate.java
+index 3cb6ed516fb..0243954478e 100644
+--- a/modules/openapi-generator-cli/src/main/java/org/openapitools/codegen/cmd/Generate.java
++++ b/modules/openapi-generator-cli/src/main/java/org/openapitools/codegen/cmd/Generate.java
+@@ -182,11 +182,19 @@ public class Generate extends OpenApiGeneratorCommand {
+     private List<String> inlineSchemaNameMappings = new ArrayList<>();
+ 
+     @Option(
+-            name = {"--inline-schema-optionss"},
++            name = {"--inline-schema-options"},
+             title = "inline schema options",
+-            description = "specifies the options for handling inline schemas in the inline model resolver.")
++            description = "specifies the options for handling inline schemas in the inline model resolver."
++                    + " Please refer to https://github.com/OpenAPITools/openapi-generator/blob/master/docs/customization.md for a list of options.")
+     private List<String> inlineSchemaOptions = new ArrayList<>();
+ 
++    @Option(
++            name = {"--name-mappings"},
++            title = "property, parameter name mappings",
++            description = "specifies mappings between the property, parameter name and the new name in the format of param_name=paramName,prop_name=PropName."
++                    + " You can also have multiple occurrences of this option.")
++    private List<String> nameMappings = new ArrayList<>();
++
+     @Option(
+             name = {"--openapi-normalizer"},
+             title = "OpenAPI normalizer rules",
+@@ -467,6 +475,7 @@ public class Generate extends OpenApiGeneratorCommand {
+         applySchemaMappingsKvpList(schemaMappings, configurator);
+         applyInlineSchemaNameMappingsKvpList(inlineSchemaNameMappings, configurator);
+         applyInlineSchemaOptionsKvpList(inlineSchemaOptions, configurator);
++        applyNameMappingsKvpList(nameMappings, configurator);
+         applyOpenAPINormalizerKvpList(openapiNormalizer, configurator);
+         applyTypeMappingsKvpList(typeMappings, configurator);
+         applyAdditionalPropertiesKvpList(additionalProperties, configurator);
+diff --git a/modules/openapi-generator-core/src/main/java/org/openapitools/codegen/config/GeneratorSettings.java b/modules/openapi-generator-core/src/main/java/org/openapitools/codegen/config/GeneratorSettings.java
+index 9d3bfec6449..4ff11a044ee 100644
+--- a/modules/openapi-generator-core/src/main/java/org/openapitools/codegen/config/GeneratorSettings.java
++++ b/modules/openapi-generator-core/src/main/java/org/openapitools/codegen/config/GeneratorSettings.java
+@@ -53,6 +53,7 @@ public final class GeneratorSettings implements Serializable {
+     private final Map<String, String> schemaMappings;
+     private final Map<String, String> inlineSchemaNameMappings;
+     private final Map<String, String> inlineSchemaOptions;
++    private final Map<String, String> nameMappings;
+     private final Map<String, String> openapiNormalizer;
+     private final Set<String> languageSpecificPrimitives;
+     private final Map<String, String> reservedWordsMappings;
+@@ -265,6 +266,15 @@ public final class GeneratorSettings implements Serializable {
+         return inlineSchemaOptions;
+     }
+ 
++    /**
++     * Gets property, parameter name mappings between a property, parameter name and the new name.
++     *
++     * @return the property, parameter name mappings
++     */
++    public Map<String, String> getNameMappings() {
++        return nameMappings;
++    }
++
+     /**
+      * Gets OpenAPI normalizer rules
+      *
+@@ -392,6 +402,7 @@ public final class GeneratorSettings implements Serializable {
+         schemaMappings = Collections.unmodifiableMap(builder.schemaMappings);
+         inlineSchemaNameMappings = Collections.unmodifiableMap(builder.inlineSchemaNameMappings);
+         inlineSchemaOptions = Collections.unmodifiableMap(builder.inlineSchemaOptions);
++        nameMappings = Collections.unmodifiableMap(builder.nameMappings);
+         openapiNormalizer = Collections.unmodifiableMap(builder.openapiNormalizer);
+         languageSpecificPrimitives = Collections.unmodifiableSet(builder.languageSpecificPrimitives);
+         reservedWordsMappings = Collections.unmodifiableMap(builder.reservedWordsMappings);
+@@ -466,6 +477,7 @@ public final class GeneratorSettings implements Serializable {
+         schemaMappings = Collections.unmodifiableMap(new HashMap<>(0));
+         inlineSchemaNameMappings = Collections.unmodifiableMap(new HashMap<>(0));
+         inlineSchemaOptions = Collections.unmodifiableMap(new HashMap<>(0));
++        nameMappings = Collections.unmodifiableMap(new HashMap<>(0));
+         openapiNormalizer = Collections.unmodifiableMap(new HashMap<>(0));
+         languageSpecificPrimitives = Collections.unmodifiableSet(new HashSet<>(0));
+         reservedWordsMappings = Collections.unmodifiableMap(new HashMap<>(0));
+@@ -527,6 +539,9 @@ public final class GeneratorSettings implements Serializable {
+         if (copy.getInlineSchemaOptions() != null) {
+             builder.inlineSchemaOptions.putAll(copy.getInlineSchemaOptions());
+         }
++        if (copy.getNameMappings() != null) {
++            builder.nameMappings.putAll(copy.getNameMappings());
++        }
+         if (copy.getOpenAPINormalizer() != null) {
+             builder.openapiNormalizer.putAll(copy.getOpenAPINormalizer());
+         }
+@@ -572,6 +587,7 @@ public final class GeneratorSettings implements Serializable {
+         private Map<String, String> schemaMappings;
+         private Map<String, String> inlineSchemaNameMappings;
+         private Map<String, String> inlineSchemaOptions;
++        private Map<String, String> nameMappings;
+         private Map<String, String> openapiNormalizer;
+         private Set<String> languageSpecificPrimitives;
+         private Map<String, String> reservedWordsMappings;
+@@ -593,6 +609,7 @@ public final class GeneratorSettings implements Serializable {
+             schemaMappings = new HashMap<>();
+             inlineSchemaNameMappings = new HashMap<>();
+             inlineSchemaOptions = new HashMap<>();
++            nameMappings = new HashMap<>();
+             openapiNormalizer = new HashMap<>();
+             languageSpecificPrimitives = new HashSet<>();
+             reservedWordsMappings = new HashMap<>();
+@@ -914,6 +931,32 @@ public final class GeneratorSettings implements Serializable {
+             return this;
+         }
+ 
++        /**
++         * Sets the {@code nameMappings} and returns a reference to this Builder so that the methods can be chained together.
++         *
++         * @param nameMappings the {@code nameMappings} to set
++         * @return a reference to this Builder
++         */
++        public Builder withNameMappings(Map<String, String> nameMappings) {
++            this.nameMappings = nameMappings;
++            return this;
++        }
++
++        /**
++         * Sets a single {@code nameMappings} and returns a reference to this Builder so that the methods can be chained together.
++         *
++         * @param key   A key for the name mapping
++         * @param value The value of name mapping
++         * @return a reference to this Builder
++         */
++        public Builder withNameMapping(String key, String value) {
++            if (this.nameMappings == null) {
++                this.nameMappings = new HashMap<>();
++            }
++            this.nameMappings.put(key, value);
++            return this;
++        }
++
+         /**
+          * Sets the {@code openapiNormalizer} and returns a reference to this Builder so that the methods can be chained together.
+          *
+@@ -1128,6 +1171,7 @@ public final class GeneratorSettings implements Serializable {
+                 Objects.equals(getSchemaMappings(), that.getSchemaMappings()) &&
+                 Objects.equals(getInlineSchemaNameMappings(), that.getInlineSchemaNameMappings()) &&
+                 Objects.equals(getInlineSchemaOptions(), that.getInlineSchemaOptions()) &&
++                Objects.equals(getNameMappings(), that.getNameMappings()) &&
+                 Objects.equals(getOpenAPINormalizer(), that.getOpenAPINormalizer()) &&
+                 Objects.equals(getLanguageSpecificPrimitives(), that.getLanguageSpecificPrimitives()) &&
+                 Objects.equals(getReservedWordsMappings(), that.getReservedWordsMappings()) &&
+@@ -1160,6 +1204,7 @@ public final class GeneratorSettings implements Serializable {
+                 getSchemaMappings(),
+                 getInlineSchemaNameMappings(),
+                 getInlineSchemaOptions(),
++                getNameMappings(),
+                 getOpenAPINormalizer(),
+                 getLanguageSpecificPrimitives(),
+                 getReservedWordsMappings(),
+diff --git a/modules/openapi-generator-maven-plugin/src/main/java/org/openapitools/codegen/plugin/CodeGenMojo.java b/modules/openapi-generator-maven-plugin/src/main/java/org/openapitools/codegen/plugin/CodeGenMojo.java
+index a7d091b371b..0e073c3f980 100644
+--- a/modules/openapi-generator-maven-plugin/src/main/java/org/openapitools/codegen/plugin/CodeGenMojo.java
++++ b/modules/openapi-generator-maven-plugin/src/main/java/org/openapitools/codegen/plugin/CodeGenMojo.java
+@@ -332,6 +332,12 @@ public class CodeGenMojo extends AbstractMojo {
+     @Parameter(name = "inlineSchemaOptions", property = "openapi.generator.maven.plugin.inlineSchemaOptions")
+     private List<String> inlineSchemaOptions;
+ 
++    /**
++     * A map of property, parameter  names and the new names
++     */
++    @Parameter(name = "nameMappings", property = "openapi.generator.maven.plugin.nameMappings")
++    private List<String> nameMappings;
++
+     /**
+      * A set of rules for OpenAPI normalizer
+      */
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/CodegenConfig.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/CodegenConfig.java
+index c3a8832357e..1ab39a82baf 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/CodegenConfig.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/CodegenConfig.java
+@@ -147,6 +147,8 @@ public interface CodegenConfig {
+ 
+     Map<String, String> inlineSchemaOption();
+ 
++    Map<String, String> nameMapping();
++
+     Map<String, String> openapiNormalizer();
+ 
+     Map<String, String> apiTemplateFiles();
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
+index ab71d487773..9924b9ef710 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
+@@ -164,6 +164,8 @@ public class DefaultCodegen implements CodegenConfig {
+     protected Map<String, String> inlineSchemaNameMapping = new HashMap<>();
+     // a map to store the inline schema naming conventions
+     protected Map<String, String> inlineSchemaOption = new HashMap<>();
++    // a map to store the mapping between property, parameter name and the name provided by the user
++    protected Map<String, String> nameMapping = new HashMap<>();
+     // a map to store the rules in OpenAPI Normalizer
+     protected Map<String, String> openapiNormalizer = new HashMap<>();
+     protected String modelPackage = "", apiPackage = "", fileSuffix;
+@@ -1199,6 +1201,11 @@ public class DefaultCodegen implements CodegenConfig {
+         return inlineSchemaOption;
+     }
+ 
++    @Override
++    public Map<String, String> nameMapping() {
++        return nameMapping;
++    }
++
+     @Override
+     public Map<String, String> openapiNormalizer() {
+         return openapiNormalizer;
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/config/CodegenConfigurator.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/config/CodegenConfigurator.java
+index 4c9cb06de1b..7a1e3e0327a 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/config/CodegenConfigurator.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/config/CodegenConfigurator.java
+@@ -71,6 +71,7 @@ public class CodegenConfigurator {
+     private Map<String, String> schemaMappings = new HashMap<>();
+     private Map<String, String> inlineSchemaNameMappings = new HashMap<>();
+     private Map<String, String> inlineSchemaOptions = new HashMap<>();
++    private Map<String, String> nameMappings = new HashMap<>();
+     private Map<String, String> openapiNormalizer = new HashMap<>();
+     private Set<String> languageSpecificPrimitives = new HashSet<>();
+     private Map<String, String> reservedWordsMappings = new HashMap<>();
+@@ -124,6 +125,9 @@ public class CodegenConfigurator {
+             if(generatorSettings.getInlineSchemaOptions() != null) {
+                 configurator.inlineSchemaOptions.putAll(generatorSettings.getInlineSchemaOptions());
+             }
++            if(generatorSettings.getNameMappings() != null) {
++                configurator.nameMappings.putAll(generatorSettings.getNameMappings());
++            }
+             if(generatorSettings.getOpenAPINormalizer() != null) {
+                 configurator.openapiNormalizer.putAll(generatorSettings.getOpenAPINormalizer());
+             }
+@@ -214,6 +218,12 @@ public class CodegenConfigurator {
+         return this;
+     }
+ 
++    public CodegenConfigurator addNameMapping(String key, String value) {
++        this.nameMappings.put(key, value);
++        generatorSettingsBuilder.withNameMapping(key, value);
++        return this;
++    }
++
+     public CodegenConfigurator addOpenAPINormalizer(String key, String value) {
+         this.openapiNormalizer.put(key, value);
+         generatorSettingsBuilder.withOpenAPINormalizer(key, value);
+@@ -392,6 +402,12 @@ public class CodegenConfigurator {
+         return this;
+     }
+ 
++    public CodegenConfigurator setNameMappings(Map<String, String> nameMappings) {
++        this.nameMappings = nameMappings;
++        generatorSettingsBuilder.withNameMappings(nameMappings);
++        return this;
++    }
++
+     public CodegenConfigurator setOpenAPINormalizer(Map<String, String> openapiNormalizer) {
+         this.openapiNormalizer = openapiNormalizer;
+         generatorSettingsBuilder.withOpenAPINormalizer(openapiNormalizer);
+@@ -677,6 +693,7 @@ public class CodegenConfigurator {
+         config.schemaMapping().putAll(generatorSettings.getSchemaMappings());
+         config.inlineSchemaNameMapping().putAll(generatorSettings.getInlineSchemaNameMappings());
+         config.inlineSchemaOption().putAll(generatorSettings.getInlineSchemaOptions());
++        config.nameMapping().putAll(generatorSettings.getNameMappings());
+         config.openapiNormalizer().putAll(generatorSettings.getOpenAPINormalizer());
+         config.languageSpecificPrimitives().addAll(generatorSettings.getLanguageSpecificPrimitives());
+         config.reservedWordsMappings().putAll(generatorSettings.getReservedWordsMappings());
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/config/CodegenConfiguratorUtils.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/config/CodegenConfiguratorUtils.java
+index 35d6f101286..02460bb38de 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/config/CodegenConfiguratorUtils.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/config/CodegenConfiguratorUtils.java
+@@ -120,6 +120,19 @@ public final class CodegenConfiguratorUtils {
+         }
+     }
+ 
++    public static void applyNameMappingsKvpList(List<String> nameMappings, CodegenConfigurator configurator) {
++        for (String propString : nameMappings) {
++            applyNameMappingsKvp(propString, configurator);
++        }
++    }
++
++    public static void applyNameMappingsKvp(String nameMappings, CodegenConfigurator configurator) {
++        final Map<String, String> map = createMapFromKeyValuePairs(nameMappings);
++        for (Map.Entry<String, String> entry : map.entrySet()) {
++            configurator.addNameMapping(entry.getKey().trim(), entry.getValue().trim());
++        }
++    }
++
+     public static void applyOpenAPINormalizerKvpList(List<String> openapiNormalizer, CodegenConfigurator configurator) {
+         for (String propString : openapiNormalizer) {
+             applyOpenAPINormalizerKvp(propString, configurator);
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractJavaCodegen.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractJavaCodegen.java
+index ea066a8beca..e106b2a6898 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractJavaCodegen.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractJavaCodegen.java
+@@ -794,6 +794,11 @@ public abstract class AbstractJavaCodegen extends DefaultCodegen implements Code
+ 
+     @Override
+     public String toVarName(String name) {
++        // obtain the name from nameMapping directly if provided
++        if (nameMapping.containsKey(name)) {
++            return nameMapping.get(name);
++        }
++
+         // sanitize name
+         name = sanitizeName(name, "\\W-[\\$]"); // FIXME: a parameter should not be assigned. Also declare the methods parameters as 'final'.
+ 
+@@ -853,6 +858,11 @@ public abstract class AbstractJavaCodegen extends DefaultCodegen implements Code
+ 
+     @Override
+     public String toParamName(String name) {
++        // obtain the name from nameMapping directly if provided
++        if (nameMapping.containsKey(name)) {
++            return nameMapping.get(name);
++        }
++
+         // to avoid conflicts with 'callback' parameter for async call
+         if ("callback".equals(name)) {
+             return "paramCallback";
+diff --git a/samples/client/petstore/java/okhttp-gson/src/main/java/org/openapitools/client/JSON.java b/samples/client/petstore/java/okhttp-gson/src/main/java/org/openapitools/client/JSON.java
+index fdb580912c3..49b17f67e35 100644
+--- a/samples/client/petstore/java/okhttp-gson/src/main/java/org/openapitools/client/JSON.java
++++ b/samples/client/petstore/java/okhttp-gson/src/main/java/org/openapitools/client/JSON.java
+@@ -287,6 +287,7 @@ public class JSON {
+         gsonBuilder.registerTypeAdapterFactory(new org.openapitools.client.model.Pet.CustomTypeAdapterFactory());
+         gsonBuilder.registerTypeAdapterFactory(new org.openapitools.client.model.PetWithRequiredTags.CustomTypeAdapterFactory());
+         gsonBuilder.registerTypeAdapterFactory(new org.openapitools.client.model.Pig.CustomTypeAdapterFactory());
++        gsonBuilder.registerTypeAdapterFactory(new org.openapitools.client.model.PropertyNameCollision.CustomTypeAdapterFactory());
+         gsonBuilder.registerTypeAdapterFactory(new org.openapitools.client.model.Quadrilateral.CustomTypeAdapterFactory());
+         gsonBuilder.registerTypeAdapterFactory(new org.openapitools.client.model.QuadrilateralInterface.CustomTypeAdapterFactory());
+         gsonBuilder.registerTypeAdapterFactory(new org.openapitools.client.model.ReadOnlyFirst.CustomTypeAdapterFactory());
+diff --git a/samples/client/petstore/java/okhttp-gson/src/main/java/org/openapitools/client/model/PropertyNameCollision.java b/samples/client/petstore/java/okhttp-gson/src/main/java/org/openapitools/client/model/PropertyNameCollision.java
+new file mode 100644
+index 00000000000..b75f6ab5723
+--- /dev/null
++++ b/samples/client/petstore/java/okhttp-gson/src/main/java/org/openapitools/client/model/PropertyNameCollision.java
+@@ -0,0 +1,347 @@
++/*
++ * OpenAPI Petstore
++ * This spec is mainly for testing Petstore server and contains fake endpoints, models. Please do not use this for any other purpose. Special characters: \" \\
++ *
++ * The version of the OpenAPI document: 1.0.0
++ * 
++ *
++ * NOTE: This class is auto generated by OpenAPI Generator (https://openapi-generator.tech).
++ * https://openapi-generator.tech
++ * Do not edit the class manually.
++ */
++
++
++package org.openapitools.client.model;
++
++import java.util.Objects;
++import java.util.Arrays;
++import com.google.gson.TypeAdapter;
++import com.google.gson.annotations.JsonAdapter;
++import com.google.gson.annotations.SerializedName;
++import com.google.gson.stream.JsonReader;
++import com.google.gson.stream.JsonWriter;
++import java.io.IOException;
++
++import com.google.gson.Gson;
++import com.google.gson.GsonBuilder;
++import com.google.gson.JsonArray;
++import com.google.gson.JsonDeserializationContext;
++import com.google.gson.JsonDeserializer;
++import com.google.gson.JsonElement;
++import com.google.gson.JsonObject;
++import com.google.gson.JsonParseException;
++import com.google.gson.TypeAdapterFactory;
++import com.google.gson.reflect.TypeToken;
++import com.google.gson.TypeAdapter;
++import com.google.gson.stream.JsonReader;
++import com.google.gson.stream.JsonWriter;
++import java.io.IOException;
++
++import java.lang.reflect.Type;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.Map.Entry;
++import java.util.Set;
++
++import org.openapitools.client.JSON;
++
++/**
++ * PropertyNameCollision
++ */
++@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
++public class PropertyNameCollision {
++  public static final String SERIALIZED_NAME_UNDERSCORE_TYPE = "_type";
++  @SerializedName(SERIALIZED_NAME_UNDERSCORE_TYPE)
++  private String underscoreType;
++
++  public static final String SERIALIZED_NAME_TYPE = "type";
++  @SerializedName(SERIALIZED_NAME_TYPE)
++  private String type;
++
++  public static final String SERIALIZED_NAME_TYPE_WITH_UNDERSCORE = "type_";
++  @SerializedName(SERIALIZED_NAME_TYPE_WITH_UNDERSCORE)
++  private String typeWithUnderscore;
++
++  public PropertyNameCollision() {
++  }
++
++  public PropertyNameCollision underscoreType(String underscoreType) {
++    
++    this.underscoreType = underscoreType;
++    return this;
++  }
++
++   /**
++   * Get underscoreType
++   * @return underscoreType
++  **/
++  @javax.annotation.Nullable
++  public String getUnderscoreType() {
++    return underscoreType;
++  }
++
++
++  public void setUnderscoreType(String underscoreType) {
++    this.underscoreType = underscoreType;
++  }
++
++
++  public PropertyNameCollision type(String type) {
++    
++    this.type = type;
++    return this;
++  }
++
++   /**
++   * Get type
++   * @return type
++  **/
++  @javax.annotation.Nullable
++  public String getType() {
++    return type;
++  }
++
++
++  public void setType(String type) {
++    this.type = type;
++  }
++
++
++  public PropertyNameCollision typeWithUnderscore(String typeWithUnderscore) {
++    
++    this.typeWithUnderscore = typeWithUnderscore;
++    return this;
++  }
++
++   /**
++   * Get typeWithUnderscore
++   * @return typeWithUnderscore
++  **/
++  @javax.annotation.Nullable
++  public String getTypeWithUnderscore() {
++    return typeWithUnderscore;
++  }
++
++
++  public void setTypeWithUnderscore(String typeWithUnderscore) {
++    this.typeWithUnderscore = typeWithUnderscore;
++  }
++
++  /**
++   * A container for additional, undeclared properties.
++   * This is a holder for any undeclared properties as specified with
++   * the 'additionalProperties' keyword in the OAS document.
++   */
++  private Map<String, Object> additionalProperties;
++
++  /**
++   * Set the additional (undeclared) property with the specified name and value.
++   * If the property does not already exist, create it otherwise replace it.
++   *
++   * @param key name of the property
++   * @param value value of the property
++   * @return the PropertyNameCollision instance itself
++   */
++  public PropertyNameCollision putAdditionalProperty(String key, Object value) {
++    if (this.additionalProperties == null) {
++        this.additionalProperties = new HashMap<String, Object>();
++    }
++    this.additionalProperties.put(key, value);
++    return this;
++  }
++
++  /**
++   * Return the additional (undeclared) property.
++   *
++   * @return a map of objects
++   */
++  public Map<String, Object> getAdditionalProperties() {
++    return additionalProperties;
++  }
++
++  /**
++   * Return the additional (undeclared) property with the specified name.
++   *
++   * @param key name of the property
++   * @return an object
++   */
++  public Object getAdditionalProperty(String key) {
++    if (this.additionalProperties == null) {
++        return null;
++    }
++    return this.additionalProperties.get(key);
++  }
++
++
++  @Override
++  public boolean equals(Object o) {
++    if (this == o) {
++      return true;
++    }
++    if (o == null || getClass() != o.getClass()) {
++      return false;
++    }
++    PropertyNameCollision propertyNameCollision = (PropertyNameCollision) o;
++    return Objects.equals(this.underscoreType, propertyNameCollision.underscoreType) &&
++        Objects.equals(this.type, propertyNameCollision.type) &&
++        Objects.equals(this.typeWithUnderscore, propertyNameCollision.typeWithUnderscore)&&
++        Objects.equals(this.additionalProperties, propertyNameCollision.additionalProperties);
++  }
++
++  @Override
++  public int hashCode() {
++    return Objects.hash(underscoreType, type, typeWithUnderscore, additionalProperties);
++  }
++
++  @Override
++  public String toString() {
++    StringBuilder sb = new StringBuilder();
++    sb.append("class PropertyNameCollision {\n");
++    sb.append("    underscoreType: ").append(toIndentedString(underscoreType)).append("\n");
++    sb.append("    type: ").append(toIndentedString(type)).append("\n");
++    sb.append("    typeWithUnderscore: ").append(toIndentedString(typeWithUnderscore)).append("\n");
++    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
++    sb.append("}");
++    return sb.toString();
++  }
++
++  /**
++   * Convert the given object to string with each line indented by 4 spaces
++   * (except the first line).
++   */
++  private String toIndentedString(Object o) {
++    if (o == null) {
++      return "null";
++    }
++    return o.toString().replace("\n", "\n    ");
++  }
++
++
++  public static HashSet<String> openapiFields;
++  public static HashSet<String> openapiRequiredFields;
++
++  static {
++    // a set of all properties/fields (JSON key names)
++    openapiFields = new HashSet<String>();
++    openapiFields.add("_type");
++    openapiFields.add("type");
++    openapiFields.add("type_");
++
++    // a set of required properties/fields (JSON key names)
++    openapiRequiredFields = new HashSet<String>();
++  }
++
++ /**
++  * Validates the JSON Element and throws an exception if issues found
++  *
++  * @param jsonElement JSON Element
++  * @throws IOException if the JSON Element is invalid with respect to PropertyNameCollision
++  */
++  public static void validateJsonElement(JsonElement jsonElement) throws IOException {
++      if (jsonElement == null) {
++        if (!PropertyNameCollision.openapiRequiredFields.isEmpty()) { // has required fields but JSON element is null
++          throw new IllegalArgumentException(String.format("The required field(s) %s in PropertyNameCollision is not found in the empty JSON string", PropertyNameCollision.openapiRequiredFields.toString()));
++        }
++      }
++        JsonObject jsonObj = jsonElement.getAsJsonObject();
++      if ((jsonObj.get("_type") != null && !jsonObj.get("_type").isJsonNull()) && !jsonObj.get("_type").isJsonPrimitive()) {
++        throw new IllegalArgumentException(String.format("Expected the field `_type` to be a primitive type in the JSON string but got `%s`", jsonObj.get("_type").toString()));
++      }
++      if ((jsonObj.get("type") != null && !jsonObj.get("type").isJsonNull()) && !jsonObj.get("type").isJsonPrimitive()) {
++        throw new IllegalArgumentException(String.format("Expected the field `type` to be a primitive type in the JSON string but got `%s`", jsonObj.get("type").toString()));
++      }
++      if ((jsonObj.get("type_") != null && !jsonObj.get("type_").isJsonNull()) && !jsonObj.get("type_").isJsonPrimitive()) {
++        throw new IllegalArgumentException(String.format("Expected the field `type_` to be a primitive type in the JSON string but got `%s`", jsonObj.get("type_").toString()));
++      }
++  }
++
++  public static class CustomTypeAdapterFactory implements TypeAdapterFactory {
++    @SuppressWarnings("unchecked")
++    @Override
++    public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
++       if (!PropertyNameCollision.class.isAssignableFrom(type.getRawType())) {
++         return null; // this class only serializes 'PropertyNameCollision' and its subtypes
++       }
++       final TypeAdapter<JsonElement> elementAdapter = gson.getAdapter(JsonElement.class);
++       final TypeAdapter<PropertyNameCollision> thisAdapter
++                        = gson.getDelegateAdapter(this, TypeToken.get(PropertyNameCollision.class));
++
++       return (TypeAdapter<T>) new TypeAdapter<PropertyNameCollision>() {
++           @Override
++           public void write(JsonWriter out, PropertyNameCollision value) throws IOException {
++             JsonObject obj = thisAdapter.toJsonTree(value).getAsJsonObject();
++             obj.remove("additionalProperties");
++             // serialize additional properties
++             if (value.getAdditionalProperties() != null) {
++               for (Map.Entry<String, Object> entry : value.getAdditionalProperties().entrySet()) {
++                 if (entry.getValue() instanceof String)
++                   obj.addProperty(entry.getKey(), (String) entry.getValue());
++                 else if (entry.getValue() instanceof Number)
++                   obj.addProperty(entry.getKey(), (Number) entry.getValue());
++                 else if (entry.getValue() instanceof Boolean)
++                   obj.addProperty(entry.getKey(), (Boolean) entry.getValue());
++                 else if (entry.getValue() instanceof Character)
++                   obj.addProperty(entry.getKey(), (Character) entry.getValue());
++                 else {
++                   obj.add(entry.getKey(), gson.toJsonTree(entry.getValue()).getAsJsonObject());
++                 }
++               }
++             }
++             elementAdapter.write(out, obj);
++           }
++
++           @Override
++           public PropertyNameCollision read(JsonReader in) throws IOException {
++             JsonElement jsonElement = elementAdapter.read(in);
++             validateJsonElement(jsonElement);
++             JsonObject jsonObj = jsonElement.getAsJsonObject();
++             // store additional fields in the deserialized instance
++             PropertyNameCollision instance = thisAdapter.fromJsonTree(jsonObj);
++             for (Map.Entry<String, JsonElement> entry : jsonObj.entrySet()) {
++               if (!openapiFields.contains(entry.getKey())) {
++                 if (entry.getValue().isJsonPrimitive()) { // primitive type
++                   if (entry.getValue().getAsJsonPrimitive().isString())
++                     instance.putAdditionalProperty(entry.getKey(), entry.getValue().getAsString());
++                   else if (entry.getValue().getAsJsonPrimitive().isNumber())
++                     instance.putAdditionalProperty(entry.getKey(), entry.getValue().getAsNumber());
++                   else if (entry.getValue().getAsJsonPrimitive().isBoolean())
++                     instance.putAdditionalProperty(entry.getKey(), entry.getValue().getAsBoolean());
++                   else
++                     throw new IllegalArgumentException(String.format("The field `%s` has unknown primitive type. Value: %s", entry.getKey(), entry.getValue().toString()));
++                 } else if (entry.getValue().isJsonArray()) {
++                     instance.putAdditionalProperty(entry.getKey(), gson.fromJson(entry.getValue(), List.class));
++                 } else { // JSON object
++                     instance.putAdditionalProperty(entry.getKey(), gson.fromJson(entry.getValue(), HashMap.class));
++                 }
++               }
++             }
++             return instance;
++           }
++
++       }.nullSafe();
++    }
++  }
++
++ /**
++  * Create an instance of PropertyNameCollision given an JSON string
++  *
++  * @param jsonString JSON string
++  * @return An instance of PropertyNameCollision
++  * @throws IOException if the JSON string is invalid with respect to PropertyNameCollision
++  */
++  public static PropertyNameCollision fromJson(String jsonString) throws IOException {
++    return JSON.getGson().fromJson(jsonString, PropertyNameCollision.class);
++  }
++
++ /**
++  * Convert an instance of PropertyNameCollision to an JSON string
++  *
++  * @return JSON string
++  */
++  public String toJson() {
++    return JSON.getGson().toJson(this);
++  }
++}
++

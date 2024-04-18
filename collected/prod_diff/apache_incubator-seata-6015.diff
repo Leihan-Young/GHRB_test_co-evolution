@@ -1,0 +1,275 @@
+diff --git a/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/DefaultInterfaceParser.java b/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/DefaultInterfaceParser.java
+index c083965ed..f07799dae 100644
+--- a/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/DefaultInterfaceParser.java
++++ b/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/DefaultInterfaceParser.java
+@@ -53,9 +53,9 @@ public class DefaultInterfaceParser implements InterfaceParser {
+     }
+ 
+     @Override
+-    public ProxyInvocationHandler parserInterfaceToProxy(Object target) throws Exception {
++    public ProxyInvocationHandler parserInterfaceToProxy(Object target, String objectName) throws Exception {
+         for (InterfaceParser interfaceParser : ALL_INTERFACE_PARSERS) {
+-            ProxyInvocationHandler proxyInvocationHandler = interfaceParser.parserInterfaceToProxy(target);
++            ProxyInvocationHandler proxyInvocationHandler = interfaceParser.parserInterfaceToProxy(target, objectName);
+             if (proxyInvocationHandler != null) {
+                 return proxyInvocationHandler;
+             }
+diff --git a/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/DefaultResourceRegisterParser.java b/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/DefaultResourceRegisterParser.java
+index eb6294a0f..2bce82a34 100644
+--- a/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/DefaultResourceRegisterParser.java
++++ b/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/DefaultResourceRegisterParser.java
+@@ -28,9 +28,9 @@ public class DefaultResourceRegisterParser {
+ 
+     protected static List<RegisterResourceParser> allRegisterResourceParsers = new ArrayList<>();
+ 
+-    public void registerResource(Object target) {
++    public void registerResource(Object target, String beanName) {
+         for (RegisterResourceParser registerResourceParser : allRegisterResourceParsers) {
+-            registerResourceParser.registerResource(target);
++            registerResourceParser.registerResource(target, beanName);
+         }
+     }
+ 
+diff --git a/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParser.java b/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParser.java
+index fd5b62415..6e879dd7d 100644
+--- a/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParser.java
++++ b/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParser.java
+@@ -46,7 +46,7 @@ public class GlobalTransactionalInterceptorParser implements InterfaceParser {
+      * @see GlobalLock // GlobalLock annotation
+      */
+     @Override
+-    public ProxyInvocationHandler parserInterfaceToProxy(Object target) throws Exception {
++    public ProxyInvocationHandler parserInterfaceToProxy(Object target, String objectName) throws Exception {
+         Class<?> serviceInterface = DefaultTargetClassParser.get().findTargetClass(target);
+         Class<?>[] interfacesIfJdk = DefaultTargetClassParser.get().findInterfaces(target);
+ 
+diff --git a/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/InterfaceParser.java b/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/InterfaceParser.java
+index 13e283936..18c30df3a 100644
+--- a/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/InterfaceParser.java
++++ b/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/InterfaceParser.java
+@@ -22,7 +22,7 @@ import io.seata.integration.tx.api.interceptor.handler.ProxyInvocationHandler;
+  */
+ public interface InterfaceParser {
+ 
+-    ProxyInvocationHandler parserInterfaceToProxy(Object target) throws Exception;
++    ProxyInvocationHandler parserInterfaceToProxy(Object target, String objectName) throws Exception;
+ 
+ 
+ }
+diff --git a/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/RegisterResourceParser.java b/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/RegisterResourceParser.java
+index bd749628e..1f84ccc3e 100644
+--- a/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/RegisterResourceParser.java
++++ b/integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/RegisterResourceParser.java
+@@ -20,6 +20,6 @@ package io.seata.integration.tx.api.interceptor.parser;
+  */
+ public interface RegisterResourceParser {
+ 
+-    void registerResource(Object target);
++    void registerResource(Object target, String beanName);
+ 
+ }
+diff --git a/integration-tx-api/src/main/java/io/seata/integration/tx/api/remoting/parser/DefaultRemotingParser.java b/integration-tx-api/src/main/java/io/seata/integration/tx/api/remoting/parser/DefaultRemotingParser.java
+index 5b3a28baf..cb635612a 100644
+--- a/integration-tx-api/src/main/java/io/seata/integration/tx/api/remoting/parser/DefaultRemotingParser.java
++++ b/integration-tx-api/src/main/java/io/seata/integration/tx/api/remoting/parser/DefaultRemotingParser.java
+@@ -75,6 +75,16 @@ public class DefaultRemotingParser {
+         }
+     }
+ 
++    /**
++     * register custom remoting parser
++     * @param remotingParser
++     */
++    public boolean registerRemotingParser(RemotingParser remotingParser) {
++        synchronized (this) {
++            return allRemotingParsers.add(remotingParser);
++        }
++    }
++
+     /**
+      * is remoting bean ?
+      *
+diff --git a/integration-tx-api/src/main/java/io/seata/integration/tx/api/util/ProxyUtil.java b/integration-tx-api/src/main/java/io/seata/integration/tx/api/util/ProxyUtil.java
+index 8c0f69605..2ed74da1f 100644
+--- a/integration-tx-api/src/main/java/io/seata/integration/tx/api/util/ProxyUtil.java
++++ b/integration-tx-api/src/main/java/io/seata/integration/tx/api/util/ProxyUtil.java
+@@ -34,12 +34,16 @@ public class ProxyUtil {
+     private static final Map<Object, Object> PROXYED_SET = new HashMap<>();
+ 
+     public static <T> T createProxy(T target) {
++        return createProxy(target, target.getClass().getName());
++    }
++
++    public static <T> T createProxy(T target, String beanName) {
+         try {
+             synchronized (PROXYED_SET) {
+                 if (PROXYED_SET.containsKey(target)) {
+                     return (T) PROXYED_SET.get(target);
+                 }
+-                ProxyInvocationHandler proxyInvocationHandler = DefaultInterfaceParser.get().parserInterfaceToProxy(target);
++                ProxyInvocationHandler proxyInvocationHandler = DefaultInterfaceParser.get().parserInterfaceToProxy(target, beanName);
+                 if (proxyInvocationHandler == null) {
+                     return target;
+                 }
+diff --git a/spring/src/main/java/io/seata/spring/annotation/GlobalTransactionScanner.java b/spring/src/main/java/io/seata/spring/annotation/GlobalTransactionScanner.java
+index be1e75334..e51365dcb 100644
+--- a/spring/src/main/java/io/seata/spring/annotation/GlobalTransactionScanner.java
++++ b/spring/src/main/java/io/seata/spring/annotation/GlobalTransactionScanner.java
+@@ -41,8 +41,10 @@ import io.seata.integration.tx.api.interceptor.SeataInterceptorPosition;
+ import io.seata.integration.tx.api.interceptor.handler.GlobalTransactionalInterceptorHandler;
+ import io.seata.integration.tx.api.interceptor.handler.ProxyInvocationHandler;
+ import io.seata.integration.tx.api.interceptor.parser.DefaultInterfaceParser;
++import io.seata.integration.tx.api.remoting.parser.DefaultRemotingParser;
+ import io.seata.rm.RMClient;
+ import io.seata.spring.annotation.scannercheckers.PackageScannerChecker;
++import io.seata.spring.remoting.parser.RemotingFactoryBeanParser;
+ import io.seata.spring.util.OrderUtil;
+ import io.seata.spring.util.SpringProxyUtils;
+ import io.seata.tm.TMClient;
+@@ -279,7 +281,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
+                     return bean;
+                 }
+                 interceptor = null;
+-                ProxyInvocationHandler proxyInvocationHandler = DefaultInterfaceParser.get().parserInterfaceToProxy(bean);
++                ProxyInvocationHandler proxyInvocationHandler = DefaultInterfaceParser.get().parserInterfaceToProxy(bean, beanName);
+                 if (proxyInvocationHandler == null) {
+                     return bean;
+                 }
+@@ -472,6 +474,8 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
+     @Override
+     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+         this.applicationContext = applicationContext;
++        RemotingFactoryBeanParser remotingFactoryBeanParser = new RemotingFactoryBeanParser(applicationContext);
++        DefaultRemotingParser.get().registerRemotingParser(remotingFactoryBeanParser);
+         this.setBeanFactory(applicationContext);
+     }
+ 
+diff --git a/spring/src/main/java/io/seata/spring/remoting/parser/RemotingFactoryBeanParser.java b/spring/src/main/java/io/seata/spring/remoting/parser/RemotingFactoryBeanParser.java
+index 4e5c2ab7c..f077149d9 100644
+--- a/spring/src/main/java/io/seata/spring/remoting/parser/RemotingFactoryBeanParser.java
++++ b/spring/src/main/java/io/seata/spring/remoting/parser/RemotingFactoryBeanParser.java
+@@ -21,13 +21,19 @@ import io.seata.integration.tx.api.remoting.parser.AbstractedRemotingParser;
+ import io.seata.integration.tx.api.remoting.parser.DefaultRemotingParser;
+ import io.seata.spring.util.SpringProxyUtils;
+ import org.springframework.context.ApplicationContext;
++import org.springframework.util.Assert;
+ 
+ /**
+  * @author leezongjie
+  */
+ public class RemotingFactoryBeanParser extends AbstractedRemotingParser {
+ 
+-    public static ApplicationContext applicationContext;
++    public ApplicationContext applicationContext;
++
++    public RemotingFactoryBeanParser(ApplicationContext applicationContext) {
++        Assert.notNull(applicationContext, "applicationContext must not be null");
++        this.applicationContext = applicationContext;
++    }
+ 
+     /**
+      * if it is proxy bean, check if the FactoryBean is Remoting bean
+@@ -36,14 +42,14 @@ public class RemotingFactoryBeanParser extends AbstractedRemotingParser {
+      * @param beanName           the bean name
+      * @return boolean boolean
+      */
+-    protected static Object getRemotingFactoryBean(Object bean, String beanName) {
++    protected Object getRemotingFactoryBean(Object bean, String beanName) {
+         if (!SpringProxyUtils.isProxy(bean)) {
+             return null;
+         }
+         //the FactoryBean of proxy bean
+-        String factoryBeanName = "&" + beanName;
++        String factoryBeanName = getFactoryBeanName(beanName);
+         Object factoryBean = null;
+-        if (applicationContext != null && applicationContext.containsBean(factoryBeanName)) {
++        if (applicationContext.containsBean(factoryBeanName)) {
+             factoryBean = applicationContext.getBean(factoryBeanName);
+         }
+         return factoryBean;
+@@ -55,7 +61,7 @@ public class RemotingFactoryBeanParser extends AbstractedRemotingParser {
+         if (factoryBean == null) {
+             return false;
+         }
+-        return DefaultRemotingParser.get().isReference(bean, beanName);
++        return DefaultRemotingParser.get().isReference(factoryBean, getFactoryBeanName(beanName));
+     }
+ 
+     @Override
+@@ -64,7 +70,7 @@ public class RemotingFactoryBeanParser extends AbstractedRemotingParser {
+         if (factoryBean == null) {
+             return false;
+         }
+-        return DefaultRemotingParser.get().isReference(bean, beanName);
++        return DefaultRemotingParser.get().isService(factoryBean, getFactoryBeanName(beanName));
+     }
+ 
+     @Override
+@@ -73,12 +79,16 @@ public class RemotingFactoryBeanParser extends AbstractedRemotingParser {
+         if (factoryBean == null) {
+             return null;
+         }
+-        return DefaultRemotingParser.get().getServiceDesc(bean, beanName);
++        return DefaultRemotingParser.get().getServiceDesc(factoryBean, getFactoryBeanName(beanName));
+     }
+ 
++    private String getFactoryBeanName(String beanName) {
++        return "&" + beanName;
++    }
+ 
+     @Override
+     public short getProtocol() {
+         return 0;
+     }
++
+ }
+\ No newline at end of file
+diff --git a/spring/src/main/java/io/seata/spring/tcc/TccAnnotationProcessor.java b/spring/src/main/java/io/seata/spring/tcc/TccAnnotationProcessor.java
+index 130e3cad8..2eb5acb84 100644
+--- a/spring/src/main/java/io/seata/spring/tcc/TccAnnotationProcessor.java
++++ b/spring/src/main/java/io/seata/spring/tcc/TccAnnotationProcessor.java
+@@ -103,7 +103,7 @@ public class TccAnnotationProcessor implements BeanPostProcessor {
+                 RemotingDesc remotingDesc = new RemotingDesc();
+                 remotingDesc.setServiceClass(serviceClass);
+ 
+-                Object proxyBean = ProxyUtil.createProxy(bean);
++                Object proxyBean = ProxyUtil.createProxy(bean, beanName);
+                 field.setAccessible(true);
+                 field.set(bean, proxyBean);
+                 LOGGER.info("Bean[" + bean.getClass().getName() + "] with name [" + field.getName() + "] would use proxy");
+diff --git a/tcc/src/main/java/io/seata/rm/tcc/interceptor/parser/TccActionInterceptorParser.java b/tcc/src/main/java/io/seata/rm/tcc/interceptor/parser/TccActionInterceptorParser.java
+index 21434431e..c6ef74fde 100644
+--- a/tcc/src/main/java/io/seata/rm/tcc/interceptor/parser/TccActionInterceptorParser.java
++++ b/tcc/src/main/java/io/seata/rm/tcc/interceptor/parser/TccActionInterceptorParser.java
+@@ -37,13 +37,13 @@ import java.util.Set;
+ public class TccActionInterceptorParser implements InterfaceParser {
+ 
+     @Override
+-    public ProxyInvocationHandler parserInterfaceToProxy(Object target) {
+-        boolean isTxRemotingBean = TxBeanParserUtils.isTxRemotingBean(target, target.toString());
++    public ProxyInvocationHandler parserInterfaceToProxy(Object target, String objectName) {
++        boolean isTxRemotingBean = TxBeanParserUtils.isTxRemotingBean(target, objectName);
+         if (isTxRemotingBean) {
+             RemotingDesc remotingDesc = DefaultRemotingParser.get().getRemotingBeanDesc(target);
+             if (remotingDesc != null) {
+                 if (remotingDesc.isService()) {
+-                    DefaultResourceRegisterParser.get().registerResource(target);
++                    DefaultResourceRegisterParser.get().registerResource(target, objectName);
+                 }
+                 if (remotingDesc.isReference()) {
+                     //if it is a tcc remote reference
+diff --git a/tcc/src/main/java/io/seata/rm/tcc/resource/parser/TccRegisterResourceParser.java b/tcc/src/main/java/io/seata/rm/tcc/resource/parser/TccRegisterResourceParser.java
+index f12fc2ded..fe99db933 100644
+--- a/tcc/src/main/java/io/seata/rm/tcc/resource/parser/TccRegisterResourceParser.java
++++ b/tcc/src/main/java/io/seata/rm/tcc/resource/parser/TccRegisterResourceParser.java
+@@ -41,8 +41,8 @@ import java.util.Set;
+ public class TccRegisterResourceParser implements RegisterResourceParser {
+ 
+     @Override
+-    public void registerResource(Object target) {
+-        boolean isTxRemotingBean = TxBeanParserUtils.isTxRemotingBean(target, target.toString());
++    public void registerResource(Object target, String beanName) {
++        boolean isTxRemotingBean = TxBeanParserUtils.isTxRemotingBean(target, beanName);
+         if (isTxRemotingBean) {
+             RemotingDesc remotingDesc = DefaultRemotingParser.get().getRemotingBeanDesc(target);
+             if (remotingDesc != null) {

@@ -1,0 +1,13 @@
+diff --git a/integration-tx-api/src/test/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParserTest.java b/integration-tx-api/src/test/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParserTest.java
+index e6807a9fc..b426b304a 100644
+--- a/integration-tx-api/src/test/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParserTest.java
++++ b/integration-tx-api/src/test/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParserTest.java
+@@ -33,7 +33,7 @@ class GlobalTransactionalInterceptorParserTest {
+         GlobalTransactionalInterceptorParser globalTransactionalInterceptorParser = new GlobalTransactionalInterceptorParser();
+ 
+         //when
+-        ProxyInvocationHandler proxyInvocationHandler = globalTransactionalInterceptorParser.parserInterfaceToProxy(business);
++        ProxyInvocationHandler proxyInvocationHandler = globalTransactionalInterceptorParser.parserInterfaceToProxy(business, business.getClass().getName());
+ 
+         //then
+         Assertions.assertNotNull(proxyInvocationHandler);

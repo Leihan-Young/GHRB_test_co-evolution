@@ -1,0 +1,883 @@
+[
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Migrated JUnit3 to Junit4",
+        "url": "https://github.com/JodaOrg/joda-time/pull/27",
+        "resourcePath": "/JodaOrg/joda-time/pull/27",
+        "createdAt": "2013-05-29T14:38:27Z",
+        "number": 27,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/format/TestPeriodFormatParsing.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/format/TestPeriodFormatter.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/format/TestPeriodFormatterBuilder.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/format/TestTextFields.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/tz/TestAll.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/tz/TestBuilder.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/tz/TestCachedDateTimeZone.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/tz/TestCompiler.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/tz/TestFixedDateTimeZone.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/tz/TestUTCProvider.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0NTk5MjMzMDpmZWVlYTNhMDRmNTNjNTEwOGU5MjhlZWJkMTdiZDFiNDYzNThkNWU4",
+                "url": "https://github.com/JodaOrg/joda-time/pull/27/commits/feeea3a04f53c5108e928eebd17bd1b46358d5e8"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 26,
+                "url": "https://github.com/JodaOrg/joda-time/issues/26",
+                "title": "Migration to JUnit4",
+                "bodyHTML": "<p dir=\"auto\">It could be a nice idea to migrate JUnit to the 4 version. It contains a lot of nice features like annotations, parameterized tests, matchers and so on</p>",
+                "resourcePath": "/JodaOrg/joda-time/issues/26",
+                "createdAt": "2013-05-29T09:40:28Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "WontFix"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Don't advance to dayOfWeek if it is 0",
+        "url": "https://github.com/JodaOrg/joda-time/pull/179",
+        "resourcePath": "/JodaOrg/joda-time/pull/179",
+        "createdAt": "2014-09-18T13:34:19Z",
+        "number": 179,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "pom.xml"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/tz/ZoneInfoCompiler.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/tz/src/Readme.txt"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/main/java/org/joda/time/tz/src/time_zone_database.properties"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/tz/TestCompiler.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MjE0MzMyMzg6NzkxMTFiMTljMDNmZjlkMzU3MTkxMzE1ZjNmNTNiNmQ1ZTFjNDNkMA==",
+                "url": "https://github.com/JodaOrg/joda-time/pull/179/commits/79111b19c03ff9d357191315f3f53b6d5e1c43d0"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 173,
+                "url": "https://github.com/JodaOrg/joda-time/issues/173",
+                "title": "JodaTime Handling of Olson Transitions Specified at 24:00 Incorrect ",
+                "bodyHTML": "<p dir=\"auto\">Africa/Cairo  and Asia/Dhaka have transitions specified in the Olson DB as happening at 24:00.</p>\n<p dir=\"auto\">e.g.   Instant 1434056400000 which is 2015/06/11 21:00:00 +0000  (GMT)</p>\n<p dir=\"auto\">In JDK with 2014g in timezone Africa/Cairo is 2015/06/11 23:00:00 +0200<br>\nIn JodaTime with 2014g in timezone Africa/Cairo this is 2015/06/12 00:00:00 +0300</p>\n<p dir=\"auto\">i.e. wrong date and wrong offset.</p>",
+                "resourcePath": "/JodaOrg/joda-time/issues/173",
+                "createdAt": "2014-09-10T21:57:22Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "Bug"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "Fixed"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Don't advance to dayOfWeek if it is 0",
+        "url": "https://github.com/JodaOrg/joda-time/pull/182",
+        "resourcePath": "/JodaOrg/joda-time/pull/182",
+        "createdAt": "2014-09-20T00:04:18Z",
+        "number": 182,
+        "mergeCommit": {
+          "oid": "653b0746a48f4e7143f1e237af71029f28bf7706",
+          "message": "Merge 8769b776d5f28650e1cb50878f8266c3d7e4a9e1 into 986d905f76176322356df6ef520dc33256827f0a",
+          "commitUrl": "https://github.com/JodaOrg/joda-time/commit/653b0746a48f4e7143f1e237af71029f28bf7706",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "986d905f76176322356df6ef520dc33256827f0a",
+                "message": "Alter LocalDate.toDateTime to be more consistent\n\nAdditional release notes\nFixes #177"
+              },
+              {
+                "oid": "8769b776d5f28650e1cb50878f8266c3d7e4a9e1",
+                "message": "Don't advance to dayOfWeek if it is 0\n\nIf 24:00 is used with a specific day, it will advance to next Monday, since advance is set to true and dayOfWeek is updated to 1.\n\nTo fix #173:\n1, don't set advance to true if dayOfWeek is 0.\n2, don't update dayOfWeek if it is 0."
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/tz/ZoneInfoCompiler.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/tz/TestCompiler.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MjE1MzA2OTI6ODc2OWI3NzZkNWYyODY1MGUxY2I1MDg3OGY4MjY2YzNkN2U0YTllMQ==",
+                "url": "https://github.com/JodaOrg/joda-time/pull/182/commits/8769b776d5f28650e1cb50878f8266c3d7e4a9e1"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 173,
+                "url": "https://github.com/JodaOrg/joda-time/issues/173",
+                "title": "JodaTime Handling of Olson Transitions Specified at 24:00 Incorrect ",
+                "bodyHTML": "<p dir=\"auto\">Africa/Cairo  and Asia/Dhaka have transitions specified in the Olson DB as happening at 24:00.</p>\n<p dir=\"auto\">e.g.   Instant 1434056400000 which is 2015/06/11 21:00:00 +0000  (GMT)</p>\n<p dir=\"auto\">In JDK with 2014g in timezone Africa/Cairo is 2015/06/11 23:00:00 +0200<br>\nIn JodaTime with 2014g in timezone Africa/Cairo this is 2015/06/12 00:00:00 +0300</p>\n<p dir=\"auto\">i.e. wrong date and wrong offset.</p>",
+                "resourcePath": "/JodaOrg/joda-time/issues/173",
+                "createdAt": "2014-09-10T21:57:22Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "Bug"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "Fixed"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add time zone database version to manifest",
+        "url": "https://github.com/JodaOrg/joda-time/pull/183",
+        "resourcePath": "/JodaOrg/joda-time/pull/183",
+        "createdAt": "2014-09-20T00:12:33Z",
+        "number": 183,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "pom.xml"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/tz/src/Readme.txt"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/main/java/org/joda/time/tz/src/time_zone_database.properties"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MjE1MzA4ODI6MWVmZGFlNTQxNjFkZjVhYzg3MWJiNDNjMTAxMDVlYjhjYzk4MTc4Mw==",
+                "url": "https://github.com/JodaOrg/joda-time/pull/183/commits/1efdae54161df5ac871bb43c10105eb8cc981783"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 176,
+                "url": "https://github.com/JodaOrg/joda-time/issues/176",
+                "title": "Make the Olson DB version known",
+                "bodyHTML": "<p dir=\"auto\">It would be nice to have the version of the Olson DB complied into the JodaTime release jar to be obvious (Sorry if it is and I missed it).</p>\n<p dir=\"auto\">It would be good to have this in the release notes and in the MANIFEST.MF.</p>",
+                "resourcePath": "/JodaOrg/joda-time/issues/176",
+                "createdAt": "2014-09-15T01:56:53Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "RFE"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "Fixed"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Added location info for timezones",
+        "url": "https://github.com/JodaOrg/joda-time/pull/263",
+        "resourcePath": "/JodaOrg/joda-time/pull/263",
+        "createdAt": "2015-04-01T09:28:41Z",
+        "number": 263,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/tz/CachedDateTimeZone.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/tz/DateTimeZoneBuilder.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/tz/FixedDateTimeZone.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/tz/ZoneInfoCompiler.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/main/java/org/joda/time/tz/src/iso3166.tab"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/main/java/org/joda/time/tz/src/zone.tab"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/main/java/org/joda/time/tz/src/zone1970.tab"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/TestDateTimeZone.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/tz/TestAll.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/test/java/org/joda/time/tz/TestTimeZoneCountries.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MzI0MDIyMTc6OGE1MzA4ZDRhNjliMjdhOTdmNDgzZWMxYjRjOWVhNmZmNjE3MmNhMQ==",
+                "url": "https://github.com/JodaOrg/joda-time/pull/263/commits/8a5308d4a69b27a97f483ec1b4c9ea6ff6172ca1"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 255,
+                "url": "https://github.com/JodaOrg/joda-time/issues/255",
+                "title": "Add methods to expose country-to-zone mapping and other meta data ",
+                "bodyHTML": "<p dir=\"auto\">The official IANA timezone data src has information about which zones are used in a country and vice versa. It also has information about zone aliases(called as \"links\"). These are useful pieces of information for better handling of timezones.<br>\nFor example: A user can be shown a list of countries to select from, and based on the chosen countries, a second list of zones used in that country can be pre-populated. To achieve such a functionality, a mapping between Countries--&gt;Zones is needed.<br>\nThis requires parsing of following files from the IANA tz data:</p>\n<ol dir=\"auto\">\n<li><strong>iso3166.tab</strong>: This file can be parsed to create the country-code to country map.</li>\n<li><strong>zone.tab</strong>: This file can be parsed to create the map between countries to timezone ids.</li>\n</ol>\n<p dir=\"auto\">This type of functionality was added to moment-timezone library, so that can be used as a reference point if need be. (<a href=\"https://github.com/moment/moment-timezone/blob/develop/tasks/data-meta.js\">https://github.com/moment/moment-timezone/blob/develop/tasks/data-meta.js</a>)<br>\n(<a href=\"https://github.com/moment/moment-timezone/blob/develop/data/meta/latest.json\">https://github.com/moment/moment-timezone/blob/develop/data/meta/latest.json</a>)<br>\n<a class=\"user-mention notranslate\" data-hovercard-type=\"user\" data-hovercard-url=\"/users/jodastephen/hovercard\" data-octo-click=\"hovercard-link-click\" data-octo-dimensions=\"link_type:self\" href=\"https://github.com/jodastephen\">@jodastephen</a> Thoughts?</p>",
+                "resourcePath": "/JodaOrg/joda-time/issues/255",
+                "createdAt": "2015-03-16T15:55:44Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "RFE"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "fixes #284 - Generate source and Javadoc artifacts for no-tzdb artifact",
+        "url": "https://github.com/JodaOrg/joda-time/pull/392",
+        "resourcePath": "/JodaOrg/joda-time/pull/392",
+        "createdAt": "2016-09-30T12:36:34Z",
+        "number": 392,
+        "mergeCommit": {
+          "oid": "d0f77df52f9e047fa88c3ee351f52706d53cf1d2",
+          "message": "Merge pull request #392 from pgpx/284-sources\n\nfixes #284 - Generate source and Javadoc artifacts for no-tzdb artifact",
+          "commitUrl": "https://github.com/JodaOrg/joda-time/commit/d0f77df52f9e047fa88c3ee351f52706d53cf1d2",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "909046aa9aab5fae75e2152fd6ded722a4d5aba2",
+                "message": "Fix historic time-zone data\n\nFixes #373"
+              },
+              {
+                "oid": "7ed094c8ce1dfa0e01a8c42e2ea4c2982bf4e5b5",
+                "message": "Don't attach Javadoc artifacts if Javadoc generation has been skipped"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "pom.xml"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0ODc0ODYwMTI6N2VkMDk0YzhjZTFkZmEwZTAxYThjNDJlMmVhNGMyOTgyYmY0ZTViNQ==",
+                "url": "https://github.com/JodaOrg/joda-time/pull/392/commits/7ed094c8ce1dfa0e01a8c42e2ea4c2982bf4e5b5"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 284,
+                "url": "https://github.com/JodaOrg/joda-time/issues/284",
+                "title": "Build javadoc/sources for no-tzdb",
+                "bodyHTML": "<p dir=\"auto\">Inspired by <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"55422460\" data-permission-text=\"Title is private\" data-url=\"https://github.com/dlew/joda-time-android/issues/25\" data-hovercard-type=\"issue\" data-hovercard-url=\"/dlew/joda-time-android/issues/25/hovercard\" href=\"https://github.com/dlew/joda-time-android/issues/25\">dlew/joda-time-android#25</a></p>\n<p dir=\"auto\">It looks like the Gradle build system looks for javadoc/sources based on filename, so the <code class=\"notranslate\">no-tzdb</code> versions have none (since it's only generated as a jar).</p>\n<p dir=\"auto\">Alternatively, if I could figure out a way to specify the source files, I could do that instead, but I haven't seen anything like that yet.</p>",
+                "resourcePath": "/JodaOrg/joda-time/issues/284",
+                "createdAt": "2015-06-01T22:54:21Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "RFE"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "Fixed"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Fix errors in Russian format messages",
+        "url": "https://github.com/JodaOrg/joda-time/pull/533",
+        "resourcePath": "/JodaOrg/joda-time/pull/533",
+        "createdAt": "2020-05-12T21:14:55Z",
+        "number": 533,
+        "mergeCommit": {
+          "oid": "628e3694951be7a78f96203fa96f4cf6a93652bf",
+          "message": "Merge pull request #533 from AlexMe951/532-fix-error-in-russian-format-messages\n\nFix errors in Russian format messages",
+          "commitUrl": "https://github.com/JodaOrg/joda-time/commit/628e3694951be7a78f96203fa96f4cf6a93652bf",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "dc985636d80963075d39df14a77e65aabf721400",
+                "message": "Bump version"
+              },
+              {
+                "oid": "887d56dd358be3e5dbc07edecc05be288ca2f556",
+                "message": "Fix errors in Russian format messages\n\n- fix regexp's in properties to process exceptional values (values ending with 11, 12, 13, 14) and to fix working with values ending with 1\n- add tests for Russian locale"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/format/messages_ru.properties"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/format/TestPeriodFormat.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0NDE2OTczNTYyOjg4N2Q1NmRkMzU4YmUzZTVkYmMwN2VkZWNjMDViZTI4OGNhMmY1NTY=",
+                "url": "https://github.com/JodaOrg/joda-time/pull/533/commits/887d56dd358be3e5dbc07edecc05be288ca2f556"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 532,
+                "url": "https://github.com/JodaOrg/joda-time/issues/532",
+                "title": "Errors in Russian format messages for numbers ends with 1, 12, 13 and 14",
+                "bodyHTML": "<p dir=\"auto\">Russian format messages (\"ru\" locale) don't process numbers like 12, 13, 14, 21, 31 etc, 101, 112, 113, 114, 121 etc 100% correct (may be to simplify regexp).<br>\nValues ending with 1 should be spelled similar to just 1 (except 11 - it's an exception) .<br>\nValues ending with 12, 13, 14 should not be spelled as those that ends with 2, 3, 4, they are exceptions as well.</p>",
+                "resourcePath": "/JodaOrg/joda-time/issues/532",
+                "createdAt": "2020-05-12T21:02:02Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add native-image configuration",
+        "url": "https://github.com/JodaOrg/joda-time/pull/546",
+        "resourcePath": "/JodaOrg/joda-time/pull/546",
+        "createdAt": "2020-12-03T12:35:47Z",
+        "number": 546,
+        "mergeCommit": {
+          "oid": "611ea466d0cb10df761b39f4e1d302b27ccfe56f",
+          "message": "Add native-image configuration (#546)",
+          "commitUrl": "https://github.com/JodaOrg/joda-time/commit/611ea466d0cb10df761b39f4e1d302b27ccfe56f",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "b8a2ccd164a2b861674076322fdcad3580390281",
+                "message": "Bump version"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/main/resources/META-inf/native-image/joda-time/joda-time/resource-config.json"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0NTMxNzQ3MzM5Ojc4NTg4ODk1ZmMyNGQ3ZDQ2YjA1ZTgyZWNlOGU0Y2EzOTM4MjY1MGI=",
+                "url": "https://github.com/JodaOrg/joda-time/pull/546/commits/78588895fc24d7d46b05e82ece8e4ca39382650b"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 545,
+                "url": "https://github.com/JodaOrg/joda-time/issues/545",
+                "title": "Add resource config JSON for graalvm native-image and timezone data",
+                "bodyHTML": "<p dir=\"auto\">Here's what I had to add to a basic Joda-time client app (<code class=\"notranslate\">META-INF/native-image/joda-time/joda-time/resource-config.json</code>):</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"{\n  &quot;resources&quot;:[\n    {&quot;pattern&quot;:&quot;org/joda/time/tz/data/.*&quot;}\n  ]\n}\"><pre class=\"notranslate\"><code class=\"notranslate\">{\n  \"resources\":[\n    {\"pattern\":\"org/joda/time/tz/data/.*\"}\n  ]\n}\n</code></pre></div>",
+                "resourcePath": "/JodaOrg/joda-time/issues/545",
+                "createdAt": "2020-12-01T17:42:36Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "RFE"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "Fixed"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Using the correct spelling for the capital of Ukraine (Kyiv instead of Kiev).",
+        "url": "https://github.com/JodaOrg/joda-time/pull/572",
+        "resourcePath": "/JodaOrg/joda-time/pull/572",
+        "createdAt": "2021-10-25T07:35:11Z",
+        "number": 572,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/tz/src/europe"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/site/xdoc/timezones.xml"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOABrMvs4tm5ba2gAoNzhkMTlhNjAyOGUxZTMyZjNkMmM3MGZiMjIxZGRjMjA1YmExNzdlMQ",
+                "url": "https://github.com/JodaOrg/joda-time/pull/572/commits/78d19a6028e1e32f3d2c70fb221ddc205ba177e1"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 571,
+                "url": "https://github.com/JodaOrg/joda-time/issues/571",
+                "title": "KyivNotKiev",
+                "bodyHTML": "<h3 dir=\"auto\">Key information</h3>\n<p dir=\"auto\">\"joda-time\" uses Kiev (incorrect) instead of Kyiv (correct) spelling.<br>\nKyiv is a capital of Ukraine.<br>\nAccording to the Ukrainian local and international law, correct name of the \"Kiev\" is \"Kyiv\".</p>\n<p dir=\"auto\">Reference materials:</p>\n<ul dir=\"auto\">\n<li>Local: Resolution No 55 of 27.01.2010 of the Cabinet of Ministers of Ukraine \"On regulation of transliteration of Ukrainian alphabet by means of Latin alphabet \".</li>\n<li>Global: <a href=\"https://unstats.un.org/UNSD/geoinfo/UNGEGN/docs/10th-uncsgn-docs/econf/E_CONF.101_85_Standardization%20of%20Geographical%20Names%20_eng.pdf\" rel=\"nofollow\">https://unstats.un.org/UNSD/geoinfo/UNGEGN/docs/10th-uncsgn-docs/econf/E_CONF.101_85_Standardization%20of%20Geographical%20Names%20_eng.pdf</a></li>\n<li>Wikipedia: <a href=\"https://en.wikipedia.org/wiki/KyivNotKiev\" rel=\"nofollow\">https://en.wikipedia.org/wiki/KyivNotKiev</a></li>\n</ul>\n<h3 dir=\"auto\">Problem description</h3>\n<p dir=\"auto\">Incorrect spelling of Kyiv is used all across this project:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"$ grep -r &quot;Kiev&quot;\nsrc/site/xdoc/timezones.xml:&lt;tr&gt;&lt;td align=&quot;left&quot; valign=&quot;top&quot;&gt;+02:00&lt;/td&gt;&lt;td align=&quot;left&quot; valign=&quot;top&quot;&gt;Europe/Kiev&lt;/td&gt;&lt;td align=&quot;left&quot; valign=&quot;top&quot;&gt;&lt;/td&gt;&lt;/tr&gt;\nsrc/main/java/org/joda/time/tz/src/europe:# from Kiev to Moscow time sometime after the January 1994 elections.\nsrc/main/java/org/joda/time/tz/src/europe:# From IATA SSIM (1994/1997), which also says that Kerch is still like Kiev.\nsrc/main/java/org/joda/time/tz/src/europe:# &quot;Time in Ukraine is set to second timezone (Kiev time). Each last Sunday\nsrc/main/java/org/joda/time/tz/src/europe:# (Europe/Kiev) to introduce permanent daylight saving time (similar\nsrc/main/java/org/joda/time/tz/src/europe:# From Vladimir in Moscow via Alois Treindl re Kiev time 1991/2 (2014-02-28):\nsrc/main/java/org/joda/time/tz/src/europe:# For example, tzdb uses Europe/Kiev, as &quot;Kiev&quot; is the most common spelling in\nsrc/main/java/org/joda/time/tz/src/europe:# &quot;Praha&quot;.  (&quot;Kiev&quot; came from old Slavic via Russian to English, and &quot;Prague&quot;\nsrc/main/java/org/joda/time/tz/src/europe:# English; in the meantime, stick with the traditional English &quot;Kiev&quot; as that\nsrc/main/java/org/joda/time/tz/src/europe:# This represents most of Ukraine.  See above for the spelling of &quot;Kiev&quot;.\nsrc/main/java/org/joda/time/tz/src/europe:Zone Europe/Kiev\t2:02:04 -\tLMT\t1880\nsrc/main/java/org/joda/time/tz/src/europe:\t\t\t2:02:04\t-\tKMT\t1924 May  2 # Kiev Mean Time\"><pre class=\"notranslate\"><code class=\"notranslate\">$ grep -r \"Kiev\"\nsrc/site/xdoc/timezones.xml:&lt;tr&gt;&lt;td align=\"left\" valign=\"top\"&gt;+02:00&lt;/td&gt;&lt;td align=\"left\" valign=\"top\"&gt;Europe/Kiev&lt;/td&gt;&lt;td align=\"left\" valign=\"top\"&gt;&lt;/td&gt;&lt;/tr&gt;\nsrc/main/java/org/joda/time/tz/src/europe:# from Kiev to Moscow time sometime after the January 1994 elections.\nsrc/main/java/org/joda/time/tz/src/europe:# From IATA SSIM (1994/1997), which also says that Kerch is still like Kiev.\nsrc/main/java/org/joda/time/tz/src/europe:# \"Time in Ukraine is set to second timezone (Kiev time). Each last Sunday\nsrc/main/java/org/joda/time/tz/src/europe:# (Europe/Kiev) to introduce permanent daylight saving time (similar\nsrc/main/java/org/joda/time/tz/src/europe:# From Vladimir in Moscow via Alois Treindl re Kiev time 1991/2 (2014-02-28):\nsrc/main/java/org/joda/time/tz/src/europe:# For example, tzdb uses Europe/Kiev, as \"Kiev\" is the most common spelling in\nsrc/main/java/org/joda/time/tz/src/europe:# \"Praha\".  (\"Kiev\" came from old Slavic via Russian to English, and \"Prague\"\nsrc/main/java/org/joda/time/tz/src/europe:# English; in the meantime, stick with the traditional English \"Kiev\" as that\nsrc/main/java/org/joda/time/tz/src/europe:# This represents most of Ukraine.  See above for the spelling of \"Kiev\".\nsrc/main/java/org/joda/time/tz/src/europe:Zone Europe/Kiev\t2:02:04 -\tLMT\t1880\nsrc/main/java/org/joda/time/tz/src/europe:\t\t\t2:02:04\t-\tKMT\t1924 May  2 # Kiev Mean Time\n</code></pre></div>\n<p dir=\"auto\">This issue should be fixed.<br>\nInstead of \"Kiev\" spelling \"Kyiv\" should be used instead.</p>",
+                "resourcePath": "/JodaOrg/joda-time/issues/571",
+                "createdAt": "2021-10-25T06:55:34Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "WontFix"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Using the correct spelling for the capital of Ukraine (Kyiv instead of Kiev).",
+        "url": "https://github.com/JodaOrg/joda-time/pull/575",
+        "resourcePath": "/JodaOrg/joda-time/pull/575",
+        "createdAt": "2021-10-25T10:03:03Z",
+        "number": 575,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/tz/src/europe"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/site/xdoc/timezones.xml"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOABrMvs4tnXPK2gAoNzhkMTlhNjAyOGUxZTMyZjNkMmM3MGZiMjIxZGRjMjA1YmExNzdlMQ",
+                "url": "https://github.com/JodaOrg/joda-time/pull/575/commits/78d19a6028e1e32f3d2c70fb221ddc205ba177e1"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 571,
+                "url": "https://github.com/JodaOrg/joda-time/issues/571",
+                "title": "KyivNotKiev",
+                "bodyHTML": "<h3 dir=\"auto\">Key information</h3>\n<p dir=\"auto\">\"joda-time\" uses Kiev (incorrect) instead of Kyiv (correct) spelling.<br>\nKyiv is a capital of Ukraine.<br>\nAccording to the Ukrainian local and international law, correct name of the \"Kiev\" is \"Kyiv\".</p>\n<p dir=\"auto\">Reference materials:</p>\n<ul dir=\"auto\">\n<li>Local: Resolution No 55 of 27.01.2010 of the Cabinet of Ministers of Ukraine \"On regulation of transliteration of Ukrainian alphabet by means of Latin alphabet \".</li>\n<li>Global: <a href=\"https://unstats.un.org/UNSD/geoinfo/UNGEGN/docs/10th-uncsgn-docs/econf/E_CONF.101_85_Standardization%20of%20Geographical%20Names%20_eng.pdf\" rel=\"nofollow\">https://unstats.un.org/UNSD/geoinfo/UNGEGN/docs/10th-uncsgn-docs/econf/E_CONF.101_85_Standardization%20of%20Geographical%20Names%20_eng.pdf</a></li>\n<li>Wikipedia: <a href=\"https://en.wikipedia.org/wiki/KyivNotKiev\" rel=\"nofollow\">https://en.wikipedia.org/wiki/KyivNotKiev</a></li>\n</ul>\n<h3 dir=\"auto\">Problem description</h3>\n<p dir=\"auto\">Incorrect spelling of Kyiv is used all across this project:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"$ grep -r &quot;Kiev&quot;\nsrc/site/xdoc/timezones.xml:&lt;tr&gt;&lt;td align=&quot;left&quot; valign=&quot;top&quot;&gt;+02:00&lt;/td&gt;&lt;td align=&quot;left&quot; valign=&quot;top&quot;&gt;Europe/Kiev&lt;/td&gt;&lt;td align=&quot;left&quot; valign=&quot;top&quot;&gt;&lt;/td&gt;&lt;/tr&gt;\nsrc/main/java/org/joda/time/tz/src/europe:# from Kiev to Moscow time sometime after the January 1994 elections.\nsrc/main/java/org/joda/time/tz/src/europe:# From IATA SSIM (1994/1997), which also says that Kerch is still like Kiev.\nsrc/main/java/org/joda/time/tz/src/europe:# &quot;Time in Ukraine is set to second timezone (Kiev time). Each last Sunday\nsrc/main/java/org/joda/time/tz/src/europe:# (Europe/Kiev) to introduce permanent daylight saving time (similar\nsrc/main/java/org/joda/time/tz/src/europe:# From Vladimir in Moscow via Alois Treindl re Kiev time 1991/2 (2014-02-28):\nsrc/main/java/org/joda/time/tz/src/europe:# For example, tzdb uses Europe/Kiev, as &quot;Kiev&quot; is the most common spelling in\nsrc/main/java/org/joda/time/tz/src/europe:# &quot;Praha&quot;.  (&quot;Kiev&quot; came from old Slavic via Russian to English, and &quot;Prague&quot;\nsrc/main/java/org/joda/time/tz/src/europe:# English; in the meantime, stick with the traditional English &quot;Kiev&quot; as that\nsrc/main/java/org/joda/time/tz/src/europe:# This represents most of Ukraine.  See above for the spelling of &quot;Kiev&quot;.\nsrc/main/java/org/joda/time/tz/src/europe:Zone Europe/Kiev\t2:02:04 -\tLMT\t1880\nsrc/main/java/org/joda/time/tz/src/europe:\t\t\t2:02:04\t-\tKMT\t1924 May  2 # Kiev Mean Time\"><pre class=\"notranslate\"><code class=\"notranslate\">$ grep -r \"Kiev\"\nsrc/site/xdoc/timezones.xml:&lt;tr&gt;&lt;td align=\"left\" valign=\"top\"&gt;+02:00&lt;/td&gt;&lt;td align=\"left\" valign=\"top\"&gt;Europe/Kiev&lt;/td&gt;&lt;td align=\"left\" valign=\"top\"&gt;&lt;/td&gt;&lt;/tr&gt;\nsrc/main/java/org/joda/time/tz/src/europe:# from Kiev to Moscow time sometime after the January 1994 elections.\nsrc/main/java/org/joda/time/tz/src/europe:# From IATA SSIM (1994/1997), which also says that Kerch is still like Kiev.\nsrc/main/java/org/joda/time/tz/src/europe:# \"Time in Ukraine is set to second timezone (Kiev time). Each last Sunday\nsrc/main/java/org/joda/time/tz/src/europe:# (Europe/Kiev) to introduce permanent daylight saving time (similar\nsrc/main/java/org/joda/time/tz/src/europe:# From Vladimir in Moscow via Alois Treindl re Kiev time 1991/2 (2014-02-28):\nsrc/main/java/org/joda/time/tz/src/europe:# For example, tzdb uses Europe/Kiev, as \"Kiev\" is the most common spelling in\nsrc/main/java/org/joda/time/tz/src/europe:# \"Praha\".  (\"Kiev\" came from old Slavic via Russian to English, and \"Prague\"\nsrc/main/java/org/joda/time/tz/src/europe:# English; in the meantime, stick with the traditional English \"Kiev\" as that\nsrc/main/java/org/joda/time/tz/src/europe:# This represents most of Ukraine.  See above for the spelling of \"Kiev\".\nsrc/main/java/org/joda/time/tz/src/europe:Zone Europe/Kiev\t2:02:04 -\tLMT\t1880\nsrc/main/java/org/joda/time/tz/src/europe:\t\t\t2:02:04\t-\tKMT\t1924 May  2 # Kiev Mean Time\n</code></pre></div>\n<p dir=\"auto\">This issue should be fixed.<br>\nInstead of \"Kiev\" spelling \"Kyiv\" should be used instead.</p>",
+                "resourcePath": "/JodaOrg/joda-time/issues/571",
+                "createdAt": "2021-10-25T06:55:34Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "WontFix"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Match more time-zone IDs",
+        "url": "https://github.com/JodaOrg/joda-time/pull/733",
+        "resourcePath": "/JodaOrg/joda-time/pull/733",
+        "createdAt": "2023-08-28T20:31:34Z",
+        "number": 733,
+        "mergeCommit": {
+          "oid": "0e251d278604252a9986f2338c1cee56a9e052a2",
+          "message": "Match more time-zone IDs (#733)\n\n* Match some more IDs from java.time.*\r\n* Fixes #717",
+          "commitUrl": "https://github.com/JodaOrg/joda-time/commit/0e251d278604252a9986f2338c1cee56a9e052a2",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "806da07a2502235d32672a47a6f5ebb434b40a0a",
+                "message": "Release v2.12.5"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/joda/time/DateTimeZone.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/org/joda/time/TestDateTimeZone.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOABrMvs5Y-MJ42gAoYTExMjM2NzEyMWNkY2RhOWFiODM3NmZiZjBmYjVkOTBjNDE0ZTcyNw",
+                "url": "https://github.com/JodaOrg/joda-time/pull/733/commits/a112367121cdcda9ab8376fbf0fb5d90c414e727"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 717,
+                "url": "https://github.com/JodaOrg/joda-time/issues/717",
+                "title": "DateTimeZone#forID throws exception for ZoneOffset.UTC.getId()",
+                "bodyHTML": "<p dir=\"auto\">The Java Time API uses Zone ID \"Z\" for ZoneOffset.UTC. This ID value is not supported by Joda-Time so a simple conversion like the following throws an IllegalArgumentException stating that \"The datetime zone id 'Z' is not recognised\".</p>\n<p dir=\"auto\"><code class=\"notranslate\">DateTimeZone.forID(ZoneOffset.UTC.getId())</code></p>\n<p dir=\"auto\">Ideally DateTimeZone.UTC would be returned in this case.</p>\n<p dir=\"auto\">I am using joda-time 2.12.5 with OpenJDK 17.0.5.</p>",
+                "resourcePath": "/JodaOrg/joda-time/issues/717",
+                "createdAt": "2023-05-12T15:52:52Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "RFE"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+]

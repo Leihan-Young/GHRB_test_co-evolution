@@ -1,0 +1,717 @@
+diff --git a/client/src/main/java/org/apache/rocketmq/client/common/NameserverAccessConfig.java b/client/src/main/java/org/apache/rocketmq/client/common/NameserverAccessConfig.java
+new file mode 100644
+index 000000000..2cdae48ee
+--- /dev/null
++++ b/client/src/main/java/org/apache/rocketmq/client/common/NameserverAccessConfig.java
+@@ -0,0 +1,42 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.client.common;
++
++public class NameserverAccessConfig {
++    private String namesrvAddr;
++    private String namesrvDomain;
++    private String namesrvDomainSubgroup;
++
++    public NameserverAccessConfig(String namesrvAddr, String namesrvDomain, String namesrvDomainSubgroup) {
++        this.namesrvAddr = namesrvAddr;
++        this.namesrvDomain = namesrvDomain;
++        this.namesrvDomainSubgroup = namesrvDomainSubgroup;
++    }
++
++    public String getNamesrvAddr() {
++        return namesrvAddr;
++    }
++
++    public String getNamesrvDomain() {
++        return namesrvDomain;
++    }
++
++    public String getNamesrvDomainSubgroup() {
++        return namesrvDomainSubgroup;
++    }
++}
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/DoNothingClientRemotingProcessor.java b/client/src/main/java/org/apache/rocketmq/client/impl/mqclient/DoNothingClientRemotingProcessor.java
+similarity index 96%
+rename from proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/DoNothingClientRemotingProcessor.java
+rename to client/src/main/java/org/apache/rocketmq/client/impl/mqclient/DoNothingClientRemotingProcessor.java
+index 5d2be52ab..9d489f8ad 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/DoNothingClientRemotingProcessor.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/mqclient/DoNothingClientRemotingProcessor.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.proxy.service.mqclient;
++package org.apache.rocketmq.client.impl.mqclient;
+ 
+ import io.netty.channel.ChannelHandlerContext;
+ import org.apache.rocketmq.client.impl.ClientRemotingProcessor;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIExt.java b/client/src/main/java/org/apache/rocketmq/client/impl/mqclient/MQClientAPIExt.java
+similarity index 99%
+rename from proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIExt.java
+rename to client/src/main/java/org/apache/rocketmq/client/impl/mqclient/MQClientAPIExt.java
+index cc8252c2e..842b1a640 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIExt.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/mqclient/MQClientAPIExt.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.proxy.service.mqclient;
++package org.apache.rocketmq.client.impl.mqclient;
+ 
+ import java.nio.ByteBuffer;
+ import java.util.Collections;
+@@ -84,7 +84,7 @@ public class MQClientAPIExt extends MQClientAPIImpl {
+ 
+     private final ClientConfig clientConfig;
+ 
+-    private MqClientAdminImpl mqClientAdmin;
++    private final MqClientAdminImpl mqClientAdmin;
+ 
+     public MQClientAPIExt(
+         ClientConfig clientConfig,
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIFactory.java b/client/src/main/java/org/apache/rocketmq/client/impl/mqclient/MQClientAPIFactory.java
+similarity index 82%
+rename from proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIFactory.java
+rename to client/src/main/java/org/apache/rocketmq/client/impl/mqclient/MQClientAPIFactory.java
+index 23400af89..f7d9b11ba 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIFactory.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/mqclient/MQClientAPIFactory.java
+@@ -14,21 +14,19 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.proxy.service.mqclient;
++package org.apache.rocketmq.client.impl.mqclient;
+ 
++import com.google.common.base.Strings;
+ import java.time.Duration;
+ import java.util.concurrent.ScheduledExecutorService;
+ import java.util.concurrent.ThreadLocalRandom;
+ import java.util.concurrent.TimeUnit;
+-
+-import com.google.common.base.Strings;
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.rocketmq.client.ClientConfig;
++import org.apache.rocketmq.client.common.NameserverAccessConfig;
+ import org.apache.rocketmq.client.impl.ClientRemotingProcessor;
+ import org.apache.rocketmq.common.MixAll;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
+-import org.apache.rocketmq.proxy.config.ConfigurationManager;
+-import org.apache.rocketmq.proxy.config.ProxyConfig;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.remoting.RPCHook;
+ import org.apache.rocketmq.remoting.netty.NettyClientConfig;
+ 
+@@ -40,10 +38,12 @@ public class MQClientAPIFactory implements StartAndShutdown {
+     private final ClientRemotingProcessor clientRemotingProcessor;
+     private final RPCHook rpcHook;
+     private final ScheduledExecutorService scheduledExecutorService;
++    private final NameserverAccessConfig nameserverAccessConfig;
+ 
+-    public MQClientAPIFactory(String namePrefix, int clientNum,
++    public MQClientAPIFactory(NameserverAccessConfig nameserverAccessConfig, String namePrefix, int clientNum,
+         ClientRemotingProcessor clientRemotingProcessor,
+         RPCHook rpcHook, ScheduledExecutorService scheduledExecutorService) {
++        this.nameserverAccessConfig = nameserverAccessConfig;
+         this.namePrefix = namePrefix;
+         this.clientNum = clientNum;
+         this.clientRemotingProcessor = clientRemotingProcessor;
+@@ -55,15 +55,14 @@ public class MQClientAPIFactory implements StartAndShutdown {
+ 
+     protected void init() {
+         System.setProperty(ClientConfig.SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, "false");
+-        ProxyConfig proxyConfig = ConfigurationManager.getProxyConfig();
+-        if (StringUtils.isEmpty(proxyConfig.getNamesrvDomain())) {
+-            if (Strings.isNullOrEmpty(proxyConfig.getNamesrvAddr())) {
++        if (StringUtils.isEmpty(nameserverAccessConfig.getNamesrvDomain())) {
++            if (Strings.isNullOrEmpty(nameserverAccessConfig.getNamesrvAddr())) {
+                 throw new RuntimeException("The configuration item NamesrvAddr is not configured");
+             }
+-            System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, proxyConfig.getNamesrvAddr());
++            System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, nameserverAccessConfig.getNamesrvAddr());
+         } else {
+-            System.setProperty("rocketmq.namesrv.domain", proxyConfig.getNamesrvDomain());
+-            System.setProperty("rocketmq.namesrv.domain.subgroup", proxyConfig.getNamesrvDomainSubgroup());
++            System.setProperty("rocketmq.namesrv.domain", nameserverAccessConfig.getNamesrvDomain());
++            System.setProperty("rocketmq.namesrv.domain.subgroup", nameserverAccessConfig.getNamesrvDomainSubgroup());
+         }
+     }
+ 
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/common/AbstractStartAndShutdown.java b/common/src/main/java/org/apache/rocketmq/common/utils/AbstractStartAndShutdown.java
+similarity index 98%
+rename from proxy/src/main/java/org/apache/rocketmq/proxy/common/AbstractStartAndShutdown.java
+rename to common/src/main/java/org/apache/rocketmq/common/utils/AbstractStartAndShutdown.java
+index b0a3a68f4..78147b690 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/common/AbstractStartAndShutdown.java
++++ b/common/src/main/java/org/apache/rocketmq/common/utils/AbstractStartAndShutdown.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.proxy.common;
++package org.apache.rocketmq.common.utils;
+ 
+ import java.util.List;
+ import java.util.concurrent.CopyOnWriteArrayList;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/common/Shutdown.java b/common/src/main/java/org/apache/rocketmq/common/utils/Shutdown.java
+similarity index 95%
+rename from proxy/src/main/java/org/apache/rocketmq/proxy/common/Shutdown.java
+rename to common/src/main/java/org/apache/rocketmq/common/utils/Shutdown.java
+index 28f4f92f5..07dc5f676 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/common/Shutdown.java
++++ b/common/src/main/java/org/apache/rocketmq/common/utils/Shutdown.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.rocketmq.proxy.common;
++package org.apache.rocketmq.common.utils;
+ 
+ public interface Shutdown {
+     void shutdown() throws Exception;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/common/Start.java b/common/src/main/java/org/apache/rocketmq/common/utils/Start.java
+similarity index 95%
+rename from proxy/src/main/java/org/apache/rocketmq/proxy/common/Start.java
+rename to common/src/main/java/org/apache/rocketmq/common/utils/Start.java
+index 3cf74d47d..1e700dd70 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/common/Start.java
++++ b/common/src/main/java/org/apache/rocketmq/common/utils/Start.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.rocketmq.proxy.common;
++package org.apache.rocketmq.common.utils;
+ 
+ public interface Start {
+     void start() throws Exception;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/common/StartAndShutdown.java b/common/src/main/java/org/apache/rocketmq/common/utils/StartAndShutdown.java
+similarity index 95%
+rename from proxy/src/main/java/org/apache/rocketmq/proxy/common/StartAndShutdown.java
+rename to common/src/main/java/org/apache/rocketmq/common/utils/StartAndShutdown.java
+index 68712dbd7..28999385a 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/common/StartAndShutdown.java
++++ b/common/src/main/java/org/apache/rocketmq/common/utils/StartAndShutdown.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.rocketmq.proxy.common;
++package org.apache.rocketmq.common.utils;
+ 
+ public interface StartAndShutdown extends Start, Shutdown {
+     default void preShutdown() throws Exception {}
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/ProxyStartup.java b/proxy/src/main/java/org/apache/rocketmq/proxy/ProxyStartup.java
+index d7aaffd20..ea13bb808 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/ProxyStartup.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/ProxyStartup.java
+@@ -36,8 +36,8 @@ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.proxy.common.AbstractStartAndShutdown;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.config.Configuration;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/GrpcServer.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/GrpcServer.java
+index 66ab71712..1bffa3c0b 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/GrpcServer.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/GrpcServer.java
+@@ -22,7 +22,7 @@ import io.grpc.Server;
+ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ 
+ public class GrpcServer implements StartAndShutdown {
+     private static final Logger log = LoggerFactory.getLogger(LoggerName.PROXY_LOGGER_NAME);
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/DefaultGrpcMessingActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/DefaultGrpcMessingActivity.java
+index 194b9204f..9d49e0e2c 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/DefaultGrpcMessingActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/DefaultGrpcMessingActivity.java
+@@ -42,7 +42,7 @@ import java.util.concurrent.CompletableFuture;
+ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.proxy.common.AbstractStartAndShutdown;
++import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.grpc.v2.channel.GrpcChannelManager;
+ import org.apache.rocketmq.proxy.grpc.v2.client.ClientActivity;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/GrpcMessagingApplication.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/GrpcMessagingApplication.java
+index fdca9471f..32395322a 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/GrpcMessagingApplication.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/GrpcMessagingApplication.java
+@@ -53,7 +53,7 @@ import org.apache.commons.lang3.StringUtils;
+ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.proxy.grpc.interceptor.InterceptorConstants;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/GrpcMessingActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/GrpcMessingActivity.java
+index 0f353e94d..8f1db8230 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/GrpcMessingActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/GrpcMessingActivity.java
+@@ -41,7 +41,7 @@ import apache.rocketmq.v2.TelemetryCommand;
+ import io.grpc.stub.StreamObserver;
+ import java.util.concurrent.CompletableFuture;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ 
+ public interface GrpcMessingActivity extends StartAndShutdown {
+ 
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/channel/GrpcChannelManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/channel/GrpcChannelManager.java
+index 799775412..14330dd8d 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/channel/GrpcChannelManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/channel/GrpcChannelManager.java
+@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
+ import java.util.concurrent.atomic.AtomicLong;
+ import org.apache.rocketmq.common.ThreadFactoryImpl;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManager;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java
+index dcb619416..af8b4546e 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java
+@@ -41,7 +41,7 @@ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.MetricCollectorMode;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/metrics/ProxyMetricsManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/metrics/ProxyMetricsManager.java
+index 8b495479f..8474a687b 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/metrics/ProxyMetricsManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/metrics/ProxyMetricsManager.java
+@@ -41,7 +41,7 @@ import org.apache.commons.lang3.StringUtils;
+ import org.apache.rocketmq.broker.metrics.BrokerMetricsManager;
+ import org.apache.rocketmq.common.BrokerConfig;
+ import org.apache.rocketmq.common.constant.LoggerName;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/AbstractProcessor.java b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/AbstractProcessor.java
+index 679cc4b3d..b61c3df9e 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/AbstractProcessor.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/AbstractProcessor.java
+@@ -17,7 +17,7 @@
+ package org.apache.rocketmq.proxy.processor;
+ 
+ import org.apache.rocketmq.common.consumer.ReceiptHandle;
+-import org.apache.rocketmq.proxy.common.AbstractStartAndShutdown;
++import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
+ import org.apache.rocketmq.proxy.common.ProxyException;
+ import org.apache.rocketmq.proxy.common.ProxyExceptionCode;
+ import org.apache.rocketmq.proxy.service.ServiceManager;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/DefaultMessagingProcessor.java b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/DefaultMessagingProcessor.java
+index b9800d0cc..bfadc0d3e 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/DefaultMessagingProcessor.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/DefaultMessagingProcessor.java
+@@ -39,7 +39,7 @@ import org.apache.rocketmq.common.consumer.ReceiptHandle;
+ import org.apache.rocketmq.common.message.Message;
+ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+-import org.apache.rocketmq.proxy.common.AbstractStartAndShutdown;
++import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
+ import org.apache.rocketmq.proxy.common.Address;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/MessagingProcessor.java b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/MessagingProcessor.java
+index 3c4e6303f..98683a515 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/MessagingProcessor.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/MessagingProcessor.java
+@@ -35,7 +35,7 @@ import org.apache.rocketmq.common.message.Message;
+ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.proxy.common.Address;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.service.metadata.MetadataService;
+ import org.apache.rocketmq.proxy.service.relay.ProxyRelayService;
+ import org.apache.rocketmq.proxy.service.route.ProxyTopicRouteData;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java
+index 967276376..c903220bb 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java
+@@ -40,14 +40,14 @@ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.common.consumer.ReceiptHandle;
+ import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+ import org.apache.rocketmq.common.utils.ConcurrentHashMapUtils;
+-import org.apache.rocketmq.proxy.common.AbstractStartAndShutdown;
++import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
+ import org.apache.rocketmq.proxy.common.MessageReceiptHandle;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.common.ProxyException;
+ import org.apache.rocketmq.proxy.common.ProxyExceptionCode;
+ import org.apache.rocketmq.proxy.common.ReceiptHandleGroup;
+ import org.apache.rocketmq.proxy.common.RenewStrategyPolicy;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.common.channel.ChannelHelper;
+ import org.apache.rocketmq.proxy.common.utils.ExceptionUtils;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/RemotingProtocolServer.java b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/RemotingProtocolServer.java
+index 82663f7cd..f08094c16 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/RemotingProtocolServer.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/RemotingProtocolServer.java
+@@ -36,7 +36,7 @@ import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+ import org.apache.rocketmq.common.thread.ThreadPoolStatusMonitor;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.proxy.processor.MessagingProcessor;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/channel/RemotingChannelManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/channel/RemotingChannelManager.java
+index 6913fc670..133865f48 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/channel/RemotingChannelManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/channel/RemotingChannelManager.java
+@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
+ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.remoting.RemotingProxyOutClient;
+ import org.apache.rocketmq.proxy.service.relay.ProxyRelayService;
+ import org.apache.rocketmq.remoting.protocol.heartbeat.SubscriptionData;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/ClusterServiceManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/ClusterServiceManager.java
+index 70eb42b4b..20beeb566 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/ClusterServiceManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/ClusterServiceManager.java
+@@ -26,10 +26,11 @@ import org.apache.rocketmq.broker.client.ConsumerManager;
+ import org.apache.rocketmq.broker.client.ProducerChangeListener;
+ import org.apache.rocketmq.broker.client.ProducerGroupEvent;
+ import org.apache.rocketmq.broker.client.ProducerManager;
++import org.apache.rocketmq.client.common.NameserverAccessConfig;
+ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.proxy.common.AbstractStartAndShutdown;
++import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.proxy.service.admin.AdminService;
+@@ -39,9 +40,9 @@ import org.apache.rocketmq.proxy.service.message.ClusterMessageService;
+ import org.apache.rocketmq.proxy.service.message.MessageService;
+ import org.apache.rocketmq.proxy.service.metadata.ClusterMetadataService;
+ import org.apache.rocketmq.proxy.service.metadata.MetadataService;
+-import org.apache.rocketmq.proxy.service.mqclient.DoNothingClientRemotingProcessor;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
+-import org.apache.rocketmq.proxy.service.mqclient.ProxyClientRemotingProcessor;
++import org.apache.rocketmq.client.impl.mqclient.DoNothingClientRemotingProcessor;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.proxy.service.client.ProxyClientRemotingProcessor;
+ import org.apache.rocketmq.proxy.service.relay.ClusterProxyRelayService;
+ import org.apache.rocketmq.proxy.service.relay.ProxyRelayService;
+ import org.apache.rocketmq.proxy.service.route.ClusterTopicRouteService;
+@@ -69,15 +70,19 @@ public class ClusterServiceManager extends AbstractStartAndShutdown implements S
+ 
+     public ClusterServiceManager(RPCHook rpcHook) {
+         ProxyConfig proxyConfig = ConfigurationManager.getProxyConfig();
++        NameserverAccessConfig nameserverAccessConfig = new NameserverAccessConfig(proxyConfig.getNamesrvAddr(),
++            proxyConfig.getNamesrvDomain(), proxyConfig.getNamesrvDomainSubgroup());
+         this.scheduledExecutorService = Executors.newScheduledThreadPool(3);
+ 
+         this.messagingClientAPIFactory = new MQClientAPIFactory(
++            nameserverAccessConfig,
+             "ClusterMQClient_",
+             proxyConfig.getRocketmqMQClientNum(),
+             new DoNothingClientRemotingProcessor(null),
+             rpcHook,
+             scheduledExecutorService);
+         this.operationClientAPIFactory = new MQClientAPIFactory(
++            nameserverAccessConfig,
+             "OperationClient_",
+             1,
+             new DoNothingClientRemotingProcessor(null),
+@@ -94,6 +99,7 @@ public class ClusterServiceManager extends AbstractStartAndShutdown implements S
+         this.consumerManager = new ClusterConsumerManager(this.topicRouteService, this.adminService, this.operationClientAPIFactory, new ConsumerIdsChangeListenerImpl(), proxyConfig.getChannelExpiredTimeout());
+ 
+         this.transactionClientAPIFactory = new MQClientAPIFactory(
++            nameserverAccessConfig,
+             "ClusterTransaction_",
+             1,
+             new ProxyClientRemotingProcessor(producerManager),
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/LocalServiceManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/LocalServiceManager.java
+index 4f829caa6..4d1ca7b66 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/LocalServiceManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/LocalServiceManager.java
+@@ -22,9 +22,14 @@ import java.util.concurrent.TimeUnit;
+ import org.apache.rocketmq.broker.BrokerController;
+ import org.apache.rocketmq.broker.client.ConsumerManager;
+ import org.apache.rocketmq.broker.client.ProducerManager;
++import org.apache.rocketmq.client.common.NameserverAccessConfig;
++import org.apache.rocketmq.client.impl.mqclient.DoNothingClientRemotingProcessor;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.common.ThreadFactoryImpl;
+-import org.apache.rocketmq.proxy.common.AbstractStartAndShutdown;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
++import org.apache.rocketmq.proxy.config.ConfigurationManager;
++import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.proxy.service.admin.AdminService;
+ import org.apache.rocketmq.proxy.service.admin.DefaultAdminService;
+ import org.apache.rocketmq.proxy.service.channel.ChannelManager;
+@@ -32,8 +37,6 @@ import org.apache.rocketmq.proxy.service.message.LocalMessageService;
+ import org.apache.rocketmq.proxy.service.message.MessageService;
+ import org.apache.rocketmq.proxy.service.metadata.LocalMetadataService;
+ import org.apache.rocketmq.proxy.service.metadata.MetadataService;
+-import org.apache.rocketmq.proxy.service.mqclient.DoNothingClientRemotingProcessor;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.relay.LocalProxyRelayService;
+ import org.apache.rocketmq.proxy.service.relay.ProxyRelayService;
+ import org.apache.rocketmq.proxy.service.route.LocalTopicRouteService;
+@@ -62,7 +65,11 @@ public class LocalServiceManager extends AbstractStartAndShutdown implements Ser
+         this.brokerController = brokerController;
+         this.channelManager = new ChannelManager();
+         this.messageService = new LocalMessageService(brokerController, channelManager, rpcHook);
++        ProxyConfig proxyConfig = ConfigurationManager.getProxyConfig();
++        NameserverAccessConfig nameserverAccessConfig = new NameserverAccessConfig(proxyConfig.getNamesrvAddr(),
++            proxyConfig.getNamesrvDomain(), proxyConfig.getNamesrvDomainSubgroup());
+         this.mqClientAPIFactory = new MQClientAPIFactory(
++            nameserverAccessConfig,
+             "LocalMQClient_",
+             1,
+             new DoNothingClientRemotingProcessor(null),
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/ServiceManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/ServiceManager.java
+index bfa2ed963..c271eca0a 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/ServiceManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/ServiceManager.java
+@@ -18,7 +18,7 @@ package org.apache.rocketmq.proxy.service;
+ 
+ import org.apache.rocketmq.broker.client.ConsumerManager;
+ import org.apache.rocketmq.broker.client.ProducerManager;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.service.admin.AdminService;
+ import org.apache.rocketmq.proxy.service.message.MessageService;
+ import org.apache.rocketmq.proxy.service.metadata.MetadataService;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/admin/DefaultAdminService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/admin/DefaultAdminService.java
+index 4dbf21a98..f3c68eab5 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/admin/DefaultAdminService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/admin/DefaultAdminService.java
+@@ -30,8 +30,8 @@ import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+ import org.apache.rocketmq.common.topic.TopicValidator;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIExt;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIExt;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteHelper;
+ 
+ public class DefaultAdminService implements AdminService {
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/client/ClusterConsumerManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/client/ClusterConsumerManager.java
+index 94f4c5232..07aeb23fc 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/client/ClusterConsumerManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/client/ClusterConsumerManager.java
+@@ -22,9 +22,9 @@ import org.apache.rocketmq.broker.client.ClientChannelInfo;
+ import org.apache.rocketmq.broker.client.ConsumerIdsChangeListener;
+ import org.apache.rocketmq.broker.client.ConsumerManager;
+ import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.service.admin.AdminService;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteService;
+ import org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncer;
+ import org.apache.rocketmq.remoting.protocol.heartbeat.ConsumeType;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessor.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/client/ProxyClientRemotingProcessor.java
+similarity index 98%
+rename from proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessor.java
+rename to proxy/src/main/java/org/apache/rocketmq/proxy/service/client/ProxyClientRemotingProcessor.java
+index eaf7111ef..655ce7e64 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessor.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/client/ProxyClientRemotingProcessor.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.proxy.service.mqclient;
++package org.apache.rocketmq.proxy.service.client;
+ 
+ import io.netty.channel.Channel;
+ import io.netty.channel.ChannelHandlerContext;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/message/ClusterMessageService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/message/ClusterMessageService.java
+index 872b16f51..7150967d4 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/message/ClusterMessageService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/message/ClusterMessageService.java
+@@ -31,7 +31,7 @@ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.common.ProxyException;
+ import org.apache.rocketmq.proxy.common.ProxyExceptionCode;
+ import org.apache.rocketmq.proxy.common.utils.FutureUtils;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.route.AddressableMessageQueue;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteService;
+ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java
+index f0ef66faa..7934d3c86 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java
+@@ -28,10 +28,10 @@ import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+ import org.apache.rocketmq.proxy.common.AbstractCacheLoader;
+-import org.apache.rocketmq.proxy.common.AbstractStartAndShutdown;
++import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteHelper;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteService;
+ import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java
+index 5e6e6ece5..31e1f94c5 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java
+@@ -20,7 +20,7 @@ import java.util.List;
+ import org.apache.rocketmq.common.MixAll;
+ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.proxy.common.Address;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+ import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+ 
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java
+index e9fb6db9b..3ac7ae75b 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java
+@@ -27,7 +27,7 @@ import org.apache.rocketmq.common.TopicConfig;
+ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.proxy.common.Address;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+ import org.apache.rocketmq.remoting.protocol.route.QueueData;
+ import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/TopicRouteService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/TopicRouteService.java
+index 8a4046e45..ba97e183b 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/TopicRouteService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/TopicRouteService.java
+@@ -33,11 +33,11 @@ import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+ import org.apache.rocketmq.proxy.common.AbstractCacheLoader;
+-import org.apache.rocketmq.proxy.common.AbstractStartAndShutdown;
++import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
+ import org.apache.rocketmq.proxy.common.Address;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.remoting.protocol.ResponseCode;
+ import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+ import org.checkerframework.checker.nullness.qual.NonNull;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java
+index d08d5dfb1..cc988db78 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java
+@@ -34,11 +34,11 @@ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+ import org.apache.rocketmq.proxy.common.ProxyException;
+ import org.apache.rocketmq.proxy.common.ProxyExceptionCode;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.proxy.service.admin.AdminService;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.route.AddressableMessageQueue;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteService;
+ import org.apache.rocketmq.remoting.RPCHook;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncer.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncer.java
+index 51af02170..fb3903697 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncer.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncer.java
+@@ -39,7 +39,7 @@ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.proxy.processor.channel.RemoteChannel;
+ import org.apache.rocketmq.proxy.service.admin.AdminService;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteService;
+ import org.apache.rocketmq.remoting.protocol.heartbeat.ConsumeType;
+ import org.apache.rocketmq.remoting.protocol.heartbeat.MessageModel;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/AbstractTransactionService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/AbstractTransactionService.java
+index a61083c6d..3254d711d 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/AbstractTransactionService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/AbstractTransactionService.java
+@@ -20,7 +20,7 @@ package org.apache.rocketmq.proxy.service.transaction;
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.rocketmq.common.message.Message;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.remoting.protocol.header.EndTransactionRequestHeader;
+ 
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/ClusterTransactionService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/ClusterTransactionService.java
+index 2b3aa598d..eff3ac492 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/ClusterTransactionService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/ClusterTransactionService.java
+@@ -38,7 +38,7 @@ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.route.MessageQueueView;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteService;
+ import org.apache.rocketmq.remoting.protocol.heartbeat.HeartbeatData;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/TransactionDataManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/TransactionDataManager.java
+index d407563c0..81cd26ee9 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/TransactionDataManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/TransactionDataManager.java
+@@ -31,7 +31,7 @@ import org.apache.rocketmq.common.ServiceThread;
+ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.proxy.common.StartAndShutdown;
++import org.apache.rocketmq.common.utils.StartAndShutdown;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ 
+ public class TransactionDataManager implements StartAndShutdown {

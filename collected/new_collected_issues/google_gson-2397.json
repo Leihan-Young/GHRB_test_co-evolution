@@ -1,0 +1,7 @@
+{
+  "issue_id": 1945,
+  "issue_url": "https://github.com/google/gson/issues/1945",
+  "title": "Declare proguard rules automatically",
+  "description": "<p dir=\"auto\">Could gson have basic proguard rules automatically declared as retrofit does ?<br>\n<a href=\"https://github.com/square/retrofit/blob/master/retrofit/src/main/resources/META-INF/proguard/retrofit2.pro\">https://github.com/square/retrofit/blob/master/retrofit/src/main/resources/META-INF/proguard/retrofit2.pro</a></p>",
+  "description_text": "Could gson have basic proguard rules automatically declared as retrofit does ?\nhttps://github.com/square/retrofit/blob/master/retrofit/src/main/resources/META-INF/proguard/retrofit2.pro"
+}

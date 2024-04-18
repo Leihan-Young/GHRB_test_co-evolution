@@ -1,0 +1,7 @@
+{
+  "issue_id": 6012,
+  "issue_url": "https://github.com/apache/rocketmq/issues/6012",
+  "title": "Pop consumer with big queue num will case out of bounds problem ",
+  "description": "<p dir=\"auto\">What did you do (The steps to reproduce)?</p>\n<ul dir=\"auto\">\n<li>create a topic with more than 127 read queues</li>\n<li>pop message from broker</li>\n<li>will find the queueId of popCheckPoint is not right</li>\n</ul>",
+  "description_text": "What did you do (The steps to reproduce)?\n\ncreate a topic with more than 127 read queues\npop message from broker\nwill find the queueId of popCheckPoint is not right\n"
+}

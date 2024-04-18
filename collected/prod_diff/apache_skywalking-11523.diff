@@ -1,0 +1,34 @@
+diff --git a/oap-server/server-library/library-client/src/main/java/org/apache/skywalking/oap/server/library/client/elasticsearch/ElasticSearchScroller.java b/oap-server/server-library/library-client/src/main/java/org/apache/skywalking/oap/server/library/client/elasticsearch/ElasticSearchScroller.java
+index f414f4c502..62504e83fc 100644
+--- a/oap-server/server-library/library-client/src/main/java/org/apache/skywalking/oap/server/library/client/elasticsearch/ElasticSearchScroller.java
++++ b/oap-server/server-library/library-client/src/main/java/org/apache/skywalking/oap/server/library/client/elasticsearch/ElasticSearchScroller.java
+@@ -61,12 +61,12 @@ public class ElasticSearchScroller<T> {
+                 }
+                 for (final var searchHit : response.getHits()) {
+                     results.add(resultConverter.apply(searchHit));
++                    if (queryMaxSize > 0 && results.size() >= queryMaxSize) {
++                        return results;
++                    }
+                 }
+                 if (search.getSize() != null && response.getHits().getHits().size() < search.getSize()) {
+-                    break;
+-                }
+-                if (queryMaxSize > 0 && results.size() >= queryMaxSize) {
+-                    break;
++                    return results;
+                 }
+                 response = client.scroll(SCROLL_CONTEXT_RETENTION, scrollId);
+             }
+diff --git a/oap-server/server-storage-plugin/storage-elasticsearch-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/elasticsearch/query/MetadataQueryEsDAO.java b/oap-server/server-storage-plugin/storage-elasticsearch-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/elasticsearch/query/MetadataQueryEsDAO.java
+index 9a103b536c..5bae5a6431 100644
+--- a/oap-server/server-storage-plugin/storage-elasticsearch-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/elasticsearch/query/MetadataQueryEsDAO.java
++++ b/oap-server/server-storage-plugin/storage-elasticsearch-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/elasticsearch/query/MetadataQueryEsDAO.java
+@@ -238,7 +238,7 @@ public class MetadataQueryEsDAO extends EsDAO implements IMetadataQueryDAO {
+             .client(getClient())
+             .search(search.build())
+             .index(index)
+-            .queryMaxSize(queryMaxSize)
++            .queryMaxSize(limit)
+             .resultConverter(searchHit -> {
+                 final var sourceAsMap = searchHit.getSource();
+ 

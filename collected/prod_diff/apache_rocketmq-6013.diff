@@ -1,0 +1,79 @@
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/ChangeInvisibleTimeProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/ChangeInvisibleTimeProcessor.java
+index f4a472028..2ccdf07f6 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/ChangeInvisibleTimeProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/ChangeInvisibleTimeProcessor.java
+@@ -212,7 +212,7 @@ public class ChangeInvisibleTimeProcessor implements NettyRequestProcessor {
+         ck.setStartOffset(offset);
+         ck.setCId(requestHeader.getConsumerGroup());
+         ck.setTopic(requestHeader.getTopic());
+-        ck.setQueueId((byte) queueId);
++        ck.setQueueId(queueId);
+         ck.addDiff(0);
+         ck.setBrokerName(brokerName);
+ 
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopBufferMergeService.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopBufferMergeService.java
+index e933f5347..4d6359c1d 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopBufferMergeService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopBufferMergeService.java
+@@ -425,7 +425,7 @@ public class PopBufferMergeService extends ServiceThread {
+         ck.setStartOffset(startOffset);
+         ck.setCId(group);
+         ck.setTopic(topic);
+-        ck.setQueueId((byte) queueId);
++        ck.setQueueId(queueId);
+         ck.setBrokerName(brokerName);
+ 
+         PopCheckPointWrapper pointWrapper = new PopCheckPointWrapper(reviveQueueId, Long.MAX_VALUE, ck, nextBeginOffset, true);
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
+index 647d2e8a9..cd4595326 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
+@@ -809,7 +809,7 @@ public class PopMessageProcessor implements NettyRequestProcessor {
+         ck.setStartOffset(offset);
+         ck.setCId(requestHeader.getConsumerGroup());
+         ck.setTopic(topic);
+-        ck.setQueueId((byte) queueId);
++        ck.setQueueId(queueId);
+         ck.setBrokerName(brokerName);
+         for (Long msgQueueOffset : getMessageTmpResult.getMessageQueueOffset()) {
+             ck.addDiff((int) (msgQueueOffset - offset));
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java
+index fe654fe64..f451c6047 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java
+@@ -419,7 +419,7 @@ public class PopReviveService extends ServiceThread {
+         PopCheckPoint point = new PopCheckPoint();
+         point.setStartOffset(ackMsg.getStartOffset());
+         point.setPopTime(ackMsg.getPopTime());
+-        point.setQueueId((byte) ackMsg.getQueueId());
++        point.setQueueId(ackMsg.getQueueId());
+         point.setCId(ackMsg.getConsumerGroup());
+         point.setTopic(ackMsg.getTopic());
+         point.setNum((byte) 0);
+diff --git a/store/src/main/java/org/apache/rocketmq/store/pop/PopCheckPoint.java b/store/src/main/java/org/apache/rocketmq/store/pop/PopCheckPoint.java
+index a65e2d556..e041b66d9 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/pop/PopCheckPoint.java
++++ b/store/src/main/java/org/apache/rocketmq/store/pop/PopCheckPoint.java
+@@ -32,7 +32,7 @@ public class PopCheckPoint implements Comparable<PopCheckPoint> {
+     @JSONField(name = "n")
+     private byte num;
+     @JSONField(name = "q")
+-    private byte queueId;
++    private int queueId;
+     @JSONField(name = "t")
+     private String topic;
+     @JSONField(name = "c")
+@@ -96,11 +96,11 @@ public class PopCheckPoint implements Comparable<PopCheckPoint> {
+         this.num = num;
+     }
+ 
+-    public byte getQueueId() {
++    public int getQueueId() {
+         return queueId;
+     }
+ 
+-    public void setQueueId(byte queueId) {
++    public void setQueueId(int queueId) {
+         this.queueId = queueId;
+     }
+ 

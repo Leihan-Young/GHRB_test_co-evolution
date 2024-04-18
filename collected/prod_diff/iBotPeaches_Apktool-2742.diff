@@ -1,0 +1,13 @@
+diff --git a/brut.apktool/apktool-lib/src/main/java/brut/androlib/Androlib.java b/brut.apktool/apktool-lib/src/main/java/brut/androlib/Androlib.java
+index 600764da..777f8e89 100644
+--- a/brut.apktool/apktool-lib/src/main/java/brut/androlib/Androlib.java
++++ b/brut.apktool/apktool-lib/src/main/java/brut/androlib/Androlib.java
+@@ -562,6 +562,8 @@ public class Androlib {
+ 
+                 Directory tmpDir = new ExtFile(apkFile).getDirectory();
+                 tmpDir.copyToDir(apkDir, APK_MANIFEST_FILENAMES);
++
++                apkFile.delete();
+             }
+             return true;
+         } catch (IOException | DirectoryException ex) {

@@ -1,0 +1,300 @@
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRulesWatcher.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRulesWatcher.java
+index c9c6cb663f..0ab3e94b65 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRulesWatcher.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRulesWatcher.java
+@@ -32,6 +32,7 @@ import org.apache.skywalking.oap.server.core.alarm.provider.expression.Expressio
+ import org.apache.skywalking.oap.server.core.alarm.provider.expression.ExpressionContext;
+ import org.apache.skywalking.oap.server.core.alarm.provider.feishu.FeishuSettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.grpc.GRPCAlarmSetting;
++import org.apache.skywalking.oap.server.core.alarm.provider.pagerduty.PagerDutySettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.slack.SlackSettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.wechat.WechatSettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.welink.WeLinkSettings;
+@@ -142,4 +143,8 @@ public class AlarmRulesWatcher extends ConfigChangeWatcher {
+     public WeLinkSettings getWeLinkSettings() {
+         return this.rules.getWelinks();
+     }
++
++    public PagerDutySettings getPagerDutySettings() {
++        return this.rules.getPagerDutySettings();
++    }
+ }
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/NotifyHandler.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/NotifyHandler.java
+index 38d6f7624b..1ec3b9f477 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/NotifyHandler.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/NotifyHandler.java
+@@ -35,6 +35,7 @@ import org.apache.skywalking.oap.server.core.alarm.ServiceMetaInAlarm;
+ import org.apache.skywalking.oap.server.core.alarm.provider.dingtalk.DingtalkHookCallback;
+ import org.apache.skywalking.oap.server.core.alarm.provider.feishu.FeishuHookCallback;
+ import org.apache.skywalking.oap.server.core.alarm.provider.grpc.GRPCCallback;
++import org.apache.skywalking.oap.server.core.alarm.provider.pagerduty.PagerDutyHookCallback;
+ import org.apache.skywalking.oap.server.core.alarm.provider.slack.SlackhookCallback;
+ import org.apache.skywalking.oap.server.core.alarm.provider.wechat.WechatHookCallback;
+ import org.apache.skywalking.oap.server.core.alarm.provider.welink.WeLinkHookCallback;
+@@ -185,6 +186,7 @@ public class NotifyHandler implements MetricsNotify {
+         allCallbacks.add(new FeishuHookCallback(alarmRulesWatcher));
+         allCallbacks.add(new EventHookCallback(this.manager));
+         allCallbacks.add(new WeLinkHookCallback(alarmRulesWatcher));
++        allCallbacks.add(new PagerDutyHookCallback(alarmRulesWatcher));
+         core.start(allCallbacks);
+     }
+ }
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Rules.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Rules.java
+index 016d46f21c..f5940bc12f 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Rules.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Rules.java
+@@ -26,6 +26,7 @@ import lombok.ToString;
+ import org.apache.skywalking.oap.server.core.alarm.provider.dingtalk.DingtalkSettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.feishu.FeishuSettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.grpc.GRPCAlarmSetting;
++import org.apache.skywalking.oap.server.core.alarm.provider.pagerduty.PagerDutySettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.slack.SlackSettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.wechat.WechatSettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.welink.WeLinkSettings;
+@@ -43,6 +44,7 @@ public class Rules {
+     private DingtalkSettings dingtalks;
+     private FeishuSettings feishus;
+     private WeLinkSettings welinks;
++    private PagerDutySettings pagerDutySettings;
+ 
+     public Rules() {
+         this.rules = new ArrayList<>();
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RulesReader.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RulesReader.java
+index 976a2e788d..7c28400833 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RulesReader.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RulesReader.java
+@@ -27,6 +27,8 @@ import java.util.List;
+ import java.util.Map;
+ import java.util.Objects;
+ import java.util.stream.Collectors;
++
++import org.apache.skywalking.oap.server.core.alarm.provider.pagerduty.PagerDutySettings;
+ import org.apache.skywalking.oap.server.library.util.StringUtil;
+ import org.apache.skywalking.oap.server.core.alarm.provider.dingtalk.DingtalkSettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.feishu.FeishuSettings;
+@@ -70,6 +72,7 @@ public class RulesReader {
+             readDingtalkConfig(rules);
+             readFeishuConfig(rules);
+             readWeLinkConfig(rules);
++            readPagerDutyConfig(rules);
+         }
+         return rules;
+     }
+@@ -281,4 +284,23 @@ public class RulesReader {
+         welinkSettings.setWebhooks(webHookUrls);
+         rules.setWelinks(welinkSettings);
+     }
++
++    /**
++     * Read PagerDuty hook config into {@link PagerDutySettings}
++     */
++    private void readPagerDutyConfig(Rules rules) {
++        Map<String, Object> pagerDutyConfig = (Map<String, Object>) yamlData.get("pagerDutyHooks");
++        if (pagerDutyConfig != null) {
++            PagerDutySettings pagerDutySettings = new PagerDutySettings();
++            String textTemplate = (String) pagerDutyConfig.getOrDefault("textTemplate", "");
++            pagerDutySettings.setTextTemplate(textTemplate);
++
++            List<String> integrationKeys = (List<String>) pagerDutyConfig.get("integrationKeys");
++            if (integrationKeys != null) {
++                pagerDutySettings.getIntegrationKeys().addAll(integrationKeys);
++            }
++
++            rules.setPagerDutySettings(pagerDutySettings);
++        }
++    }
+ }
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/pagerduty/PagerDutyHookCallback.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/pagerduty/PagerDutyHookCallback.java
+new file mode 100644
+index 0000000000..1dae9017dc
+--- /dev/null
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/pagerduty/PagerDutyHookCallback.java
+@@ -0,0 +1,139 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ */
++
++package org.apache.skywalking.oap.server.core.alarm.provider.pagerduty;
++
++import com.google.gson.Gson;
++import com.google.gson.JsonObject;
++import com.google.gson.JsonPrimitive;
++import io.netty.handler.codec.http.HttpHeaderValues;
++import lombok.extern.slf4j.Slf4j;
++import org.apache.http.HttpHeaders;
++import org.apache.http.HttpStatus;
++import org.apache.http.StatusLine;
++import org.apache.http.client.config.RequestConfig;
++import org.apache.http.client.methods.CloseableHttpResponse;
++import org.apache.http.client.methods.HttpPost;
++import org.apache.http.entity.ContentType;
++import org.apache.http.entity.StringEntity;
++import org.apache.http.impl.client.CloseableHttpClient;
++import org.apache.http.impl.client.HttpClients;
++import org.apache.http.util.EntityUtils;
++import org.apache.skywalking.oap.server.core.alarm.AlarmCallback;
++import org.apache.skywalking.oap.server.core.alarm.AlarmMessage;
++import org.apache.skywalking.oap.server.core.alarm.provider.AlarmRulesWatcher;
++
++import java.io.IOException;
++import java.io.UnsupportedEncodingException;
++import java.nio.charset.StandardCharsets;
++import java.util.List;
++import java.util.UUID;
++
++@Slf4j
++public class PagerDutyHookCallback implements AlarmCallback {
++    private static final String PAGER_DUTY_EVENTS_API_V2_URL = "https://events.pagerduty.com/v2/enqueue";
++    private static final int HTTP_CONNECT_TIMEOUT = 1000;
++    private static final int HTTP_CONNECTION_REQUEST_TIMEOUT = 1000;
++    private static final int HTTP_SOCKET_TIMEOUT = 10000;
++    private static final Gson GSON = new Gson();
++
++    private AlarmRulesWatcher alarmRulesWatcher;
++    private RequestConfig requestConfig;
++
++    public PagerDutyHookCallback(final AlarmRulesWatcher alarmRulesWatcher) {
++        this.alarmRulesWatcher = alarmRulesWatcher;
++        this.requestConfig = RequestConfig.custom()
++                .setConnectTimeout(HTTP_CONNECT_TIMEOUT)
++                .setConnectionRequestTimeout(HTTP_CONNECTION_REQUEST_TIMEOUT)
++                .setSocketTimeout(HTTP_SOCKET_TIMEOUT)
++                .build();
++    }
++
++    @Override
++    public void doAlarm(List<AlarmMessage> alarmMessages) {
++        if (this.alarmRulesWatcher.getPagerDutySettings() == null || this.alarmRulesWatcher.getPagerDutySettings().getIntegrationKeys().isEmpty()) {
++            return;
++        }
++
++        CloseableHttpClient httpClient = HttpClients.custom().build();
++        try {
++            this.alarmRulesWatcher.getPagerDutySettings().getIntegrationKeys().forEach(integrationKey -> {
++                alarmMessages.forEach(alarmMessage -> {
++                    sendAlarmMessage(httpClient, alarmMessage, integrationKey);
++                });
++            });
++        } finally {
++            try {
++                httpClient.close();
++            } catch (IOException e) {
++                log.error(e.getMessage(), e);
++            }
++        }
++    }
++
++    private void sendAlarmMessage(CloseableHttpClient httpClient, AlarmMessage alarmMessage, String integrationKey) {
++        CloseableHttpResponse httpResponse = null;
++        try {
++            HttpPost post = new HttpPost(PAGER_DUTY_EVENTS_API_V2_URL);
++            post.setConfig(requestConfig);
++            post.setHeader(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON.toString());
++            post.setHeader(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON.toString());
++            post.setEntity(
++                    getStringEntity(alarmMessage, integrationKey)
++            );
++            httpResponse = httpClient.execute(post);
++            StatusLine statusLine = httpResponse.getStatusLine();
++            if (statusLine != null && statusLine.getStatusCode() != HttpStatus.SC_ACCEPTED) {
++                log.error("send PagerDuty alarm to {} failure. Response code: {}, message: {} ",
++                        PAGER_DUTY_EVENTS_API_V2_URL, statusLine.getStatusCode(),
++                        EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8)
++                );
++            }
++        } catch (Throwable e) {
++            log.error("send PagerDuty alarm to {} failure.", PAGER_DUTY_EVENTS_API_V2_URL, e);
++        } finally {
++            if (httpResponse != null) {
++                try {
++                    httpResponse.close();
++                } catch (IOException e) {
++                    log.error(e.getMessage(), e);
++                }
++            }
++        }
++    }
++
++    private StringEntity getStringEntity(AlarmMessage alarmMessage, String integrationKey) throws UnsupportedEncodingException {
++        JsonObject body = new JsonObject();
++        JsonObject payload = new JsonObject();
++        payload.add("summary", new JsonPrimitive(getFormattedMessage(alarmMessage)));
++        payload.add("severity", new JsonPrimitive("warning"));
++        payload.add("source", new JsonPrimitive("Skywalking"));
++        body.add("payload", payload);
++        body.add("routing_key", new JsonPrimitive(integrationKey));
++        body.add("dedup_key", new JsonPrimitive(UUID.randomUUID().toString()));
++        body.add("event_action", new JsonPrimitive("trigger"));
++
++        return new StringEntity(GSON.toJson(body), ContentType.APPLICATION_JSON);
++    }
++
++    private String getFormattedMessage(AlarmMessage alarmMessage) {
++        return String.format(
++                this.alarmRulesWatcher.getPagerDutySettings().getTextTemplate(), alarmMessage.getAlarmMessage()
++        );
++    }
++}
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/pagerduty/PagerDutySettings.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/pagerduty/PagerDutySettings.java
+new file mode 100644
+index 0000000000..69f06c4167
+--- /dev/null
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/pagerduty/PagerDutySettings.java
+@@ -0,0 +1,43 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ */
++
++package org.apache.skywalking.oap.server.core.alarm.provider.pagerduty;
++
++import lombok.AllArgsConstructor;
++import lombok.Builder;
++import lombok.Getter;
++import lombok.NoArgsConstructor;
++import lombok.Setter;
++import lombok.ToString;
++
++import java.util.ArrayList;
++import java.util.List;
++
++@Builder
++@NoArgsConstructor
++@AllArgsConstructor
++@Setter
++@Getter
++@ToString
++public class PagerDutySettings {
++
++    private String textTemplate;
++
++    @Builder.Default
++    private List<String> integrationKeys = new ArrayList<>();
++}

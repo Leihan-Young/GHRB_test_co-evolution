@@ -1,0 +1,101 @@
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/failover/EscapeBridge.java b/broker/src/main/java/org/apache/rocketmq/broker/failover/EscapeBridge.java
+index 0f5d5e0e1..913c7a3d5 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/failover/EscapeBridge.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/failover/EscapeBridge.java
+@@ -263,7 +263,7 @@ public class EscapeBridge {
+         }
+     }
+ 
+-    public MessageExt getMessage(String topic, long offset, int queueId, String brokerName) {
++    public MessageExt getMessage(String topic, long offset, int queueId, String brokerName, boolean deCompressBody) {
+         MessageStore messageStore = brokerController.getMessageStoreByBrokerName(brokerName);
+         if (messageStore != null) {
+             final GetMessageResult getMessageTmpResult = messageStore.getMessage(innerConsumerGroupName, topic, queueId, offset, 1, null);
+@@ -271,7 +271,7 @@ public class EscapeBridge {
+                 LOG.warn("getMessageResult is null , innerConsumerGroupName {}, topic {}, offset {}, queueId {}", innerConsumerGroupName, topic, offset, queueId);
+                 return null;
+             }
+-            List<MessageExt> list = decodeMsgList(getMessageTmpResult);
++            List<MessageExt> list = decodeMsgList(getMessageTmpResult, deCompressBody);
+             if (list == null || list.isEmpty()) {
+                 LOG.warn("Can not get msg , topic {}, offset {}, queueId {}, result is {}", topic, offset, queueId, getMessageTmpResult);
+                 return null;
+@@ -283,7 +283,7 @@ public class EscapeBridge {
+         }
+     }
+ 
+-    protected List<MessageExt> decodeMsgList(GetMessageResult getMessageResult) {
++    protected List<MessageExt> decodeMsgList(GetMessageResult getMessageResult, boolean deCompressBody) {
+         List<MessageExt> foundList = new ArrayList<>();
+         try {
+             List<ByteBuffer> messageBufferList = getMessageResult.getMessageBufferList();
+@@ -294,7 +294,7 @@ public class EscapeBridge {
+                         LOG.error("bb is null {}", getMessageResult);
+                         continue;
+                     }
+-                    MessageExt msgExt = MessageDecoder.decode(bb);
++                    MessageExt msgExt = MessageDecoder.decode(bb, true, deCompressBody);
+                     if (msgExt == null) {
+                         LOG.error("decode msgExt is null {}", getMessageResult);
+                         continue;
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java
+index 1db958e55..7db2cd577 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java
+@@ -97,6 +97,7 @@ public class PopReviveService extends ServiceThread {
+             MessageAccessor.setProperties(msgInner, new HashMap<>());
+         }
+         msgInner.setBornTimestamp(messageExt.getBornTimestamp());
++        msgInner.setSysFlag(messageExt.getSysFlag());
+         msgInner.setBornHost(brokerController.getStoreHost());
+         msgInner.setStoreHost(brokerController.getStoreHost());
+         msgInner.setReconsumeTimes(messageExt.getReconsumeTimes() + 1);
+@@ -154,7 +155,7 @@ public class PopReviveService extends ServiceThread {
+     }
+ 
+     protected List<MessageExt> getReviveMessage(long offset, int queueId) {
+-        PullResult pullResult = getMessage(PopAckConstants.REVIVE_GROUP, reviveTopic, queueId, offset, 32);
++        PullResult pullResult = getMessage(PopAckConstants.REVIVE_GROUP, reviveTopic, queueId, offset, 32, true);
+         if (pullResult == null) {
+             return null;
+         }
+@@ -179,10 +180,10 @@ public class PopReviveService extends ServiceThread {
+     }
+ 
+     private MessageExt getBizMessage(String topic, long offset, int queueId, String brokerName) {
+-        return this.brokerController.getEscapeBridge().getMessage(topic, offset, queueId, brokerName);
++        return this.brokerController.getEscapeBridge().getMessage(topic, offset, queueId, brokerName, false);
+     }
+ 
+-    public PullResult getMessage(String group, String topic, int queueId, long offset, int nums) {
++    public PullResult getMessage(String group, String topic, int queueId, long offset, int nums, boolean deCompressBody) {
+         GetMessageResult getMessageResult = this.brokerController.getMessageStore().getMessage(group, topic, queueId, offset, nums, null);
+ 
+         if (getMessageResult != null) {
+@@ -191,7 +192,7 @@ public class PopReviveService extends ServiceThread {
+             switch (getMessageResult.getStatus()) {
+                 case FOUND:
+                     pullStatus = PullStatus.FOUND;
+-                    foundList = decodeMsgList(getMessageResult);
++                    foundList = decodeMsgList(getMessageResult, deCompressBody);
+                     brokerController.getBrokerStatsManager().incGroupGetNums(group, topic, getMessageResult.getMessageCount());
+                     brokerController.getBrokerStatsManager().incGroupGetSize(group, topic, getMessageResult.getBufferTotalSize());
+                     brokerController.getBrokerStatsManager().incBrokerGetNums(getMessageResult.getMessageCount());
+@@ -238,7 +239,7 @@ public class PopReviveService extends ServiceThread {
+         }
+     }
+ 
+-    private List<MessageExt> decodeMsgList(GetMessageResult getMessageResult) {
++    private List<MessageExt> decodeMsgList(GetMessageResult getMessageResult, boolean deCompressBody) {
+         List<MessageExt> foundList = new ArrayList<>();
+         try {
+             List<ByteBuffer> messageBufferList = getMessageResult.getMessageBufferList();
+@@ -249,7 +250,7 @@ public class PopReviveService extends ServiceThread {
+                         POP_LOGGER.error("bb is null {}", getMessageResult);
+                         continue;
+                     }
+-                    MessageExt msgExt = MessageDecoder.decode(bb);
++                    MessageExt msgExt = MessageDecoder.decode(bb, true, deCompressBody);
+                     if (msgExt == null) {
+                         POP_LOGGER.error("decode msgExt is null {}", getMessageResult);
+                         continue;

@@ -1,0 +1,1781 @@
+[
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Always return empty array instead of null for empty buffer",
+        "url": "https://github.com/FasterXML/jackson-core/pull/183",
+        "resourcePath": "/FasterXML/jackson-core/pull/183",
+        "createdAt": "2015-02-18T02:51:09Z",
+        "number": 183,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/util/TextBuffer.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/util/TestTextBuffer.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0Mjk0OTc3MDA6MTFmMGI0MDkwOTM3YjJhYTk5ODczNGFhMmJmMDMyZWU4YzQyOGU4NA==",
+                "url": "https://github.com/FasterXML/jackson-core/pull/183/commits/11f0b4090937b2aa998734aa2bf032ee8c428e84"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 182,
+                "url": "https://github.com/FasterXML/jackson-core/issues/182",
+                "title": "Inconsistent TextBuffer#getTextBuffer behavior",
+                "bodyHTML": "<p dir=\"auto\">Hi, I'm using 2.4.2. While I'm working on CBORParser, I noticed that CBORParser#getTextCharacters() returns sometimes <code class=\"notranslate\">null</code> sometimes <code class=\"notranslate\">[]</code> (empty array) when it's parsing empty string <code class=\"notranslate\">\"\"</code>.</p>\n<p dir=\"auto\">While debugging, I noticed that TextBuffer#getTextBuffer behaves inconsistently.</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"TextBuffer buffer = new TextBuffer(new BufferRecycler());\nbuffer.resetWithEmpty();\nbuffer.getTextBuffer(); // returns null\nbuffer.contentsAsString(); // returns empty string &quot;&quot;\nbuffer.getTextBuffer(); // returns empty array []\"><pre class=\"notranslate\"><code class=\"notranslate\">TextBuffer buffer = new TextBuffer(new BufferRecycler());\nbuffer.resetWithEmpty();\nbuffer.getTextBuffer(); // returns null\nbuffer.contentsAsString(); // returns empty string \"\"\nbuffer.getTextBuffer(); // returns empty array []\n</code></pre></div>\n<p dir=\"auto\">I think getTextBuffer should return the same value. Not sure which (<code class=\"notranslate\">null</code> or <code class=\"notranslate\">[]</code>) is expected though.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/182",
+                "createdAt": "2015-02-17T07:47:25Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "(2.8) Add `JsonGenerator. writeEmbeddedObject()` to allow writes of opaque native types",
+        "url": "https://github.com/FasterXML/jackson-core/pull/253",
+        "resourcePath": "/FasterXML/jackson-core/pull/253",
+        "createdAt": "2016-02-21T07:48:03Z",
+        "number": 253,
+        "mergeCommit": {
+          "oid": "18003996f7cce69db665bd21735893d62276bc82",
+          "message": "Merge 858568c58bfd2f91acbcea082a955964da29494e into c33fcb88c9c99676dd03bba155ef15648a752ce0",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/18003996f7cce69db665bd21735893d62276bc82",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "c33fcb88c9c99676dd03bba155ef15648a752ce0",
+                "message": "Merge branch '2.7'"
+              },
+              {
+                "oid": "858568c58bfd2f91acbcea082a955964da29494e",
+                "message": "JsonGenerator - support passing opaque datatypes\nFixes #243"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/JsonGenerator.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/util/JsonGeneratorDelegate.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0NjAwNzgxNjE6ODU4NTY4YzU4YmZkMmY5MWFjYmNlYTA4MmE5NTU5NjRkYTI5NDk0ZQ==",
+                "url": "https://github.com/FasterXML/jackson-core/pull/253/commits/858568c58bfd2f91acbcea082a955964da29494e"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 243,
+                "url": "https://github.com/FasterXML/jackson-core/issues/243",
+                "title": "(2.8) Consider addition of `JsonGenerator.writeEmbeddedObject(Object)`",
+                "bodyHTML": "<p dir=\"auto\">(note: follow-up from <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"124537407\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-databind/issues/1068\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/FasterXML/jackson-databind/pull/1068/hovercard\" href=\"https://github.com/FasterXML/jackson-databind/pull/1068\">FasterXML/jackson-databind#1068</a>)</p>\n<p dir=\"auto\">While <code class=\"notranslate\">VALUE_EMBEDDED_OBJECT</code> is mostly used internally for piping through things like native binary content (<code class=\"notranslate\">byte[]</code>), it is also necessary in some cases to support native datatypes of non-JSON formats, and especially when buffering is required. Although not all backends will support such writes (in fact, most standard ones would throw an exception), there are cases where calling code knows that this is safe usage; and there is the specific case of buffering (<code class=\"notranslate\">TokenBuffer</code>) where we can support opaque passing of such objects.</p>\n<p dir=\"auto\">So, it may make sense to add such an optional method to make it easier to support data formats with richer set of primitives.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/243",
+                "createdAt": "2016-01-05T23:34:17Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Fix 382 indexoutofbounds",
+        "url": "https://github.com/FasterXML/jackson-core/pull/383",
+        "resourcePath": "/FasterXML/jackson-core/pull/383",
+        "createdAt": "2017-06-02T11:29:52Z",
+        "number": 383,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/io/UTF32Reader.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/test/java/com/fasterxml/jackson/core/io/TestUTF32Reader.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MTIzNjk3NTMzOjNjYjRhZDA1ZmM5MjAyNDJjMjM5YmVhMzdiYjk1NTY4ODVmMmRjZDc=",
+                "url": "https://github.com/FasterXML/jackson-core/pull/383/commits/3cb4ad05fc920242c239bea37bb9556885f2dcd7"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 382,
+                "url": "https://github.com/FasterXML/jackson-core/issues/382",
+                "title": "ArrayIndexOutOfBoundsException from UTF32Reader.read on invalid input",
+                "bodyHTML": "<p dir=\"auto\">We are doing some fuzz testing on internal projects and found some input that causes an unexpected exception from JsonParser. While it is throwing an exception and stopping on this, it should probably be some kind of IOException rather than an ArrayIndexOutOfBoundsException.</p>\n<p dir=\"auto\">In our case we are catching the three exception types listed in ObjectMapper.readTree  (JsonParseException | JsonProcessingException | IOException) and this managed to escape.</p>\n<p dir=\"auto\">Simple test case follows</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"public void testInvalidInput() throws IOException {\n\n        byte[] data = {\n                0x00,\n                0x00,\n                0x00,\n                0x20,\n                (byte) 0xFE,\n                (byte) 0xFF,\n                0x00,\n                0x01,\n                (byte) 0xFB\n        };\n\n        JsonFactory FACTORY = new JsonFactory();\n        JsonParser parser = FACTORY.createParser(data);\n\n        parser.nextToken();\n\n\n    }\"><pre class=\"notranslate\"><span class=\"pl-k\">public</span> <span class=\"pl-smi\">void</span> <span class=\"pl-s1\">testInvalidInput</span>() <span class=\"pl-k\">throws</span> <span class=\"pl-s1\">IOException</span> {\n\n        <span class=\"pl-smi\">byte</span>[] <span class=\"pl-s1\">data</span> = {\n                <span class=\"pl-c1\">0x00</span>,\n                <span class=\"pl-c1\">0x00</span>,\n                <span class=\"pl-c1\">0x00</span>,\n                <span class=\"pl-c1\">0x20</span>,\n                (<span class=\"pl-smi\">byte</span>) <span class=\"pl-c1\">0xFE</span>,\n                (<span class=\"pl-smi\">byte</span>) <span class=\"pl-c1\">0xFF</span>,\n                <span class=\"pl-c1\">0x00</span>,\n                <span class=\"pl-c1\">0x01</span>,\n                (<span class=\"pl-smi\">byte</span>) <span class=\"pl-c1\">0xFB</span>\n        };\n\n        <span class=\"pl-smi\">JsonFactory</span> <span class=\"pl-c1\">FACTORY</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">JsonFactory</span>();\n        <span class=\"pl-smi\">JsonParser</span> <span class=\"pl-s1\">parser</span> = <span class=\"pl-smi\">FACTORY</span>.<span class=\"pl-en\">createParser</span>(<span class=\"pl-s1\">data</span>);\n\n        <span class=\"pl-s1\">parser</span>.<span class=\"pl-en\">nextToken</span>();\n\n\n    }</pre></div>\n<p dir=\"auto\">stack trace:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"java.lang.ArrayIndexOutOfBoundsException: 9\n\n\tat com.fasterxml.jackson.core.io.UTF32Reader.read(UTF32Reader.java:138)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._loadMore(ReaderBasedJsonParser.java:243)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._skipWSOrEnd(ReaderBasedJsonParser.java:2331)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser.nextToken(ReaderBasedJsonParser.java:646)\n\tat com.fasterxml.jackson.core.io.TestUTF32Reader.testInvalidInput(TestUTF32Reader.java:32)\"><pre class=\"notranslate\"><code class=\"notranslate\">java.lang.ArrayIndexOutOfBoundsException: 9\n\n\tat com.fasterxml.jackson.core.io.UTF32Reader.read(UTF32Reader.java:138)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._loadMore(ReaderBasedJsonParser.java:243)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._skipWSOrEnd(ReaderBasedJsonParser.java:2331)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser.nextToken(ReaderBasedJsonParser.java:646)\n\tat com.fasterxml.jackson.core.io.TestUTF32Reader.testInvalidInput(TestUTF32Reader.java:32)\n</code></pre></div>",
+                "resourcePath": "/FasterXML/jackson-core/issues/382",
+                "createdAt": "2017-06-02T07:49:09Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Fix #418 ArrayIndexOutOfBoundsException",
+        "url": "https://github.com/FasterXML/jackson-core/pull/419",
+        "resourcePath": "/FasterXML/jackson-core/pull/419",
+        "createdAt": "2017-10-18T14:33:18Z",
+        "number": 419,
+        "mergeCommit": {
+          "oid": "b172dd72a7e9237422c7098eed18680da1dbaf31",
+          "message": "Merge pull request #419 from pfitzsimons-r7/issue-418\n\nFix #418 ArrayIndexOutOfBoundsException",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/b172dd72a7e9237422c7098eed18680da1dbaf31",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "faf688e196cb7d0655527bc5c83dfe3cd12e6f43",
+                "message": "Fix last compile warning"
+              },
+              {
+                "oid": "32455470307972db3dcbf6f01c97e71be3132ef5",
+                "message": "Fix #418 ArrayIndexOutOfBoundsException"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/io/UTF32Reader.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/read/UTF32ParseTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MTQ3MzE3OTg3OjMyNDU1NDcwMzA3OTcyZGIzZGNiZjZmMDFjOTdlNzFiZTMxMzJlZjU=",
+                "url": "https://github.com/FasterXML/jackson-core/pull/419/commits/32455470307972db3dcbf6f01c97e71be3132ef5"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 418,
+                "url": "https://github.com/FasterXML/jackson-core/issues/418",
+                "title": "ArrayIndexOutOfBoundsException from UTF32Reader.read on invalid input",
+                "bodyHTML": "<p dir=\"auto\">I was doing some fuzz testing and came across an <code class=\"notranslate\">ArrayIndexOutOfBoundsException</code>. It seems like it is related to <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"233103364\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-core/issues/382\" data-hovercard-type=\"issue\" data-hovercard-url=\"/FasterXML/jackson-core/issues/382/hovercard\" href=\"https://github.com/FasterXML/jackson-core/issues/382\">/issues/382</a> in that it has introduced a bug which if the byte[] is a %3 it will still produce an <code class=\"notranslate\">ArrayIndexOutOfBoundsException</code>.</p>\n<p dir=\"auto\">Simple test case as follows:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"public void testInvalidInput() throws IOException {\n        byte[] data = new byte[7];\n        JsonParser parser = FACTORY.createParser(ObjectReadContext.empty(), data);\n        parser.nextToken();\n        parser.close();\n    }\"><pre class=\"notranslate\"><span class=\"pl-k\">public</span> <span class=\"pl-smi\">void</span> <span class=\"pl-s1\">testInvalidInput</span>() <span class=\"pl-k\">throws</span> <span class=\"pl-s1\">IOException</span> {\n        <span class=\"pl-smi\">byte</span>[] <span class=\"pl-s1\">data</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">byte</span>[<span class=\"pl-c1\">7</span>];\n        <span class=\"pl-smi\">JsonParser</span> <span class=\"pl-s1\">parser</span> = <span class=\"pl-smi\">FACTORY</span>.<span class=\"pl-en\">createParser</span>(<span class=\"pl-smi\">ObjectReadContext</span>.<span class=\"pl-en\">empty</span>(), <span class=\"pl-s1\">data</span>);\n        <span class=\"pl-s1\">parser</span>.<span class=\"pl-en\">nextToken</span>();\n        <span class=\"pl-s1\">parser</span>.<span class=\"pl-en\">close</span>();\n    }</pre></div>\n<p dir=\"auto\">Stack trace:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"java.lang.ArrayIndexOutOfBoundsException: 7\n\n\tat com.fasterxml.jackson.core.io.UTF32Reader.read(UTF32Reader.java:145)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._loadMore(ReaderBasedJsonParser.java:229)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._skipWSOrEnd(ReaderBasedJsonParser.java:2316)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser.nextToken(ReaderBasedJsonParser.java:632)\n\tat com.fasterxml.jackson.core.read.UTF32ParseTest.testInvalidInput(UTF32ParseTest.java:61)\"><pre class=\"notranslate\"><code class=\"notranslate\">java.lang.ArrayIndexOutOfBoundsException: 7\n\n\tat com.fasterxml.jackson.core.io.UTF32Reader.read(UTF32Reader.java:145)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._loadMore(ReaderBasedJsonParser.java:229)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._skipWSOrEnd(ReaderBasedJsonParser.java:2316)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser.nextToken(ReaderBasedJsonParser.java:632)\n\tat com.fasterxml.jackson.core.read.UTF32ParseTest.testInvalidInput(UTF32ParseTest.java:61)\n</code></pre></div>\n<p dir=\"auto\">Just for clarity the following test case produces the correct <code class=\"notranslate\">JsonParseExecption</code></p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"public void testInvalidInput() throws IOException {\n        byte[] data = new byte[8];\n        JsonParser parser = FACTORY.createParser(ObjectReadContext.empty(), data);\n        parser.nextToken();\n        parser.close();\n    }\"><pre class=\"notranslate\"><span class=\"pl-k\">public</span> <span class=\"pl-smi\">void</span> <span class=\"pl-s1\">testInvalidInput</span>() <span class=\"pl-k\">throws</span> <span class=\"pl-s1\">IOException</span> {\n        <span class=\"pl-smi\">byte</span>[] <span class=\"pl-s1\">data</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">byte</span>[<span class=\"pl-c1\">8</span>];\n        <span class=\"pl-smi\">JsonParser</span> <span class=\"pl-s1\">parser</span> = <span class=\"pl-smi\">FACTORY</span>.<span class=\"pl-en\">createParser</span>(<span class=\"pl-smi\">ObjectReadContext</span>.<span class=\"pl-en\">empty</span>(), <span class=\"pl-s1\">data</span>);\n        <span class=\"pl-s1\">parser</span>.<span class=\"pl-en\">nextToken</span>();\n        <span class=\"pl-s1\">parser</span>.<span class=\"pl-en\">close</span>();\n    }</pre></div>\n<p dir=\"auto\">Stack trace:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"com.fasterxml.jackson.core.JsonParseException: Illegal character ((CTRL-CHAR, code 0)): only regular white space (\\r, \\n, \\t) is allowed between tokens\n at [Source: (byte[])&quot;        &quot;; line: 1, column: 2]\n\n\tat com.fasterxml.jackson.core.JsonParser._constructError(JsonParser.java:1666)\n\tat com.fasterxml.jackson.core.base.ParserMinimalBase._reportError(ParserMinimalBase.java:674)\n\tat com.fasterxml.jackson.core.base.ParserMinimalBase._throwInvalidSpace(ParserMinimalBase.java:625)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._skipWSOrEnd(ReaderBasedJsonParser.java:2335)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser.nextToken(ReaderBasedJsonParser.java:632)\n\tat com.fasterxml.jackson.core.read.UTF32ParseTest.testInvalidInput(UTF32ParseTest.java:61)\"><pre class=\"notranslate\"><code class=\"notranslate\">com.fasterxml.jackson.core.JsonParseException: Illegal character ((CTRL-CHAR, code 0)): only regular white space (\\r, \\n, \\t) is allowed between tokens\n at [Source: (byte[])\"        \"; line: 1, column: 2]\n\n\tat com.fasterxml.jackson.core.JsonParser._constructError(JsonParser.java:1666)\n\tat com.fasterxml.jackson.core.base.ParserMinimalBase._reportError(ParserMinimalBase.java:674)\n\tat com.fasterxml.jackson.core.base.ParserMinimalBase._throwInvalidSpace(ParserMinimalBase.java:625)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._skipWSOrEnd(ReaderBasedJsonParser.java:2335)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser.nextToken(ReaderBasedJsonParser.java:632)\n\tat com.fasterxml.jackson.core.read.UTF32ParseTest.testInvalidInput(UTF32ParseTest.java:61)\n</code></pre></div>",
+                "resourcePath": "/FasterXML/jackson-core/issues/418",
+                "createdAt": "2017-10-17T14:30:02Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "NonBlockingJsonParser implements ByteBufferFeeder",
+        "url": "https://github.com/FasterXML/jackson-core/pull/483",
+        "resourcePath": "/FasterXML/jackson-core/pull/483",
+        "createdAt": "2018-10-02T19:32:35Z",
+        "number": 483,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/json/async/NonBlockingJsonParser.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MjE5ODE5MzcxOjYzOWY4YTVjZTY0NWIyMjQxNmVhZWRmNWQyMWZmMjYzNDk5NDFlZGY=",
+                "url": "https://github.com/FasterXML/jackson-core/pull/483/commits/639f8a5ce645b22416eaedf5d21ff26349941edf"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 478,
+                "url": "https://github.com/FasterXML/jackson-core/issues/478",
+                "title": "Provide implementation of async JSON parser fed by `ByteBufferFeeder`",
+                "bodyHTML": "<p dir=\"auto\">Currently, there is no implementation of <code class=\"notranslate\">com.fasterxml.jackson.core.async.ByteBufferFeeder</code> provided in Jackson Core; there is only an implementation of <code class=\"notranslate\">ByteArrayFeeder</code>. Within Spring Framework, this requires us to covert the (potentially non-heap-allocated) ByteBuffers into byte arrays before feeding them to the parser, resulting in insufficient memory usage.</p>\n<p dir=\"auto\">Please provide an implementation of <code class=\"notranslate\">ByteBufferFeeder</code>.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/478",
+                "createdAt": "2018-09-17T13:12:24Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "2.14"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Synchronize variants of `JsonGenerator#writeNumberField` with `JsonGenerator#writeNumber`",
+        "url": "https://github.com/FasterXML/jackson-core/pull/566",
+        "resourcePath": "/FasterXML/jackson-core/pull/566",
+        "createdAt": "2019-09-27T08:09:47Z",
+        "number": 566,
+        "mergeCommit": {
+          "oid": "21f73429933d674325b4947dc79977a609db6a5c",
+          "message": "Synchronize variants of `JsonGenerator#writeNumberField` with `JsonGenerator#writeNumber`",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/21f73429933d674325b4947dc79977a609db6a5c",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "20c84fb7e625734591f21a23487814ab90fa181d",
+                "message": "Merge branch '2.10'"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/JsonGenerator.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/json/GeneratorBasicTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/main/TestGeneratorObject.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MzIyMDQ4NjMzOjc2ZDAxOTNkNzU5N2Y2MTFlOWU3MmNmNDRmMTRhMzBlMzFiNDhlZTY=",
+                "url": "https://github.com/FasterXML/jackson-core/pull/566/commits/76d0193d7597f611e9e72cf44f14a30e31b48ee6"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 565,
+                "url": "https://github.com/FasterXML/jackson-core/issues/565",
+                "title": "Synchronize variants of `JsonGenerator#writeNumberField` with `JsonGenerator#writeNumber`",
+                "bodyHTML": "<p dir=\"auto\">Currently <code class=\"notranslate\">JsonGenerator#writeNumber</code> supports 7 types (<code class=\"notranslate\">short</code>, <code class=\"notranslate\">int</code>, <code class=\"notranslate\">long</code>, <code class=\"notranslate\">BigInteger</code>, <code class=\"notranslate\">float</code>, <code class=\"notranslate\">double</code>, <code class=\"notranslate\">BigDecimal</code>) but <code class=\"notranslate\">JsonGenerator#writeNumberField</code> support only 5 (<code class=\"notranslate\">int</code>, <code class=\"notranslate\">long</code>, <code class=\"notranslate\">float</code>, <code class=\"notranslate\">double</code>, <code class=\"notranslate\">BigDecimal</code>).<br>\nFor 2 types (<code class=\"notranslate\">short</code>, <code class=\"notranslate\">BigInteger</code>) we need to call <code class=\"notranslate\">JsonGenerator#writeFieldName</code> and <code class=\"notranslate\">JsonGenerator#writeNumber</code> rather then use one method.</p>\n<p dir=\"auto\">Is it acceptable to create a patch with these two methods?</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/565",
+                "createdAt": "2019-09-26T14:58:27Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Skip RS CTRL-CHAR to support JSON Text Sequences",
+        "url": "https://github.com/FasterXML/jackson-core/pull/634",
+        "resourcePath": "/FasterXML/jackson-core/pull/634",
+        "createdAt": "2020-07-28T09:37:01Z",
+        "number": 634,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/base/ParserMinimalBase.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/json/ReaderBasedJsonParser.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0NDU3Njg5NjI4OjkwM2E3N2E2YTdhY2ZkNDNkZGFhOTgzY2UwOTg3OTBlNmRlYjVmZDY=",
+                "url": "https://github.com/FasterXML/jackson-core/pull/634/commits/903a77a6a7acfd43ddaa983ce098790e6deb5fd6"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 633,
+                "url": "https://github.com/FasterXML/jackson-core/issues/633",
+                "title": "Skip RS CTRL-CHAR to support JSON Text Sequences",
+                "bodyHTML": "<p dir=\"auto\">Currently jackson supports reading newline-delimited json such as <a href=\"http://jsonlines.org/\" rel=\"nofollow\">JSON Lines</a> and <a href=\"https://github.com/ndjson/ndjson-spec\">NDJSON</a>, see <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"166328792\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-databind/issues/1304\" data-hovercard-type=\"issue\" data-hovercard-url=\"/FasterXML/jackson-databind/issues/1304/hovercard\" href=\"https://github.com/FasterXML/jackson-databind/issues/1304\">FasterXML/jackson-databind#1304</a>.<br>\nThere is a proposed standard RFC7464 call <a href=\"https://tools.ietf.org/html/rfc7464\" rel=\"nofollow\">JSON Text Sequences</a>, it's similar to newline-delimited json by add a leading RS CTRL-CHAR which is not accepted by jackson.</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"com.fasterxml.jackson.core.JsonParseException: Illegal character ((CTRL-CHAR, code 30)): only regular white space (\\r, \\n, \\t) is allowed between tokens\n at [Source: (String)&quot;\ufffd{&quot;name&quot;:&quot;name1&quot;}\n\ufffd{&quot;name&quot;:&quot;name2&quot;}\n&quot;; line: 1, column: 2]\n\tat com.fasterxml.jackson.core.JsonParser._constructError(JsonParser.java:1851)\n\tat com.fasterxml.jackson.core.base.ParserMinimalBase._reportError(ParserMinimalBase.java:707)\n\tat com.fasterxml.jackson.core.base.ParserMinimalBase._throwInvalidSpace(ParserMinimalBase.java:685)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._skipWSOrEnd(ReaderBasedJsonParser.java:2397)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser.nextToken(ReaderBasedJsonParser.java:672)\n\tat com.fasterxml.jackson.databind.ObjectReader.readValues(ObjectReader.java:1898)\"><pre class=\"notranslate\"><code class=\"notranslate\">com.fasterxml.jackson.core.JsonParseException: Illegal character ((CTRL-CHAR, code 30)): only regular white space (\\r, \\n, \\t) is allowed between tokens\n at [Source: (String)\"\ufffd{\"name\":\"name1\"}\n\ufffd{\"name\":\"name2\"}\n\"; line: 1, column: 2]\n\tat com.fasterxml.jackson.core.JsonParser._constructError(JsonParser.java:1851)\n\tat com.fasterxml.jackson.core.base.ParserMinimalBase._reportError(ParserMinimalBase.java:707)\n\tat com.fasterxml.jackson.core.base.ParserMinimalBase._throwInvalidSpace(ParserMinimalBase.java:685)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser._skipWSOrEnd(ReaderBasedJsonParser.java:2397)\n\tat com.fasterxml.jackson.core.json.ReaderBasedJsonParser.nextToken(ReaderBasedJsonParser.java:672)\n\tat com.fasterxml.jackson.databind.ObjectReader.readValues(ObjectReader.java:1898)\n</code></pre></div>\n<p dir=\"auto\">It would be nice if jackson simply treat RS as \"\\t\" be default or <code class=\"notranslate\">JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS</code> enabled.<br>\nhere is test case:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"import static org.junit.Assert.assertEquals;\n\nimport java.util.ArrayList;\nimport java.util.List;\n\nimport org.junit.Test;\n\nimport com.fasterxml.jackson.databind.JsonNode;\nimport com.fasterxml.jackson.databind.MappingIterator;\nimport com.fasterxml.jackson.databind.ObjectMapper;\n\npublic class JSONTextSequencesTest {\n\n\t@Test\n\tpublic void test() throws Exception {\n\t\tString json = &quot;\\u001E{\\&quot;name\\&quot;:\\&quot;name1\\&quot;}\\n\\u001E{\\&quot;name\\&quot;:\\&quot;name2\\&quot;}\\n&quot;;\n\t\tObjectMapper om = new ObjectMapper();\n\t\tMappingIterator&lt;JsonNode&gt; it = om.readerFor(JsonNode.class).readValues(json);\n\t\tList&lt;String&gt; names = new ArrayList&lt;&gt;();\n\t\twhile (it.hasNext())\n\t\t\tnames.add(it.next().get(&quot;name&quot;).asText());\n\t\tassertEquals(2, names.size());\n\t\tassertEquals(&quot;name1&quot;, names.get(0));\n\t\tassertEquals(&quot;name2&quot;, names.get(1));\n\t}\n\n}\n\"><pre class=\"notranslate\"><span class=\"pl-k\">import</span> <span class=\"pl-k\">static</span> <span class=\"pl-s1\">org</span>.<span class=\"pl-s1\">junit</span>.<span class=\"pl-s1\">Assert</span>.<span class=\"pl-s1\">assertEquals</span>;\n\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">java</span>.<span class=\"pl-s1\">util</span>.<span class=\"pl-s1\">ArrayList</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">java</span>.<span class=\"pl-s1\">util</span>.<span class=\"pl-s1\">List</span>;\n\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">org</span>.<span class=\"pl-s1\">junit</span>.<span class=\"pl-s1\">Test</span>;\n\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">com</span>.<span class=\"pl-s1\">fasterxml</span>.<span class=\"pl-s1\">jackson</span>.<span class=\"pl-s1\">databind</span>.<span class=\"pl-s1\">JsonNode</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">com</span>.<span class=\"pl-s1\">fasterxml</span>.<span class=\"pl-s1\">jackson</span>.<span class=\"pl-s1\">databind</span>.<span class=\"pl-s1\">MappingIterator</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">com</span>.<span class=\"pl-s1\">fasterxml</span>.<span class=\"pl-s1\">jackson</span>.<span class=\"pl-s1\">databind</span>.<span class=\"pl-s1\">ObjectMapper</span>;\n\n<span class=\"pl-k\">public</span> <span class=\"pl-k\">class</span> <span class=\"pl-smi\">JSONTextSequencesTest</span> {\n\n\t<span class=\"pl-c1\">@</span><span class=\"pl-c1\">Test</span>\n\t<span class=\"pl-k\">public</span> <span class=\"pl-smi\">void</span> <span class=\"pl-en\">test</span>() <span class=\"pl-k\">throws</span> <span class=\"pl-smi\">Exception</span> {\n\t\t<span class=\"pl-smi\">String</span> <span class=\"pl-s1\">json</span> = <span class=\"pl-s\">\"<span class=\"pl-cce\">\\u001E</span>{<span class=\"pl-cce\">\\\"</span>name<span class=\"pl-cce\">\\\"</span>:<span class=\"pl-cce\">\\\"</span>name1<span class=\"pl-cce\">\\\"</span>}<span class=\"pl-cce\">\\n</span><span class=\"pl-cce\">\\u001E</span>{<span class=\"pl-cce\">\\\"</span>name<span class=\"pl-cce\">\\\"</span>:<span class=\"pl-cce\">\\\"</span>name2<span class=\"pl-cce\">\\\"</span>}<span class=\"pl-cce\">\\n</span>\"</span>;\n\t\t<span class=\"pl-smi\">ObjectMapper</span> <span class=\"pl-s1\">om</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">ObjectMapper</span>();\n\t\t<span class=\"pl-smi\">MappingIterator</span>&lt;<span class=\"pl-smi\">JsonNode</span>&gt; <span class=\"pl-s1\">it</span> = <span class=\"pl-s1\">om</span>.<span class=\"pl-en\">readerFor</span>(<span class=\"pl-smi\">JsonNode</span>.<span class=\"pl-k\">class</span>).<span class=\"pl-en\">readValues</span>(<span class=\"pl-s1\">json</span>);\n\t\t<span class=\"pl-smi\">List</span>&lt;<span class=\"pl-smi\">String</span>&gt; <span class=\"pl-s1\">names</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">ArrayList</span>&lt;&gt;();\n\t\t<span class=\"pl-k\">while</span> (<span class=\"pl-s1\">it</span>.<span class=\"pl-en\">hasNext</span>())\n\t\t\t<span class=\"pl-s1\">names</span>.<span class=\"pl-en\">add</span>(<span class=\"pl-s1\">it</span>.<span class=\"pl-en\">next</span>().<span class=\"pl-en\">get</span>(<span class=\"pl-s\">\"name\"</span>).<span class=\"pl-en\">asText</span>());\n\t\t<span class=\"pl-en\">assertEquals</span>(<span class=\"pl-c1\">2</span>, <span class=\"pl-s1\">names</span>.<span class=\"pl-en\">size</span>());\n\t\t<span class=\"pl-en\">assertEquals</span>(<span class=\"pl-s\">\"name1\"</span>, <span class=\"pl-s1\">names</span>.<span class=\"pl-en\">get</span>(<span class=\"pl-c1\">0</span>));\n\t\t<span class=\"pl-en\">assertEquals</span>(<span class=\"pl-s\">\"name2\"</span>, <span class=\"pl-s1\">names</span>.<span class=\"pl-en\">get</span>(<span class=\"pl-c1\">1</span>));\n\t}\n\n}</pre></div>",
+                "resourcePath": "/FasterXML/jackson-core/issues/633",
+                "createdAt": "2020-07-28T09:12:59Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "good first issue"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "2.16"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Implement #661: change `JacksonException` (and all its subtypes) to unchecked",
+        "url": "https://github.com/FasterXML/jackson-core/pull/666",
+        "resourcePath": "/FasterXML/jackson-core/pull/666",
+        "createdAt": "2021-01-20T04:33:48Z",
+        "number": 666,
+        "mergeCommit": {
+          "oid": "491b6d94e5d0d6713d0f4e97cb17a70b6cefeb29",
+          "message": "Implement #661: change `JacksonException` (and all its subtypes) to unchecked (#666)\n\nChange `JacksonException` to extend `RuntimeException`; make necessary API changes wrt `IOException`.",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/491b6d94e5d0d6713d0f4e97cb17a70b6cefeb29",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "66bc016c322919952e8ddfa813a2b00a74011cd3",
+                "message": "Clean up last couple of javadoc warnings from 3.0 jackson-core as well"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/json/TestDecorators.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/json/UTF8DataInputJsonParserTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/read/NumberParsingTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/read/ParserScopeMatchingTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/read/UTF32ParseTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/util/TestDelegates.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/write/GeneratorBasicTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/write/ObjectWriteTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/write/PrettyPrinterTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/failing/filter/BasicParserFilteringTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0NTU3OTQxMDM5OjlmMDY5ODE3NTZkOGE3ZTI4NDQ4NzZmYWJiNzRmOGYwZDY0MDQyNWQ=",
+                "url": "https://github.com/FasterXML/jackson-core/pull/666/commits/9f06981756d8a7e2844876fabb74f8f0d640425d"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 661,
+                "url": "https://github.com/FasterXML/jackson-core/issues/661",
+                "title": "Replace checked `JsonProcessingException` with unchecked `JacksonException`",
+                "bodyHTML": "<p dir=\"auto\">As described in more detail under <a href=\"https://github.com/FasterXML/jackson-future-ideas/wiki/JSTEP-4\">JSTEP-4</a>, it'd be good to change existing Jackson exception hierarchy (now based on <code class=\"notranslate\">JacksonException</code>, added in 2.12) to extend unchecked <code class=\"notranslate\">RuntimeException</code> instead of checked <code class=\"notranslate\">IOException</code>. This is a major backwards-incompatible change and will need to go in Jackson 3.0.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/661",
+                "createdAt": "2021-01-12T04:01:33Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "3.x"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Allow TokenFilter to preserve empty",
+        "url": "https://github.com/FasterXML/jackson-core/pull/716",
+        "resourcePath": "/FasterXML/jackson-core/pull/716",
+        "createdAt": "2021-09-12T17:44:05Z",
+        "number": 716,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/filter/FilteringParserDelegate.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/filter/TokenFilter.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/filter/TokenFilterContext.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/BaseTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/filter/BasicGeneratorFilteringTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/filter/BasicParserFilteringTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0NzMyMjAwMzgzOjVkYmZkNWUzODIwMDVlMjhjNzllYzhjMTU0MzRhNDk4NDFiODJmYzc=",
+                "url": "https://github.com/FasterXML/jackson-core/pull/716/commits/5dbfd5e382005e28c79ec8c15434a49841b82fc7"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 715,
+                "url": "https://github.com/FasterXML/jackson-core/issues/715",
+                "title": "Allow `TokenFilter`s to keep empty arrays and objects",
+                "bodyHTML": "<p dir=\"auto\">Include version information for Jackson version you use: We use 2.10.4 but 2.13 doesn't support this either</p>\n<p dir=\"auto\">Maybe this is possible in a way I don't know about, but I was hoping I could write a <code class=\"notranslate\">TokenFilter</code> that could preserve empty arrays and objects. It looks like now if a <code class=\"notranslate\">TokenFilter#includeProperty</code> doesn't return <code class=\"notranslate\">INCLUDE_ALL</code> for an empty array then the array is removed. I'd love it if the <code class=\"notranslate\">TokenFilter</code> could make that choice- maybe something like adding this to <code class=\"notranslate\">TokenFilter</code>:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"    public boolean includeEmptyArray(boolean contentsFiltered) throws IOException {\n        return false;\n    }\"><pre class=\"notranslate\"><code class=\"notranslate\">    public boolean includeEmptyArray(boolean contentsFiltered) throws IOException {\n        return false;\n    }\n</code></pre></div>\n<p dir=\"auto\">There is already a <code class=\"notranslate\">filterFinishArray</code> but I don't think I can control the underlying filter with it. And I'm not sure if I can tell if the filter has filtered the contents of the array or not.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/715",
+                "createdAt": "2021-09-10T21:22:50Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "2.14"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add appendIndex and appendProperty methods",
+        "url": "https://github.com/FasterXML/jackson-core/pull/722",
+        "resourcePath": "/FasterXML/jackson-core/pull/722",
+        "createdAt": "2021-10-17T17:10:49Z",
+        "number": 722,
+        "mergeCommit": {
+          "oid": "f45d03502f4252378f33a388445f7307c3ddf539",
+          "message": "Add appendIndex and appendProperty methods (#722)",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/f45d03502f4252378f33a388445f7307c3ddf539",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "f9f568a7d845a0fa6b32f0c2c60d70bbe3e2b650",
+                "message": "Merge branch '2.13' into 2.14"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/JsonPointer.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/TestJsonPointer.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a084tSshi2gAoNzZmOTI4YWZjYWUwNzQ5OGMyNmNmMjQ1NGRiMjU0ZDk1MjJkYjJjYQ",
+                "url": "https://github.com/FasterXML/jackson-core/pull/722/commits/76f928afcae07498c26cf2454db254d9522db2ca"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 684,
+                "url": "https://github.com/FasterXML/jackson-core/issues/684",
+                "title": "Add \"JsonPointer#appendProperty\" and \"JsonPointer#appendIndex\"",
+                "bodyHTML": "<p dir=\"auto\">When working heavily with JsonPointers, the following patterns usually emerges:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"JsonPointer root = JsonPointer.compile(&quot;/a/b&quot;);\n/// ... code\nString property = &quot;c&quot;\nroot.append(JsonPointer.compile(&quot;/&quot; + property));\n/// or\nJsonPointer.compile(root + &quot;/&quot; + property)\"><pre class=\"notranslate\"><span class=\"pl-smi\">JsonPointer</span> <span class=\"pl-s1\">root</span> = <span class=\"pl-smi\">JsonPointer</span>.<span class=\"pl-en\">compile</span>(<span class=\"pl-s\">\"/a/b\"</span>);\n<span class=\"pl-c\">/// ... code</span>\n<span class=\"pl-smi\">String</span> <span class=\"pl-s1\">property</span> = <span class=\"pl-s\">\"c\"</span>\n<span class=\"pl-s1\">root</span>.<span class=\"pl-en\">append</span>(<span class=\"pl-smi\">JsonPointer</span>.<span class=\"pl-en\">compile</span>(<span class=\"pl-s\">\"/\"</span> + <span class=\"pl-s1\">property</span>));\n<span class=\"pl-c\">/// or</span>\n<span class=\"pl-smi\">JsonPointer</span>.<span class=\"pl-en\">compile</span>(<span class=\"pl-s1\">root</span> + <span class=\"pl-s\">\"/\"</span> + <span class=\"pl-s1\">property</span>)</pre></div>\n<p dir=\"auto\">This is quite verbose, also a bit error prone, because it is easy to forget to add the <code class=\"notranslate\">/</code> before each append.</p>\n<p dir=\"auto\">Also, I found no easy way of appending slash characters without prior escaping.</p>\n<p dir=\"auto\">So the two methods proposed should help with both convenience and some edge cases. The only thing that worries me is overusing/misusing this methods. Jackson JsonPointer is <code class=\"notranslate\">head centric</code>, appending to the tail is expensive, so maybe documenting a warning should be good?</p>\n<p dir=\"auto\">I will open a PR when I get some free time. <a href=\"https://github.com/LouizFC/path-segment\">I did a similar thing in the past</a>, so I think I can probably reuse the tests from there.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/684",
+                "createdAt": "2021-03-10T17:58:04Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "2.14"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Allow TokenFilter to preserve empty",
+        "url": "https://github.com/FasterXML/jackson-core/pull/729",
+        "resourcePath": "/FasterXML/jackson-core/pull/729",
+        "createdAt": "2021-12-16T14:54:26Z",
+        "number": 729,
+        "mergeCommit": {
+          "oid": "8bed4d83620424264f3339d5d9c808f7279d97a5",
+          "message": "Allow TokenFilter to preserve empty (#729)\n\nThis creates two new method on `TokenFilter` which you can override to\r\ndecide if empty arrays and objects should be included or excluded. \r\n\r\nCloses #715",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/8bed4d83620424264f3339d5d9c808f7279d97a5",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "e302dd8afbf2cdc61d8c9d8db17ff70fd9922f82",
+                "message": "Merge branch '2.13' into 2.14"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/filter/FilteringParserDelegate.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/filter/TokenFilter.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/filter/TokenFilterContext.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/BaseTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/filter/BasicGeneratorFilteringTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/filter/BasicParserFilteringTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a084v9CPW2gAoODFlYzg3MTc2YmVmYTA0YjE5ZjMyNzE1ODZkYjYxMTk2NmU5OWNiNA",
+                "url": "https://github.com/FasterXML/jackson-core/pull/729/commits/81ec87176befa04b19f3271586db611966e99cb4"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 715,
+                "url": "https://github.com/FasterXML/jackson-core/issues/715",
+                "title": "Allow `TokenFilter`s to keep empty arrays and objects",
+                "bodyHTML": "<p dir=\"auto\">Include version information for Jackson version you use: We use 2.10.4 but 2.13 doesn't support this either</p>\n<p dir=\"auto\">Maybe this is possible in a way I don't know about, but I was hoping I could write a <code class=\"notranslate\">TokenFilter</code> that could preserve empty arrays and objects. It looks like now if a <code class=\"notranslate\">TokenFilter#includeProperty</code> doesn't return <code class=\"notranslate\">INCLUDE_ALL</code> for an empty array then the array is removed. I'd love it if the <code class=\"notranslate\">TokenFilter</code> could make that choice- maybe something like adding this to <code class=\"notranslate\">TokenFilter</code>:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"    public boolean includeEmptyArray(boolean contentsFiltered) throws IOException {\n        return false;\n    }\"><pre class=\"notranslate\"><code class=\"notranslate\">    public boolean includeEmptyArray(boolean contentsFiltered) throws IOException {\n        return false;\n    }\n</code></pre></div>\n<p dir=\"auto\">There is already a <code class=\"notranslate\">filterFinishArray</code> but I don't think I can control the underlying filter with it. And I'm not sure if I can tell if the filter has filtered the contents of the array or not.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/715",
+                "createdAt": "2021-09-10T21:22:50Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "2.14"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Allow FilteringParserDelegate to skip last elements in array",
+        "url": "https://github.com/FasterXML/jackson-core/pull/883",
+        "resourcePath": "/FasterXML/jackson-core/pull/883",
+        "createdAt": "2022-12-29T13:55:28Z",
+        "number": 883,
+        "mergeCommit": {
+          "oid": "9fd899d449eb57edc3cf6bb9a36582ee1e940f30",
+          "message": "Allow FilteringParserDelegate to skip last elements in array (#883)",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/9fd899d449eb57edc3cf6bb9a36582ee1e940f30",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "7910a8b9bfe9ce921a258a7b4c136631c21867cf",
+                "message": "Update release notes wrt #886"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/filter/FilteringParserDelegate.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/filter/BasicParserFilteringTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085GWYme2gAoNDc2YzQ4ZWFiZWE3YWIwOTdmODlhYTNlNGNmYTJjZDE3NDAwYTljMQ",
+                "url": "https://github.com/FasterXML/jackson-core/pull/883/commits/476c48eabea7ab097f89aa3e4cfa2cd17400a9c1"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 882,
+                "url": "https://github.com/FasterXML/jackson-core/issues/882",
+                "title": "Allow TokenFIlter to skip last elements in arrays",
+                "bodyHTML": "<p dir=\"auto\">When the last element in array is an array or object and that element is skipped, the <code class=\"notranslate\">FilteringParserDelegate</code> will end up in a loop from which it cannot exit. This means that the rest of the input will be skipped too. This results in incorrect JSON.</p>\n<p dir=\"auto\">This behaviour exists since 2.9+<br>\nI believe this is due to <a class=\"commit-link\" href=\"https://github.com/FasterXML/jackson-core/commit/7db467ddec7c2899038249b55695b7e44c7b5c3e#diff-f6642caef61e0c403f51a6150ecf45263034fca5002782fd02eacd01e53fe549L694\"><tt>7db467d</tt>#diff-f6642caef61e0c403f51a6150ecf45263034fca5002782fd02eacd01e53fe549L694</a> where the <code class=\"notranslate\">if (gotEnd)</code> conditions where removed.<br>\nI think this should be added as currently the logic is:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\" boolean gotEnd = (_headContext == buffRoot);\n                    boolean returnEnd = gotEnd &amp;&amp; _headContext.isStartHandled();\n\n                    _headContext = _headContext.getParent();\n                    _itemFilter = _headContext.getFilter();\n\n                    if (returnEnd) {\n                        return t;\n                    }\"><pre class=\"notranslate\"><code class=\"notranslate\"> boolean gotEnd = (_headContext == buffRoot);\n                    boolean returnEnd = gotEnd &amp;&amp; _headContext.isStartHandled();\n\n                    _headContext = _headContext.getParent();\n                    _itemFilter = _headContext.getFilter();\n\n                    if (returnEnd) {\n                        return t;\n                    }\n</code></pre></div>\n<p dir=\"auto\">and that means that it can only exit when <code class=\"notranslate\">_headContext.isStartHandled()</code> is true. For skipped elements this is false.</p>\n<p dir=\"auto\">This can be easily reproduced with this testcase</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\" @Test\n    public void testCustomIncludesWithMultipleObjectsInArrayMissLast() throws Exception {\n        var factory = new JsonFactory();\n        var baseParser = factory.createParser(&quot;{\\&quot;foo\\&quot;:[{\\&quot;bar\\&quot;:\\&quot;baz\\&quot;},{\\&quot;bing\\&quot;:\\&quot;boom\\&quot;}]}&quot;);\n        var filteredParser = getFilteredParser(baseParser, filter(&quot;foo&quot;, &quot;bar&quot;));\n        var writer = new StringWriter();\n        var generator = factory.createGenerator(writer);\n        Assertions.assertTrue(filteredParser.nextToken().isStructStart());\n        generator.copyCurrentStructure(filteredParser);\n        generator.flush();\n        Assertions.assertEquals(&quot;{\\&quot;foo\\&quot;:[{\\&quot;bar\\&quot;:\\&quot;baz\\&quot;}]}&quot;, writer.toString());\n        //Expected :{&quot;foo&quot;:[{&quot;bar&quot;:&quot;baz&quot;}]}\n        //Actual   :{&quot;foo&quot;:[{&quot;bar&quot;:&quot;baz&quot;} \n    }\"><pre class=\"notranslate\"><code class=\"notranslate\"> @Test\n    public void testCustomIncludesWithMultipleObjectsInArrayMissLast() throws Exception {\n        var factory = new JsonFactory();\n        var baseParser = factory.createParser(\"{\\\"foo\\\":[{\\\"bar\\\":\\\"baz\\\"},{\\\"bing\\\":\\\"boom\\\"}]}\");\n        var filteredParser = getFilteredParser(baseParser, filter(\"foo\", \"bar\"));\n        var writer = new StringWriter();\n        var generator = factory.createGenerator(writer);\n        Assertions.assertTrue(filteredParser.nextToken().isStructStart());\n        generator.copyCurrentStructure(filteredParser);\n        generator.flush();\n        Assertions.assertEquals(\"{\\\"foo\\\":[{\\\"bar\\\":\\\"baz\\\"}]}\", writer.toString());\n        //Expected :{\"foo\":[{\"bar\":\"baz\"}]}\n        //Actual   :{\"foo\":[{\"bar\":\"baz\"} \n    }\n</code></pre></div>\n<p dir=\"auto\">cc <a class=\"user-mention notranslate\" data-hovercard-type=\"user\" data-hovercard-url=\"/users/tvernum/hovercard\" data-octo-click=\"hovercard-link-click\" data-octo-dimensions=\"link_type:self\" href=\"https://github.com/tvernum\">@tvernum</a> who coauthored the fix and the testcases</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/882",
+                "createdAt": "2022-12-29T13:50:45Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "2.14"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "filter generator: create child object context when writing start object. fixes #890",
+        "url": "https://github.com/FasterXML/jackson-core/pull/891",
+        "resourcePath": "/FasterXML/jackson-core/pull/891",
+        "createdAt": "2023-01-12T14:23:04Z",
+        "number": 891,
+        "mergeCommit": {
+          "oid": "049992f080c3bc7e051e6627fc932f5937859377",
+          "message": "filter generator: create child object context when writing start object. fixes #890 (#891)",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/049992f080c3bc7e051e6627fc932f5937859377",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "287ec3223b039f24d2db99809ae04a333b287435",
+                "message": "shading jar exclude is causing failures in downstream projects (#889)"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/filter/FilteringGeneratorDelegate.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/test/java/com/fasterxml/jackson/core/filter/GeneratorFiltering890Test.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/filter/JsonPointerGeneratorFilteringTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085HQDpv2gAoMGM2N2QzNjQ1M2E0OGU3ODRiODRjNWNhYjNhNTU3MDhiZTJhY2IzNw",
+                "url": "https://github.com/FasterXML/jackson-core/pull/891/commits/0c67d36453a48e784b84c5cab3a55708be2acb37"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 890,
+                "url": "https://github.com/FasterXML/jackson-core/issues/890",
+                "title": "`FilteringGeneratorDelegate` does not create new `filterContext` if `tokenFilter` is null",
+                "bodyHTML": "<p dir=\"auto\">The usecase is to filter Json while generating it but instead of a single property i wanted to be able to match multiples.</p>\n<p dir=\"auto\">see: <a href=\"https://github.com/FasterXML/jackson-core/blob/2.15/src/main/java/com/fasterxml/jackson/core/filter/FilteringGeneratorDelegate.java#L314-L317\">https://github.com/FasterXML/jackson-core/blob/2.15/src/main/java/com/fasterxml/jackson/core/filter/FilteringGeneratorDelegate.java#L314-L317</a></p>\n<p dir=\"auto\">for arrays it already happens: <a href=\"https://github.com/FasterXML/jackson-core/blob/2.15/src/main/java/com/fasterxml/jackson/core/filter/FilteringGeneratorDelegate.java#L178-L182\">https://github.com/FasterXML/jackson-core/blob/2.15/src/main/java/com/fasterxml/jackson/core/filter/FilteringGeneratorDelegate.java#L178-L182</a></p>\n<p dir=\"auto\">I wrote a simple OR composite:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"private static final class OrTokenFilter extends TokenFilter {\n\u00a0  \u00a0\n\u00a0  private final List&lt;? extends TokenFilter&gt; delegates;\n\u00a0  \u00a0\n\u00a0  private OrTokenFilter(final List&lt;? extends TokenFilter&gt; delegates) {\n  \u00a0  this.delegates = delegates;\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  static OrTokenFilter create(final Set&lt;String&gt; jsonPointers) {\n\u00a0    return new OrTokenFilter(jsonPointers.stream().map(JsonPointerBasedFilter::new).toList());\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  @Override\n\u00a0  public TokenFilter includeElement(final int index) {\n\u00a0    return executeDelegates(delegate -&gt; delegate.includeElement(index));\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  @Override\n\u00a0  public TokenFilter includeProperty(final String name) {\n\u00a0    return executeDelegates(delegate -&gt; delegate.includeProperty(name));\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  @Override\n\u00a0  public TokenFilter filterStartArray() {\n\u00a0    return this;\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  @Override\n\u00a0  public TokenFilter filterStartObject() {\n\u00a0    return this;\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  // FIXME\n\u00a0  // @Override\n\u00a0  // protected boolean _includeScalar() {\n\u00a0  //   return delegates.stream().map(delegate -&gt; delegate._includeScalar()).findFirst();\n\u00a0  // }\n\u00a0  \u00a0\n\u00a0  private TokenFilter executeDelegates(final UnaryOperator&lt;TokenFilter&gt; operator) {\n  \u00a0  List&lt;TokenFilter&gt; nextDelegates = null;\n\u00a0    for (final var delegate : delegates) {\n     \u00a0  final var next = operator.apply(delegate);\n     \u00a0  if (null == next) {\n        \u00a0  continue;\n\u00a0       }\n        if (TokenFilter.INCLUDE_ALL == next) {\n        \u00a0  return TokenFilter.INCLUDE_ALL;\n    \u00a0  }\n\u00a0  \u00a0\n\u00a0      if (null == nextDelegates) {\n  \u00a0       nextDelegates = new ArrayList&lt;&gt;(delegates.size());\n    \u00a0  }\n\u00a0      nextDelegates.add(next);\n\u00a0    }\n\u00a0    return null == nextDelegates ? null : new OrTokenFilter(nextDelegates);\n\u00a0    }\n\u00a0  }\"><pre class=\"notranslate\"><code class=\"notranslate\">private static final class OrTokenFilter extends TokenFilter {\n\u00a0  \u00a0\n\u00a0  private final List&lt;? extends TokenFilter&gt; delegates;\n\u00a0  \u00a0\n\u00a0  private OrTokenFilter(final List&lt;? extends TokenFilter&gt; delegates) {\n  \u00a0  this.delegates = delegates;\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  static OrTokenFilter create(final Set&lt;String&gt; jsonPointers) {\n\u00a0    return new OrTokenFilter(jsonPointers.stream().map(JsonPointerBasedFilter::new).toList());\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  @Override\n\u00a0  public TokenFilter includeElement(final int index) {\n\u00a0    return executeDelegates(delegate -&gt; delegate.includeElement(index));\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  @Override\n\u00a0  public TokenFilter includeProperty(final String name) {\n\u00a0    return executeDelegates(delegate -&gt; delegate.includeProperty(name));\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  @Override\n\u00a0  public TokenFilter filterStartArray() {\n\u00a0    return this;\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  @Override\n\u00a0  public TokenFilter filterStartObject() {\n\u00a0    return this;\n\u00a0  }\n\u00a0  \u00a0\n\u00a0  // FIXME\n\u00a0  // @Override\n\u00a0  // protected boolean _includeScalar() {\n\u00a0  //   return delegates.stream().map(delegate -&gt; delegate._includeScalar()).findFirst();\n\u00a0  // }\n\u00a0  \u00a0\n\u00a0  private TokenFilter executeDelegates(final UnaryOperator&lt;TokenFilter&gt; operator) {\n  \u00a0  List&lt;TokenFilter&gt; nextDelegates = null;\n\u00a0    for (final var delegate : delegates) {\n     \u00a0  final var next = operator.apply(delegate);\n     \u00a0  if (null == next) {\n        \u00a0  continue;\n\u00a0       }\n        if (TokenFilter.INCLUDE_ALL == next) {\n        \u00a0  return TokenFilter.INCLUDE_ALL;\n    \u00a0  }\n\u00a0  \u00a0\n\u00a0      if (null == nextDelegates) {\n  \u00a0       nextDelegates = new ArrayList&lt;&gt;(delegates.size());\n    \u00a0  }\n\u00a0      nextDelegates.add(next);\n\u00a0    }\n\u00a0    return null == nextDelegates ? null : new OrTokenFilter(nextDelegates);\n\u00a0    }\n\u00a0  }\n</code></pre></div>\n<p dir=\"auto\"><code class=\"notranslate\">new FilteringGeneratorDelegate(createGenerator(new ByteBufOutputStream(unpooled)), OrTokenFilter.create(jsonPointers), TokenFilter.Inclusion.INCLUDE_ALL_AND_PATH, true)</code></p>\n<p dir=\"auto\">example:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"[\n  {\n    &quot;id&quot;: &quot;1&quot;\n    &quot;stuff&quot;: [\n      {&quot;name&quot;:&quot;name1&quot;},\n      {&quot;name&quot;:&quot;name2&quot;}\n   ]\n  },\n {\n    &quot;id&quot;: &quot;2&quot;,\n    &quot;stuff&quot;: [\n      {&quot;name&quot;:&quot;name1&quot;},\n      {&quot;name&quot;:&quot;name2&quot;}\n   ]\n }\n]\"><pre class=\"notranslate\"><code class=\"notranslate\">[\n  {\n    \"id\": \"1\"\n    \"stuff\": [\n      {\"name\":\"name1\"},\n      {\"name\":\"name2\"}\n   ]\n  },\n {\n    \"id\": \"2\",\n    \"stuff\": [\n      {\"name\":\"name1\"},\n      {\"name\":\"name2\"}\n   ]\n }\n]\n</code></pre></div>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"Set.of(&quot;/id&quot;, &quot;/stuff/0/name&quot;)\"><pre class=\"notranslate\"><code class=\"notranslate\">Set.of(\"/id\", \"/stuff/0/name\")\n</code></pre></div>\n<p dir=\"auto\">without creating the new context the generator will fail at the second object in the stuff array because the _startHandled is set to true from the first object.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/890",
+                "createdAt": "2023-01-11T19:36:23Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "2.14"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Migrate to a CI build with SLSA provenance",
+        "url": "https://github.com/FasterXML/jackson-core/pull/896",
+        "resourcePath": "/FasterXML/jackson-core/pull/896",
+        "createdAt": "2023-01-23T20:43:42Z",
+        "number": 896,
+        "mergeCommit": {
+          "oid": "b3c6899aea4adc1b0a9322b4a6d61e45ba561157",
+          "message": "Migrate to a CI build with SLSA provenance (#896)\n\nSigned-off-by: Pedro Kaj Kjellerup Nacht <pnacht@google.com>",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/b3c6899aea4adc1b0a9322b4a6d61e45ba561157",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "c248281040938e39b5dce794e36fe80b923d4182",
+                "message": "Update release notes wrt #863"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": ".github/workflows/release.yml"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "release.sh"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085IXPV52gAoZDA4ZWRkYjQxMTlhMmVlMzcxNDMzOTg1MmM1NDhkMGE1MjU1ZTMyNg",
+                "url": "https://github.com/FasterXML/jackson-core/pull/896/commits/d08eddb4119a2ee3714339852c548d0a5255e326"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 844,
+                "url": "https://github.com/FasterXML/jackson-core/issues/844",
+                "title": "Add SLSA provenance via build script",
+                "bodyHTML": "<p dir=\"auto\">Hey, I'm Pedro and I'm working on behalf of Google and the <a href=\"https://openssf.org/\" rel=\"nofollow\">Open Source Security Foundation</a> (OpenSSF). Given the significant <a href=\"https://www.sonatype.com/state-of-the-software-supply-chain/introduction\" rel=\"nofollow\">increase in supply-chain attacks</a>, the OpenSSF is focused on improving the security of the open-source ecosystem as a whole. For example, <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1299939213\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-core/issues/792\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/FasterXML/jackson-core/pull/792/hovercard\" href=\"https://github.com/FasterXML/jackson-core/pull/792\">#792</a> was based on feedback from Scorecards, an OpenSSF tool.</p>\n<p dir=\"auto\">The OpenSSF has also developed the <a href=\"https://slsa.dev/\" rel=\"nofollow\">SLSA</a> specification for projects to attest to a published artifact's provenance, allowing its consumers to ensure that the artifact comes from a trusted source. There are also GitHub workflows to securely generate this provenance and CLI tools to verify an artifact's authenticity.</p>\n<p dir=\"auto\">Given how Jackson is almost synonymous with JSON in the Java ecosystem, the OpenSSF has placed Jackson on its list of the 100 most important open-source projects. I'd therefore like to offer to help jackson-core incorporate SLSA into its deploy workflow.</p>\n<p dir=\"auto\">Would you be interested in a PR to adopt SLSA?</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/844",
+                "createdAt": "2022-11-23T22:01:00Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add constraint validation for TextBuffer.append",
+        "url": "https://github.com/FasterXML/jackson-core/pull/923",
+        "resourcePath": "/FasterXML/jackson-core/pull/923",
+        "createdAt": "2023-02-20T10:05:54Z",
+        "number": 923,
+        "mergeCommit": {
+          "oid": "df8e14e9e05902c5d0a24fe1d25cbef47c2d63aa",
+          "message": "Add constraint validation for TextBuffer.append (#923)",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/df8e14e9e05902c5d0a24fe1d25cbef47c2d63aa",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "4619d7b7483a1ca495d8dbd7e132d11e6bee2380",
+                "message": "Update release notes wrt #921"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/util/TextBuffer.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/test/java/com/fasterxml/jackson/core/util/ReadConstrainedTextBufferTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085KU_vs2gAoMmRhNTE5YjYzYTFiMWM5OGM4NzhlZWNjZTU5MzMyMDM1YzZjNDJkYg",
+                "url": "https://github.com/FasterXML/jackson-core/pull/923/commits/2da519b63a1b1c98c878eecce59332035c6c42db"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 384,
+                "url": "https://github.com/FasterXML/jackson-dataformats-text/issues/384",
+                "title": "investigate Toml big string tests ",
+                "bodyHTML": "<ul dir=\"auto\">\n<li>tests added in <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1583928581\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-dataformats-text/issues/383\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/FasterXML/jackson-dataformats-text/pull/383/hovercard\" href=\"https://github.com/FasterXML/jackson-dataformats-text/pull/383\">#383</a></li>\n<li>testBiggerString indicates that only the TextBuffer.contentAsString() check is catching the issue with the string being too big\n<ul dir=\"auto\">\n<li>no matter how big the len is set to</li>\n<li>this is far from ideal - we should be catching exceptions when the buffer is extended but the toml code has its own logic and somehow bypasses the checks in TextBuffer until the contentAsString() call.</li>\n</ul>\n</li>\n</ul>",
+                "resourcePath": "/FasterXML/jackson-dataformats-text/issues/384",
+                "createdAt": "2023-02-14T19:23:36Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "TOML"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "2.15"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": " Add read-only top-level workflow permissions",
+        "url": "https://github.com/FasterXML/jackson-core/pull/953",
+        "resourcePath": "/FasterXML/jackson-core/pull/953",
+        "createdAt": "2023-03-15T21:41:23Z",
+        "number": 953,
+        "mergeCommit": {
+          "oid": "d26e01fbb4a47354f3c956abe6b120340030aad2",
+          "message": " Add read-only top-level workflow permissions (#953)\n\nSigned-off-by: Pedro Kaj Kjellerup Nacht <pnacht@google.com>",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/d26e01fbb4a47354f3c956abe6b120340030aad2",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "17ce703fa828aa47db036cb07d1f0dc627dea34b",
+                "message": "Update StreamReadConstraints.java (#951)"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": ".github/workflows/cifuzz.yml"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": ".github/workflows/release.yml"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085MJhtr2gAoNTAzZTdhYjUyYTM2NjE2NWM2NjZhZmUxMDNhNmM5MmRkOGY5MjIzZg",
+                "url": "https://github.com/FasterXML/jackson-core/pull/953/commits/503e7ab52a366165c666afe103a6c92dd8f9223f"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 952,
+                "url": "https://github.com/FasterXML/jackson-core/issues/952",
+                "title": "Set read-only top-level permissions on all workflows",
+                "bodyHTML": "<p dir=\"auto\">Hey <a class=\"user-mention notranslate\" data-hovercard-type=\"user\" data-hovercard-url=\"/users/cowtowncoder/hovercard\" data-octo-click=\"hovercard-link-click\" data-octo-dimensions=\"link_type:self\" href=\"https://github.com/cowtowncoder\">@cowtowncoder</a>, I'm Pedro and I'm back (see <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1553781563\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-core/issues/896\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/FasterXML/jackson-core/pull/896/hovercard\" href=\"https://github.com/FasterXML/jackson-core/pull/896\">#896</a>) hoping to offer a bit more help with security enhancements.</p>\n<p dir=\"auto\">This time around, I'd like to suggest you add top-level permissions to your workflows. This is equivalent to the work done in <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1299939213\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-core/issues/792\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/FasterXML/jackson-core/pull/792/hovercard\" href=\"https://github.com/FasterXML/jackson-core/pull/792\">#792</a>, but for <code class=\"notranslate\">cifuzz.yml</code> and <code class=\"notranslate\">release.yml</code>. Yes, I forgot to put top-level permissions on the workflow I submitted in my last PR. \ud83e\udd26\u200d\u2642\ufe0f</p>\n<p dir=\"auto\">I'm sending a PR with these changes alongside this issue to keep things simple.</p>\n<p dir=\"auto\">These top-level permissions are necessary because workflows run with an underlying GITHUB_TOKEN that, by default, comes with write-all permissions. However, this default can be modified to read-only. If you prefer doing this (I'd recommend so, in order to future proof against any other well-meaning workflows that accidentally forget to add top-level permissions...), follow these steps:</p>\n<ol dir=\"auto\">\n<li>Open the repo settings</li>\n<li>Go to <a href=\"https://github.com/FasterXML/jackson-core/settings/actions\">Actions &gt; General</a></li>\n<li>Under \"Workflow permissions\", set them to \"Read repository contents and packages permissions\"</li>\n</ol>\n<p dir=\"auto\">This basically makes all workflows without top-level permissions run with</p>\n<div class=\"highlight highlight-source-yaml notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"permissions:\n  contents: read\n  packages: read\n  # and nothing else\"><pre class=\"notranslate\"><span class=\"pl-ent\">permissions</span>:\n  <span class=\"pl-ent\">contents</span>: <span class=\"pl-s\">read</span>\n  <span class=\"pl-ent\">packages</span>: <span class=\"pl-s\">read</span>\n  <span class=\"pl-c\"><span class=\"pl-c\">#</span> and nothing else</span></pre></div>\n<p dir=\"auto\">instead of the default</p>\n<div class=\"highlight highlight-source-yaml notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"permissions: write-all\"><pre class=\"notranslate\"><span class=\"pl-ent\">permissions</span>: <span class=\"pl-s\">write-all</span></pre></div>\n<p dir=\"auto\">If a workflow ever needs broader permissions, they can be set at the top level or job level without a problem.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/952",
+                "createdAt": "2023-03-15T21:41:07Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add `JsonFactory.setStreamReadConstraints()`",
+        "url": "https://github.com/FasterXML/jackson-core/pull/964",
+        "resourcePath": "/FasterXML/jackson-core/pull/964",
+        "createdAt": "2023-03-23T03:31:35Z",
+        "number": 964,
+        "mergeCommit": {
+          "oid": "c75b84e8f94b2e7a4918973f4dfceb4e2f0c760a",
+          "message": "Add `JsonFactory.setStreamReadConstraints()` (#964)",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/c75b84e8f94b2e7a4918973f4dfceb4e2f0c760a",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "2b53cce78c6ca037938e6f26d6935c5f9b8c07dd",
+                "message": "Fix #959: increase initial max-string-len default from 1M to 5M (#961)"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "release-notes/VERSION-2.x"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/JsonFactory.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/constraints/DeeplyNestedContentReadTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085MslAt2gAoYWI4Y2U2OTFjMTU4ODIzMzcyMWNiMWZmMmY5MGM1ZDA1ZmNjODY4YQ",
+                "url": "https://github.com/FasterXML/jackson-core/pull/964/commits/ab8ce691c1588233721cb1ff2f90c5d05fcc868a"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 962,
+                "url": "https://github.com/FasterXML/jackson-core/issues/962",
+                "title": "Offer a way to directly set `StreamReadConstraints` via `JsonFactory` (not just Builder)",
+                "bodyHTML": "<p dir=\"auto\">Although Builder-style configuration is becoming preferred for Jackson in 2.x (and the only way in 3.0), there is need to support mutable configuration for some key configuration. While for any truly new, optional functionality Builder-style may be sufficient, processing limits change existing behavior so they must be available via \"legacy\" style configuration too. This is in particular important for frameworks that do not fully control configurability but expose it to their users; and expecting users to change interfaces/mechanisms for <code class=\"notranslate\">ObjectMapper</code>/<code class=\"notranslate\">JsonFactory</code> configuration is a big ask (not to mention compatibility nightmare).</p>\n<p dir=\"auto\">So, before 2.15.0 final, let's ensure <code class=\"notranslate\">StreamReadConstraints</code> can be set on <code class=\"notranslate\">JsonFactory</code>: it can not (alas!) be immutable until 3.0.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/962",
+                "createdAt": "2023-03-22T16:45:56Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "2.15"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Fix #1023: delegate `writeStartArray()` for all relevant cases",
+        "url": "https://github.com/FasterXML/jackson-core/pull/1024",
+        "resourcePath": "/FasterXML/jackson-core/pull/1024",
+        "createdAt": "2023-05-16T20:02:55Z",
+        "number": 1024,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "release-notes/VERSION-2.x"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/filter/FilteringGeneratorDelegate.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085Qpk_U2gAoMjQ3N2JmMmM1MzRlMWFlNDZkYjhiMGQ3NjVmMTljMDNkMWJkNzk2Zg",
+                "url": "https://github.com/FasterXML/jackson-core/pull/1024/commits/2477bf2c534e1ae46db8b0d765f19c03d1bd796f"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 1023,
+                "url": "https://github.com/FasterXML/jackson-core/issues/1023",
+                "title": "Problem with `FilteringGeneratorDelegate` wrt `TokenFilter.Inclusion.INCLUDE_NON_NULL`",
+                "bodyHTML": "<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"class Entity {\n    Pojo[] pojos;\n}\nclass Pojo {\n    String id;\n    String name;\n}\n\npublic static void main(String[] args) {\n// ...\n    JsonGeneratorDelegate delegate = new FilteringGeneratorDelegate(\n            generator,\n            new JsonPointerBasedFilter(JsonPointer.compile(&quot;/pojos/0/name&quot;)),\n            TokenFilter.Inclusion.INCLUDE_NON_NULL,\n            true);\n// ...\n}\"><pre class=\"notranslate\"><span class=\"pl-k\">class</span> <span class=\"pl-smi\">Entity</span> {\n    <span class=\"pl-smi\">Pojo</span>[] <span class=\"pl-s1\">pojos</span>;\n}\n<span class=\"pl-k\">class</span> <span class=\"pl-smi\">Pojo</span> {\n    <span class=\"pl-smi\">String</span> <span class=\"pl-s1\">id</span>;\n    <span class=\"pl-smi\">String</span> <span class=\"pl-s1\">name</span>;\n}\n\n<span class=\"pl-k\">public</span> <span class=\"pl-k\">static</span> <span class=\"pl-smi\">void</span> <span class=\"pl-s1\">main</span>(<span class=\"pl-smi\">String</span>[] <span class=\"pl-s1\">args</span>) {\n<span class=\"pl-c\">// ...</span>\n    <span class=\"pl-smi\">JsonGeneratorDelegate</span> <span class=\"pl-s1\">delegate</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">FilteringGeneratorDelegate</span>(\n            <span class=\"pl-s1\">generator</span>,\n            <span class=\"pl-k\">new</span> <span class=\"pl-smi\">JsonPointerBasedFilter</span>(<span class=\"pl-smi\">JsonPointer</span>.<span class=\"pl-en\">compile</span>(<span class=\"pl-s\">\"/pojos/0/name\"</span>)),\n            <span class=\"pl-smi\">TokenFilter</span>.<span class=\"pl-s1\">Inclusion</span>.<span class=\"pl-c1\">INCLUDE_NON_NULL</span>,\n            <span class=\"pl-c1\">true</span>);\n<span class=\"pl-c\">// ...</span>\n}</pre></div>\n<p dir=\"auto\">But error occur if TokenFilter#filterStartArray not returning the very TokenFilter.INCLUDE_ALL.</p>\n<blockquote>\n<p dir=\"auto\">Current context not Array but Object (through reference chain: xxx.xxx.Xxxx[\"xx\"])</p>\n</blockquote>\n<p dir=\"auto\">I note that FilteringGeneratorDelegate#writeStartArray(Object, int) does not invoke delegate.writeStartArray(forValue, size) when returning JsonGeneratorDelegate itself.<br>\nAm i misunderstanding the usage of TokenFilter? And how can i filter properties like this?<br>\nSincerely looking forward to your reply.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/1023",
+                "createdAt": "2023-05-16T06:50:36Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "support snapshot versioning",
+        "url": "https://github.com/FasterXML/jackson-core/pull/1053",
+        "resourcePath": "/FasterXML/jackson-core/pull/1053",
+        "createdAt": "2023-06-16T21:07:19Z",
+        "number": 1053,
+        "mergeCommit": {
+          "oid": "cd513f4bbabe384b860f21419df5dc33de0379df",
+          "message": "support snapshot versioning (#1053)",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/cd513f4bbabe384b860f21419df5dc33de0379df",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "bb778a0a4d6d492ca0a39d7d0e32b6e44e90e7aa",
+                "message": "Minor clean up post #1042 (root separator field not deprecated)"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/Version.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/VersionTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085TOsUQ2gAoZDIyM2Y2OGMxMTUxY2ZkNjFmNGM3MDc4MDg4MDQ5ZDlkOWY4NWIzYg",
+                "url": "https://github.com/FasterXML/jackson-core/pull/1053/commits/d223f68c1151cfd61f4c7078088049d9d9f85b3b"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 1050,
+                "url": "https://github.com/FasterXML/jackson-core/issues/1050",
+                "title": "Compare `_snapshotInfo` in `Version`",
+                "bodyHTML": "<p dir=\"auto\">According to <a href=\"https://semver.org/\" rel=\"nofollow\">semver</a>, 1.0.0-alpha &lt; 1.0.0-beta.</p>\n<p dir=\"auto\">However, <code class=\"notranslate\">Version.compareTo</code> does not account for <code class=\"notranslate\">_snapshotInfo</code> in its comparison: <a href=\"https://github.com/FasterXML/jackson-core/blob/2.16/src/main/java/com/fasterxml/jackson/core/Version.java#L135\">https://github.com/FasterXML/jackson-core/blob/2.16/src/main/java/com/fasterxml/jackson/core/Version.java#L135</a></p>\n<p dir=\"auto\">Does it make sense to compare <code class=\"notranslate\">_snapshotInfo</code> as well?</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/1050",
+                "createdAt": "2023-06-14T15:08:41Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add full set of `RecyclerPool` implementations",
+        "url": "https://github.com/FasterXML/jackson-core/pull/1064",
+        "resourcePath": "/FasterXML/jackson-core/pull/1064",
+        "createdAt": "2023-07-20T07:59:53Z",
+        "number": 1064,
+        "mergeCommit": {
+          "oid": "a4ca94f4cfe2030d1313a0038f0b8de6fd6b811e",
+          "message": "Introducing BufferRecyclerPool (#1064)",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/a4ca94f4cfe2030d1313a0038f0b8de6fd6b811e",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "0beb6fdb604a426356c5b9d51dd65a367592c6d3",
+                "message": "Minor test cleanup"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/io/UTF8Writer.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/json/JsonGeneratorImpl.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/util/BufferRecycler.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/util/BufferRecyclerPool.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/util/BufferRecyclers.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/TestJDKSerializability.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/test/java/com/fasterxml/jackson/core/io/BufferRecyclerPoolTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/io/TestIOContext.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/io/TestMergedStream.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/core/util/ReadConstrainedTextBufferTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085V-GtO2gAoZWIyNDYxYmMxODdhZmMyMzllYjNjMzI4MWVhNjM4ZTExODA1MTY0Nw",
+                "url": "https://github.com/FasterXML/jackson-core/pull/1064/commits/eb2461bc187afc239eb3c3281ea638e118051647"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 1089,
+                "url": "https://github.com/FasterXML/jackson-core/issues/1089",
+                "title": "Allow pluggable buffer recycling via new `RecyclerPool` extension point",
+                "bodyHTML": "<p dir=\"auto\">Although the current hard-coder <code class=\"notranslate\">ThreadLocal</code>-based buffer recycling (via <code class=\"notranslate\">BufferRecycler</code> containers accessed via <code class=\"notranslate\">BufferRecyclers</code>) has worked reasonably well up until recently, changes to later JVMs have made <code class=\"notranslate\">ThreadLocal</code> access less beneficial; and in near future (Project Loom et al) even counter-productive.<br>\nBut there are other ways to allow beneficial buffer recycling: especially for use cases where pooling is integrated with other frameworks.</p>\n<p dir=\"auto\">To allow new default and alternative recycling schemes, let's add <code class=\"notranslate\">RecyclerPool</code> extension point, make current implementation work with it.<br>\nAnd for bonus points, possibly implement one or more alternate implementations to use.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/1089",
+                "createdAt": "2023-08-26T03:10:21Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "performance"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "2.16"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Hash-pin GitHub Actions",
+        "url": "https://github.com/FasterXML/jackson-core/pull/1103",
+        "resourcePath": "/FasterXML/jackson-core/pull/1103",
+        "createdAt": "2023-09-07T16:29:21Z",
+        "number": 1103,
+        "mergeCommit": {
+          "oid": "228d3f5d306012682b333bb7873f3d8058c8d08e",
+          "message": "Hash-pin GitHub Actions (#1103)\n\nSigned-off-by: Pedro Kaj Kjellerup Nacht <pnacht@google.com>",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/228d3f5d306012682b333bb7873f3d8058c8d08e",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "8093f4348b1828b7f228d28a4027b766dc88395f",
+                "message": "support IOContext closing in GeneratorBase (#1094)"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": ".github/workflows/cifuzz.yml"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": ".github/workflows/main.yml"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": ".github/workflows/release.yml"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085ZzMpH2gAoM2U0NDVhYjA2NjQ1OTkwNDMxZjlkMWQ5MDBlMjkzMzNkNTk1MDc2ZA",
+                "url": "https://github.com/FasterXML/jackson-core/pull/1103/commits/3e445ab06645990431f9d1d900e29333d595076d"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 1102,
+                "url": "https://github.com/FasterXML/jackson-core/issues/1102",
+                "title": "Hash-pin workflow GitHub Actions ",
+                "bodyHTML": "<p dir=\"auto\">Hey <a class=\"user-mention notranslate\" data-hovercard-type=\"user\" data-hovercard-url=\"/users/cowtowncoder/hovercard\" data-octo-click=\"hovercard-link-click\" data-octo-dimensions=\"link_type:self\" href=\"https://github.com/cowtowncoder\">@cowtowncoder</a>, I'm back with another security suggestion.</p>\n<p dir=\"auto\">When developing with CI workflows, it's common to version-pin dependencies (i.e. <code class=\"notranslate\">actions/checkout@v3</code>). Such major-version pins can be useful in that you get immediate access to the latest version of each Action. However, this also makes the project vulnerable should a broken or malicious release be published. However, version tags are mutable, so minor version tags aren't the best solution, since a malicious attacker could overwrite a version tag to point to a malicious or vulnerable commit instead.</p>\n<p dir=\"auto\">Pinning workflow dependencies by hash ensures the dependency is immutable and its behavior is guaranteed.</p>\n<p dir=\"auto\">Since jackson-core already has dependabot set up to monitor GitHub Actions, this won't change much on your end. These hashes will be automatically updated by dependabot.</p>\n<p dir=\"auto\">I'll send a PR pinning the Actions along with this issue.</p>\n<hr>\n<p dir=\"auto\">By the way, in case you aren't aware, Dependabot now supports <a href=\"https://github.blog/2023-08-24-a-faster-way-to-manage-version-updates-with-dependabot/\" rel=\"nofollow\">grouped updates</a>, such that you'll receive all version updates in a single PR, instead of one PR per Action (see <a href=\"https://github.com/pnacht/libarchive/pull/1\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/pnacht/libarchive/pull/1/hovercard\">this example</a>). Let me know if you want me to send a PR to make this change to dependabot as well.</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/1102",
+                "createdAt": "2023-09-07T16:29:16Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add Scorecard Action",
+        "url": "https://github.com/FasterXML/jackson-core/pull/1109",
+        "resourcePath": "/FasterXML/jackson-core/pull/1109",
+        "createdAt": "2023-09-15T19:35:54Z",
+        "number": 1109,
+        "mergeCommit": {
+          "oid": "02efa0a46f65c70e7741048a055765c9f89dc565",
+          "message": "Add Scorecard Action (#1109)\n\nSigned-off-by: Pedro Kaj Kjellerup Nacht <pnacht@google.com>",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/02efa0a46f65c70e7741048a055765c9f89dc565",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "994bd2da7c6e031f62494dceca6f974844f90cca",
+                "message": "fix external pool pluggability (#1106)"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": ".github/workflows/scorecard.yml"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085aeFU32gAoMjkwZmQ3YjVlMTg5NzQ2NjlmMGI4NTUxODE3MjljZDljMzhhOWE2ZQ",
+                "url": "https://github.com/FasterXML/jackson-core/pull/1109/commits/290fd7b5e18974669f0b855181729cd9c38a9a6e"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 1108,
+                "url": "https://github.com/FasterXML/jackson-core/issues/1108",
+                "title": "Add the OpenSSF Scorecard Action workflow",
+                "bodyHTML": "<p dir=\"auto\">Hey, it's Pedro (see <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1462460908\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-core/issues/844\" data-hovercard-type=\"issue\" data-hovercard-url=\"/FasterXML/jackson-core/issues/844/hovercard\" href=\"https://github.com/FasterXML/jackson-core/issues/844\">#844</a>, <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1626325200\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-core/issues/953\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/FasterXML/jackson-core/pull/953/hovercard\" href=\"https://github.com/FasterXML/jackson-core/pull/953\">#953</a>, and <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1886220475\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-core/issues/1103\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/FasterXML/jackson-core/pull/1103/hovercard\" href=\"https://github.com/FasterXML/jackson-core/pull/1103\">#1103</a>) and I've got a new security suggestion:</p>\n<p dir=\"auto\">Would you be interested in the <a href=\"https://github.com/ossf/scorecard-action\">Scorecard Action</a>? It'll frequently run Scorecard and populate jackson-core's <a href=\"https://github.com/FasterXML/jackson-core/security/code-scanning\">Security Panel</a> with actionable suggestions to improve its supply-chain security. In this way, it'll also alert you if a misstep accidentally weakens your security.</p>\n<p dir=\"auto\">I'll send a PR with the Action for you to take a look.</p>\n<p dir=\"auto\">By the way, I saw you've added the <a href=\"https://securityscorecards.dev/viewer/?uri=github.com/FasterXML%2Fjackson-core\" rel=\"nofollow\">Scorecard badge</a> (congrats on the 7.4/10! That puts you in the top 5% of important projects!).</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/1108",
+                "createdAt": "2023-09-15T19:35:38Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add new `JsonWriteFeature.ESCAPE_FORWARD_SLASHES`",
+        "url": "https://github.com/FasterXML/jackson-core/pull/1197",
+        "resourcePath": "/FasterXML/jackson-core/pull/1197",
+        "createdAt": "2024-01-21T04:42:48Z",
+        "number": 1197,
+        "mergeCommit": {
+          "oid": "25b935309fda75e6c66e045b2adecf151fc9ac3e",
+          "message": "Add new `JsonWriteFeature.ESCAPE_FORWARD_SLASHES` (#1197)",
+          "commitUrl": "https://github.com/FasterXML/jackson-core/commit/25b935309fda75e6c66e045b2adecf151fc9ac3e",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "900b5908e3ac90184b4e55677addb08327389ccd",
+                "message": "Merging minor changes needed for solving BufferRecycler recycling"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "release-notes/CREDITS-2.x"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "release-notes/VERSION-2.x"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/JsonGenerator.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/io/CharTypes.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/json/JsonWriteFeature.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/json/UTF8JsonGenerator.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/core/json/WriterBasedJsonGenerator.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/test/java/com/fasterxml/jackson/core/write/JsonWriteFeatureEscapeForwardSlashTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAC5a085kpO4H2gAoYjM0OGI1YWVlMWVkOTdkNjM3MTYxMThmNjU2ZjhkZjgzZjhkMmZjOQ",
+                "url": "https://github.com/FasterXML/jackson-core/pull/1197/commits/b348b5aee1ed97d63716118f656f8df83f8d2fc9"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 507,
+                "url": "https://github.com/FasterXML/jackson-core/issues/507",
+                "title": "Add `JsonWriteFeature.ESCAPE_FORWARD_SLASHES` to allow escaping of '/' for String values",
+                "bodyHTML": "<p dir=\"auto\">Jackson 2.x only escapes minimum set of characters, as defined by JSON specification. This does not include forward slash character ('/'). But while legal, it turns out that more often than not users do want escaping, to guard against potential inclusion-in-HTML problems, particularly for embedded JSON constants in Javascript sources, in script tags.</p>\n<p dir=\"auto\">Now: although it is possible to enable escaping already (via <code class=\"notranslate\">CharacterEscapes</code>), it is bit verbose, and also adds some measurable (not huge, but not completely trivial) overhead.<br>\nSo for 3.0 let's add this character as escape-by-default, but also add a simple mechanism for turning that off if feasible (<code class=\"notranslate\">JsonWriteFeature</code>, most likely?).</p>",
+                "resourcePath": "/FasterXML/jackson-core/issues/507",
+                "createdAt": "2019-01-15T04:59:31Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "2.17"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+]

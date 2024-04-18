@@ -1,0 +1,113 @@
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/longpolling/PopRequest.java b/broker/src/main/java/org/apache/rocketmq/broker/longpolling/PopRequest.java
+index 2eccf77e0..a6546e912 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/longpolling/PopRequest.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/longpolling/PopRequest.java
+@@ -71,19 +71,16 @@ public class PopRequest {
+         return sb.toString();
+     }
+ 
+-    public static final Comparator<PopRequest> COMPARATOR = new Comparator<PopRequest>() {
+-        @Override
+-        public int compare(PopRequest o1, PopRequest o2) {
+-            int ret = (int) (o1.getExpired() - o2.getExpired());
++    public static final Comparator<PopRequest> COMPARATOR = (o1, o2) -> {
++        int ret = (int) (o1.getExpired() - o2.getExpired());
+ 
+-            if (ret != 0) {
+-                return ret;
+-            }
+-            ret = (int) (o1.op - o2.op);
+-            if (ret != 0) {
+-                return ret;
+-            }
+-            return -1;
++        if (ret != 0) {
++            return ret;
+         }
++        ret = (int) (o1.op - o2.op);
++        if (ret != 0) {
++            return ret;
++        }
++        return -1;
+     };
+ }
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/statictopic/TopicQueueMappingUtils.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/statictopic/TopicQueueMappingUtils.java
+index b22906a5c..45cbed757 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/statictopic/TopicQueueMappingUtils.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/statictopic/TopicQueueMappingUtils.java
+@@ -22,7 +22,6 @@ import java.util.ArrayDeque;
+ import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.Collections;
+-import java.util.Comparator;
+ import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.List;
+@@ -63,18 +62,15 @@ public class TopicQueueMappingUtils {
+             //reduce the remapping
+             if (brokerNumMapBeforeRemapping != null
+                     && !brokerNumMapBeforeRemapping.isEmpty()) {
+-                Collections.sort(leastBrokers, new Comparator<String>() {
+-                    @Override
+-                    public int compare(String o1, String o2) {
+-                        int i1 = 0, i2 = 0;
+-                        if (brokerNumMapBeforeRemapping.containsKey(o1)) {
+-                            i1 = brokerNumMapBeforeRemapping.get(o1);
+-                        }
+-                        if (brokerNumMapBeforeRemapping.containsKey(o2)) {
+-                            i2 = brokerNumMapBeforeRemapping.get(o2);
+-                        }
+-                        return i1 - i2;
++                leastBrokers.sort((o1, o2) -> {
++                    int i1 = 0, i2 = 0;
++                    if (brokerNumMapBeforeRemapping.containsKey(o1)) {
++                        i1 = brokerNumMapBeforeRemapping.get(o1);
+                     }
++                    if (brokerNumMapBeforeRemapping.containsKey(o2)) {
++                        i2 = brokerNumMapBeforeRemapping.get(o2);
++                    }
++                    return i1 - i2;
+                 });
+             } else {
+                 //reduce the imbalance
+@@ -342,12 +338,7 @@ public class TopicQueueMappingUtils {
+ 
+ 
+     public static Map<Integer, TopicQueueMappingOne> checkAndBuildMappingItems(List<TopicQueueMappingDetail> mappingDetailList, boolean replace, boolean checkConsistence) {
+-        Collections.sort(mappingDetailList, new Comparator<TopicQueueMappingDetail>() {
+-            @Override
+-            public int compare(TopicQueueMappingDetail o1, TopicQueueMappingDetail o2) {
+-                return (int)(o2.getEpoch() - o1.getEpoch());
+-            }
+-        });
++        mappingDetailList.sort((o1, o2) -> (int) (o2.getEpoch() - o1.getEpoch()));
+ 
+         int maxNum = 0;
+         Map<Integer, TopicQueueMappingOne> globalIdMap = new HashMap<>();
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/ClientMetadata.java b/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/ClientMetadata.java
+index 40b61588c..d4962e00a 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/ClientMetadata.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/ClientMetadata.java
+@@ -17,8 +17,6 @@
+ package org.apache.rocketmq.remoting.rpc;
+ 
+ import java.util.ArrayList;
+-import java.util.Collections;
+-import java.util.Comparator;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+@@ -121,12 +119,7 @@ public class ClientMetadata {
+             Map<String, TopicQueueMappingInfo> topicQueueMappingInfoMap =  mapEntry.getValue();
+             ConcurrentMap<MessageQueue, TopicQueueMappingInfo> mqEndPoints = new ConcurrentHashMap<>();
+             List<Map.Entry<String, TopicQueueMappingInfo>> mappingInfos = new ArrayList<>(topicQueueMappingInfoMap.entrySet());
+-            Collections.sort(mappingInfos, new Comparator<Map.Entry<String, TopicQueueMappingInfo>>() {
+-                @Override
+-                public int compare(Map.Entry<String, TopicQueueMappingInfo> o1, Map.Entry<String, TopicQueueMappingInfo> o2) {
+-                    return  (int) (o2.getValue().getEpoch() - o1.getValue().getEpoch());
+-                }
+-            });
++            mappingInfos.sort((o1, o2) -> (int) (o2.getValue().getEpoch() - o1.getValue().getEpoch()));
+             int maxTotalNums = 0;
+             long maxTotalNumOfEpoch = -1;
+             for (Map.Entry<String, TopicQueueMappingInfo> entry : mappingInfos) {

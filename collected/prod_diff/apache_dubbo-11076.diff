@@ -1,0 +1,1050 @@
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/constants/LoggerCodeConstants.java b/dubbo-common/src/main/java/org/apache/dubbo/common/constants/LoggerCodeConstants.java
+index 5bd40bccbe..c0c819cade 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/constants/LoggerCodeConstants.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/constants/LoggerCodeConstants.java
+@@ -380,6 +380,8 @@ public interface LoggerCodeConstants {
+ 
+     String QOS_UNEXPECTED_EXCEPTION = "7-6";
+ 
++    String QOS_PERMISSION_DENY_EXCEPTION = "7-7";
++
+     // Internal unknown error.
+     String INTERNAL_ERROR = "99-0";
+ 
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/constants/QosConstants.java b/dubbo-common/src/main/java/org/apache/dubbo/common/constants/QosConstants.java
+index 3939296ffa..e02ec74a65 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/constants/QosConstants.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/constants/QosConstants.java
+@@ -32,6 +32,8 @@ public interface QosConstants {
+ 
+     String ACCEPT_FOREIGN_IP_WHITELIST = "qos.accept.foreign.ip.whitelist";
+ 
++    String ANONYMOUS_ACCESS_PERMISSION_LEVEL = "qos.anonymous.access.permission.level";
++
+     String QOS_ENABLE_COMPATIBLE = "qos-enable";
+ 
+     String QOS_HOST_COMPATIBLE = "qos-host";
+@@ -41,4 +43,6 @@ public interface QosConstants {
+     String ACCEPT_FOREIGN_IP_COMPATIBLE = "qos-accept-foreign-ip";
+ 
+     String ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE = "qos-accept-foreign-ip-whitelist";
++
++    String ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE = "qos-anonymous-access-permission-level";
+ }
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java b/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java
+index 080616ccb8..85b4173307 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java
+@@ -38,6 +38,8 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
+ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
+ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
++import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
++import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+@@ -164,6 +166,11 @@ public class ApplicationConfig extends AbstractConfig {
+      */
+     private String qosAcceptForeignIpWhitelist;
+ 
++    /**
++     * the anonymous(any foreign ip) access permission level, default is NONE, can not access any cmd
++     */
++    private String qosAnonymousAccessPermissionLevel;
++
+     /**
+      * Customized parameters
+      */
+@@ -444,6 +451,15 @@ public class ApplicationConfig extends AbstractConfig {
+         this.qosAcceptForeignIpWhitelist = qosAcceptForeignIpWhitelist;
+     }
+ 
++    @Parameter(key = ANONYMOUS_ACCESS_PERMISSION_LEVEL)
++    public String getQosAnonymousAccessPermissionLevel() {
++        return qosAnonymousAccessPermissionLevel;
++    }
++
++    public void setQosAnonymousAccessPermissionLevel(String qosAnonymousAccessPermissionLevel) {
++        this.qosAnonymousAccessPermissionLevel = qosAnonymousAccessPermissionLevel;
++    }
++
+     /**
+      * The format is the same as the springboot, including: getQosEnableCompatible(), getQosPortCompatible(), getQosAcceptForeignIpCompatible().
+      *
+@@ -494,6 +510,15 @@ public class ApplicationConfig extends AbstractConfig {
+         this.setQosAcceptForeignIpWhitelist(qosAcceptForeignIpWhitelist);
+     }
+ 
++    @Parameter(key = ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE, excluded = true, attribute = false)
++    public String getQosAnonymousAccessPermissionLevelCompatible() {
++        return this.getQosAnonymousAccessPermissionLevel();
++    }
++
++    public void setQosAnonymousAccessPermissionLevelCompatible(String qosAnonymousAccessPermissionLevel) {
++        this.setQosAnonymousAccessPermissionLevel(qosAnonymousAccessPermissionLevel);
++    }
++
+     public Map<String, String> getParameters() {
+         return parameters;
+     }
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/CommandContext.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/CommandContext.java
+index 0c2612a5c4..a45560becd 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/CommandContext.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/CommandContext.java
+@@ -17,6 +17,8 @@
+ package org.apache.dubbo.qos.command;
+ 
+ import io.netty.channel.Channel;
++import org.apache.dubbo.qos.permission.PermissionLevel;
++import org.apache.dubbo.qos.common.QosConfiguration;
+ 
+ public class CommandContext {
+ 
+@@ -27,6 +29,8 @@ public class CommandContext {
+     private Object originRequest;
+     private int httpCode = 200;
+ 
++    private QosConfiguration qosConfiguration;
++
+     public CommandContext(String commandName) {
+         this.commandName = commandName;
+     }
+@@ -84,4 +88,16 @@ public class CommandContext {
+     public void setHttpCode(int httpCode) {
+         this.httpCode = httpCode;
+     }
++
++    public void setQosConfiguration(QosConfiguration qosConfiguration) {
++        this.qosConfiguration = qosConfiguration;
++    }
++
++    public boolean hasPermission(PermissionLevel cmdRequiredPermissionLevel) {
++        return cmdRequiredPermissionLevel.getLevel() <= qosConfiguration.getAnonymousAccessPermissionLevel().getLevel();
++    }
++
++    public boolean isAllowAnonymousAccess(){
++        return this.qosConfiguration.isAllowAnonymousAccess();
++    }
+ }
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/CommandExecutor.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/CommandExecutor.java
+index d60115c51a..0efec6f090 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/CommandExecutor.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/CommandExecutor.java
+@@ -16,6 +16,9 @@
+  */
+ package org.apache.dubbo.qos.command;
+ 
++import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
++import org.apache.dubbo.qos.command.exception.PermissionDenyException;
++
+ public interface CommandExecutor {
+     /**
+      * Execute one command and return the execution result
+@@ -24,5 +27,5 @@ public interface CommandExecutor {
+      * @return command execution result
+      * @throws NoSuchCommandException
+      */
+-    String execute(CommandContext commandContext) throws NoSuchCommandException;
++    String execute(CommandContext commandContext) throws NoSuchCommandException, PermissionDenyException;
+ }
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/DefaultCommandExecutor.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/DefaultCommandExecutor.java
+index 12cd5f9b9e..6b645cfe6b 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/DefaultCommandExecutor.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/DefaultCommandExecutor.java
+@@ -16,17 +16,24 @@
+  */
+ package org.apache.dubbo.qos.command;
+ 
++import org.apache.dubbo.qos.command.annotation.Cmd;
++import org.apache.dubbo.qos.common.QosConstants;
++import org.apache.dubbo.qos.permission.PermissionLevel;
++import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
++import org.apache.dubbo.qos.command.exception.PermissionDenyException;
++import org.apache.dubbo.qos.permission.DefaultAnonymousAccessPermissionChecker;
++import org.apache.dubbo.qos.permission.PermissionChecker;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+ public class DefaultCommandExecutor implements CommandExecutor {
+-    private FrameworkModel frameworkModel;
++    private final FrameworkModel frameworkModel;
+ 
+     public DefaultCommandExecutor(FrameworkModel frameworkModel) {
+         this.frameworkModel = frameworkModel;
+     }
+ 
+     @Override
+-    public String execute(CommandContext commandContext) throws NoSuchCommandException {
++    public String execute(CommandContext commandContext) throws NoSuchCommandException, PermissionDenyException {
+         BaseCommand command = null;
+         try {
+             command = frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandContext.getCommandName());
+@@ -36,6 +43,24 @@ public class DefaultCommandExecutor implements CommandExecutor {
+         if (command == null) {
+             throw new NoSuchCommandException(commandContext.getCommandName());
+         }
++
++        // check permission when configs allow anonymous access
++        if (commandContext.isAllowAnonymousAccess()) {
++            PermissionChecker permissionChecker = DefaultAnonymousAccessPermissionChecker.INSTANCE;
++            try {
++                permissionChecker = frameworkModel.getExtensionLoader(PermissionChecker.class).getExtension(QosConstants.QOS_PERMISSION_CHECKER);
++            } catch (Throwable throwable) {
++                //can't find valid custom permissionChecker
++            }
++
++            final Cmd cmd = command.getClass().getAnnotation(Cmd.class);
++            final PermissionLevel cmdRequiredPermissionLevel = cmd.requiredPermissionLevel();
++
++            if (!permissionChecker.access(commandContext, cmdRequiredPermissionLevel)) {
++                throw new PermissionDenyException(commandContext.getCommandName());
++            }
++        }
++
+         return command.execute(commandContext, commandContext.getArgs());
+     }
+ }
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/annotation/Cmd.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/annotation/Cmd.java
+index dfeb9b8cfa..bccc1d77d2 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/annotation/Cmd.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/annotation/Cmd.java
+@@ -16,6 +16,8 @@
+  */
+ package org.apache.dubbo.qos.command.annotation;
+ 
++import org.apache.dubbo.qos.permission.PermissionLevel;
++
+ import java.lang.annotation.ElementType;
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+@@ -55,4 +57,12 @@ public @interface Cmd {
+      * @return command order in help
+      */
+     int sort() default 0;
++
++    /**
++     * Command required access permission level
++     *
++     * @return command permission level
++     */
++    PermissionLevel requiredPermissionLevel() default PermissionLevel.PROTECTED;
++
+ }
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/exception/CommandException.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/exception/CommandException.java
+new file mode 100644
+index 0000000000..3cb67f108e
+--- /dev/null
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/exception/CommandException.java
+@@ -0,0 +1,23 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.qos.command.exception;
++
++public class CommandException extends Exception {
++    public CommandException(String msg) {
++        super(msg);
++    }
++}
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/NoSuchCommandException.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/exception/NoSuchCommandException.java
+similarity index 89%
+rename from dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/NoSuchCommandException.java
+rename to dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/exception/NoSuchCommandException.java
+index 1d7396bdb4..b606bb6459 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/NoSuchCommandException.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/exception/NoSuchCommandException.java
+@@ -14,9 +14,9 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.dubbo.qos.command;
++package org.apache.dubbo.qos.command.exception;
+ 
+-public class NoSuchCommandException extends Exception {
++public class NoSuchCommandException extends CommandException {
+     public NoSuchCommandException(String msg) {
+         super("NoSuchCommandException:" + msg);
+     }
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/exception/PermissionDenyException.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/exception/PermissionDenyException.java
+new file mode 100644
+index 0000000000..2377eaf287
+--- /dev/null
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/exception/PermissionDenyException.java
+@@ -0,0 +1,23 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.qos.command.exception;
++
++public class PermissionDenyException extends CommandException {
++    public PermissionDenyException(String msg) {
++        super("Permission Deny On Operation: " + msg);
++    }
++}
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Live.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Live.java
+index 947ad8e4ac..bc4870ac3f 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Live.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Live.java
+@@ -22,6 +22,7 @@ import org.apache.dubbo.config.ApplicationConfig;
+ import org.apache.dubbo.qos.command.BaseCommand;
+ import org.apache.dubbo.qos.command.CommandContext;
+ import org.apache.dubbo.qos.command.annotation.Cmd;
++import org.apache.dubbo.qos.permission.PermissionLevel;
+ import org.apache.dubbo.qos.probe.LivenessProbe;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+@@ -29,9 +30,9 @@ import java.util.List;
+ import java.util.Objects;
+ import java.util.stream.Collectors;
+ 
+-@Cmd(name = "live", summary = "Judge if service is alive? ")
++@Cmd(name = "live", summary = "Judge if service is alive? ", requiredPermissionLevel = PermissionLevel.PUBLIC)
+ public class Live implements BaseCommand {
+-    private FrameworkModel frameworkModel;
++    private final FrameworkModel frameworkModel;
+ 
+     public Live(FrameworkModel frameworkModel) {
+         this.frameworkModel = frameworkModel;
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Quit.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Quit.java
+index 9539db9dea..90e34ea67d 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Quit.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Quit.java
+@@ -19,9 +19,10 @@ package org.apache.dubbo.qos.command.impl;
+ import org.apache.dubbo.qos.command.BaseCommand;
+ import org.apache.dubbo.qos.command.CommandContext;
+ import org.apache.dubbo.qos.command.annotation.Cmd;
++import org.apache.dubbo.qos.permission.PermissionLevel;
+ import org.apache.dubbo.qos.common.QosConstants;
+ 
+-@Cmd(name = "quit",summary = "quit telnet console")
++@Cmd(name = "quit", summary = "quit telnet console", requiredPermissionLevel = PermissionLevel.PUBLIC)
+ public class Quit implements BaseCommand {
+     @Override
+     public String execute(CommandContext commandContext, String[] args) {
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Ready.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Ready.java
+index e7ce83977b..5b5d898a0a 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Ready.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Ready.java
+@@ -22,6 +22,7 @@ import org.apache.dubbo.config.ApplicationConfig;
+ import org.apache.dubbo.qos.command.BaseCommand;
+ import org.apache.dubbo.qos.command.CommandContext;
+ import org.apache.dubbo.qos.command.annotation.Cmd;
++import org.apache.dubbo.qos.permission.PermissionLevel;
+ import org.apache.dubbo.qos.probe.ReadinessProbe;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+@@ -29,9 +30,9 @@ import java.util.List;
+ import java.util.Objects;
+ import java.util.stream.Collectors;
+ 
+-@Cmd(name = "ready", summary = "Judge if service is ready to work? ")
++@Cmd(name = "ready", summary = "Judge if service is ready to work? ", requiredPermissionLevel = PermissionLevel.PUBLIC)
+ public class Ready implements BaseCommand {
+-    private FrameworkModel frameworkModel;
++    private final FrameworkModel frameworkModel;
+ 
+     public Ready(FrameworkModel frameworkModel) {
+         this.frameworkModel = frameworkModel;
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Startup.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Startup.java
+index e963f65d33..8f2d2d0148 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Startup.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/command/impl/Startup.java
+@@ -22,6 +22,7 @@ import org.apache.dubbo.config.ApplicationConfig;
+ import org.apache.dubbo.qos.command.BaseCommand;
+ import org.apache.dubbo.qos.command.CommandContext;
+ import org.apache.dubbo.qos.command.annotation.Cmd;
++import org.apache.dubbo.qos.permission.PermissionLevel;
+ import org.apache.dubbo.qos.probe.StartupProbe;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+@@ -29,7 +30,7 @@ import java.util.List;
+ import java.util.Objects;
+ import java.util.stream.Collectors;
+ 
+-@Cmd(name = "startup", summary = "Judge if service has started? ")
++@Cmd(name = "startup", summary = "Judge if service has started? ", requiredPermissionLevel = PermissionLevel.PUBLIC)
+ public class Startup implements BaseCommand {
+ 
+     private FrameworkModel frameworkModel;
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/common/QosConfiguration.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/common/QosConfiguration.java
+new file mode 100644
+index 0000000000..fee7486913
+--- /dev/null
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/common/QosConfiguration.java
+@@ -0,0 +1,118 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.qos.common;
++
++import org.apache.dubbo.qos.permission.PermissionLevel;
++
++public class QosConfiguration {
++    private String welcome;
++    private boolean acceptForeignIp;
++
++    // the whitelist of foreign IP when acceptForeignIp = false, the delimiter is colon(,)
++    // support specific ip and an ip range from CIDR specification
++    private String acceptForeignIpWhitelist;
++
++    // this permission level for anonymous access, it will ignore the acceptForeignIp and acceptForeignIpWhitelist configurations
++    // Access permission depends on the config anonymousAccessPermissionLevel and the cmd required permission level
++    // the default value is Cmd.PermissionLevel.PUBLIC, can only access PUBLIC level cmd
++    private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.PUBLIC;
++
++    private QosConfiguration() {
++    }
++
++    public QosConfiguration(Builder builder) {
++        this.welcome = builder.getWelcome();
++        this.acceptForeignIp = builder.isAcceptForeignIp();
++        this.acceptForeignIpWhitelist = builder.getAcceptForeignIpWhitelist();
++        this.anonymousAccessPermissionLevel = builder.getAnonymousAccessPermissionLevel();
++    }
++
++    public boolean isAllowAnonymousAccess() {
++        return PermissionLevel.NONE != anonymousAccessPermissionLevel;
++    }
++
++    public String getWelcome() {
++        return welcome;
++    }
++
++    public PermissionLevel getAnonymousAccessPermissionLevel() {
++        return anonymousAccessPermissionLevel;
++    }
++
++    public String getAcceptForeignIpWhitelist() {
++        return acceptForeignIpWhitelist;
++    }
++
++    public boolean isAcceptForeignIp() {
++        return acceptForeignIp;
++    }
++
++    public static Builder builder() {
++        return new Builder();
++    }
++
++
++    public static class Builder {
++        private String welcome;
++        private boolean acceptForeignIp;
++        private String acceptForeignIpWhitelist;
++        private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.PUBLIC;
++
++        private Builder() {
++        }
++
++        public Builder welcome(String welcome) {
++            this.welcome = welcome;
++            return this;
++        }
++
++        public Builder acceptForeignIp(boolean acceptForeignIp) {
++            this.acceptForeignIp = acceptForeignIp;
++            return this;
++        }
++
++        public Builder acceptForeignIpWhitelist(String acceptForeignIpWhitelist) {
++            this.acceptForeignIpWhitelist = acceptForeignIpWhitelist;
++            return this;
++        }
++
++        public Builder anonymousAccessPermissionLevel(String anonymousAccessPermissionLevel) {
++            this.anonymousAccessPermissionLevel = PermissionLevel.from(anonymousAccessPermissionLevel);
++            return this;
++        }
++
++        public QosConfiguration build() {
++            return new QosConfiguration(this);
++        }
++
++        public String getWelcome() {
++            return welcome;
++        }
++
++        public boolean isAcceptForeignIp() {
++            return acceptForeignIp;
++        }
++
++        public String getAcceptForeignIpWhitelist() {
++            return acceptForeignIpWhitelist;
++        }
++
++        public PermissionLevel getAnonymousAccessPermissionLevel() {
++            return anonymousAccessPermissionLevel;
++        }
++    }
++}
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/common/QosConstants.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/common/QosConstants.java
+index f4bf6e7194..96bd786693 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/common/QosConstants.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/common/QosConstants.java
+@@ -23,4 +23,6 @@ public interface QosConstants {
+     String BR_STR = "\r\n";
+     String CLOSE = "close!";
+ 
++    String QOS_PERMISSION_CHECKER = "qosPermissionChecker";
++
+ }
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/permission/DefaultAnonymousAccessPermissionChecker.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/permission/DefaultAnonymousAccessPermissionChecker.java
+new file mode 100644
+index 0000000000..ab5aa79e7b
+--- /dev/null
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/permission/DefaultAnonymousAccessPermissionChecker.java
+@@ -0,0 +1,28 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.qos.permission;
++
++import org.apache.dubbo.qos.command.CommandContext;
++
++public class DefaultAnonymousAccessPermissionChecker implements PermissionChecker {
++    public static final DefaultAnonymousAccessPermissionChecker INSTANCE = new DefaultAnonymousAccessPermissionChecker();
++
++    @Override
++    public boolean access(CommandContext commandContext, PermissionLevel defaultCmdRequiredPermissionLevel) {
++        return commandContext.hasPermission(defaultCmdRequiredPermissionLevel);
++    }
++}
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/permission/PermissionChecker.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/permission/PermissionChecker.java
+new file mode 100644
+index 0000000000..c7a8c6675f
+--- /dev/null
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/permission/PermissionChecker.java
+@@ -0,0 +1,27 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.qos.permission;
++
++import org.apache.dubbo.common.extension.ExtensionScope;
++import org.apache.dubbo.common.extension.SPI;
++import org.apache.dubbo.qos.command.CommandContext;
++
++// qosPermissionChecker=xxx.xxx.xxxPermissionChecker
++@SPI(scope = ExtensionScope.FRAMEWORK)
++public interface PermissionChecker {
++    boolean access(CommandContext commandContext, PermissionLevel defaultCmdPermissionLevel);
++}
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/permission/PermissionLevel.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/permission/PermissionLevel.java
+new file mode 100644
+index 0000000000..9d4a74b160
+--- /dev/null
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/permission/PermissionLevel.java
+@@ -0,0 +1,67 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.qos.permission;
++
++import org.apache.dubbo.common.utils.StringUtils;
++
++import java.util.Arrays;
++
++public enum PermissionLevel {
++    /**
++     * the lowest permission level (default), can access with
++     * anonymousAccessPermissionLevel=PUBLIC / anonymousAccessPermissionLevel=1 or higher
++     */
++    PUBLIC(1),
++    /**
++     * the middle permission level, default permission for each cmd
++     */
++    PROTECTED(2),
++    /**
++     * the highest permission level, suppose only the localhost can access this command
++     */
++    PRIVATE(3),
++
++    /**
++     * It is the reserved  anonymous permission level, can not access any command
++     */
++    NONE(Integer.MIN_VALUE),
++
++    ;
++    private final int level;
++
++    PermissionLevel(int level) {
++        this.level = level;
++    }
++
++    public int getLevel() {
++        return level;
++    }
++
++    // find the permission level by the level value, if not found, return default PUBLIC level
++    public static PermissionLevel from(String permissionLevel) {
++        if (StringUtils.isNumber(permissionLevel)) {
++            return Arrays.stream(values())
++                .filter(p -> String.valueOf(p.getLevel()).equals(permissionLevel.trim()))
++                .findFirst()
++                .orElse(PUBLIC);
++        }
++        return Arrays.stream(values())
++            .filter(p -> p.name().equalsIgnoreCase(String.valueOf(permissionLevel).trim()))
++            .findFirst()
++            .orElse(PUBLIC);
++    }
++}
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/protocol/QosProtocolWrapper.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/protocol/QosProtocolWrapper.java
+index 32b32c4cbf..c16a25f98c 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/protocol/QosProtocolWrapper.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/protocol/QosProtocolWrapper.java
+@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
+ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+ import org.apache.dubbo.common.logger.LoggerFactory;
+ import org.apache.dubbo.common.utils.StringUtils;
++import org.apache.dubbo.qos.permission.PermissionLevel;
+ import org.apache.dubbo.qos.common.QosConstants;
+ import org.apache.dubbo.qos.pu.QosWireProtocol;
+ import org.apache.dubbo.qos.server.Server;
+@@ -39,6 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
+ import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_FAILED_START_SERVER;
+ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
++import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+@@ -116,6 +118,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
+             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
+             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
+             String acceptForeignIpWhitelist = url.getParameter(ACCEPT_FOREIGN_IP_WHITELIST, StringUtils.EMPTY_STRING);
++            String anonymousAccessPermissionLevel = url.getParameter(ANONYMOUS_ACCESS_PERMISSION_LEVEL, PermissionLevel.PUBLIC.name());
+             Server server = frameworkModel.getBeanFactory().getBean(Server.class);
+ 
+             if (server.isStarted()) {
+@@ -126,6 +129,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
+             server.setPort(port);
+             server.setAcceptForeignIp(acceptForeignIp);
+             server.setAcceptForeignIpWhitelist(acceptForeignIpWhitelist);
++            server.setAnonymousAccessPermissionLevel(anonymousAccessPermissionLevel);
+             server.start();
+ 
+         } catch (Throwable throwable) {
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/pu/QosWireProtocol.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/pu/QosWireProtocol.java
+index 889f533226..14f20f4cb3 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/pu/QosWireProtocol.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/pu/QosWireProtocol.java
+@@ -19,7 +19,9 @@ package org.apache.dubbo.qos.pu;
+ import org.apache.dubbo.common.URL;
+ import org.apache.dubbo.common.extension.Activate;
+ import org.apache.dubbo.common.utils.StringUtils;
++import org.apache.dubbo.qos.permission.PermissionLevel;
+ import org.apache.dubbo.qos.server.DubboLogo;
++import org.apache.dubbo.qos.common.QosConfiguration;
+ import org.apache.dubbo.qos.server.handler.QosProcessHandler;
+ import org.apache.dubbo.remoting.ChannelHandler;
+ import org.apache.dubbo.remoting.api.AbstractWireProtocol;
+@@ -46,7 +48,13 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
+     public void configServerProtocolHandler(URL url, ChannelOperator operator) {
+         // add qosProcess handler
+         QosProcessHandler handler = new QosProcessHandler(url.getOrDefaultFrameworkModel(),
+-            DubboLogo.DUBBO, false, StringUtils.EMPTY_STRING);
++            QosConfiguration.builder()
++                .welcome(DubboLogo.DUBBO)
++                .acceptForeignIp(false)
++                .acceptForeignIpWhitelist(StringUtils.EMPTY_STRING)
++                .anonymousAccessPermissionLevel(PermissionLevel.PUBLIC.name())
++                .build()
++        );
+         List<ChannelHandler> handlers = new ArrayList<>();
+         handlers.add(new ChannelHandlerPretender(handler));
+         operator.configChannelHandler(handlers);
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/Server.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/Server.java
+index 2d60b24457..836fa47379 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/Server.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/Server.java
+@@ -19,6 +19,8 @@ package org.apache.dubbo.qos.server;
+ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+ import org.apache.dubbo.common.logger.LoggerFactory;
+ import org.apache.dubbo.common.utils.StringUtils;
++import org.apache.dubbo.qos.permission.PermissionLevel;
++import org.apache.dubbo.qos.common.QosConfiguration;
+ import org.apache.dubbo.qos.server.handler.QosProcessHandler;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+@@ -54,6 +56,8 @@ public class Server {
+     private boolean acceptForeignIp = true;
+     private String acceptForeignIpWhitelist = StringUtils.EMPTY_STRING;
+ 
++    private String anonymousAccessPermissionLevel = PermissionLevel.NONE.name();
++
+     private EventLoopGroup boss;
+ 
+     private EventLoopGroup worker;
+@@ -98,7 +102,14 @@ public class Server {
+ 
+             @Override
+             protected void initChannel(Channel ch) throws Exception {
+-                ch.pipeline().addLast(new QosProcessHandler(frameworkModel, welcome, acceptForeignIp, acceptForeignIpWhitelist));
++                ch.pipeline().addLast(new QosProcessHandler(frameworkModel,
++                    QosConfiguration.builder()
++                        .welcome(welcome)
++                        .acceptForeignIp(acceptForeignIp)
++                        .acceptForeignIpWhitelist(acceptForeignIpWhitelist)
++                        .anonymousAccessPermissionLevel(anonymousAccessPermissionLevel)
++                        .build()
++                ));
+             }
+         });
+         try {
+@@ -152,6 +163,10 @@ public class Server {
+         this.acceptForeignIpWhitelist = acceptForeignIpWhitelist;
+     }
+ 
++    public void setAnonymousAccessPermissionLevel(String anonymousAccessPermissionLevel) {
++        this.anonymousAccessPermissionLevel = anonymousAccessPermissionLevel;
++    }
++
+     public String getWelcome() {
+         return welcome;
+     }
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java
+index c63072a9de..e385c4d6aa 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java
+@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
+ import org.apache.dubbo.common.utils.NetUtils;
+ import org.apache.dubbo.common.utils.StringUtils;
+ import org.apache.dubbo.qos.common.QosConstants;
++import org.apache.dubbo.qos.common.QosConfiguration;
+ 
+ import java.net.InetAddress;
+ import java.net.InetSocketAddress;
+@@ -34,18 +35,21 @@ import java.util.function.Predicate;
+ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
+ 
+     // true means to accept foreign IP
+-    private  boolean acceptForeignIp;
++    private final boolean acceptForeignIp;
+ 
+     // the whitelist of foreign IP when acceptForeignIp = false, the delimiter is colon(,)
+     // support specific ip and an ip range from CIDR specification
+-    private String acceptForeignIpWhitelist;
++    private final String acceptForeignIpWhitelist;
+     private Predicate<String> whitelistPredicate = foreignIp -> false;
+ 
+-    public ForeignHostPermitHandler(boolean acceptForeignIp, String foreignIpWhitelist) {
+-        this.acceptForeignIp = acceptForeignIp;
+-        this.acceptForeignIpWhitelist = foreignIpWhitelist;
+-        if (StringUtils.isNotEmpty(foreignIpWhitelist)) {
+-            whitelistPredicate = Arrays.stream(foreignIpWhitelist.split(","))
++    private final QosConfiguration qosConfiguration;
++
++    public ForeignHostPermitHandler(QosConfiguration qosConfiguration) {
++        this.qosConfiguration = qosConfiguration;
++        this.acceptForeignIp = qosConfiguration.isAcceptForeignIp();
++        this.acceptForeignIpWhitelist = qosConfiguration.getAcceptForeignIpWhitelist();
++        if (StringUtils.isNotEmpty(acceptForeignIpWhitelist)) {
++            whitelistPredicate = Arrays.stream(acceptForeignIpWhitelist.split(","))
+                 .map(String::trim)
+                 .filter(StringUtils::isNotEmpty)
+                 .map(foreignIpPattern -> (Predicate<String>) foreignIp -> {
+@@ -67,6 +71,12 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
+             return;
+         }
+ 
++        // the anonymous access is enabled by default, permission level is PUBLIC
++        // if allow anonymous access, return
++        if (qosConfiguration.isAllowAnonymousAccess()) {
++            return;
++        }
++
+         final InetAddress inetAddress = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
+         // loopback address, return
+         if (inetAddress.isLoopbackAddress()) {
+@@ -78,6 +88,7 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
+             return;
+         }
+ 
++
+         ByteBuf cb = Unpooled.wrappedBuffer((QosConstants.BR_STR + "Foreign Ip Not Permitted, Consider Config It In Whitelist."
+             + QosConstants.BR_STR).getBytes());
+         ctx.writeAndFlush(cb).addListener(ChannelFutureListener.CLOSE);
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/HttpProcessHandler.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/HttpProcessHandler.java
+index 6af1b5e9f3..0d9acedaab 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/HttpProcessHandler.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/HttpProcessHandler.java
+@@ -21,8 +21,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
+ import org.apache.dubbo.qos.command.CommandContext;
+ import org.apache.dubbo.qos.command.CommandExecutor;
+ import org.apache.dubbo.qos.command.DefaultCommandExecutor;
+-import org.apache.dubbo.qos.command.NoSuchCommandException;
++import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
++import org.apache.dubbo.qos.command.exception.PermissionDenyException;
+ import org.apache.dubbo.qos.command.decoder.HttpCommandDecoder;
++import org.apache.dubbo.qos.common.QosConfiguration;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+ import io.netty.buffer.Unpooled;
+@@ -39,6 +41,7 @@ import io.netty.handler.codec.http.HttpVersion;
+ 
+ import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_COMMAND_NOT_FOUND;
+ import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
++import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_PERMISSION_DENY_EXCEPTION;
+ 
+ /**
+  * Parse HttpRequest for uri and parameters
+@@ -54,10 +57,13 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECT
+ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest> {
+ 
+     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(HttpProcessHandler.class);
+-    private CommandExecutor commandExecutor;
++    private final CommandExecutor commandExecutor;
+ 
+-    public HttpProcessHandler(FrameworkModel frameworkModel) {
++    private final QosConfiguration qosConfiguration;
++
++    public HttpProcessHandler(FrameworkModel frameworkModel, QosConfiguration qosConfiguration) {
+         this.commandExecutor = new DefaultCommandExecutor(frameworkModel);
++        this.qosConfiguration = qosConfiguration;
+     }
+ 
+     private static FullHttpResponse http(int httpCode, String result) {
+@@ -69,8 +75,8 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
+         return response;
+     }
+ 
+-    private static FullHttpResponse http404() {
+-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
++    private static FullHttpResponse http(int httpCode) {
++        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(httpCode));
+         HttpHeaders httpHeaders = response.headers();
+         httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
+         httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+@@ -83,10 +89,11 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
+         // return 404 when fail to construct command context
+         if (commandContext == null) {
+             log.warn(QOS_UNEXPECTED_EXCEPTION, "", "", "can not found commandContext, url: " + msg.uri());
+-            FullHttpResponse response = http404();
++            FullHttpResponse response = http(404);
+             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+         } else {
+             commandContext.setRemote(ctx.channel());
++            commandContext.setQosConfiguration(qosConfiguration);
+             try {
+                 String result = commandExecutor.execute(commandContext);
+                 int httpCode = commandContext.getHttpCode();
+@@ -94,7 +101,11 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
+                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+             } catch (NoSuchCommandException ex) {
+                 log.error(QOS_COMMAND_NOT_FOUND, "", "", "can not find command: " + commandContext, ex);
+-                FullHttpResponse response = http404();
++                FullHttpResponse response = http(404);
++                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
++            } catch (PermissionDenyException ex) {
++                log.error(QOS_PERMISSION_DENY_EXCEPTION, "", "", "permission deny to access command: " + commandContext, ex);
++                FullHttpResponse response = http(403);
+                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+             } catch (Exception qosEx) {
+                 log.error(QOS_UNEXPECTED_EXCEPTION, "", "", "execute commandContext: " + commandContext + " got exception", qosEx);
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java
+index 32d89f7278..98cd08741e 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java
+@@ -17,6 +17,7 @@
+ package org.apache.dubbo.qos.server.handler;
+ 
+ import org.apache.dubbo.common.utils.ExecutorUtil;
++import org.apache.dubbo.qos.common.QosConfiguration;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+ import io.netty.buffer.ByteBuf;
+@@ -41,25 +42,21 @@ public class QosProcessHandler extends ByteToMessageDecoder {
+ 
+     private ScheduledFuture<?> welcomeFuture;
+ 
+-    private String welcome;
+-    // true means to accept foreign IP
+-    private boolean acceptForeignIp;
+-    private String acceptForeignIpWhitelist;
+-
+-    private FrameworkModel frameworkModel;
++    private final FrameworkModel frameworkModel;
+ 
+     public static final String PROMPT = "dubbo>";
+ 
+-    public QosProcessHandler(FrameworkModel frameworkModel, String welcome, boolean acceptForeignIp, String acceptForeignIpWhitelist) {
++    private final QosConfiguration qosConfiguration;
++
++    public QosProcessHandler(FrameworkModel frameworkModel, QosConfiguration qosConfiguration) {
+         this.frameworkModel = frameworkModel;
+-        this.welcome = welcome;
+-        this.acceptForeignIp = acceptForeignIp;
+-        this.acceptForeignIpWhitelist = acceptForeignIpWhitelist;
++        this.qosConfiguration = qosConfiguration;
+     }
+ 
+     @Override
+     public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+         welcomeFuture = ctx.executor().schedule(() -> {
++            final String welcome = qosConfiguration.getWelcome();
+             if (welcome != null) {
+                 ctx.write(Unpooled.wrappedBuffer(welcome.getBytes()));
+                 ctx.writeAndFlush(Unpooled.wrappedBuffer(PROMPT.getBytes()));
+@@ -77,7 +74,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
+         final int magic = in.getByte(in.readerIndex());
+ 
+         ChannelPipeline p = ctx.pipeline();
+-        p.addLast(new ForeignHostPermitHandler(acceptForeignIp, acceptForeignIpWhitelist));
++        p.addLast(new ForeignHostPermitHandler(qosConfiguration));
+         if (isHttp(magic)) {
+             // no welcome output for http protocol
+             if (welcomeFuture != null && welcomeFuture.isCancellable()) {
+@@ -85,7 +82,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
+             }
+             p.addLast(new HttpServerCodec());
+             p.addLast(new HttpObjectAggregator(1048576));
+-            p.addLast(new HttpProcessHandler(frameworkModel));
++            p.addLast(new HttpProcessHandler(frameworkModel, qosConfiguration));
+             p.remove(this);
+         } else {
+             p.addLast(new LineBasedFrameDecoder(2048));
+@@ -93,7 +90,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
+             p.addLast(new StringEncoder(CharsetUtil.UTF_8));
+             p.addLast(new IdleStateHandler(0, 0, 5 * 60));
+             p.addLast(new TelnetIdleEventHandler());
+-            p.addLast(new TelnetProcessHandler(frameworkModel));
++            p.addLast(new TelnetProcessHandler(frameworkModel, qosConfiguration));
+             p.remove(this);
+         }
+     }
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java
+index 54ed428614..d5c7df4121 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java
+@@ -22,9 +22,11 @@ import org.apache.dubbo.common.utils.StringUtils;
+ import org.apache.dubbo.qos.command.CommandContext;
+ import org.apache.dubbo.qos.command.CommandExecutor;
+ import org.apache.dubbo.qos.command.DefaultCommandExecutor;
+-import org.apache.dubbo.qos.command.NoSuchCommandException;
++import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
++import org.apache.dubbo.qos.command.exception.PermissionDenyException;
+ import org.apache.dubbo.qos.command.decoder.TelnetCommandDecoder;
+ import org.apache.dubbo.qos.common.QosConstants;
++import org.apache.dubbo.qos.common.QosConfiguration;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+ 
+ import io.netty.channel.ChannelFutureListener;
+@@ -33,6 +35,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
+ 
+ import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_COMMAND_NOT_FOUND;
+ import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
++import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_PERMISSION_DENY_EXCEPTION;
+ 
+ /**
+  * Telnet process handler
+@@ -42,8 +45,11 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
+     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(TelnetProcessHandler.class);
+     private final CommandExecutor commandExecutor;
+ 
+-    public TelnetProcessHandler(FrameworkModel frameworkModel) {
++    private final QosConfiguration qosConfiguration;
++
++    public TelnetProcessHandler(FrameworkModel frameworkModel, QosConfiguration qosConfiguration) {
+         this.commandExecutor = new DefaultCommandExecutor(frameworkModel);
++        this.qosConfiguration = qosConfiguration;
+     }
+ 
+     @Override
+@@ -53,6 +59,7 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
+             ctx.writeAndFlush(QosProcessHandler.PROMPT);
+         } else {
+             CommandContext commandContext = TelnetCommandDecoder.decode(msg);
++            commandContext.setQosConfiguration(qosConfiguration);
+             commandContext.setRemote(ctx.channel());
+ 
+             try {
+@@ -66,6 +73,10 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
+                 ctx.writeAndFlush(msg + " :no such command");
+                 ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);
+                 log.error(QOS_COMMAND_NOT_FOUND, "", "", "can not found command " + commandContext, ex);
++            } catch (PermissionDenyException ex) {
++                ctx.writeAndFlush(msg + " :permission deny");
++                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);
++                log.error(QOS_PERMISSION_DENY_EXCEPTION, "", "", "permission deny to access command " + commandContext, ex);
+             } catch (Exception ex) {
+                 ctx.writeAndFlush(msg + " :fail to execute commandContext by " + ex.getMessage());
+                 ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);

@@ -1,0 +1,7 @@
+{
+  "issue_id": 332,
+  "issue_url": "https://github.com/Hakky54/sslcontext-kickstart/issues/332",
+  "title": "Add support for Java Platform Module System",
+  "description": "<p dir=\"auto\">End users should still be able to use this library with java 8 while it is also compatible with java modules (Java 11+)<br>\nEvery maven module should contain module-info.java<br>\nInternal libraries should be encapsulated and if required only exposed to sub maven modules.</p>\n<p dir=\"auto\">To be expected:</p>\n<ul dir=\"auto\">\n<li>New major release</li>\n<li>Breaking changes (package name changes in submodules as it is conflicting with the core module)</li>\n<li>Internal api with public access modifiers will be moved to a sub package internal and will be locked with modules</li>\n</ul>",
+  "description_text": "End users should still be able to use this library with java 8 while it is also compatible with java modules (Java 11+)\nEvery maven module should contain module-info.java\nInternal libraries should be encapsulated and if required only exposed to sub maven modules.\nTo be expected:\n\nNew major release\nBreaking changes (package name changes in submodules as it is conflicting with the core module)\nInternal api with public access modifiers will be moved to a sub package internal and will be locked with modules\n"
+}

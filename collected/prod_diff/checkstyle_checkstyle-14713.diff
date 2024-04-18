@@ -1,0 +1,138 @@
+diff --git a/src/it/java/org/checkstyle/suppressionxpathfilter/XpathRegressionExecutableStatementCountTest.java b/src/it/java/org/checkstyle/suppressionxpathfilter/XpathRegressionExecutableStatementCountTest.java
+index aab12c730..4be48e832 100644
+--- a/src/it/java/org/checkstyle/suppressionxpathfilter/XpathRegressionExecutableStatementCountTest.java
++++ b/src/it/java/org/checkstyle/suppressionxpathfilter/XpathRegressionExecutableStatementCountTest.java
+@@ -40,7 +40,7 @@ public class XpathRegressionExecutableStatementCountTest extends AbstractXpathTe
+     @Test
+     public void testDefaultConfig() throws Exception {
+         final String filePath =
+-                getPath("SuppressionXpathRegressionExecutableStatementCountDefault.java");
++                getPath("InputXpathExecutableStatementCountDefault.java");
+         final File fileToProcess = new File(filePath);
+ 
+         final DefaultConfiguration moduleConfig =
+@@ -54,14 +54,14 @@ public class XpathRegressionExecutableStatementCountTest extends AbstractXpathTe
+ 
+         final List<String> expectedXpathQueries = Arrays.asList(
+             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
+-            + "@text='SuppressionXpathRegressionExecutableStatementCountDefault']]"
++            + "@text='InputXpathExecutableStatementCountDefault']]"
+             + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='ElseIfLadder']]",
+             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
+-            + "@text='SuppressionXpathRegressionExecutableStatementCountDefault']]"
++            + "@text='InputXpathExecutableStatementCountDefault']]"
+             + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='ElseIfLadder']]"
+             + "/MODIFIERS",
+             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
+-            + "@text='SuppressionXpathRegressionExecutableStatementCountDefault']]"
++            + "@text='InputXpathExecutableStatementCountDefault']]"
+             + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='ElseIfLadder']]"
+             + "/MODIFIERS/LITERAL_PUBLIC"
+         );
+@@ -73,7 +73,7 @@ public class XpathRegressionExecutableStatementCountTest extends AbstractXpathTe
+     @Test
+     public void testCustomMax() throws Exception {
+         final String filePath =
+-                getPath("SuppressionXpathRegressionExecutableStatementCountCustomMax.java");
++                getPath("InputXpathExecutableStatementCountCustomMax.java");
+         final File fileToProcess = new File(filePath);
+ 
+         final DefaultConfiguration moduleConfig =
+@@ -88,18 +88,18 @@ public class XpathRegressionExecutableStatementCountTest extends AbstractXpathTe
+ 
+         final List<String> expectedXpathQueries = Arrays.asList(
+             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
+-            + "@text='SuppressionXpathRegressionExecutableStatementCountCustomMax']]"
++            + "@text='InputXpathExecutableStatementCountCustomMax']]"
+             + "/OBJBLOCK/CTOR_DEF[./IDENT["
+-            + "@text='SuppressionXpathRegressionExecutableStatementCountCustomMax']]",
++            + "@text='InputXpathExecutableStatementCountCustomMax']]",
+             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
+-            + "@text='SuppressionXpathRegressionExecutableStatementCountCustomMax']]"
++            + "@text='InputXpathExecutableStatementCountCustomMax']]"
+             + "/OBJBLOCK/CTOR_DEF[./IDENT["
+-            + "@text='SuppressionXpathRegressionExecutableStatementCountCustomMax']]"
++            + "@text='InputXpathExecutableStatementCountCustomMax']]"
+             + "/MODIFIERS",
+             "/COMPILATION_UNIT/CLASS_DEF[./IDENT["
+-            + "@text='SuppressionXpathRegressionExecutableStatementCountCustomMax']]"
++            + "@text='InputXpathExecutableStatementCountCustomMax']]"
+             + "/OBJBLOCK/CTOR_DEF[./IDENT["
+-            + "@text='SuppressionXpathRegressionExecutableStatementCountCustomMax']]"
++            + "@text='InputXpathExecutableStatementCountCustomMax']]"
+             + "/MODIFIERS/LITERAL_PUBLIC"
+         );
+ 
+@@ -109,7 +109,7 @@ public class XpathRegressionExecutableStatementCountTest extends AbstractXpathTe
+     @Test
+     public void testLambdas() throws Exception {
+         final String filePath =
+-                getPath("SuppressionXpathRegressionExecutableStatementCountLambdas.java");
++                getPath("InputXpathExecutableStatementCountLambdas.java");
+         final File fileToProcess = new File(filePath);
+ 
+         final DefaultConfiguration moduleConfig =
+@@ -124,7 +124,7 @@ public class XpathRegressionExecutableStatementCountTest extends AbstractXpathTe
+ 
+         final List<String> expectedXpathQueries = List.of(
+                 "/COMPILATION_UNIT/CLASS_DEF[./IDENT"
+-                        + "[@text='SuppressionXpathRegressionExecutableStatementCountLambdas']]"
++                        + "[@text='InputXpathExecutableStatementCountLambdas']]"
+                         + "/OBJBLOCK/VARIABLE_DEF[./IDENT[@text='c']]/ASSIGN/LAMBDA"
+         );
+ 
+diff --git a/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/SuppressionXpathRegressionExecutableStatementCountCustomMax.java b/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/InputXpathExecutableStatementCountCustomMax.java
+similarity index 52%
+rename from src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/SuppressionXpathRegressionExecutableStatementCountCustomMax.java
+rename to src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/InputXpathExecutableStatementCountCustomMax.java
+index c7e06befd..71af3de77 100644
+--- a/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/SuppressionXpathRegressionExecutableStatementCountCustomMax.java
++++ b/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/InputXpathExecutableStatementCountCustomMax.java
+@@ -1,7 +1,7 @@
+ package org.checkstyle.suppressionxpathfilter.executablestatementcount;
+ 
+-public class SuppressionXpathRegressionExecutableStatementCountCustomMax {
+-    public SuppressionXpathRegressionExecutableStatementCountCustomMax() // warn
++public class InputXpathExecutableStatementCountCustomMax {
++    public InputXpathExecutableStatementCountCustomMax() // warn
+     {
+         int i = 1;
+         if (System.currentTimeMillis() == 0) {
+@@ -10,5 +10,5 @@ public class SuppressionXpathRegressionExecutableStatementCountCustomMax {
+         }
+     }
+     /** Empty constructor */
+-    public SuppressionXpathRegressionExecutableStatementCountCustomMax(int i) {}
++    public InputXpathExecutableStatementCountCustomMax(int i) {}
+ }
+diff --git a/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/SuppressionXpathRegressionExecutableStatementCountDefault.java b/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/InputXpathExecutableStatementCountDefault.java
+similarity index 85%
+rename from src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/SuppressionXpathRegressionExecutableStatementCountDefault.java
+rename to src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/InputXpathExecutableStatementCountDefault.java
+index 50540b01f..dda072f95 100644
+--- a/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/SuppressionXpathRegressionExecutableStatementCountDefault.java
++++ b/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/InputXpathExecutableStatementCountDefault.java
+@@ -1,6 +1,6 @@
+ package org.checkstyle.suppressionxpathfilter.executablestatementcount;
+ 
+-public class SuppressionXpathRegressionExecutableStatementCountDefault {
++public class InputXpathExecutableStatementCountDefault {
+     public void ElseIfLadder() { // warn
+         if (System.currentTimeMillis() == 0) {
+         } else {
+diff --git a/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/SuppressionXpathRegressionExecutableStatementCountLambdas.java b/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/InputXpathExecutableStatementCountLambdas.java
+similarity index 83%
+rename from src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/SuppressionXpathRegressionExecutableStatementCountLambdas.java
+rename to src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/InputXpathExecutableStatementCountLambdas.java
+index f045a5e79..1905a2d46 100644
+--- a/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/SuppressionXpathRegressionExecutableStatementCountLambdas.java
++++ b/src/it/resources/org/checkstyle/suppressionxpathfilter/executablestatementcount/InputXpathExecutableStatementCountLambdas.java
+@@ -3,7 +3,7 @@ package org.checkstyle.suppressionxpathfilter.executablestatementcount;
+ import java.util.function.Consumer;
+ import java.util.function.Function;
+ 
+-public class SuppressionXpathRegressionExecutableStatementCountLambdas {
++public class InputXpathExecutableStatementCountLambdas {
+     Consumer c = (s) -> { // warn
+         String str = s.toString();
+         str = str + "!";

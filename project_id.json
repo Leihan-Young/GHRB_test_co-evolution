@@ -1,0 +1,109 @@
+{
+  "checkstyle": {
+    "owner": "checkstyle",
+    "number_of_tests": 4,
+    "verified_db": "verified/verified_tuples_checkstyle_checkstyle.json",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/checkstyle",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "17",
+      "extra": {}
+    }
+  },
+  "dubbo": {
+    "owner": "apache",
+    "number_of_tests": 33,
+    "verified_db": "verified/verified_tuples_apache_dubbo.json",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/dubbo",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {}
+    }
+  },
+  "incubator-seata": {
+    "owner": "apache",
+    "number_of_tests": 4,
+    "verified_db": "verified/verified_tuples_apache_incubator-seata.json",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/incubator-seata",
+    "requirements": {
+      "build": "maven",
+      "wrapper": true,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {}
+    }
+  },
+  "openapi-generator": {
+    "owner": "OpenAPITools",
+    "number_of_tests": 1,
+    "verified_db": "verified/verified_tuples_OpenAPITools_openapi-generator.json",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/openapi-generator",
+    "requirements": {
+      "build": "maven",
+      "wrapper": true,
+      "jdk": "11",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
+    }
+  },
+  "nacos": {
+    "owner": "alibaba",
+    "number_of_tests": 9,
+    "verified_db": "verified/verified_tuples_alibaba_nacos.json",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/nacos",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {}
+    }
+  },
+  "assertj": {
+    "owner": "assertj",
+    "number_of_tests": 4,
+    "verified_db": "verified/verified_tuples_assertj_assertj.json",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/assertj",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "17",
+      "extra": {}
+    }
+  },
+  "rocketmq": {
+    "owner": "apache",
+    "number_of_tests": 117,
+    "verified_db": "verified/verified_tuples_apache_rocketmq.json",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/rocketmq",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.1",
+      "jdk": "8",
+      "extra": {
+        "command": "-Dargline='-Xmx1024m' -Dcheckstyle.skip"
+      }
+    }
+  },
+  "skywalking": {
+    "owner": "apache",
+    "number_of_tests": 2,
+    "verified_db": "verified/verified_tuples_apache_skywalking.json",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/skywalking",
+    "requirements": {
+      "build": "maven",
+      "wrapper": true,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {}
+    }
+  }
+}

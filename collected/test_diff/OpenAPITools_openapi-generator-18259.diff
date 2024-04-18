@@ -1,0 +1,31 @@
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java
+index 467652c2657..8afd914fa83 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java
+@@ -2719,6 +2719,26 @@ public class SpringCodegenTest {
+                 .assertMethod("typeConverter");
+     }
+ 
++    @Test
++    public void contractWithResolvedInnerEnumContainsEnumConverter() throws IOException {
++        File output = Files.createTempDirectory("test").toFile();
++        output.deleteOnExit();
++
++        final CodegenConfigurator configurator = new CodegenConfigurator()
++                .setGeneratorName("spring")
++                .setInputSpec("src/test/resources/3_0/inner_enum.yaml")
++                .addInlineSchemaOption("RESOLVE_INLINE_ENUMS", "true")
++                .setOutputDir(output.getAbsolutePath().replace("\\", "/"));
++
++        final ClientOptInput clientOptInput = configurator.toClientOptInput();
++        DefaultGenerator generator = new DefaultGenerator();
++        Map<String, File> files = generator.opts(clientOptInput).generate().stream()
++                .collect(Collectors.toMap(File::getName, Function.identity()));
++
++        JavaFileAssert.assertThat(files.get("EnumConverterConfiguration.java"))
++                .assertMethod("ponyTypeConverter");
++    }
++
+     @Test
+     public void shouldUseTheSameTagNameForTheInterfaceAndTheMethod_issue11570() throws IOException {
+         final Map<String, File> output = generateFromContract("src/test/resources/bugs/issue_11570.yml", SPRING_BOOT);

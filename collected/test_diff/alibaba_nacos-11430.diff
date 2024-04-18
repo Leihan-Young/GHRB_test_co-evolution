@@ -1,0 +1,255 @@
+diff --git a/client/src/test/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegateTest.java b/client/src/test/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegateTest.java
+index 9ce7a980ea..3a098ed6d4 100644
+--- a/client/src/test/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegateTest.java
++++ b/client/src/test/java/com/alibaba/nacos/client/naming/remote/NamingClientProxyDelegateTest.java
+@@ -18,6 +18,7 @@
+ 
+ package com.alibaba.nacos.client.naming.remote;
+ 
++import com.alibaba.nacos.api.ability.constant.AbilityKey;
+ import com.alibaba.nacos.api.exception.NacosException;
+ import com.alibaba.nacos.api.naming.pojo.Instance;
+ import com.alibaba.nacos.api.naming.pojo.Service;
+@@ -46,7 +47,7 @@ import static org.mockito.Mockito.when;
+ public class NamingClientProxyDelegateTest {
+     
+     @Test
+-    public void testRegisterServiceByGrpc() throws NacosException, NoSuchFieldException, IllegalAccessException {
++    public void testRegisterEphemeralServiceByGrpc() throws NacosException, NoSuchFieldException, IllegalAccessException {
+         String ns = "ns1";
+         ServiceInfoHolder holder = Mockito.mock(ServiceInfoHolder.class);
+         Properties props = new Properties();
+@@ -100,7 +101,36 @@ public class NamingClientProxyDelegateTest {
+     }
+     
+     @Test
+-    public void testRegisterServiceByHttp() throws NacosException, NoSuchFieldException, IllegalAccessException {
++    public void testRegisterPersistentServiceByGrpc() throws NacosException, NoSuchFieldException, IllegalAccessException {
++        String ns = "ns1";
++        ServiceInfoHolder holder = Mockito.mock(ServiceInfoHolder.class);
++        Properties props = new Properties();
++        props.setProperty("serverAddr", "localhost");
++        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(props);
++        InstancesChangeNotifier notifier = new InstancesChangeNotifier();
++        NamingClientProxyDelegate delegate = new NamingClientProxyDelegate(ns, holder, nacosClientProperties, notifier);
++        NamingGrpcClientProxy mockGrpcClient = Mockito.mock(NamingGrpcClientProxy.class);
++        Field grpcClientProxyField = NamingClientProxyDelegate.class.getDeclaredField("grpcClientProxy");
++        grpcClientProxyField.setAccessible(true);
++        grpcClientProxyField.set(delegate, mockGrpcClient);
++
++        String serviceName = "service1";
++        String groupName = "group1";
++        Instance instance = new Instance();
++        instance.setServiceName(serviceName);
++        instance.setClusterName(groupName);
++        instance.setIp("1.1.1.1");
++        instance.setPort(1);
++        // persistent instance
++        instance.setEphemeral(false);
++        // when server support register persistent instance by grpc, will use grpc to register
++        when(mockGrpcClient.isAbilitySupportedByServer(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC)).thenReturn(true);
++        delegate.registerService(serviceName, groupName, instance);
++        verify(mockGrpcClient, times(1)).registerService(serviceName, groupName, instance);
++    }
++    
++    @Test
++    public void testRegisterPersistentServiceByHttp() throws NacosException, NoSuchFieldException, IllegalAccessException {
+         String ns = "ns1";
+         ServiceInfoHolder holder = Mockito.mock(ServiceInfoHolder.class);
+         Properties props = new Properties();
+@@ -121,14 +151,15 @@ public class NamingClientProxyDelegateTest {
+         instance.setClusterName(groupName);
+         instance.setIp("1.1.1.1");
+         instance.setPort(1);
+-        // use grpc
++        // persistent instance
+         instance.setEphemeral(false);
++        // when server do not support register persistent instance by grpc, will use http to register
+         delegate.registerService(serviceName, groupName, instance);
+         verify(mockHttpClient, times(1)).registerService(serviceName, groupName, instance);
+     }
+     
+     @Test
+-    public void testDeregisterServiceGrpc() throws NacosException, NoSuchFieldException, IllegalAccessException {
++    public void testDeregisterEphemeralServiceGrpc() throws NacosException, NoSuchFieldException, IllegalAccessException {
+         String ns = "ns1";
+         ServiceInfoHolder holder = Mockito.mock(ServiceInfoHolder.class);
+         Properties props = new Properties();
+@@ -156,13 +187,43 @@ public class NamingClientProxyDelegateTest {
+     }
+     
+     @Test
+-    public void testDeregisterServiceHttp() throws NacosException, NoSuchFieldException, IllegalAccessException {
++    public void testDeregisterPersistentServiceGrpc() throws NacosException, NoSuchFieldException, IllegalAccessException {
+         String ns = "ns1";
+         ServiceInfoHolder holder = Mockito.mock(ServiceInfoHolder.class);
+         Properties props = new Properties();
+         props.setProperty("serverAddr", "localhost");
+         InstancesChangeNotifier notifier = new InstancesChangeNotifier();
+         
++        final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(props);
++        NamingClientProxyDelegate delegate = new NamingClientProxyDelegate(ns, holder, nacosClientProperties, notifier);
++        NamingGrpcClientProxy mockGrpcClient = Mockito.mock(NamingGrpcClientProxy.class);
++        Field grpcClientProxyField = NamingClientProxyDelegate.class.getDeclaredField("grpcClientProxy");
++        grpcClientProxyField.setAccessible(true);
++        grpcClientProxyField.set(delegate, mockGrpcClient);
++
++        String serviceName = "service1";
++        String groupName = "group1";
++        Instance instance = new Instance();
++        instance.setServiceName(serviceName);
++        instance.setClusterName(groupName);
++        instance.setIp("1.1.1.1");
++        instance.setPort(1);
++        // persistent instance
++        instance.setEphemeral(false);
++        // when server support deregister persistent instance by grpc, will use grpc to deregister
++        when(mockGrpcClient.isAbilitySupportedByServer(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC)).thenReturn(true);
++        delegate.deregisterService(serviceName, groupName, instance);
++        verify(mockGrpcClient, times(1)).deregisterService(serviceName, groupName, instance);
++    }
++
++    @Test
++    public void testDeregisterPersistentServiceHttp() throws NacosException, NoSuchFieldException, IllegalAccessException {
++        String ns = "ns1";
++        ServiceInfoHolder holder = Mockito.mock(ServiceInfoHolder.class);
++        Properties props = new Properties();
++        props.setProperty("serverAddr", "localhost");
++        InstancesChangeNotifier notifier = new InstancesChangeNotifier();
++
+         final NacosClientProperties nacosClientProperties = NacosClientProperties.PROTOTYPE.derive(props);
+         NamingClientProxyDelegate delegate = new NamingClientProxyDelegate(ns, holder, nacosClientProperties, notifier);
+         NamingHttpClientProxy mockHttpClient = Mockito.mock(NamingHttpClientProxy.class);
+diff --git a/client/src/test/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxyTest.java b/client/src/test/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxyTest.java
+index cd176d098f..d96b5b4f59 100644
+--- a/client/src/test/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxyTest.java
++++ b/client/src/test/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxyTest.java
+@@ -18,6 +18,8 @@
+ 
+ package com.alibaba.nacos.client.naming.remote.gprc;
+ 
++import com.alibaba.nacos.api.ability.constant.AbilityKey;
++import com.alibaba.nacos.api.ability.constant.AbilityStatus;
+ import com.alibaba.nacos.api.common.Constants;
+ import com.alibaba.nacos.api.exception.NacosException;
+ import com.alibaba.nacos.api.naming.pojo.Instance;
+@@ -27,6 +29,7 @@ import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
+ import com.alibaba.nacos.api.naming.remote.NamingRemoteConstants;
+ import com.alibaba.nacos.api.naming.remote.request.BatchInstanceRequest;
+ import com.alibaba.nacos.api.naming.remote.request.InstanceRequest;
++import com.alibaba.nacos.api.naming.remote.request.PersistentInstanceRequest;
+ import com.alibaba.nacos.api.naming.remote.request.SubscribeServiceRequest;
+ import com.alibaba.nacos.api.naming.remote.response.BatchInstanceResponse;
+ import com.alibaba.nacos.api.naming.remote.response.InstanceResponse;
+@@ -123,6 +126,8 @@ public class NamingGrpcClientProxyTest {
+     
+     private Instance instance;
+     
++    private Instance persistentInstance;
++
+     private String uuid;
+     
+     @Rule
+@@ -143,7 +148,7 @@ public class NamingGrpcClientProxyTest {
+         Field uuidField = NamingGrpcClientProxy.class.getDeclaredField("uuid");
+         uuidField.setAccessible(true);
+         uuid = (String) uuidField.get(client);
+-    
++        
+         Assert.assertNotNull(RpcClientFactory.getClient(uuid));
+         Field rpcClientField = NamingGrpcClientProxy.class.getDeclaredField("rpcClient");
+         rpcClientField.setAccessible(true);
+@@ -156,6 +161,12 @@ public class NamingGrpcClientProxyTest {
+         instance.setServiceName(SERVICE_NAME);
+         instance.setIp("1.1.1.1");
+         instance.setPort(1111);
++        
++        persistentInstance = new Instance();
++        persistentInstance.setServiceName(SERVICE_NAME);
++        persistentInstance.setIp("1.1.1.1");
++        persistentInstance.setPort(1111);
++        persistentInstance.setEphemeral(false);
+     }
+     
+     @After
+@@ -177,6 +188,18 @@ public class NamingGrpcClientProxyTest {
+         }));
+     }
+     
++    @Test
++    public void testRegisterPersistentService() throws NacosException {
++        client.registerService(SERVICE_NAME, GROUP_NAME, persistentInstance);
++        verify(this.rpcClient, times(1)).request(argThat(request -> {
++            if (request instanceof PersistentInstanceRequest) {
++                PersistentInstanceRequest request1 = (PersistentInstanceRequest) request;
++                return request1.getType().equals(NamingRemoteConstants.REGISTER_INSTANCE);
++            }
++            return false;
++        }));
++    }
++
+     @Test
+     public void testRegisterServiceThrowsNacosException() throws NacosException {
+         expectedException.expect(NacosException.class);
+@@ -220,6 +243,18 @@ public class NamingGrpcClientProxyTest {
+             return false;
+         }));
+     }
++
++    @Test
++    public void testDeregisterPersistentService() throws NacosException {
++        client.deregisterService(SERVICE_NAME, GROUP_NAME, persistentInstance);
++        verify(this.rpcClient, times(1)).request(argThat(request -> {
++            if (request instanceof PersistentInstanceRequest) {
++                PersistentInstanceRequest request1 = (PersistentInstanceRequest) request;
++                return request1.getType().equals(NamingRemoteConstants.DE_REGISTER_INSTANCE);
++            }
++            return false;
++        }));
++    }
+     
+     @Test
+     public void testDeregisterServiceForBatchRegistered() throws NacosException {
+@@ -461,6 +496,42 @@ public class NamingGrpcClientProxyTest {
+         Assert.assertTrue(client.serverHealthy());
+         verify(this.rpcClient, times(1)).isRunning();
+     }
++
++    @Test
++    public void testIsAbilitySupportedByServer1() {
++        when(this.rpcClient.getConnectionAbility(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC))
++                .thenReturn(AbilityStatus.SUPPORTED);
++        Assert.assertTrue(client.isAbilitySupportedByServer(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC));
++        verify(this.rpcClient, times(1))
++                .getConnectionAbility(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC);
++    }
++
++    @Test
++    public void testIsAbilitySupportedByServer2() {
++        when(this.rpcClient.getConnectionAbility(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC))
++                .thenReturn(AbilityStatus.NOT_SUPPORTED);
++        Assert.assertFalse(client.isAbilitySupportedByServer(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC));
++        verify(this.rpcClient, times(1))
++                .getConnectionAbility(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC);
++    }
++
++    @Test
++    public void testIsAbilitySupportedByServer3() {
++        when(this.rpcClient.getConnectionAbility(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC))
++                .thenReturn(AbilityStatus.UNKNOWN);
++        Assert.assertFalse(client.isAbilitySupportedByServer(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC));
++        verify(this.rpcClient, times(1))
++                .getConnectionAbility(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC);
++    }
++
++    @Test
++    public void testIsAbilitySupportedByServer4() {
++        when(this.rpcClient.getConnectionAbility(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC))
++                .thenReturn(null);
++        Assert.assertFalse(client.isAbilitySupportedByServer(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC));
++        verify(this.rpcClient, times(1))
++                .getConnectionAbility(AbilityKey.SERVER_SUPPORT_PERSISTENT_INSTANCE_BY_GRPC);
++    }
+     
+     @Test
+     public void testShutdown() throws Exception {

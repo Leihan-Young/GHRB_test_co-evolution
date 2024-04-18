@@ -1,0 +1,7 @@
+{
+  "issue_id": 3787,
+  "issue_url": "https://github.com/FasterXML/jackson-databind/issues/3787",
+  "title": "Improve Javadoc of `SimpleModule` to indicate \"last one wins\" for (de)serializer registrations",
+  "description": "<p dir=\"auto\">(offshoot of <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"841966873\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-databind/issues/3089\" data-hovercard-type=\"issue\" data-hovercard-url=\"/FasterXML/jackson-databind/issues/3089/hovercard\" href=\"https://github.com/FasterXML/jackson-databind/issues/3089\">#3089</a>)</p>\n<p dir=\"auto\">Looks like Javadocs do not mention the basic implementation aspect that if a (de)serializer is added to be registered for a given <code class=\"notranslate\">Class</code>, possible earlier addition will be replaced. This should be mentioned about everything that can be added, most notably serializers/deserializers.</p>",
+  "description_text": "(offshoot of #3089)\nLooks like Javadocs do not mention the basic implementation aspect that if a (de)serializer is added to be registered for a given Class, possible earlier addition will be replaced. This should be mentioned about everything that can be added, most notably serializers/deserializers."
+}

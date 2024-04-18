@@ -1,0 +1,13 @@
+diff --git a/oap-server/server-storage-plugin/storage-shardingsphere-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/jdbc/shardingsphere/dao/ShardingTopologyQueryDAO.java b/oap-server/server-storage-plugin/storage-shardingsphere-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/jdbc/shardingsphere/dao/ShardingTopologyQueryDAO.java
+index cf81ca06ce..40eb704e21 100644
+--- a/oap-server/server-storage-plugin/storage-shardingsphere-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/jdbc/shardingsphere/dao/ShardingTopologyQueryDAO.java
++++ b/oap-server/server-storage-plugin/storage-shardingsphere-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/jdbc/shardingsphere/dao/ShardingTopologyQueryDAO.java
+@@ -35,7 +35,7 @@ public class ShardingTopologyQueryDAO extends JDBCTopologyQueryDAO {
+     @Override
+     public List<Call.CallDetail> loadServiceRelationsDetectedAtServerSide(Duration duration,
+                                                                           List<String> serviceIds) throws IOException {
+-        return super.loadServiceRelationsDetectedAtServerSide(DurationWithinTTL.INSTANCE.getMetricDurationWithinTTL(duration));
++        return super.loadServiceRelationsDetectedAtServerSide(DurationWithinTTL.INSTANCE.getMetricDurationWithinTTL(duration), serviceIds);
+     }
+ 
+     @Override

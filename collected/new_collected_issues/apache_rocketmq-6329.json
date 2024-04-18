@@ -1,0 +1,7 @@
+{
+  "issue_id": 6328,
+  "issue_url": "https://github.com/apache/rocketmq/issues/6328",
+  "title": "ConfigurationManagerTest cannot pass in test by Bazel",
+  "description": "<p dir=\"auto\"><a href=\"https://github.com/apache/rocketmq/actions/runs/4402380187/jobs/7709480239\">https://github.com/apache/rocketmq/actions/runs/4402380187/jobs/7709480239</a></p>",
+  "description_text": "https://github.com/apache/rocketmq/actions/runs/4402380187/jobs/7709480239"
+}

@@ -1,0 +1,20 @@
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/UnusedLocalVariableCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/UnusedLocalVariableCheckTest.java
+index 5b321276d..97cf08fd2 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/UnusedLocalVariableCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/UnusedLocalVariableCheckTest.java
+@@ -241,6 +241,15 @@ public class UnusedLocalVariableCheckTest extends AbstractModuleTestSupport {
+                 expected);
+     }
+ 
++    @Test
++    public void testUnusedLocalVarTestWarningSeverity() throws Exception {
++        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
++
++        verifyWithInlineConfigParser(
++                getPath("InputUnusedLocalVariableTestWarningSeverity.java"),
++                expected);
++    }
++
+     @Test
+     public void testUnusedLocalVarEnum() throws Exception {
+         final String[] expected = {

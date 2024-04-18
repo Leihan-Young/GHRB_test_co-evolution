@@ -1,0 +1,2377 @@
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java b/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java
+index 6fde48dd9..3827beb5b 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java
+@@ -1377,7 +1377,7 @@ public class BrokerOuterAPI {
+         requestHeader.setSubVersion(System.currentTimeMillis());
+         requestHeader.setMaxMsgBytes(Integer.MAX_VALUE);
+         requestHeader.setExpressionType(ExpressionType.TAG);
+-        requestHeader.setBname(brokerName);
++        requestHeader.setBrokerName(brokerName);
+ 
+         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.PULL_MESSAGE, requestHeader);
+         CompletableFuture<PullResult> pullResultFuture = new CompletableFuture<>();
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/AdminBrokerProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/AdminBrokerProcessor.java
+index 4cc6d53b1..67a4d4544 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/AdminBrokerProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/AdminBrokerProcessor.java
+@@ -1019,7 +1019,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
+                     requestHeader.setLo(false);
+                     requestHeader.setTimestamp(timestamp);
+                     requestHeader.setQueueId(item.getQueueId());
+-                    requestHeader.setBname(item.getBname());
++                    requestHeader.setBrokerName(item.getBname());
+                     RpcRequest rpcRequest = new RpcRequest(RequestCode.SEARCH_OFFSET_BY_TIMESTAMP, requestHeader, null);
+                     RpcResponse rpcResponse = this.brokerController.getBrokerOuterAPI().getRpcClient().invoke(rpcRequest, this.brokerController.getBrokerConfig().getForwardTimeout()).get();
+                     if (rpcResponse.getException() != null) {
+@@ -1086,7 +1086,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
+             LogicQueueMappingItem maxItem = TopicQueueMappingUtils.findLogicQueueMappingItem(mappingContext.getMappingItemList(), Long.MAX_VALUE, true);
+             assert maxItem != null;
+             assert maxItem.getLogicOffset() >= 0;
+-            requestHeader.setBname(maxItem.getBname());
++            requestHeader.setBrokerName(maxItem.getBname());
+             requestHeader.setLo(false);
+             requestHeader.setQueueId(mappingItem.getQueueId());
+ 
+@@ -1152,7 +1152,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
+         LogicQueueMappingItem mappingItem = TopicQueueMappingUtils.findLogicQueueMappingItem(mappingContext.getMappingItemList(), 0L, true);
+         assert mappingItem != null;
+         try {
+-            requestHeader.setBname(mappingItem.getBname());
++            requestHeader.setBrokerName(mappingItem.getBname());
+             requestHeader.setLo(false);
+             requestHeader.setQueueId(mappingItem.getQueueId());
+             long physicalOffset;
+@@ -1219,7 +1219,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
+         LogicQueueMappingItem mappingItem = TopicQueueMappingUtils.findLogicQueueMappingItem(mappingContext.getMappingItemList(), 0L, true);
+         assert mappingItem != null;
+         try {
+-            requestHeader.setBname(mappingItem.getBname());
++            requestHeader.setBrokerName(mappingItem.getBname());
+             requestHeader.setLo(false);
+             RpcRequest rpcRequest = new RpcRequest(RequestCode.GET_EARLIEST_MSG_STORETIME, requestHeader, null);
+             //TO DO check if it is in current broker
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/ConsumerManageProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/ConsumerManageProcessor.java
+index 9c6d28d3d..e16a1e909 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/ConsumerManageProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/ConsumerManageProcessor.java
+@@ -124,7 +124,7 @@ public class ConsumerManageProcessor implements NettyRequestProcessor {
+             LogicQueueMappingItem mappingItem = TopicQueueMappingUtils.findLogicQueueMappingItem(mappingContext.getMappingItemList(), globalOffset, true);
+             requestHeader.setQueueId(mappingItem.getQueueId());
+             requestHeader.setLo(false);
+-            requestHeader.setBname(mappingItem.getBname());
++            requestHeader.setBrokerName(mappingItem.getBname());
+             requestHeader.setCommitOffset(mappingItem.computePhysicalQueueOffset(globalOffset));
+             //leader, let it go, do not need to rewrite the response
+             if (mappingDetail.getBname().equals(mappingItem.getBname())) {
+@@ -237,7 +237,7 @@ public class ConsumerManageProcessor implements NettyRequestProcessor {
+                     }
+                 } else {
+                     //maybe we need to reconstruct an object
+-                    requestHeader.setBname(mappingItem.getBname());
++                    requestHeader.setBrokerName(mappingItem.getBname());
+                     requestHeader.setQueueId(mappingItem.getQueueId());
+                     requestHeader.setLo(false);
+                     requestHeader.setSetZeroIfNotFound(false);
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/PullMessageProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/PullMessageProcessor.java
+index b2794b128..ea9c327e9 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/PullMessageProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/PullMessageProcessor.java
+@@ -129,7 +129,7 @@ public class PullMessageProcessor implements NettyRequestProcessor {
+ 
+             int sysFlag = requestHeader.getSysFlag();
+             requestHeader.setLo(false);
+-            requestHeader.setBname(bname);
++            requestHeader.setBrokerName(bname);
+             sysFlag = PullSysFlag.clearSuspendFlag(sysFlag);
+             sysFlag = PullSysFlag.clearCommitOffsetFlag(sysFlag);
+             requestHeader.setSysFlag(sysFlag);
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/topic/TopicQueueMappingCleanService.java b/broker/src/main/java/org/apache/rocketmq/broker/topic/TopicQueueMappingCleanService.java
+index 7047ef8b4..c4fd4c620 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/topic/TopicQueueMappingCleanService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/topic/TopicQueueMappingCleanService.java
+@@ -137,7 +137,7 @@ public class TopicQueueMappingCleanService extends ServiceThread {
+                     for (String broker: brokers) {
+                         GetTopicStatsInfoRequestHeader header = new GetTopicStatsInfoRequestHeader();
+                         header.setTopic(topic);
+-                        header.setBname(broker);
++                        header.setBrokerName(broker);
+                         header.setLo(false);
+                         try {
+                             RpcRequest rpcRequest = new RpcRequest(RequestCode.GET_TOPIC_STATS_INFO, header, null);
+@@ -265,7 +265,7 @@ public class TopicQueueMappingCleanService extends ServiceThread {
+                         String broker = entry.getValue();
+                         GetTopicConfigRequestHeader header = new GetTopicConfigRequestHeader();
+                         header.setTopic(topic);
+-                        header.setBname(broker);
++                        header.setBrokerName(broker);
+                         header.setLo(true);
+                         try {
+                             RpcRequest rpcRequest = new RpcRequest(RequestCode.GET_TOPIC_CONFIG, header, null);
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/transaction/AbstractTransactionalMessageCheckListener.java b/broker/src/main/java/org/apache/rocketmq/broker/transaction/AbstractTransactionalMessageCheckListener.java
+index 982355d78..b5a86d3d0 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/transaction/AbstractTransactionalMessageCheckListener.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/transaction/AbstractTransactionalMessageCheckListener.java
+@@ -55,7 +55,7 @@ public abstract class AbstractTransactionalMessageCheckListener {
+         checkTransactionStateRequestHeader.setMsgId(msgExt.getUserProperty(MessageConst.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX));
+         checkTransactionStateRequestHeader.setTransactionId(checkTransactionStateRequestHeader.getMsgId());
+         checkTransactionStateRequestHeader.setTranStateTableOffset(msgExt.getQueueOffset());
+-        checkTransactionStateRequestHeader.setBname(brokerController.getBrokerConfig().getBrokerName());
++        checkTransactionStateRequestHeader.setBrokerName(brokerController.getBrokerConfig().getBrokerName());
+         msgExt.setTopic(msgExt.getUserProperty(MessageConst.PROPERTY_REAL_TOPIC));
+         msgExt.setQueueId(Integer.parseInt(msgExt.getUserProperty(MessageConst.PROPERTY_REAL_QUEUE_ID)));
+         msgExt.setStoreSize(0);
+diff --git a/client/src/main/java/org/apache/rocketmq/client/ClientConfig.java b/client/src/main/java/org/apache/rocketmq/client/ClientConfig.java
+index f9843cc02..8a7beffc7 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/ClientConfig.java
++++ b/client/src/main/java/org/apache/rocketmq/client/ClientConfig.java
+@@ -45,8 +45,10 @@ public class ClientConfig {
+     private String clientIP = NetworkUtil.getLocalAddress();
+     private String instanceName = System.getProperty("rocketmq.client.name", "DEFAULT");
+     private int clientCallbackExecutorThreads = Runtime.getRuntime().availableProcessors();
++    @Deprecated
+     protected String namespace;
+     private boolean namespaceInitialized = false;
++    protected String namespaceV2;
+     protected AccessChannel accessChannel = AccessChannel.LOCAL;
+ 
+     /**
+@@ -137,10 +139,12 @@ public class ClientConfig {
+         }
+     }
+ 
++    @Deprecated
+     public String withNamespace(String resource) {
+         return NamespaceUtil.wrapNamespace(this.getNamespace(), resource);
+     }
+ 
++    @Deprecated
+     public Set<String> withNamespace(Set<String> resourceSet) {
+         Set<String> resourceWithNamespace = new HashSet<>();
+         for (String resource : resourceSet) {
+@@ -149,10 +153,12 @@ public class ClientConfig {
+         return resourceWithNamespace;
+     }
+ 
++    @Deprecated
+     public String withoutNamespace(String resource) {
+         return NamespaceUtil.withoutNamespace(resource, this.getNamespace());
+     }
+ 
++    @Deprecated
+     public Set<String> withoutNamespace(Set<String> resourceSet) {
+         Set<String> resourceWithoutNamespace = new HashSet<>();
+         for (String resource : resourceSet) {
+@@ -161,6 +167,7 @@ public class ClientConfig {
+         return resourceWithoutNamespace;
+     }
+ 
++    @Deprecated
+     public MessageQueue queueWithNamespace(MessageQueue queue) {
+         if (StringUtils.isEmpty(this.getNamespace())) {
+             return queue;
+@@ -168,6 +175,7 @@ public class ClientConfig {
+         return new MessageQueue(withNamespace(queue.getTopic()), queue.getBrokerName(), queue.getQueueId());
+     }
+ 
++    @Deprecated
+     public Collection<MessageQueue> queuesWithNamespace(Collection<MessageQueue> queues) {
+         if (StringUtils.isEmpty(this.getNamespace())) {
+             return queues;
+@@ -206,6 +214,7 @@ public class ClientConfig {
+         this.enableHeartbeatChannelEventListener = cc.enableHeartbeatChannelEventListener;
+         this.detectInterval = cc.detectInterval;
+         this.detectTimeout = cc.detectTimeout;
++        this.namespaceV2 = cc.namespaceV2;
+     }
+ 
+     public ClientConfig cloneClientConfig() {
+@@ -235,6 +244,7 @@ public class ClientConfig {
+         cc.sendLatencyEnable = sendLatencyEnable;
+         cc.detectInterval = detectInterval;
+         cc.detectTimeout = detectTimeout;
++        cc.namespaceV2 = namespaceV2;
+         return cc;
+     }
+ 
+@@ -359,6 +369,7 @@ public class ClientConfig {
+         this.decodeDecompressBody = decodeDecompressBody;
+     }
+ 
++    @Deprecated
+     public String getNamespace() {
+         if (namespaceInitialized) {
+             return namespace;
+@@ -377,11 +388,20 @@ public class ClientConfig {
+         return namespace;
+     }
+ 
++    @Deprecated
+     public void setNamespace(String namespace) {
+         this.namespace = namespace;
+         this.namespaceInitialized = true;
+     }
+ 
++    public String getNamespaceV2() {
++        return namespaceV2;
++    }
++
++    public void setNamespaceV2(String namespaceV2) {
++        this.namespaceV2 = namespaceV2;
++    }
++
+     public AccessChannel getAccessChannel() {
+         return this.accessChannel;
+     }
+@@ -463,6 +483,7 @@ public class ClientConfig {
+             ", clientCallbackExecutorThreads=" + clientCallbackExecutorThreads +
+             ", namespace='" + namespace + '\'' +
+             ", namespaceInitialized=" + namespaceInitialized +
++            ", namespaceV2='" + namespaceV2 + '\'' +
+             ", accessChannel=" + accessChannel +
+             ", pollNameServerInterval=" + pollNameServerInterval +
+             ", heartbeatBrokerInterval=" + heartbeatBrokerInterval +
+diff --git a/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultLitePullConsumer.java b/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultLitePullConsumer.java
+index 5e5bd4daa..c193c6a42 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultLitePullConsumer.java
++++ b/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultLitePullConsumer.java
+@@ -183,7 +183,7 @@ public class DefaultLitePullConsumer extends ClientConfig implements LitePullCon
+      * Default constructor.
+      */
+     public DefaultLitePullConsumer() {
+-        this(null, MixAll.DEFAULT_CONSUMER_GROUP, null);
++        this(MixAll.DEFAULT_CONSUMER_GROUP, null);
+     }
+ 
+     /**
+@@ -192,7 +192,7 @@ public class DefaultLitePullConsumer extends ClientConfig implements LitePullCon
+      * @param consumerGroup Consumer group.
+      */
+     public DefaultLitePullConsumer(final String consumerGroup) {
+-        this(null, consumerGroup, null);
++        this(consumerGroup, null);
+     }
+ 
+     /**
+@@ -201,7 +201,7 @@ public class DefaultLitePullConsumer extends ClientConfig implements LitePullCon
+      * @param rpcHook RPC hook to execute before each remoting command.
+      */
+     public DefaultLitePullConsumer(RPCHook rpcHook) {
+-        this(null, MixAll.DEFAULT_CONSUMER_GROUP, rpcHook);
++        this(MixAll.DEFAULT_CONSUMER_GROUP, rpcHook);
+     }
+ 
+     /**
+@@ -211,7 +211,9 @@ public class DefaultLitePullConsumer extends ClientConfig implements LitePullCon
+      * @param rpcHook RPC hook to execute before each remoting command.
+      */
+     public DefaultLitePullConsumer(final String consumerGroup, RPCHook rpcHook) {
+-        this(null, consumerGroup, rpcHook);
++        this.consumerGroup = consumerGroup;
++        this.enableStreamRequestType = true;
++        defaultLitePullConsumerImpl = new DefaultLitePullConsumerImpl(this, rpcHook);
+     }
+ 
+     /**
+@@ -220,6 +222,7 @@ public class DefaultLitePullConsumer extends ClientConfig implements LitePullCon
+      * @param consumerGroup Consumer group.
+      * @param rpcHook RPC hook to execute before each remoting command.
+      */
++    @Deprecated
+     public DefaultLitePullConsumer(final String namespace, final String consumerGroup, RPCHook rpcHook) {
+         this.namespace = namespace;
+         this.consumerGroup = consumerGroup;
+diff --git a/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultMQPullConsumer.java b/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultMQPullConsumer.java
+index e5cd54155..499f77319 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultMQPullConsumer.java
++++ b/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultMQPullConsumer.java
+@@ -89,23 +89,21 @@ public class DefaultMQPullConsumer extends ClientConfig implements MQPullConsume
+     private int maxReconsumeTimes = 16;
+ 
+     public DefaultMQPullConsumer() {
+-        this(null, MixAll.DEFAULT_CONSUMER_GROUP, null);
++        this(MixAll.DEFAULT_CONSUMER_GROUP, null);
+     }
+ 
+     public DefaultMQPullConsumer(final String consumerGroup) {
+-        this(null, consumerGroup, null);
++        this(consumerGroup, null);
+     }
+ 
+     public DefaultMQPullConsumer(RPCHook rpcHook) {
+-        this(null, MixAll.DEFAULT_CONSUMER_GROUP, rpcHook);
++        this(MixAll.DEFAULT_CONSUMER_GROUP, rpcHook);
+     }
+ 
+     public DefaultMQPullConsumer(final String consumerGroup, RPCHook rpcHook) {
+-        this(null, consumerGroup, rpcHook);
+-    }
+-
+-    public DefaultMQPullConsumer(final String namespace, final String consumerGroup) {
+-        this(namespace, consumerGroup, null);
++        this.consumerGroup = consumerGroup;
++        this.enableStreamRequestType = true;
++        defaultMQPullConsumerImpl = new DefaultMQPullConsumerImpl(this, rpcHook);
+     }
+ 
+     /**
+diff --git a/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultMQPushConsumer.java b/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultMQPushConsumer.java
+index e593a17c9..224ea67d5 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultMQPushConsumer.java
++++ b/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultMQPushConsumer.java
+@@ -297,7 +297,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
+      * Default constructor.
+      */
+     public DefaultMQPushConsumer() {
+-        this(null, MixAll.DEFAULT_CONSUMER_GROUP, null, new AllocateMessageQueueAveragely());
++        this(MixAll.DEFAULT_CONSUMER_GROUP, null, new AllocateMessageQueueAveragely());
+     }
+ 
+     /**
+@@ -306,38 +306,41 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
+      * @param consumerGroup Consumer group.
+      */
+     public DefaultMQPushConsumer(final String consumerGroup) {
+-        this(null, consumerGroup, null, new AllocateMessageQueueAveragely());
++        this(consumerGroup, null, new AllocateMessageQueueAveragely());
+     }
+ 
++
+     /**
+-     * Constructor specifying namespace and consumer group.
++     * Constructor specifying RPC hook.
+      *
+-     * @param namespace Namespace for this MQ Producer instance.
+-     * @param consumerGroup Consumer group.
++     * @param rpcHook RPC hook to execute before each remoting command.
+      */
+-    public DefaultMQPushConsumer(final String namespace, final String consumerGroup) {
+-        this(namespace, consumerGroup, null, new AllocateMessageQueueAveragely());
++    public DefaultMQPushConsumer(RPCHook rpcHook) {
++        this(MixAll.DEFAULT_CONSUMER_GROUP, rpcHook, new AllocateMessageQueueAveragely());
+     }
+ 
+-
+     /**
+-     * Constructor specifying RPC hook.
++     * Constructor specifying consumer group, RPC hook.
+      *
++     * @param consumerGroup Consumer group.
+      * @param rpcHook RPC hook to execute before each remoting command.
+      */
+-    public DefaultMQPushConsumer(RPCHook rpcHook) {
+-        this(null, MixAll.DEFAULT_CONSUMER_GROUP, rpcHook, new AllocateMessageQueueAveragely());
++    public DefaultMQPushConsumer(final String consumerGroup, RPCHook rpcHook) {
++        this.consumerGroup = consumerGroup;
++        this.allocateMessageQueueStrategy = new AllocateMessageQueueAveragely();
++        defaultMQPushConsumerImpl = new DefaultMQPushConsumerImpl(this, rpcHook);
+     }
+ 
++
+     /**
+-     * Constructor specifying namespace, consumer group and RPC hook .
++     * Constructor specifying consumer group, enabled msg trace flag and customized trace topic name.
+      *
+-     * @param namespace Namespace for this MQ Producer instance.
+      * @param consumerGroup Consumer group.
+-     * @param rpcHook RPC hook to execute before each remoting command.
++     * @param enableMsgTrace Switch flag instance for message trace.
++     * @param customizedTraceTopic The name value of message trace topic.If you don't config,you can use the default trace topic name.
+      */
+-    public DefaultMQPushConsumer(final String namespace, final String consumerGroup, RPCHook rpcHook) {
+-        this(namespace, consumerGroup, rpcHook, new AllocateMessageQueueAveragely());
++    public DefaultMQPushConsumer(final String consumerGroup, boolean enableMsgTrace, final String customizedTraceTopic) {
++        this(consumerGroup, null, new AllocateMessageQueueAveragely(), enableMsgTrace, customizedTraceTopic);
+     }
+ 
+     /**
+@@ -349,59 +352,75 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
+      */
+     public DefaultMQPushConsumer(final String consumerGroup, RPCHook rpcHook,
+         AllocateMessageQueueStrategy allocateMessageQueueStrategy) {
+-        this(null, consumerGroup, rpcHook, allocateMessageQueueStrategy);
++        this.consumerGroup = consumerGroup;
++        this.allocateMessageQueueStrategy = allocateMessageQueueStrategy;
++        defaultMQPushConsumerImpl = new DefaultMQPushConsumerImpl(this, rpcHook);
+     }
+ 
+     /**
+-     * Constructor specifying namespace, consumer group, RPC hook and message queue allocating algorithm.
++     * Constructor specifying consumer group, RPC hook, message queue allocating algorithm, enabled msg trace flag and customized trace topic name.
+      *
+-     * @param namespace Namespace for this MQ Producer instance.
+      * @param consumerGroup Consume queue.
+      * @param rpcHook RPC hook to execute before each remoting command.
+-     * @param allocateMessageQueueStrategy Message queue allocating algorithm.
++     * @param allocateMessageQueueStrategy message queue allocating algorithm.
++     * @param enableMsgTrace Switch flag instance for message trace.
++     * @param customizedTraceTopic The name value of message trace topic.If you don't config,you can use the default trace topic name.
+      */
+-    public DefaultMQPushConsumer(final String namespace, final String consumerGroup, RPCHook rpcHook,
+-        AllocateMessageQueueStrategy allocateMessageQueueStrategy) {
++    public DefaultMQPushConsumer(final String consumerGroup, RPCHook rpcHook,
++        AllocateMessageQueueStrategy allocateMessageQueueStrategy, boolean enableMsgTrace, final String customizedTraceTopic) {
+         this.consumerGroup = consumerGroup;
+-        this.namespace = namespace;
+         this.allocateMessageQueueStrategy = allocateMessageQueueStrategy;
+         defaultMQPushConsumerImpl = new DefaultMQPushConsumerImpl(this, rpcHook);
++        if (enableMsgTrace) {
++            try {
++                AsyncTraceDispatcher dispatcher = new AsyncTraceDispatcher(consumerGroup, TraceDispatcher.Type.CONSUME, customizedTraceTopic, rpcHook);
++                dispatcher.setHostConsumer(this.defaultMQPushConsumerImpl);
++                traceDispatcher = dispatcher;
++                this.defaultMQPushConsumerImpl.registerConsumeMessageHook(new ConsumeMessageTraceHookImpl(traceDispatcher));
++            } catch (Throwable e) {
++                log.error("system mqtrace hook init failed ,maybe can't send msg trace data");
++            }
++        }
+     }
+ 
+     /**
+-     * Constructor specifying consumer group and enabled msg trace flag.
++     * Constructor specifying namespace and consumer group.
+      *
++     * @param namespace Namespace for this MQ Producer instance.
+      * @param consumerGroup Consumer group.
+-     * @param enableMsgTrace Switch flag instance for message trace.
+      */
+-    public DefaultMQPushConsumer(final String consumerGroup, boolean enableMsgTrace) {
+-        this(null, consumerGroup, null, new AllocateMessageQueueAveragely(), enableMsgTrace, null);
++    @Deprecated
++    public DefaultMQPushConsumer(final String namespace, final String consumerGroup) {
++        this(namespace, consumerGroup, null, new AllocateMessageQueueAveragely());
+     }
+ 
+     /**
+-     * Constructor specifying consumer group, enabled msg trace flag and customized trace topic name.
++     * Constructor specifying namespace, consumer group and RPC hook .
+      *
++     * @param namespace Namespace for this MQ Producer instance.
+      * @param consumerGroup Consumer group.
+-     * @param enableMsgTrace Switch flag instance for message trace.
+-     * @param customizedTraceTopic The name value of message trace topic.If you don't config,you can use the default trace topic name.
++     * @param rpcHook RPC hook to execute before each remoting command.
+      */
+-    public DefaultMQPushConsumer(final String consumerGroup, boolean enableMsgTrace, final String customizedTraceTopic) {
+-        this(null, consumerGroup, null, new AllocateMessageQueueAveragely(), enableMsgTrace, customizedTraceTopic);
++    @Deprecated
++    public DefaultMQPushConsumer(final String namespace, final String consumerGroup, RPCHook rpcHook) {
++        this(namespace, consumerGroup, rpcHook, new AllocateMessageQueueAveragely());
+     }
+ 
+-
+     /**
+-     * Constructor specifying consumer group, RPC hook, message queue allocating algorithm, enabled msg trace flag and customized trace topic name.
++     * Constructor specifying namespace, consumer group, RPC hook and message queue allocating algorithm.
+      *
++     * @param namespace Namespace for this MQ Producer instance.
+      * @param consumerGroup Consume queue.
+      * @param rpcHook RPC hook to execute before each remoting command.
+-     * @param allocateMessageQueueStrategy message queue allocating algorithm.
+-     * @param enableMsgTrace Switch flag instance for message trace.
+-     * @param customizedTraceTopic The name value of message trace topic.If you don't config,you can use the default trace topic name.
++     * @param allocateMessageQueueStrategy Message queue allocating algorithm.
+      */
+-    public DefaultMQPushConsumer(final String consumerGroup, RPCHook rpcHook,
+-        AllocateMessageQueueStrategy allocateMessageQueueStrategy, boolean enableMsgTrace, final String customizedTraceTopic) {
+-        this(null, consumerGroup, rpcHook, allocateMessageQueueStrategy, enableMsgTrace, customizedTraceTopic);
++    @Deprecated
++    public DefaultMQPushConsumer(final String namespace, final String consumerGroup, RPCHook rpcHook,
++        AllocateMessageQueueStrategy allocateMessageQueueStrategy) {
++        this.consumerGroup = consumerGroup;
++        this.namespace = namespace;
++        this.allocateMessageQueueStrategy = allocateMessageQueueStrategy;
++        defaultMQPushConsumerImpl = new DefaultMQPushConsumerImpl(this, rpcHook);
+     }
+ 
+     /**
+@@ -414,6 +433,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
+      * @param enableMsgTrace Switch flag instance for message trace.
+      * @param customizedTraceTopic The name value of message trace topic.If you don't config,you can use the default trace topic name.
+      */
++    @Deprecated
+     public DefaultMQPushConsumer(final String namespace, final String consumerGroup, RPCHook rpcHook,
+         AllocateMessageQueueStrategy allocateMessageQueueStrategy, boolean enableMsgTrace, final String customizedTraceTopic) {
+         this.consumerGroup = consumerGroup;
+diff --git a/client/src/main/java/org/apache/rocketmq/client/consumer/store/RemoteBrokerOffsetStore.java b/client/src/main/java/org/apache/rocketmq/client/consumer/store/RemoteBrokerOffsetStore.java
+index 83d5061ad..1a2ffe547 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/consumer/store/RemoteBrokerOffsetStore.java
++++ b/client/src/main/java/org/apache/rocketmq/client/consumer/store/RemoteBrokerOffsetStore.java
+@@ -218,7 +218,7 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
+             requestHeader.setConsumerGroup(this.groupName);
+             requestHeader.setQueueId(mq.getQueueId());
+             requestHeader.setCommitOffset(offset);
+-            requestHeader.setBname(mq.getBrokerName());
++            requestHeader.setBrokerName(mq.getBrokerName());
+ 
+             if (isOneway) {
+                 this.mQClientFactory.getMQClientAPIImpl().updateConsumerOffsetOneway(
+@@ -245,7 +245,7 @@ public class RemoteBrokerOffsetStore implements OffsetStore {
+             requestHeader.setTopic(mq.getTopic());
+             requestHeader.setConsumerGroup(this.groupName);
+             requestHeader.setQueueId(mq.getQueueId());
+-            requestHeader.setBname(mq.getBrokerName());
++            requestHeader.setBrokerName(mq.getBrokerName());
+ 
+             return this.mQClientFactory.getMQClientAPIImpl().queryConsumerOffset(
+                 findBrokerResult.getBrokerAddr(), requestHeader, 1000 * 5);
+diff --git a/client/src/main/java/org/apache/rocketmq/client/impl/MQClientAPIImpl.java b/client/src/main/java/org/apache/rocketmq/client/impl/MQClientAPIImpl.java
+index 6074081c1..f46dbe312 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/impl/MQClientAPIImpl.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/MQClientAPIImpl.java
+@@ -53,6 +53,7 @@ import org.apache.rocketmq.client.impl.producer.TopicPublishInfo;
+ import org.apache.rocketmq.client.producer.SendCallback;
+ import org.apache.rocketmq.client.producer.SendResult;
+ import org.apache.rocketmq.client.producer.SendStatus;
++import org.apache.rocketmq.client.rpchook.NamespaceRpcHook;
+ import org.apache.rocketmq.common.BoundaryType;
+ import org.apache.rocketmq.common.MQVersion;
+ import org.apache.rocketmq.common.MixAll;
+@@ -171,6 +172,7 @@ import org.apache.rocketmq.remoting.protocol.header.GetSubscriptionGroupConfigRe
+ import org.apache.rocketmq.remoting.protocol.header.GetTopicConfigRequestHeader;
+ import org.apache.rocketmq.remoting.protocol.header.GetTopicStatsInfoRequestHeader;
+ import org.apache.rocketmq.remoting.protocol.header.GetTopicsByClusterRequestHeader;
++import org.apache.rocketmq.remoting.protocol.header.HeartbeatRequestHeader;
+ import org.apache.rocketmq.remoting.protocol.header.PopMessageRequestHeader;
+ import org.apache.rocketmq.remoting.protocol.header.PopMessageResponseHeader;
+ import org.apache.rocketmq.remoting.protocol.header.PullMessageRequestHeader;
+@@ -257,6 +259,7 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
+         this.remotingClient = new NettyRemotingClient(nettyClientConfig, channelEventListener);
+         this.clientRemotingProcessor = clientRemotingProcessor;
+ 
++        this.remotingClient.registerRPCHook(new NamespaceRpcHook(clientConfig));
+         // Inject stream rpc hook first to make reserve field signature
+         if (clientConfig.isEnableStreamRequestType()) {
+             this.remotingClient.registerRPCHook(new StreamTypeRPCHook());
+@@ -1287,7 +1290,7 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
+         SearchOffsetRequestHeader requestHeader = new SearchOffsetRequestHeader();
+         requestHeader.setTopic(messageQueue.getTopic());
+         requestHeader.setQueueId(messageQueue.getQueueId());
+-        requestHeader.setBname(messageQueue.getBrokerName());
++        requestHeader.setBrokerName(messageQueue.getBrokerName());
+         requestHeader.setTimestamp(timestamp);
+         requestHeader.setBoundaryType(boundaryType);
+         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.SEARCH_OFFSET_BY_TIMESTAMP, requestHeader);
+@@ -1312,7 +1315,7 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
+         GetMaxOffsetRequestHeader requestHeader = new GetMaxOffsetRequestHeader();
+         requestHeader.setTopic(messageQueue.getTopic());
+         requestHeader.setQueueId(messageQueue.getQueueId());
+-        requestHeader.setBname(messageQueue.getBrokerName());
++        requestHeader.setBrokerName(messageQueue.getBrokerName());
+         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_MAX_OFFSET, requestHeader);
+ 
+         RemotingCommand response = this.remotingClient.invokeSync(MixAll.brokerVIPChannel(this.clientConfig.isVipChannelEnabled(), addr),
+@@ -1364,7 +1367,7 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
+         GetMinOffsetRequestHeader requestHeader = new GetMinOffsetRequestHeader();
+         requestHeader.setTopic(messageQueue.getTopic());
+         requestHeader.setQueueId(messageQueue.getQueueId());
+-        requestHeader.setBname(messageQueue.getBrokerName());
++        requestHeader.setBrokerName(messageQueue.getBrokerName());
+         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_MIN_OFFSET, requestHeader);
+ 
+         RemotingCommand response = this.remotingClient.invokeSync(MixAll.brokerVIPChannel(this.clientConfig.isVipChannelEnabled(), addr),
+@@ -1389,7 +1392,7 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
+         GetEarliestMsgStoretimeRequestHeader requestHeader = new GetEarliestMsgStoretimeRequestHeader();
+         requestHeader.setTopic(mq.getTopic());
+         requestHeader.setQueueId(mq.getQueueId());
+-        requestHeader.setBname(mq.getBrokerName());
++        requestHeader.setBrokerName(mq.getBrokerName());
+         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_EARLIEST_MSG_STORETIME, requestHeader);
+ 
+         RemotingCommand response = this.remotingClient.invokeSync(MixAll.brokerVIPChannel(this.clientConfig.isVipChannelEnabled(), addr),
+@@ -1472,7 +1475,7 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
+         final HeartbeatData heartbeatData,
+         final long timeoutMillis
+     ) throws RemotingException, MQBrokerException, InterruptedException {
+-        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, null);
++        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, new HeartbeatRequestHeader());
+         request.setLanguage(clientConfig.getLanguage());
+         request.setBody(heartbeatData.encode());
+         RemotingCommand response = this.remotingClient.invokeSync(addr, request, timeoutMillis);
+@@ -1493,7 +1496,7 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
+         final HeartbeatData heartbeatData,
+         final long timeoutMillis
+     ) throws RemotingException, MQBrokerException, InterruptedException {
+-        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, null);
++        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, new HeartbeatRequestHeader());
+         request.setLanguage(clientConfig.getLanguage());
+         request.setBody(heartbeatData.encode());
+         RemotingCommand response = this.remotingClient.invokeSync(addr, request, timeoutMillis);
+@@ -1565,7 +1568,7 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
+ 
+     public boolean registerClient(final String addr, final HeartbeatData heartbeat, final long timeoutMillis)
+         throws RemotingException, InterruptedException {
+-        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, null);
++        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, new HeartbeatRequestHeader());
+ 
+         request.setBody(heartbeat.encode());
+         RemotingCommand response = this.remotingClient.invokeSync(addr, request, timeoutMillis);
+@@ -1590,7 +1593,7 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
+         requestHeader.setDelayLevel(delayLevel);
+         requestHeader.setOriginMsgId(msg.getMsgId());
+         requestHeader.setMaxReconsumeTimes(maxConsumeRetryTimes);
+-        requestHeader.setBname(brokerName);
++        requestHeader.setBrokerName(brokerName);
+ 
+         RemotingCommand response = this.remotingClient.invokeSync(MixAll.brokerVIPChannel(this.clientConfig.isVipChannelEnabled(), addr),
+             request, timeoutMillis);
+diff --git a/client/src/main/java/org/apache/rocketmq/client/impl/consumer/DefaultMQPushConsumerImpl.java b/client/src/main/java/org/apache/rocketmq/client/impl/consumer/DefaultMQPushConsumerImpl.java
+index d2faed378..6666c4335 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/impl/consumer/DefaultMQPushConsumerImpl.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/consumer/DefaultMQPushConsumerImpl.java
+@@ -824,7 +824,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
+             requestHeader.setOffset(queueOffset);
+             requestHeader.setConsumerGroup(consumerGroup);
+             requestHeader.setExtraInfo(extraInfo);
+-            requestHeader.setBname(brokerName);
++            requestHeader.setBrokerName(brokerName);
+             this.mQClientFactory.getMQClientAPIImpl().ackMessageAsync(findBrokerResult.getBrokerAddr(), ASYNC_TIMEOUT, new AckCallback() {
+                 @Override
+                 public void onSuccess(AckResult ackResult) {
+@@ -868,7 +868,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
+             requestHeader.setConsumerGroup(consumerGroup);
+             requestHeader.setExtraInfo(extraInfo);
+             requestHeader.setInvisibleTime(invisibleTime);
+-            requestHeader.setBname(brokerName);
++            requestHeader.setBrokerName(brokerName);
+             //here the broker should be polished
+             this.mQClientFactory.getMQClientAPIImpl().changeInvisibleTimeAsync(brokerName, findBrokerResult.getBrokerAddr(), requestHeader, ASYNC_TIMEOUT, callback);
+             return;
+diff --git a/client/src/main/java/org/apache/rocketmq/client/impl/consumer/PullAPIWrapper.java b/client/src/main/java/org/apache/rocketmq/client/impl/consumer/PullAPIWrapper.java
+index 5180d376e..2bd0d9994 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/impl/consumer/PullAPIWrapper.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/consumer/PullAPIWrapper.java
+@@ -231,7 +231,7 @@ public class PullAPIWrapper {
+             requestHeader.setSubVersion(subVersion);
+             requestHeader.setMaxMsgBytes(maxSizeInBytes);
+             requestHeader.setExpressionType(expressionType);
+-            requestHeader.setBname(mq.getBrokerName());
++            requestHeader.setBrokerName(mq.getBrokerName());
+ 
+             String brokerAddr = findBrokerResult.getBrokerAddr();
+             if (PullSysFlag.hasClassFilterFlag(sysFlagInner)) {
+@@ -378,7 +378,7 @@ public class PullAPIWrapper {
+             requestHeader.setExpType(expressionType);
+             requestHeader.setExp(expression);
+             requestHeader.setOrder(order);
+-            requestHeader.setBname(mq.getBrokerName());
++            requestHeader.setBrokerName(mq.getBrokerName());
+             //give 1000 ms for server response
+             if (poll) {
+                 requestHeader.setPollTime(timeout);
+diff --git a/client/src/main/java/org/apache/rocketmq/client/impl/mqclient/MQClientAPIExt.java b/client/src/main/java/org/apache/rocketmq/client/impl/mqclient/MQClientAPIExt.java
+index f3102e175..3d8625937 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/impl/mqclient/MQClientAPIExt.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/mqclient/MQClientAPIExt.java
+@@ -66,6 +66,7 @@ import org.apache.rocketmq.remoting.protocol.header.GetMaxOffsetRequestHeader;
+ import org.apache.rocketmq.remoting.protocol.header.GetMaxOffsetResponseHeader;
+ import org.apache.rocketmq.remoting.protocol.header.GetMinOffsetRequestHeader;
+ import org.apache.rocketmq.remoting.protocol.header.GetMinOffsetResponseHeader;
++import org.apache.rocketmq.remoting.protocol.header.HeartbeatRequestHeader;
+ import org.apache.rocketmq.remoting.protocol.header.NotificationRequestHeader;
+ import org.apache.rocketmq.remoting.protocol.header.NotificationResponseHeader;
+ import org.apache.rocketmq.remoting.protocol.header.PopMessageRequestHeader;
+@@ -113,7 +114,7 @@ public class MQClientAPIExt extends MQClientAPIImpl {
+     ) {
+         CompletableFuture<Void> future = new CompletableFuture<>();
+         try {
+-            RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, null);
++            RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, new HeartbeatRequestHeader());
+             request.setLanguage(clientConfig.getLanguage());
+             request.setBody(heartbeatData.encode());
+             this.getRemotingClient().invokeOneway(brokerAddr, request, timeoutMillis);
+@@ -129,7 +130,7 @@ public class MQClientAPIExt extends MQClientAPIImpl {
+         HeartbeatData heartbeatData,
+         long timeoutMillis
+     ) {
+-        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, null);
++        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, new HeartbeatRequestHeader());
+         request.setLanguage(clientConfig.getLanguage());
+         request.setBody(heartbeatData.encode());
+ 
+diff --git a/client/src/main/java/org/apache/rocketmq/client/impl/producer/DefaultMQProducerImpl.java b/client/src/main/java/org/apache/rocketmq/client/impl/producer/DefaultMQProducerImpl.java
+index 088bff089..daab475fc 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/impl/producer/DefaultMQProducerImpl.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/producer/DefaultMQProducerImpl.java
+@@ -403,7 +403,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
+                 thisHeader.setProducerGroup(producerGroup);
+                 thisHeader.setTranStateTableOffset(checkRequestHeader.getTranStateTableOffset());
+                 thisHeader.setFromTransactionCheck(true);
+-                thisHeader.setBname(checkRequestHeader.getBname());
++                thisHeader.setBrokerName(checkRequestHeader.getBrokerName());
+ 
+                 String uniqueKey = message.getProperties().get(MessageConst.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX);
+                 if (uniqueKey == null) {
+@@ -952,7 +952,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
+                 requestHeader.setReconsumeTimes(0);
+                 requestHeader.setUnitMode(this.isUnitMode());
+                 requestHeader.setBatch(msg instanceof MessageBatch);
+-                requestHeader.setBname(brokerName);
++                requestHeader.setBrokerName(brokerName);
+                 if (requestHeader.getTopic().startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
+                     String reconsumeTimes = MessageAccessor.getReconsumeTime(msg);
+                     if (reconsumeTimes != null) {
+@@ -1486,7 +1486,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
+         EndTransactionRequestHeader requestHeader = new EndTransactionRequestHeader();
+         requestHeader.setTransactionId(transactionId);
+         requestHeader.setCommitLogOffset(id.getOffset());
+-        requestHeader.setBname(destBrokerName);
++        requestHeader.setBrokerName(destBrokerName);
+         switch (localTransactionState) {
+             case COMMIT_MESSAGE:
+                 requestHeader.setCommitOrRollback(MessageSysFlag.TRANSACTION_COMMIT_TYPE);
+diff --git a/client/src/main/java/org/apache/rocketmq/client/producer/DefaultMQProducer.java b/client/src/main/java/org/apache/rocketmq/client/producer/DefaultMQProducer.java
+index 73a125153..5d785a063 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/producer/DefaultMQProducer.java
++++ b/client/src/main/java/org/apache/rocketmq/client/producer/DefaultMQProducer.java
+@@ -171,7 +171,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
+      * Default constructor.
+      */
+     public DefaultMQProducer() {
+-        this(null, MixAll.DEFAULT_PRODUCER_GROUP, null);
++        this(MixAll.DEFAULT_PRODUCER_GROUP);
+     }
+ 
+     /**
+@@ -180,7 +180,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
+      * @param rpcHook RPC hook to execute per each remoting command execution.
+      */
+     public DefaultMQProducer(RPCHook rpcHook) {
+-        this(null, MixAll.DEFAULT_PRODUCER_GROUP, rpcHook);
++        this(MixAll.DEFAULT_PRODUCER_GROUP, rpcHook);
+     }
+ 
+     /**
+@@ -189,31 +189,9 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
+      * @param producerGroup Producer group, see the name-sake field.
+      */
+     public DefaultMQProducer(final String producerGroup) {
+-        this(null, producerGroup, null);
+-    }
+-
+-    /**
+-     * Constructor specifying producer group.
+-     *
+-     * @param producerGroup        Producer group, see the name-sake field.
+-     * @param rpcHook              RPC hook to execute per each remoting command execution.
+-     * @param enableMsgTrace       Switch flag instance for message trace.
+-     * @param customizedTraceTopic The name value of message trace topic.If you don't config,you can use the default
+-     *                             trace topic name.
+-     */
+-    public DefaultMQProducer(final String producerGroup, RPCHook rpcHook, boolean enableMsgTrace,
+-        final String customizedTraceTopic) {
+-        this(null, producerGroup, rpcHook, enableMsgTrace, customizedTraceTopic);
+-    }
+-
+-    /**
+-     * Constructor specifying producer group.
+-     *
+-     * @param namespace     Namespace for this MQ Producer instance.
+-     * @param producerGroup Producer group, see the name-sake field.
+-     */
+-    public DefaultMQProducer(final String namespace, final String producerGroup) {
+-        this(namespace, producerGroup, null);
++        this.producerGroup = producerGroup;
++        defaultMQProducerImpl = new DefaultMQProducerImpl(this, null);
++        produceAccumulator = MQClientManager.getInstance().getOrCreateProduceAccumulator(this);
+     }
+ 
+     /**
+@@ -223,18 +201,6 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
+      * @param rpcHook       RPC hook to execute per each remoting command execution.
+      */
+     public DefaultMQProducer(final String producerGroup, RPCHook rpcHook) {
+-        this(null, producerGroup, rpcHook);
+-    }
+-
+-    /**
+-     * Constructor specifying namespace, producer group and RPC hook.
+-     *
+-     * @param namespace     Namespace for this MQ Producer instance.
+-     * @param producerGroup Producer group, see the name-sake field.
+-     * @param rpcHook       RPC hook to execute per each remoting command execution.
+-     */
+-    public DefaultMQProducer(final String namespace, final String producerGroup, RPCHook rpcHook) {
+-        this.namespace = namespace;
+         this.producerGroup = producerGroup;
+         defaultMQProducerImpl = new DefaultMQProducerImpl(this, rpcHook);
+         produceAccumulator = MQClientManager.getInstance().getOrCreateProduceAccumulator(this);
+@@ -243,27 +209,14 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
+     /**
+      * Constructor specifying namespace, producer group, topics and RPC hook.
+      *
+-     * @param namespace     Namespace for this MQ Producer instance.
+      * @param producerGroup Producer group, see the name-sake field.
+-     * @param topics        Topic that needs to be initialized for routing
+      * @param rpcHook       RPC hook to execute per each remoting command execution.
++     * @param topics        Topic that needs to be initialized for routing
+      */
+-    public DefaultMQProducer(final String namespace, final String producerGroup, final List<String> topics, RPCHook rpcHook) {
+-        this.namespace = namespace;
+-        this.producerGroup = producerGroup;
++    public DefaultMQProducer(final String producerGroup, RPCHook rpcHook,
++        final List<String> topics) {
++        this(producerGroup, rpcHook);
+         this.topics = topics;
+-        defaultMQProducerImpl = new DefaultMQProducerImpl(this, rpcHook);
+-        produceAccumulator = MQClientManager.getInstance().getOrCreateProduceAccumulator(this);
+-    }
+-
+-    /**
+-     * Constructor specifying producer group and enabled msg trace flag.
+-     *
+-     * @param producerGroup  Producer group, see the name-sake field.
+-     * @param enableMsgTrace Switch flag instance for message trace.
+-     */
+-    public DefaultMQProducer(final String producerGroup, boolean enableMsgTrace) {
+-        this(null, producerGroup, null, enableMsgTrace, null);
+     }
+ 
+     /**
+@@ -275,26 +228,21 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
+      *                             trace topic name.
+      */
+     public DefaultMQProducer(final String producerGroup, boolean enableMsgTrace, final String customizedTraceTopic) {
+-        this(null, producerGroup, null, enableMsgTrace, customizedTraceTopic);
++        this(producerGroup, null, enableMsgTrace, customizedTraceTopic);
+     }
+ 
+     /**
+-     * Constructor specifying namespace, producer group, RPC hook, enabled msgTrace flag and customized trace topic
+-     * name.
++     * Constructor specifying producer group.
+      *
+-     * @param namespace            Namespace for this MQ Producer instance.
+      * @param producerGroup        Producer group, see the name-sake field.
+      * @param rpcHook              RPC hook to execute per each remoting command execution.
+      * @param enableMsgTrace       Switch flag instance for message trace.
+      * @param customizedTraceTopic The name value of message trace topic.If you don't config,you can use the default
+      *                             trace topic name.
+      */
+-    public DefaultMQProducer(final String namespace, final String producerGroup, RPCHook rpcHook,
+-        boolean enableMsgTrace, final String customizedTraceTopic) {
+-        this.namespace = namespace;
+-        this.producerGroup = producerGroup;
+-        defaultMQProducerImpl = new DefaultMQProducerImpl(this, rpcHook);
+-        produceAccumulator = MQClientManager.getInstance().getOrCreateProduceAccumulator(this);
++    public DefaultMQProducer(final String producerGroup, RPCHook rpcHook, boolean enableMsgTrace,
++        final String customizedTraceTopic) {
++        this(producerGroup, rpcHook);
+         //if client open the message trace feature
+         if (enableMsgTrace) {
+             try {
+@@ -315,21 +263,60 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
+      * Constructor specifying namespace, producer group, topics, RPC hook, enabled msgTrace flag and customized trace topic
+      * name.
+      *
+-     * @param namespace            Namespace for this MQ Producer instance.
+      * @param producerGroup        Producer group, see the name-sake field.
+-     * @param topics               Topic that needs to be initialized for routing
+      * @param rpcHook              RPC hook to execute per each remoting command execution.
++     * @param topics               Topic that needs to be initialized for routing
+      * @param enableMsgTrace       Switch flag instance for message trace.
+      * @param customizedTraceTopic The name value of message trace topic.If you don't config,you can use the default
+      *                             trace topic name.
+      */
+-    public DefaultMQProducer(final String namespace, final String producerGroup, final List<String> topics,
+-                             RPCHook rpcHook, boolean enableMsgTrace, final String customizedTraceTopic) {
++    public DefaultMQProducer(final String producerGroup, RPCHook rpcHook, final List<String> topics,
++        boolean enableMsgTrace, final String customizedTraceTopic) {
++        this(producerGroup, rpcHook, enableMsgTrace, customizedTraceTopic);
++        this.topics = topics;
++    }
++
++    /**
++     * Constructor specifying producer group.
++     *
++     * @param namespace     Namespace for this MQ Producer instance.
++     * @param producerGroup Producer group, see the name-sake field.
++     */
++    @Deprecated
++    public DefaultMQProducer(final String namespace, final String producerGroup) {
++        this(namespace, producerGroup, null);
++    }
++
++    /**
++     * Constructor specifying namespace, producer group and RPC hook.
++     *
++     * @param namespace     Namespace for this MQ Producer instance.
++     * @param producerGroup Producer group, see the name-sake field.
++     * @param rpcHook       RPC hook to execute per each remoting command execution.
++     */
++    @Deprecated
++    public DefaultMQProducer(final String namespace, final String producerGroup, RPCHook rpcHook) {
+         this.namespace = namespace;
+         this.producerGroup = producerGroup;
+-        this.topics = topics;
+         defaultMQProducerImpl = new DefaultMQProducerImpl(this, rpcHook);
+         produceAccumulator = MQClientManager.getInstance().getOrCreateProduceAccumulator(this);
++    }
++
++    /**
++     * Constructor specifying namespace, producer group, RPC hook, enabled msgTrace flag and customized trace topic
++     * name.
++     *
++     * @param namespace            Namespace for this MQ Producer instance.
++     * @param producerGroup        Producer group, see the name-sake field.
++     * @param rpcHook              RPC hook to execute per each remoting command execution.
++     * @param enableMsgTrace       Switch flag instance for message trace.
++     * @param customizedTraceTopic The name value of message trace topic.If you don't config,you can use the default
++     *                             trace topic name.
++     */
++    @Deprecated
++    public DefaultMQProducer(final String namespace, final String producerGroup, RPCHook rpcHook,
++        boolean enableMsgTrace, final String customizedTraceTopic) {
++        this(namespace, producerGroup, rpcHook);
+         //if client open the message trace feature
+         if (enableMsgTrace) {
+             try {
+@@ -337,9 +324,9 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
+                 dispatcher.setHostProducer(this.defaultMQProducerImpl);
+                 traceDispatcher = dispatcher;
+                 this.defaultMQProducerImpl.registerSendMessageHook(
+-                        new SendMessageTraceHookImpl(traceDispatcher));
++                    new SendMessageTraceHookImpl(traceDispatcher));
+                 this.defaultMQProducerImpl.registerEndTransactionHook(
+-                        new EndTransactionTraceHookImpl(traceDispatcher));
++                    new EndTransactionTraceHookImpl(traceDispatcher));
+             } catch (Throwable e) {
+                 logger.error("system mqtrace hook init failed ,maybe can't send msg trace data");
+             }
+diff --git a/client/src/main/java/org/apache/rocketmq/client/producer/TransactionMQProducer.java b/client/src/main/java/org/apache/rocketmq/client/producer/TransactionMQProducer.java
+index 2c3b479f7..5c7b43780 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/producer/TransactionMQProducer.java
++++ b/client/src/main/java/org/apache/rocketmq/client/producer/TransactionMQProducer.java
+@@ -37,33 +37,31 @@ public class TransactionMQProducer extends DefaultMQProducer {
+     }
+ 
+     public TransactionMQProducer(final String producerGroup) {
+-        this(null, producerGroup, null, null);
++        super(producerGroup);
+     }
+ 
+     public TransactionMQProducer(final String producerGroup, final List<String> topics) {
+-        this(null, producerGroup, topics, null);
++        super(producerGroup, null, topics);
+     }
+ 
+-    public TransactionMQProducer(final String namespace, final String producerGroup) {
+-        this(namespace, producerGroup, null, null);
+-    }
+-
+-    public TransactionMQProducer(final String namespace, final String producerGroup, final List<String> topics) {
+-        this(namespace, producerGroup, topics, null);
++    public TransactionMQProducer(final String producerGroup, RPCHook rpcHook) {
++        super(producerGroup, rpcHook, null);
+     }
+ 
+-    public TransactionMQProducer(final String producerGroup, RPCHook rpcHook) {
+-        this(null, producerGroup, null, rpcHook);
++    public TransactionMQProducer(final String producerGroup, RPCHook rpcHook, final List<String> topics) {
++        super(producerGroup, rpcHook, topics);
+     }
+ 
+-    public TransactionMQProducer(final String producerGroup, final List<String> topics, RPCHook rpcHook) {
+-        this(null, producerGroup, topics, rpcHook);
++    public TransactionMQProducer(final String producerGroup, RPCHook rpcHook, boolean enableMsgTrace, final String customizedTraceTopic) {
++        super(producerGroup, rpcHook, enableMsgTrace, customizedTraceTopic);
+     }
+ 
+-    public TransactionMQProducer(final String namespace, final String producerGroup, final List<String> topics, RPCHook rpcHook) {
+-        super(namespace, producerGroup, topics, rpcHook);
++    @Deprecated
++    public TransactionMQProducer(final String namespace, final String producerGroup) {
++        super(namespace, producerGroup);
+     }
+ 
++    @Deprecated
+     public TransactionMQProducer(final String namespace, final String producerGroup, RPCHook rpcHook, boolean enableMsgTrace, final String customizedTraceTopic) {
+         super(namespace, producerGroup, rpcHook, enableMsgTrace, customizedTraceTopic);
+     }
+diff --git a/client/src/main/java/org/apache/rocketmq/client/rpchook/NamespaceRpcHook.java b/client/src/main/java/org/apache/rocketmq/client/rpchook/NamespaceRpcHook.java
+new file mode 100644
+index 000000000..7deee0a9f
+--- /dev/null
++++ b/client/src/main/java/org/apache/rocketmq/client/rpchook/NamespaceRpcHook.java
+@@ -0,0 +1,51 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.client.rpchook;
++
++import org.apache.commons.lang3.StringUtils;
++import org.apache.rocketmq.client.ClientConfig;
++import org.apache.rocketmq.remoting.CommandCustomHeader;
++import org.apache.rocketmq.remoting.RPCHook;
++import org.apache.rocketmq.remoting.protocol.RemotingCommand;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
++
++public class NamespaceRpcHook implements RPCHook {
++    private final ClientConfig clientConfig;
++
++    public NamespaceRpcHook(ClientConfig clientConfig) {
++        this.clientConfig = clientConfig;
++    }
++
++    @Override
++    public void doBeforeRequest(String remoteAddr, RemotingCommand request) {
++        CommandCustomHeader customHeader = request.readCustomHeader();
++        if (customHeader instanceof RpcRequestHeader) {
++            RpcRequestHeader requestHeader = (RpcRequestHeader) customHeader;
++            if (StringUtils.isNotEmpty(clientConfig.getNamespaceV2())) {
++                requestHeader.setNamespaced(true);
++                requestHeader.setNamespace(clientConfig.getNamespaceV2());
++            }
++        }
++    }
++
++    @Override
++    public void doAfterResponse(String remoteAddr, RemotingCommand request,
++        RemotingCommand response) {
++
++    }
++}
+diff --git a/example/src/main/java/org/apache/rocketmq/example/benchmark/TransactionProducer.java b/example/src/main/java/org/apache/rocketmq/example/benchmark/TransactionProducer.java
+index 34cdeb49d..7b6350e3b 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/benchmark/TransactionProducer.java
++++ b/example/src/main/java/org/apache/rocketmq/example/benchmark/TransactionProducer.java
+@@ -141,7 +141,6 @@ public class TransactionProducer {
+         }
+         final TransactionListener transactionCheckListener = new TransactionListenerImpl(statsBenchmark, config);
+         final TransactionMQProducer producer = new TransactionMQProducer(
+-            null,
+             "benchmark_transaction_producer",
+             rpcHook,
+             config.msgTraceEnable,
+diff --git a/example/src/main/java/org/apache/rocketmq/example/namespace/ProducerWithNamespace.java b/example/src/main/java/org/apache/rocketmq/example/namespace/ProducerWithNamespace.java
+index a8a920b1d..2a7af58a6 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/namespace/ProducerWithNamespace.java
++++ b/example/src/main/java/org/apache/rocketmq/example/namespace/ProducerWithNamespace.java
+@@ -33,7 +33,8 @@ public class ProducerWithNamespace {
+ 
+     public static void main(String[] args) throws Exception {
+ 
+-        DefaultMQProducer producer = new DefaultMQProducer(NAMESPACE, PRODUCER_GROUP);
++        DefaultMQProducer producer = new DefaultMQProducer(PRODUCER_GROUP);
++        producer.setNamespaceV2(NAMESPACE);
+ 
+         producer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
+         producer.start();
+diff --git a/example/src/main/java/org/apache/rocketmq/example/namespace/PullConsumerWithNamespace.java b/example/src/main/java/org/apache/rocketmq/example/namespace/PullConsumerWithNamespace.java
+index 9ca1b35b9..b5509d31e 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/namespace/PullConsumerWithNamespace.java
++++ b/example/src/main/java/org/apache/rocketmq/example/namespace/PullConsumerWithNamespace.java
+@@ -34,7 +34,8 @@ public class PullConsumerWithNamespace {
+     private static final Map<MessageQueue, Long> OFFSET_TABLE = new HashMap<>();
+ 
+     public static void main(String[] args) throws Exception {
+-        DefaultMQPullConsumer pullConsumer = new DefaultMQPullConsumer(NAMESPACE, CONSUMER_GROUP);
++        DefaultMQPullConsumer pullConsumer = new DefaultMQPullConsumer(CONSUMER_GROUP);
++        pullConsumer.setNamespaceV2(NAMESPACE);
+         pullConsumer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
+         pullConsumer.start();
+ 
+diff --git a/example/src/main/java/org/apache/rocketmq/example/namespace/PushConsumerWithNamespace.java b/example/src/main/java/org/apache/rocketmq/example/namespace/PushConsumerWithNamespace.java
+index 181720ea2..f12383a7a 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/namespace/PushConsumerWithNamespace.java
++++ b/example/src/main/java/org/apache/rocketmq/example/namespace/PushConsumerWithNamespace.java
+@@ -27,7 +27,8 @@ public class PushConsumerWithNamespace {
+     public static final String TOPIC = "NAMESPACE_TOPIC";
+ 
+     public static void main(String[] args) throws Exception {
+-        DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer(NAMESPACE, CONSUMER_GROUP);
++        DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer(CONSUMER_GROUP);
++        defaultMQPushConsumer.setNamespaceV2(NAMESPACE);
+         defaultMQPushConsumer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
+         defaultMQPushConsumer.subscribe(TOPIC, "*");
+         defaultMQPushConsumer.registerMessageListener((MessageListenerConcurrently) (msgs, context) -> {
+diff --git a/example/src/main/java/org/apache/rocketmq/example/tracemessage/TraceProducer.java b/example/src/main/java/org/apache/rocketmq/example/tracemessage/TraceProducer.java
+index add6c4323..72dde674c 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/tracemessage/TraceProducer.java
++++ b/example/src/main/java/org/apache/rocketmq/example/tracemessage/TraceProducer.java
+@@ -34,7 +34,7 @@ public class TraceProducer {
+ 
+     public static void main(String[] args) throws MQClientException, InterruptedException {
+ 
+-        DefaultMQProducer producer = new DefaultMQProducer(PRODUCER_GROUP, true);
++        DefaultMQProducer producer = new DefaultMQProducer(PRODUCER_GROUP, true, null);
+ 
+         // Uncomment the following line while debugging, namesrvAddr should be set to your local address
+ //        producer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
+diff --git a/example/src/main/java/org/apache/rocketmq/example/tracemessage/TracePushConsumer.java b/example/src/main/java/org/apache/rocketmq/example/tracemessage/TracePushConsumer.java
+index a833ee1e4..81c5e31ca 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/tracemessage/TracePushConsumer.java
++++ b/example/src/main/java/org/apache/rocketmq/example/tracemessage/TracePushConsumer.java
+@@ -31,7 +31,7 @@ public class TracePushConsumer {
+ 
+     public static void main(String[] args) throws InterruptedException, MQClientException {
+         // Here,we use the default message track trace topic name
+-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(CONSUMER_GROUP, true);
++        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(CONSUMER_GROUP, true, null);
+ 
+         // Uncomment the following line while debugging, namesrvAddr should be set to your local address
+ //        consumer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/client/ClientActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/client/ClientActivity.java
+index 855328949..59d8432ae 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/client/ClientActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/client/ClientActivity.java
+@@ -101,7 +101,7 @@ public class ClientActivity extends AbstractMessingActivity {
+             switch (clientSettings.getClientType()) {
+                 case PRODUCER: {
+                     for (Resource topic : clientSettings.getPublishing().getTopicsList()) {
+-                        String topicName = GrpcConverter.getInstance().wrapResourceWithNamespace(topic);
++                        String topicName = topic.getName();
+                         this.registerProducer(ctx, topicName);
+                     }
+                     break;
+@@ -109,7 +109,7 @@ public class ClientActivity extends AbstractMessingActivity {
+                 case PUSH_CONSUMER:
+                 case SIMPLE_CONSUMER: {
+                     validateConsumerGroup(request.getGroup());
+-                    String consumerGroup = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());
++                    String consumerGroup = request.getGroup().getName();
+                     this.registerConsumer(ctx, consumerGroup, clientSettings.getClientType(), clientSettings.getSubscription().getSubscriptionsList(), false);
+                     break;
+                 }
+@@ -142,7 +142,7 @@ public class ClientActivity extends AbstractMessingActivity {
+             switch (clientSettings.getClientType()) {
+                 case PRODUCER:
+                     for (Resource topic : clientSettings.getPublishing().getTopicsList()) {
+-                        String topicName = GrpcConverter.getInstance().wrapResourceWithNamespace(topic);
++                        String topicName = topic.getName();
+                         GrpcClientChannel channel = this.grpcChannelManager.removeChannel(clientId);
+                         if (channel != null) {
+                             ClientChannelInfo clientChannelInfo = new ClientChannelInfo(channel, clientId, languageCode, MQVersion.Version.V5_0_0.ordinal());
+@@ -153,7 +153,7 @@ public class ClientActivity extends AbstractMessingActivity {
+                 case PUSH_CONSUMER:
+                 case SIMPLE_CONSUMER:
+                     validateConsumerGroup(request.getGroup());
+-                    String consumerGroup = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());
++                    String consumerGroup = request.getGroup().getName();
+                     GrpcClientChannel channel = this.grpcChannelManager.removeChannel(clientId);
+                     if (channel != null) {
+                         ClientChannelInfo clientChannelInfo = new ClientChannelInfo(channel, clientId, languageCode, MQVersion.Version.V5_0_0.ordinal());
+@@ -241,14 +241,14 @@ public class ClientActivity extends AbstractMessingActivity {
+             case PUBLISHING:
+                 for (Resource topic : settings.getPublishing().getTopicsList()) {
+                     validateTopic(topic);
+-                    String topicName = GrpcConverter.getInstance().wrapResourceWithNamespace(topic);
++                    String topicName = topic.getName();
+                     grpcClientChannel = registerProducer(ctx, topicName);
+                     grpcClientChannel.setClientObserver(responseObserver);
+                 }
+                 break;
+             case SUBSCRIPTION:
+                 validateConsumerGroup(settings.getSubscription().getGroup());
+-                String groupName = GrpcConverter.getInstance().wrapResourceWithNamespace(settings.getSubscription().getGroup());
++                String groupName = settings.getSubscription().getGroup().getName();
+                 grpcClientChannel = registerConsumer(ctx, groupName, settings.getClientType(), settings.getSubscription().getSubscriptionsList(), true);
+                 grpcClientChannel.setClientObserver(responseObserver);
+                 break;
+@@ -396,7 +396,7 @@ public class ClientActivity extends AbstractMessingActivity {
+     protected Set<SubscriptionData> buildSubscriptionDataSet(List<SubscriptionEntry> subscriptionEntryList) {
+         Set<SubscriptionData> subscriptionDataSet = new HashSet<>();
+         for (SubscriptionEntry sub : subscriptionEntryList) {
+-            String topicName = GrpcConverter.getInstance().wrapResourceWithNamespace(sub.getTopic());
++            String topicName = sub.getTopic().getName();
+             FilterExpression filterExpression = sub.getExpression();
+             subscriptionDataSet.add(buildSubscriptionData(topicName, filterExpression));
+         }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java
+index 1eff65939..e741bd389 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java
+@@ -74,8 +74,7 @@ public class GrpcClientSettingsManager extends ServiceThread implements StartAnd
+         if (settings.hasPublishing()) {
+             settings = mergeProducerData(settings);
+         } else if (settings.hasSubscription()) {
+-            settings = mergeSubscriptionData(ctx, settings,
+-                GrpcConverter.getInstance().wrapResourceWithNamespace(settings.getSubscription().getGroup()));
++            settings = mergeSubscriptionData(ctx, settings, settings.getSubscription().getGroup().getName());
+         }
+         return mergeMetric(settings);
+     }
+@@ -204,8 +203,7 @@ public class GrpcClientSettingsManager extends ServiceThread implements StartAnd
+             return null;
+         }
+         if (settings.hasSubscription()) {
+-            settings = mergeSubscriptionData(ctx, settings,
+-                GrpcConverter.getInstance().wrapResourceWithNamespace(settings.getSubscription().getGroup()));
++            settings = mergeSubscriptionData(ctx, settings, settings.getSubscription().getGroup().getName());
+         }
+         return mergeMetric(settings);
+     }
+@@ -231,7 +229,7 @@ public class GrpcClientSettingsManager extends ServiceThread implements StartAnd
+                     if (!settings.getClientType().equals(ClientType.PUSH_CONSUMER) && !settings.getClientType().equals(ClientType.SIMPLE_CONSUMER)) {
+                         return settings;
+                     }
+-                    String consumerGroup = GrpcConverter.getInstance().wrapResourceWithNamespace(settings.getSubscription().getGroup());
++                    String consumerGroup = settings.getSubscription().getGroup().getName();
+                     ConsumerGroupInfo consumerGroupInfo = this.messagingProcessor.getConsumerGroupInfo(
+                         ProxyContext.createForInner(this.getClass()),
+                         consumerGroup
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcConverter.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcConverter.java
+index 4daf83511..33a4e1312 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcConverter.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcConverter.java
+@@ -64,10 +64,6 @@ public class GrpcConverter {
+         return instance;
+     }
+ 
+-    public String wrapResourceWithNamespace(Resource resource) {
+-        return NamespaceUtil.wrapNamespace(resource.getResourceNamespace(), resource.getName());
+-    }
+-
+     public MessageQueue buildMessageQueue(MessageExt messageExt, String brokerName) {
+         Broker broker = Broker.getDefaultInstance();
+         if (!StringUtils.isEmpty(brokerName)) {
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcValidator.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcValidator.java
+index cfcd2a269..a556bfe27 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcValidator.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcValidator.java
+@@ -48,7 +48,7 @@ public class GrpcValidator {
+     }
+ 
+     public void validateTopic(Resource topic) {
+-        validateTopic(GrpcConverter.getInstance().wrapResourceWithNamespace(topic));
++        validateTopic(topic.getName());
+     }
+ 
+     public void validateTopic(String topicName) {
+@@ -63,7 +63,7 @@ public class GrpcValidator {
+     }
+ 
+     public void validateConsumerGroup(Resource consumerGroup) {
+-        validateConsumerGroup(GrpcConverter.getInstance().wrapResourceWithNamespace(consumerGroup));
++        validateConsumerGroup(consumerGroup.getName());
+     }
+ 
+     public void validateConsumerGroup(String consumerGroupName) {
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivity.java
+index 97c716c8f..4a5b9cfcd 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivity.java
+@@ -35,7 +35,6 @@ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.grpc.v2.AbstractMessingActivity;
+ import org.apache.rocketmq.proxy.grpc.v2.channel.GrpcChannelManager;
+ import org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManager;
+-import org.apache.rocketmq.proxy.grpc.v2.common.GrpcConverter;
+ import org.apache.rocketmq.proxy.grpc.v2.common.ResponseBuilder;
+ import org.apache.rocketmq.proxy.processor.BatchAckResult;
+ import org.apache.rocketmq.proxy.processor.MessagingProcessor;
+@@ -53,8 +52,8 @@ public class AckMessageActivity extends AbstractMessingActivity {
+ 
+         try {
+             validateTopicAndConsumerGroup(request.getTopic(), request.getGroup());
+-            String group = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());
+-            String topic = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getTopic());
++            String group = request.getGroup().getName();
++            String topic = request.getTopic().getName();
+             if (ConfigurationManager.getProxyConfig().isEnableBatchAck()) {
+                 future = ackMessageInBatch(ctx, group, topic, request);
+             } else {
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ChangeInvisibleDurationActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ChangeInvisibleDurationActivity.java
+index 02356c497..b7d63a33c 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ChangeInvisibleDurationActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ChangeInvisibleDurationActivity.java
+@@ -29,7 +29,6 @@ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.grpc.v2.AbstractMessingActivity;
+ import org.apache.rocketmq.proxy.grpc.v2.channel.GrpcChannelManager;
+ import org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManager;
+-import org.apache.rocketmq.proxy.grpc.v2.common.GrpcConverter;
+ import org.apache.rocketmq.proxy.grpc.v2.common.ResponseBuilder;
+ import org.apache.rocketmq.proxy.processor.MessagingProcessor;
+ 
+@@ -49,7 +48,7 @@ public class ChangeInvisibleDurationActivity extends AbstractMessingActivity {
+             validateInvisibleTime(Durations.toMillis(request.getInvisibleDuration()));
+ 
+             ReceiptHandle receiptHandle = ReceiptHandle.decode(request.getReceiptHandle());
+-            String group = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());
++            String group = request.getGroup().getName();
+ 
+             MessageReceiptHandle messageReceiptHandle = messagingProcessor.removeReceiptHandle(ctx, grpcChannelManager.getChannel(ctx.getClientID()), group, request.getMessageId(), receiptHandle.getReceiptHandle());
+             if (messageReceiptHandle != null) {
+@@ -60,7 +59,7 @@ public class ChangeInvisibleDurationActivity extends AbstractMessingActivity {
+                 receiptHandle,
+                 request.getMessageId(),
+                 group,
+-                GrpcConverter.getInstance().wrapResourceWithNamespace(request.getTopic()),
++                request.getTopic().getName(),
+                 Durations.toMillis(request.getInvisibleDuration())
+             ).thenApply(ackResult -> convertToChangeInvisibleDurationResponse(ctx, request, ackResult));
+         } catch (Throwable t) {
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivity.java
+index cf58bb87a..b3550eb4f 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivity.java
+@@ -94,8 +94,8 @@ public class ReceiveMessageActivity extends AbstractMessingActivity {
+             }
+ 
+             validateTopicAndConsumerGroup(request.getMessageQueue().getTopic(), request.getGroup());
+-            String topic = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getMessageQueue().getTopic());
+-            String group = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());
++            String topic = request.getMessageQueue().getTopic().getName();
++            String group = request.getGroup().getName();
+ 
+             long actualInvisibleTime = Durations.toMillis(request.getInvisibleDuration());
+             ProxyConfig proxyConfig = ConfigurationManager.getProxyConfig();
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageResponseStreamWriter.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageResponseStreamWriter.java
+index 7b8e70cf1..d0f94e861 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageResponseStreamWriter.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageResponseStreamWriter.java
+@@ -121,8 +121,8 @@ public class ReceiveMessageResponseStreamWriter {
+             ctx,
+             ReceiptHandle.decode(handle),
+             messageExt.getMsgId(),
+-            GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup()),
+-            GrpcConverter.getInstance().wrapResourceWithNamespace(request.getMessageQueue().getTopic()),
++            request.getGroup().getName(),
++            request.getMessageQueue().getTopic().getName(),
+             NACK_INVISIBLE_TIME
+         );
+     }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/ForwardMessageToDLQActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/ForwardMessageToDLQActivity.java
+index f1fc5a143..d0cfc14ce 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/ForwardMessageToDLQActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/ForwardMessageToDLQActivity.java
+@@ -25,7 +25,6 @@ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.grpc.v2.AbstractMessingActivity;
+ import org.apache.rocketmq.proxy.grpc.v2.channel.GrpcChannelManager;
+ import org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManager;
+-import org.apache.rocketmq.proxy.grpc.v2.common.GrpcConverter;
+ import org.apache.rocketmq.proxy.grpc.v2.common.ResponseBuilder;
+ import org.apache.rocketmq.proxy.processor.MessagingProcessor;
+ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
+@@ -43,7 +42,7 @@ public class ForwardMessageToDLQActivity extends AbstractMessingActivity {
+         try {
+             validateTopicAndConsumerGroup(request.getTopic(), request.getGroup());
+ 
+-            String group = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());
++            String group = request.getGroup().getName();
+             String handleString = request.getReceiptHandle();
+             MessageReceiptHandle messageReceiptHandle = messagingProcessor.removeReceiptHandle(ctx, grpcChannelManager.getChannel(ctx.getClientID()), group, request.getMessageId(), request.getReceiptHandle());
+             if (messageReceiptHandle != null) {
+@@ -55,8 +54,8 @@ public class ForwardMessageToDLQActivity extends AbstractMessingActivity {
+                 ctx,
+                 receiptHandle,
+                 request.getMessageId(),
+-                GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup()),
+-                GrpcConverter.getInstance().wrapResourceWithNamespace(request.getTopic())
++                request.getGroup().getName(),
++                request.getTopic().getName()
+             ).thenApply(result -> convertToForwardMessageToDeadLetterQueueResponse(ctx, result));
+         } catch (Throwable t) {
+             future.completeExceptionally(t);
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/SendMessageActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/SendMessageActivity.java
+index f670df205..8679bfbe3 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/SendMessageActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/SendMessageActivity.java
+@@ -48,7 +48,6 @@ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.proxy.grpc.v2.AbstractMessingActivity;
+ import org.apache.rocketmq.proxy.grpc.v2.channel.GrpcChannelManager;
+ import org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManager;
+-import org.apache.rocketmq.proxy.grpc.v2.common.GrpcConverter;
+ import org.apache.rocketmq.proxy.grpc.v2.common.GrpcProxyException;
+ import org.apache.rocketmq.proxy.grpc.v2.common.GrpcValidator;
+ import org.apache.rocketmq.proxy.grpc.v2.common.ResponseBuilder;
+@@ -80,7 +79,7 @@ public class SendMessageActivity extends AbstractMessingActivity {
+             future = this.messagingProcessor.sendMessage(
+                 ctx,
+                 new SendMessageQueueSelector(request),
+-                GrpcConverter.getInstance().wrapResourceWithNamespace(topic),
++                topic.getName(),
+                 buildSysFlag(message),
+                 buildMessage(ctx, request.getMessagesList(), topic)
+             ).thenApply(result -> convertToSendMessageResponse(ctx, request, result));
+@@ -92,7 +91,7 @@ public class SendMessageActivity extends AbstractMessingActivity {
+ 
+     protected List<Message> buildMessage(ProxyContext context, List<apache.rocketmq.v2.Message> protoMessageList,
+         Resource topic) {
+-        String topicName = GrpcConverter.getInstance().wrapResourceWithNamespace(topic);
++        String topicName = topic.getName();
+         List<Message> messageExtList = new ArrayList<>();
+         for (apache.rocketmq.v2.Message protoMessage : protoMessageList) {
+             if (!protoMessage.getTopic().equals(topic)) {
+@@ -105,7 +104,7 @@ public class SendMessageActivity extends AbstractMessingActivity {
+     }
+ 
+     protected Message buildMessage(ProxyContext context, apache.rocketmq.v2.Message protoMessage, String producerGroup) {
+-        String topicName = GrpcConverter.getInstance().wrapResourceWithNamespace(protoMessage.getTopic());
++        String topicName = protoMessage.getTopic().getName();
+ 
+         validateMessageBodySize(protoMessage.getBody());
+         Message messageExt = new Message();
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/route/RouteActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/route/RouteActivity.java
+index 02dea0cda..fe14fe01c 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/route/RouteActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/route/RouteActivity.java
+@@ -46,7 +46,6 @@ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.grpc.v2.AbstractMessingActivity;
+ import org.apache.rocketmq.proxy.grpc.v2.channel.GrpcChannelManager;
+ import org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManager;
+-import org.apache.rocketmq.proxy.grpc.v2.common.GrpcConverter;
+ import org.apache.rocketmq.proxy.grpc.v2.common.ResponseBuilder;
+ import org.apache.rocketmq.proxy.processor.MessagingProcessor;
+ import org.apache.rocketmq.proxy.service.route.ProxyTopicRouteData;
+@@ -66,7 +65,7 @@ public class RouteActivity extends AbstractMessingActivity {
+             validateTopic(request.getTopic());
+             List<org.apache.rocketmq.proxy.common.Address> addressList = this.convertToAddressList(request.getEndpoints());
+ 
+-            String topicName = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getTopic());
++            String topicName = request.getTopic().getName();
+             ProxyTopicRouteData proxyTopicRouteData = this.messagingProcessor.getTopicRouteDataForProxy(
+                 ctx, addressList, topicName);
+ 
+@@ -107,11 +106,11 @@ public class RouteActivity extends AbstractMessingActivity {
+             ProxyTopicRouteData proxyTopicRouteData = this.messagingProcessor.getTopicRouteDataForProxy(
+                 ctx,
+                 addressList,
+-                GrpcConverter.getInstance().wrapResourceWithNamespace(request.getTopic()));
++                request.getTopic().getName());
+ 
+             boolean fifo = false;
+             SubscriptionGroupConfig config = this.messagingProcessor.getSubscriptionGroupConfig(ctx,
+-                GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup()));
++                request.getGroup().getName());
+             if (config != null && config.isConsumeMessageOrderly()) {
+                 fifo = true;
+             }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/transaction/EndTransactionActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/transaction/EndTransactionActivity.java
+index e65cf2eb4..1e1148658 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/transaction/EndTransactionActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/transaction/EndTransactionActivity.java
+@@ -27,7 +27,6 @@ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.grpc.v2.AbstractMessingActivity;
+ import org.apache.rocketmq.proxy.grpc.v2.channel.GrpcChannelManager;
+ import org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManager;
+-import org.apache.rocketmq.proxy.grpc.v2.common.GrpcConverter;
+ import org.apache.rocketmq.proxy.grpc.v2.common.GrpcProxyException;
+ import org.apache.rocketmq.proxy.grpc.v2.common.ResponseBuilder;
+ import org.apache.rocketmq.proxy.processor.MessagingProcessor;
+@@ -64,7 +63,7 @@ public class EndTransactionActivity extends AbstractMessingActivity {
+                 ctx,
+                 request.getTransactionId(),
+                 request.getMessageId(),
+-                GrpcConverter.getInstance().wrapResourceWithNamespace(request.getTopic()),
++                request.getTopic().getName(),
+                 transactionStatus,
+                 request.getSource().equals(TransactionSource.SOURCE_SERVER_CHECK))
+                 .thenApply(r -> EndTransactionResponse.newBuilder()
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java
+index fcdc25cac..734fbeba1 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java
+@@ -142,7 +142,7 @@ public abstract class AbstractSystemMessageSyncer implements StartAndShutdown, M
+     public void start() throws Exception {
+         this.createSysTopic();
+         RPCHook rpcHook = this.getRpcHook();
+-        this.defaultMQPushConsumer = new DefaultMQPushConsumer(null, this.getSystemMessageConsumerId(), rpcHook);
++        this.defaultMQPushConsumer = new DefaultMQPushConsumer(this.getSystemMessageConsumerId(), rpcHook);
+ 
+         this.defaultMQPushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
+         this.defaultMQPushConsumer.setMessageModel(MessageModel.BROADCASTING);
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/CloneGroupOffsetRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/CloneGroupOffsetRequestHeader.java
+index a9e9982af..0589c0fa8 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/CloneGroupOffsetRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/CloneGroupOffsetRequestHeader.java
+@@ -21,11 +21,11 @@
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+ import com.google.common.base.MoreObjects;
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
+ 
+-public class CloneGroupOffsetRequestHeader implements CommandCustomHeader {
++public class CloneGroupOffsetRequestHeader extends RpcRequestHeader {
+     @CFNotNull
+     private String srcGroup;
+     @CFNotNull
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ConsumeMessageDirectlyResultRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ConsumeMessageDirectlyResultRequestHeader.java
+index de9a4a501..f56ad5b59 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ConsumeMessageDirectlyResultRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ConsumeMessageDirectlyResultRequestHeader.java
+@@ -18,12 +18,12 @@
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+ import com.google.common.base.MoreObjects;
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.annotation.CFNullable;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class ConsumeMessageDirectlyResultRequestHeader implements CommandCustomHeader {
++public class ConsumeMessageDirectlyResultRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String consumerGroup;
+     @CFNullable
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/CreateTopicRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/CreateTopicRequestHeader.java
+index b68c5197e..faddd9f46 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/CreateTopicRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/CreateTopicRequestHeader.java
+@@ -22,12 +22,12 @@ package org.apache.rocketmq.remoting.protocol.header;
+ 
+ import com.google.common.base.MoreObjects;
+ import org.apache.rocketmq.common.TopicFilterType;
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.annotation.CFNullable;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class CreateTopicRequestHeader implements CommandCustomHeader {
++public class CreateTopicRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String topic;
+     @CFNotNull
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/DeleteSubscriptionGroupRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/DeleteSubscriptionGroupRequestHeader.java
+index 26126f774..454845485 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/DeleteSubscriptionGroupRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/DeleteSubscriptionGroupRequestHeader.java
+@@ -17,11 +17,11 @@
+ 
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
+ 
+-public class DeleteSubscriptionGroupRequestHeader implements CommandCustomHeader {
++public class DeleteSubscriptionGroupRequestHeader extends RpcRequestHeader {
+     @CFNotNull
+     private String groupName;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/DeleteTopicRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/DeleteTopicRequestHeader.java
+index 1305a70cc..d24c1da07 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/DeleteTopicRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/DeleteTopicRequestHeader.java
+@@ -20,11 +20,11 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class DeleteTopicRequestHeader implements CommandCustomHeader {
++public class DeleteTopicRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String topic;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumeStatsRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumeStatsRequestHeader.java
+index 901de85b1..474811b3b 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumeStatsRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumeStatsRequestHeader.java
+@@ -17,11 +17,11 @@
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+ import com.google.common.base.MoreObjects;
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class GetConsumeStatsRequestHeader implements CommandCustomHeader {
++public class GetConsumeStatsRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String consumerGroup;
+     private String topic;
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerConnectionListRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerConnectionListRequestHeader.java
+index 7ade0c167..b572c82f3 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerConnectionListRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerConnectionListRequestHeader.java
+@@ -17,11 +17,11 @@
+ 
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
+ 
+-public class GetConsumerConnectionListRequestHeader implements CommandCustomHeader {
++public class GetConsumerConnectionListRequestHeader extends RpcRequestHeader {
+     @CFNotNull
+     private String consumerGroup;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerListByGroupRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerListByGroupRequestHeader.java
+index e16331a3f..43161ef36 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerListByGroupRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerListByGroupRequestHeader.java
+@@ -18,11 +18,11 @@
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+ import com.google.common.base.MoreObjects;
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
+ 
+-public class GetConsumerListByGroupRequestHeader implements CommandCustomHeader {
++public class GetConsumerListByGroupRequestHeader extends RpcRequestHeader {
+     @CFNotNull
+     private String consumerGroup;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerRunningInfoRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerRunningInfoRequestHeader.java
+index 2adad968e..c67e9a15e 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerRunningInfoRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerRunningInfoRequestHeader.java
+@@ -18,12 +18,12 @@
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+ import com.google.common.base.MoreObjects;
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.annotation.CFNullable;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
+ 
+-public class GetConsumerRunningInfoRequestHeader implements CommandCustomHeader {
++public class GetConsumerRunningInfoRequestHeader extends RpcRequestHeader {
+     @CFNotNull
+     private String consumerGroup;
+     @CFNotNull
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerStatusRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerStatusRequestHeader.java
+index 9aee3d4ae..de9115a01 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerStatusRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetConsumerStatusRequestHeader.java
+@@ -18,12 +18,12 @@
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+ import com.google.common.base.MoreObjects;
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.annotation.CFNullable;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class GetConsumerStatusRequestHeader implements CommandCustomHeader {
++public class GetConsumerStatusRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String topic;
+     @CFNotNull
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetProducerConnectionListRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetProducerConnectionListRequestHeader.java
+index 2b919e024..701335191 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetProducerConnectionListRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetProducerConnectionListRequestHeader.java
+@@ -17,11 +17,11 @@
+ 
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
+ 
+-public class GetProducerConnectionListRequestHeader implements CommandCustomHeader {
++public class GetProducerConnectionListRequestHeader extends RpcRequestHeader {
+     @CFNotNull
+     private String producerGroup;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetSubscriptionGroupConfigRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetSubscriptionGroupConfigRequestHeader.java
+index 885ab256d..2ad06b496 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetSubscriptionGroupConfigRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/GetSubscriptionGroupConfigRequestHeader.java
+@@ -20,11 +20,11 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
+ 
+-public class GetSubscriptionGroupConfigRequestHeader implements CommandCustomHeader {
++public class GetSubscriptionGroupConfigRequestHeader extends RpcRequestHeader {
+ 
+     @Override
+     public void checkFields() throws RemotingCommandException {
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/HeartbeatRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/HeartbeatRequestHeader.java
+new file mode 100644
+index 000000000..a37383f3a
+--- /dev/null
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/HeartbeatRequestHeader.java
+@@ -0,0 +1,29 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.remoting.protocol.header;
++
++import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
++
++public class HeartbeatRequestHeader extends RpcRequestHeader {
++    // for namespace
++    @Override
++    public void checkFields() throws RemotingCommandException {
++
++    }
++}
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/InitConsumerOffsetRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/InitConsumerOffsetRequestHeader.java
+index e6d319bca..ac63b974b 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/InitConsumerOffsetRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/InitConsumerOffsetRequestHeader.java
+@@ -16,10 +16,10 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class InitConsumerOffsetRequestHeader implements CommandCustomHeader {
++public class InitConsumerOffsetRequestHeader extends TopicRequestHeader {
+ 
+     private String topic;
+     // @see ConsumeInitMode
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/NotifyConsumerIdsChangedRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/NotifyConsumerIdsChangedRequestHeader.java
+index 40ee9417f..38271f975 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/NotifyConsumerIdsChangedRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/NotifyConsumerIdsChangedRequestHeader.java
+@@ -17,11 +17,11 @@
+ 
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
+ 
+-public class NotifyConsumerIdsChangedRequestHeader implements CommandCustomHeader {
++public class NotifyConsumerIdsChangedRequestHeader extends RpcRequestHeader {
+     @CFNotNull
+     private String consumerGroup;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryConsumeQueueRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryConsumeQueueRequestHeader.java
+index 53cc2a1f5..a1b45e9b2 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryConsumeQueueRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryConsumeQueueRequestHeader.java
+@@ -17,10 +17,10 @@
+ 
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicQueueRequestHeader;
+ 
+-public class QueryConsumeQueueRequestHeader implements CommandCustomHeader {
++public class QueryConsumeQueueRequestHeader extends TopicQueueRequestHeader {
+ 
+     private String topic;
+     private int queueId;
+@@ -36,11 +36,11 @@ public class QueryConsumeQueueRequestHeader implements CommandCustomHeader {
+         this.topic = topic;
+     }
+ 
+-    public int getQueueId() {
++    public Integer getQueueId() {
+         return queueId;
+     }
+ 
+-    public void setQueueId(int queueId) {
++    public void setQueueId(Integer queueId) {
+         this.queueId = queueId;
+     }
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryConsumeTimeSpanRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryConsumeTimeSpanRequestHeader.java
+index 370f01605..9c0aa34b5 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryConsumeTimeSpanRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryConsumeTimeSpanRequestHeader.java
+@@ -17,11 +17,11 @@
+ 
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class QueryConsumeTimeSpanRequestHeader implements CommandCustomHeader {
++public class QueryConsumeTimeSpanRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String topic;
+     @CFNotNull
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryCorrectionOffsetHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryCorrectionOffsetHeader.java
+index 51099cb57..8e03ce5c6 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryCorrectionOffsetHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryCorrectionOffsetHeader.java
+@@ -20,11 +20,11 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class QueryCorrectionOffsetHeader implements CommandCustomHeader {
++public class QueryCorrectionOffsetHeader extends TopicRequestHeader {
+     private String filterGroups;
+     @CFNotNull
+     private String compareGroup;
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryMessageRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryMessageRequestHeader.java
+index d89bafbcf..1a78b9e4f 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryMessageRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryMessageRequestHeader.java
+@@ -20,11 +20,11 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class QueryMessageRequestHeader implements CommandCustomHeader {
++public class QueryMessageRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String topic;
+     @CFNotNull
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QuerySubscriptionByConsumerRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QuerySubscriptionByConsumerRequestHeader.java
+index 29d9234cd..1e5a48c58 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QuerySubscriptionByConsumerRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QuerySubscriptionByConsumerRequestHeader.java
+@@ -20,11 +20,11 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class QuerySubscriptionByConsumerRequestHeader implements CommandCustomHeader {
++public class QuerySubscriptionByConsumerRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String group;
+     private String topic;
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryTopicConsumeByWhoRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryTopicConsumeByWhoRequestHeader.java
+index 186cdefd9..5cd9b931c 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryTopicConsumeByWhoRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryTopicConsumeByWhoRequestHeader.java
+@@ -20,11 +20,11 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class QueryTopicConsumeByWhoRequestHeader implements CommandCustomHeader {
++public class QueryTopicConsumeByWhoRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String topic;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryTopicsByConsumerRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryTopicsByConsumerRequestHeader.java
+index c172f6127..e90afdd8b 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryTopicsByConsumerRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/QueryTopicsByConsumerRequestHeader.java
+@@ -20,11 +20,11 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
+ 
+-public class QueryTopicsByConsumerRequestHeader implements CommandCustomHeader {
++public class QueryTopicsByConsumerRequestHeader extends RpcRequestHeader {
+     @CFNotNull
+     private String group;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ReplyMessageRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ReplyMessageRequestHeader.java
+index 72e02ec93..eeb022d6d 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ReplyMessageRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ReplyMessageRequestHeader.java
+@@ -17,12 +17,12 @@
+ 
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.annotation.CFNullable;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicQueueRequestHeader;
+ 
+-public class ReplyMessageRequestHeader implements CommandCustomHeader {
++public class ReplyMessageRequestHeader extends TopicQueueRequestHeader {
+     @CFNotNull
+     private String producerGroup;
+     @CFNotNull
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ResetOffsetRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ResetOffsetRequestHeader.java
+index 31723f8b8..dd5c043ef 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ResetOffsetRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/ResetOffsetRequestHeader.java
+@@ -17,11 +17,11 @@
+ 
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicQueueRequestHeader;
+ 
+-public class ResetOffsetRequestHeader implements CommandCustomHeader {
++public class ResetOffsetRequestHeader extends TopicQueueRequestHeader {
+ 
+     @CFNotNull
+     private String topic;
+@@ -71,11 +71,11 @@ public class ResetOffsetRequestHeader implements CommandCustomHeader {
+         this.isForce = isForce;
+     }
+ 
+-    public int getQueueId() {
++    public Integer getQueueId() {
+         return queueId;
+     }
+ 
+-    public void setQueueId(int queueId) {
++    public void setQueueId(Integer queueId) {
+         this.queueId = queueId;
+     }
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/SendMessageRequestHeaderV2.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/SendMessageRequestHeaderV2.java
+index 0fd0889bb..4b0d795bc 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/SendMessageRequestHeaderV2.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/SendMessageRequestHeaderV2.java
+@@ -25,11 +25,12 @@ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.annotation.CFNullable;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
+ import org.apache.rocketmq.remoting.protocol.FastCodesHeader;
++import org.apache.rocketmq.remoting.rpc.TopicQueueRequestHeader;
+ 
+ /**
+  * Use short variable name to speed up FastJson deserialization process.
+  */
+-public class SendMessageRequestHeaderV2 implements CommandCustomHeader, FastCodesHeader {
++public class SendMessageRequestHeaderV2 extends TopicQueueRequestHeader implements CommandCustomHeader, FastCodesHeader {
+     @CFNotNull
+     private String a; // producerGroup;
+     @CFNotNull
+@@ -51,12 +52,12 @@ public class SendMessageRequestHeaderV2 implements CommandCustomHeader, FastCode
+     @CFNullable
+     private Integer j; // reconsumeTimes;
+     @CFNullable
+-    private boolean k; // unitMode = false;
++    private Boolean k; // unitMode = false;
+ 
+     private Integer l; // consumeRetryTimes
+ 
+     @CFNullable
+-    private boolean m; //batch
++    private Boolean m; //batch
+     @CFNullable
+     private String n; // brokerName
+ 
+@@ -75,7 +76,7 @@ public class SendMessageRequestHeaderV2 implements CommandCustomHeader, FastCode
+         v1.setUnitMode(v2.k);
+         v1.setMaxReconsumeTimes(v2.l);
+         v1.setBatch(v2.m);
+-        v1.setBname(v2.n);
++        v1.setBrokerName(v2.n);
+         return v1;
+     }
+ 
+@@ -94,7 +95,7 @@ public class SendMessageRequestHeaderV2 implements CommandCustomHeader, FastCode
+         v2.k = v1.isUnitMode();
+         v2.l = v1.getMaxReconsumeTimes();
+         v2.m = v1.isBatch();
+-        v2.n = v1.getBname();
++        v2.n = v1.getBrokerName();
+         return v2;
+     }
+ 
+@@ -274,11 +275,11 @@ public class SendMessageRequestHeaderV2 implements CommandCustomHeader, FastCode
+         this.j = j;
+     }
+ 
+-    public boolean isK() {
++    public Boolean isK() {
+         return k;
+     }
+ 
+-    public void setK(boolean k) {
++    public void setK(Boolean k) {
+         this.k = k;
+     }
+ 
+@@ -290,11 +291,11 @@ public class SendMessageRequestHeaderV2 implements CommandCustomHeader, FastCode
+         this.l = l;
+     }
+ 
+-    public boolean isM() {
++    public Boolean isM() {
+         return m;
+     }
+ 
+-    public void setM(boolean m) {
++    public void setM(Boolean m) {
+         this.m = m;
+     }
+ 
+@@ -317,4 +318,24 @@ public class SendMessageRequestHeaderV2 implements CommandCustomHeader, FastCode
+             .add("n", n)
+             .toString();
+     }
++
++    @Override
++    public Integer getQueueId() {
++        return e;
++    }
++
++    @Override
++    public void setQueueId(Integer queueId) {
++        this.e = queueId;
++    }
++
++    @Override
++    public String getTopic() {
++        return b;
++    }
++
++    @Override
++    public void setTopic(String topic) {
++        this.b = topic;
++    }
+ }
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/StatisticsMessagesRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/StatisticsMessagesRequestHeader.java
+index 16b7ecb5c..d8c22e376 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/StatisticsMessagesRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/StatisticsMessagesRequestHeader.java
+@@ -17,11 +17,11 @@
+ 
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicQueueRequestHeader;
+ 
+-public class StatisticsMessagesRequestHeader implements CommandCustomHeader {
++public class StatisticsMessagesRequestHeader extends TopicQueueRequestHeader {
+     @CFNotNull
+     private String consumerGroup;
+     @CFNotNull
+@@ -52,14 +52,14 @@ public class StatisticsMessagesRequestHeader implements CommandCustomHeader {
+         this.topic = topic;
+     }
+ 
+-    public int getQueueId() {
++    public Integer getQueueId() {
+         if (queueId < 0) {
+             return -1;
+         }
+         return queueId;
+     }
+ 
+-    public void setQueueId(int queueId) {
++    public void setQueueId(Integer queueId) {
+         this.queueId = queueId;
+     }
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/UnregisterClientRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/UnregisterClientRequestHeader.java
+index 371a54798..79072195b 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/UnregisterClientRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/UnregisterClientRequestHeader.java
+@@ -17,12 +17,12 @@
+ 
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.annotation.CFNullable;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.RpcRequestHeader;
+ 
+-public class UnregisterClientRequestHeader implements CommandCustomHeader {
++public class UnregisterClientRequestHeader extends RpcRequestHeader {
+     @CFNotNull
+     private String clientID;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/UpdateGroupForbiddenRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/UpdateGroupForbiddenRequestHeader.java
+index de2f9d1fb..cfb28df21 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/UpdateGroupForbiddenRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/UpdateGroupForbiddenRequestHeader.java
+@@ -20,11 +20,11 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class UpdateGroupForbiddenRequestHeader implements CommandCustomHeader {
++public class UpdateGroupForbiddenRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String  group;
+     @CFNotNull
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/DeleteTopicFromNamesrvRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/DeleteTopicFromNamesrvRequestHeader.java
+index ec0101e7f..5e5bd8b17 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/DeleteTopicFromNamesrvRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/DeleteTopicFromNamesrvRequestHeader.java
+@@ -16,11 +16,11 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header.namesrv;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class DeleteTopicFromNamesrvRequestHeader implements CommandCustomHeader {
++public class DeleteTopicFromNamesrvRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String topic;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/GetRouteInfoRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/GetRouteInfoRequestHeader.java
+index 0993f81fd..8de15f3fd 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/GetRouteInfoRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/GetRouteInfoRequestHeader.java
+@@ -20,12 +20,12 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header.namesrv;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.annotation.CFNullable;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class GetRouteInfoRequestHeader implements CommandCustomHeader {
++public class GetRouteInfoRequestHeader extends TopicRequestHeader {
+ 
+     @CFNotNull
+     private String topic;
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/RegisterTopicRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/RegisterTopicRequestHeader.java
+index ce36ab0f2..d93a05824 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/RegisterTopicRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/header/namesrv/RegisterTopicRequestHeader.java
+@@ -16,11 +16,11 @@
+  */
+ package org.apache.rocketmq.remoting.protocol.header.namesrv;
+ 
+-import org.apache.rocketmq.remoting.CommandCustomHeader;
+ import org.apache.rocketmq.remoting.annotation.CFNotNull;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.rpc.TopicRequestHeader;
+ 
+-public class RegisterTopicRequestHeader implements CommandCustomHeader {
++public class RegisterTopicRequestHeader extends TopicRequestHeader {
+     @CFNotNull
+     private String topic;
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RequestBuilder.java b/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RequestBuilder.java
+index 79167ec26..e2e2c52fd 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RequestBuilder.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RequestBuilder.java
+@@ -40,8 +40,8 @@ public class RequestBuilder {
+         }
+         try {
+             RpcRequestHeader requestHeader = (RpcRequestHeader) requestHeaderClass.newInstance();
+-            requestHeader.setOway(oneway);
+-            requestHeader.setBname(destBrokerName);
++            requestHeader.setOneway(oneway);
++            requestHeader.setBrokerName(destBrokerName);
+             return requestHeader;
+         } catch (Throwable t) {
+             throw new RuntimeException(t);
+@@ -67,8 +67,8 @@ public class RequestBuilder {
+         }
+         try {
+             TopicQueueRequestHeader requestHeader = (TopicQueueRequestHeader) requestHeaderClass.newInstance();
+-            requestHeader.setOway(oneway);
+-            requestHeader.setBname(destBrokerName);
++            requestHeader.setOneway(oneway);
++            requestHeader.setBrokerName(destBrokerName);
+             requestHeader.setTopic(topic);
+             requestHeader.setQueueId(queueId);
+             requestHeader.setLo(logic);
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RpcClientImpl.java b/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RpcClientImpl.java
+index 5328e8845..bca2d79d9 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RpcClientImpl.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RpcClientImpl.java
+@@ -59,7 +59,7 @@ public class RpcClientImpl implements RpcClient {
+     @Override
+     public Future<RpcResponse>  invoke(MessageQueue mq, RpcRequest request, long timeoutMs) throws RpcException {
+         String bname =  clientMetadata.getBrokerNameFromMessageQueue(mq);
+-        request.getHeader().setBname(bname);
++        request.getHeader().setBrokerName(bname);
+         return invoke(request, timeoutMs);
+     }
+ 
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RpcRequestHeader.java b/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RpcRequestHeader.java
+index ef7e53b4e..810d87648 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RpcRequestHeader.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/rpc/RpcRequestHeader.java
+@@ -16,6 +16,8 @@
+  */
+ package org.apache.rocketmq.remoting.rpc;
+ 
++import com.google.common.base.MoreObjects;
++import java.util.Objects;
+ import org.apache.rocketmq.remoting.CommandCustomHeader;
+ 
+ public abstract class RpcRequestHeader implements CommandCustomHeader {
+@@ -28,35 +30,72 @@ public abstract class RpcRequestHeader implements CommandCustomHeader {
+     //oneway
+     protected Boolean oway;
+ 
++    @Deprecated
+     public String getBname() {
+         return bname;
+     }
+ 
+-    public void setBname(String bname) {
+-        this.bname = bname;
++    @Deprecated
++    public void setBname(String brokerName) {
++        this.bname = brokerName;
+     }
+ 
+-    public Boolean getOway() {
+-        return oway;
++    public String getBrokerName() {
++        return bname;
+     }
+ 
+-    public void setOway(Boolean oway) {
+-        this.oway = oway;
++    public void setBrokerName(String brokerName) {
++        this.bname = brokerName;
+     }
+ 
+-    public String getNs() {
++    public String getNamespace() {
+         return ns;
+     }
+ 
+-    public void setNs(String ns) {
+-        this.ns = ns;
++    public void setNamespace(String namespace) {
++        this.ns = namespace;
+     }
+ 
+-    public Boolean getNsd() {
++    public Boolean getNamespaced() {
+         return nsd;
+     }
+ 
+-    public void setNsd(Boolean nsd) {
+-        this.nsd = nsd;
++    public void setNamespaced(Boolean namespaced) {
++        this.nsd = namespaced;
++    }
++
++    public Boolean getOneway() {
++        return oway;
++    }
++
++    public void setOneway(Boolean oneway) {
++        this.oway = oneway;
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) {
++            return true;
++        }
++        if (o == null || getClass() != o.getClass()) {
++            return false;
++        }
++        RpcRequestHeader header = (RpcRequestHeader) o;
++        return Objects.equals(ns, header.ns) && Objects.equals(nsd, header.nsd) && Objects.equals(bname, header.bname) && Objects.equals(oway, header.oway);
++    }
++
++    @Override
++    public int hashCode() {
++        return Objects.hash(ns, nsd, bname, oway);
++    }
++
++    @Override
++    public String toString() {
++        return MoreObjects.toStringHelper(this)
++            .add("namespace", ns)
++            .add("namespaced", nsd)
++            .add("brokerName", bname)
++            .add("oneway", oway)
++            .toString();
+     }
+ }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/kv/MessageFetcher.java b/store/src/main/java/org/apache/rocketmq/store/kv/MessageFetcher.java
+index 0ce0a3d8d..183f06673 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/kv/MessageFetcher.java
++++ b/store/src/main/java/org/apache/rocketmq/store/kv/MessageFetcher.java
+@@ -40,6 +40,7 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
+ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
+ import org.apache.rocketmq.remoting.protocol.RequestCode;
+ import org.apache.rocketmq.remoting.protocol.ResponseCode;
++import org.apache.rocketmq.remoting.protocol.header.HeartbeatRequestHeader;
+ import org.apache.rocketmq.remoting.protocol.header.PullMessageRequestHeader;
+ import org.apache.rocketmq.remoting.protocol.header.PullMessageResponseHeader;
+ import org.apache.rocketmq.remoting.protocol.header.UnregisterClientRequestHeader;
+@@ -113,7 +114,7 @@ public class MessageFetcher implements AutoCloseable {
+ 
+         heartbeatData.getConsumerDataSet().add(consumerData);
+ 
+-        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, null);
++        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, new HeartbeatRequestHeader());
+         request.setLanguage(LanguageCode.JAVA);
+         request.setBody(heartbeatData.encode());
+ 
+diff --git a/tools/src/main/java/org/apache/rocketmq/tools/admin/DefaultMQAdminExtImpl.java b/tools/src/main/java/org/apache/rocketmq/tools/admin/DefaultMQAdminExtImpl.java
+index 331b24d60..9447d95bb 100644
+--- a/tools/src/main/java/org/apache/rocketmq/tools/admin/DefaultMQAdminExtImpl.java
++++ b/tools/src/main/java/org/apache/rocketmq/tools/admin/DefaultMQAdminExtImpl.java
+@@ -981,7 +981,7 @@ public class DefaultMQAdminExtImpl implements MQAdminExt, MQAdminExtInner {
+             requestHeader.setTopic(queue.getTopic());
+             requestHeader.setQueueId(queue.getQueueId());
+             requestHeader.setCommitOffset(resetOffset);
+-            requestHeader.setBname(queue.getBrokerName());
++            requestHeader.setBrokerName(queue.getBrokerName());
+             this.mqClientInstance.getMQClientAPIImpl().updateConsumerOffset(brokerAddr, requestHeader, timeoutMillis);
+         }
+         return rollbackStats;
+@@ -1735,7 +1735,7 @@ public class DefaultMQAdminExtImpl implements MQAdminExt, MQAdminExtInner {
+         requestHeader.setTopic(mq.getTopic());
+         requestHeader.setQueueId(mq.getQueueId());
+         requestHeader.setCommitOffset(offset);
+-        requestHeader.setBname(mq.getBrokerName());
++        requestHeader.setBrokerName(mq.getBrokerName());
+         this.mqClientInstance.getMQClientAPIImpl().updateConsumerOffset(brokerAddr, requestHeader, timeoutMillis);
+     }
+ 

@@ -1,0 +1,7 @@
+{
+  "issue_id": 5509,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5509",
+  "title": "Fix flaky test case  in BrokerOuterAPITest",
+  "description": "<p dir=\"auto\">BrokerOuterAPITest.test_register_timeout:210 expected:<2> but was:<3></p>\n<p dir=\"auto\"><a href=\"https://github.com/apache/rocketmq/actions/runs/3437215903/jobs/5731686450\">https://github.com/apache/rocketmq/actions/runs/3437215903/jobs/5731686450</a></p>",
+  "description_text": "BrokerOuterAPITest.test_register_timeout:210 expected:<2> but was:<3>\nhttps://github.com/apache/rocketmq/actions/runs/3437215903/jobs/5731686450"
+}

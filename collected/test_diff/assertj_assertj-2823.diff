@@ -1,0 +1,39 @@
+diff --git a/assertj-core/src/test/java/org/assertj/core/api/Assertions_catchThrowableOfType_Test.java b/assertj-core/src/test/java/org/assertj/core/api/Assertions_catchThrowableOfType_Test.java
+index b2d4eb153..90cff161a 100644
+--- a/assertj-core/src/test/java/org/assertj/core/api/Assertions_catchThrowableOfType_Test.java
++++ b/assertj-core/src/test/java/org/assertj/core/api/Assertions_catchThrowableOfType_Test.java
+@@ -48,7 +48,7 @@ class Assertions_catchThrowableOfType_Test {
+   @Test
+   void catchThrowableOfType_should_fail_with_good_message_if_wrong_type() {
+     // GIVEN
+-    ThrowingCallable code = () -> catchThrowableOfType(raisingException("boom!!"), RuntimeException.class);
++    ThrowingCallable code = () -> catchThrowableOfType(RuntimeException.class, raisingException("boom!!"));
+     // WHEN
+     AssertionError assertionError = expectAssertionError(code);
+     // THEN
+diff --git a/assertj-core/src/test/java/org/assertj/core/api/EntryPointAssertions_catchThrowableOfType_Test.java b/assertj-core/src/test/java/org/assertj/core/api/EntryPointAssertions_catchThrowableOfType_Test.java
+index 1d4cb4f47..35b751b41 100644
+--- a/assertj-core/src/test/java/org/assertj/core/api/EntryPointAssertions_catchThrowableOfType_Test.java
++++ b/assertj-core/src/test/java/org/assertj/core/api/EntryPointAssertions_catchThrowableOfType_Test.java
+@@ -27,18 +27,18 @@ class EntryPointAssertions_catchThrowableOfType_Test extends EntryPointAssertion
+ 
+   @ParameterizedTest
+   @MethodSource("catchThrowableOfTypes")
+-  void should_catch_throwable_of_type(BiFunction<ThrowingCallable, Class<RuntimeException>, RuntimeException> catchThrowableOfType) {
++  void should_catch_throwable_of_type(BiFunction<Class<RuntimeException>, ThrowingCallable, RuntimeException> catchThrowableOfType) {
+     // GIVEN
+     ThrowingCallable throwingCallable = () -> {
+       throw RUNTIME_EXCEPTION;
+     };
+     // WHEN
+-    RuntimeException throwable = catchThrowableOfType.apply(throwingCallable, RuntimeException.class);
++    RuntimeException throwable = catchThrowableOfType.apply(RuntimeException.class, throwingCallable);
+     // THEN
+     then(throwable).isSameAs(RUNTIME_EXCEPTION);
+   }
+ 
+-  private static Stream<BiFunction<ThrowingCallable, Class<RuntimeException>, RuntimeException>> catchThrowableOfTypes() {
++  private static Stream<BiFunction<Class<RuntimeException>, ThrowingCallable, RuntimeException>> catchThrowableOfTypes() {
+     return Stream.of(Assertions::catchThrowableOfType, BDDAssertions::catchThrowableOfType, withAssertions::catchThrowableOfType);
+   }
+ 

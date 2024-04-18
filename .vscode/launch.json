@@ -1,0 +1,96 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Filter repo",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "-l ./repo_list.txt"
+        },
+        {
+            "name": "Collect raw data",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "--api_token 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 --repository_file ./collected/filtered_repo_metadata.json"
+        },
+        {
+            "name": "Verify bug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "--file ./collected/report.json"
+        },
+        {
+            "name": "Extract tuples",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "--samples ./unverified"
+        },
+        {
+            "name": "Cli info",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "info -p rocketmq"
+        },
+        {
+            "name": "Cli compile",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "compile -w ./tmp"
+        },
+        {
+            "name": "Cli pid",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "pid"
+        },
+        {
+            "name": "Cli env",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "env -p rocketmq"
+        },
+        {
+            "name": "Cli export",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "export -p rocketmq -t 105s -o ./tmp-output"
+        },
+        {
+            "name": "Cli checkout",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "checkout -p dubbo -t 1s -w ./tmp"
+        },
+        {
+            "name": "Cli coverage",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "coverage -w ./tmp -o ./tmp_output -i ./test.java"
+        },
+    ]
+}

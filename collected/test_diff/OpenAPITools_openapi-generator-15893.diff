@@ -1,0 +1,151 @@
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptAngularClientOptionsProvider.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptAngularClientOptionsProvider.java
+index 43bb2e2c5d0..2e034f0695f 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptAngularClientOptionsProvider.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptAngularClientOptionsProvider.java
+@@ -51,6 +51,7 @@ public class TypeScriptAngularClientOptionsProvider implements OptionsProvider {
+     public static String MODEL_SUFFIX = "";
+     public static String MODEL_FILE_SUFFIX = "";
+     public static final String ENUM_UNKNOWN_DEFAULT_CASE_VALUE = "false";
++    public static final String ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR_VALUE = "false";
+ 
+     @Override
+     public String getLanguage() {
+@@ -68,6 +69,7 @@ public class TypeScriptAngularClientOptionsProvider implements OptionsProvider {
+                 .put(CodegenConstants.PARAM_NAMING, PARAM_NAMING_VALUE)
+                 .put(CodegenConstants.SUPPORTS_ES6, SUPPORTS_ES6_VALUE)
+                 .put(AbstractTypeScriptClientCodegen.NULL_SAFE_ADDITIONAL_PROPS, NULL_SAFE_ADDITIONAL_PROPS_VALUE)
++                .put(AbstractTypeScriptClientCodegen.ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR, ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR_VALUE)
+                 .put(CodegenConstants.ENUM_NAME_SUFFIX, ENUM_NAME_SUFFIX)
+                 .put(TypeScriptAngularClientCodegen.STRING_ENUMS, STRING_ENUMS_VALUE)
+                 .put(TypeScriptAngularClientCodegen.NPM_NAME, NPM_NAME)
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptAureliaClientOptionsProvider.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptAureliaClientOptionsProvider.java
+index 7cc5631fecb..e975525974a 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptAureliaClientOptionsProvider.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptAureliaClientOptionsProvider.java
+@@ -39,6 +39,7 @@ public class TypeScriptAureliaClientOptionsProvider implements OptionsProvider {
+     public static final String ALLOW_UNICODE_IDENTIFIERS_VALUE = "false";
+     public static final String PREPEND_FORM_OR_BODY_PARAMETERS_VALUE = "true";
+     public static final String ENUM_UNKNOWN_DEFAULT_CASE_VALUE = "false";
++    public static final String ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR_VALUE = "false";
+ 
+     @Override
+     public String getLanguage() {
+@@ -56,6 +57,7 @@ public class TypeScriptAureliaClientOptionsProvider implements OptionsProvider {
+                 .put(CodegenConstants.PARAM_NAMING, PARAM_NAMING_VALUE)
+                 .put(CodegenConstants.SUPPORTS_ES6, String.valueOf(SUPPORTS_ES6_VALUE))
+                 .put(AbstractTypeScriptClientCodegen.NULL_SAFE_ADDITIONAL_PROPS, String.valueOf(NULL_SAFE_ADDITIONAL_PROPS_VALUE))
++                .put(AbstractTypeScriptClientCodegen.ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR, ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR_VALUE)
+                 .put(CodegenConstants.ENUM_NAME_SUFFIX, ENUM_NAME_SUFFIX)
+                 .put(TypeScriptAureliaClientCodegen.NPM_NAME, NPM_NAME)
+                 .put(TypeScriptAureliaClientCodegen.NPM_VERSION, NPM_VERSION)
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptFetchClientOptionsProvider.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptFetchClientOptionsProvider.java
+index 40adcda666f..e07f01cc32d 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptFetchClientOptionsProvider.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptFetchClientOptionsProvider.java
+@@ -44,6 +44,7 @@ public class TypeScriptFetchClientOptionsProvider implements OptionsProvider {
+     public static final String SAGAS_AND_RECORDS = "false";
+     public static final String ENUM_UNKNOWN_DEFAULT_CASE_VALUE = "false";
+     public static final String STRING_ENUMS = "false";
++    public static final String ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR_VALUE = "false";
+ 
+     @Override
+     public String getLanguage() {
+@@ -61,6 +62,7 @@ public class TypeScriptFetchClientOptionsProvider implements OptionsProvider {
+                 .put(CodegenConstants.PARAM_NAMING, PARAM_NAMING_VALUE)
+                 .put(CodegenConstants.SUPPORTS_ES6, String.valueOf(SUPPORTS_ES6_VALUE))
+                 .put(AbstractTypeScriptClientCodegen.NULL_SAFE_ADDITIONAL_PROPS, String.valueOf(NULL_SAFE_ADDITIONAL_PROPS_VALUE))
++                .put(AbstractTypeScriptClientCodegen.ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR, ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR_VALUE)
+                 .put(CodegenConstants.ENUM_NAME_SUFFIX, ENUM_NAME_SUFFIX)
+                 .put(TypeScriptFetchClientCodegen.NPM_NAME, NMP_NAME)
+                 .put(TypeScriptFetchClientCodegen.NPM_VERSION, NMP_VERSION)
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptNestjsClientOptionsProvider.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptNestjsClientOptionsProvider.java
+index d7143efcfc3..d09fafce21d 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptNestjsClientOptionsProvider.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptNestjsClientOptionsProvider.java
+@@ -47,6 +47,7 @@ public class TypeScriptNestjsClientOptionsProvider implements OptionsProvider {
+     public static String MODEL_SUFFIX = "";
+     public static String MODEL_FILE_SUFFIX = "";
+     public static final String ENUM_UNKNOWN_DEFAULT_CASE_VALUE = "false";
++    public static final String ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR_VALUE = "false";
+ 
+     @Override
+     public String getLanguage() {
+@@ -64,6 +65,7 @@ public class TypeScriptNestjsClientOptionsProvider implements OptionsProvider {
+                 .put(CodegenConstants.PARAM_NAMING, PARAM_NAMING_VALUE)
+                 .put(CodegenConstants.SUPPORTS_ES6, SUPPORTS_ES6_VALUE)
+                 .put(AbstractTypeScriptClientCodegen.NULL_SAFE_ADDITIONAL_PROPS, NULL_SAFE_ADDITIONAL_PROPS_VALUE)
++                .put(AbstractTypeScriptClientCodegen.ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR, ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR_VALUE)
+                 .put(CodegenConstants.ENUM_NAME_SUFFIX, ENUM_NAME_SUFFIX)
+                 .put(TypeScriptNestjsClientCodegen.STRING_ENUMS, STRING_ENUMS_VALUE)
+                 .put(TypeScriptNestjsClientCodegen.NPM_NAME, NMP_NAME)
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptNodeClientOptionsProvider.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptNodeClientOptionsProvider.java
+index a82306a5420..fca76c379ae 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptNodeClientOptionsProvider.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/options/TypeScriptNodeClientOptionsProvider.java
+@@ -42,6 +42,7 @@ public class TypeScriptNodeClientOptionsProvider implements OptionsProvider {
+     public static final String ALLOW_UNICODE_IDENTIFIERS_VALUE = "false";
+     public static final String PREPEND_FORM_OR_BODY_PARAMETERS_VALUE = "true";
+     public static final String ENUM_UNKNOWN_DEFAULT_CASE_VALUE = "false";
++    public static final String ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR_VALUE = "false";
+ 
+     @Override
+     public String getLanguage() {
+@@ -55,6 +56,7 @@ public class TypeScriptNodeClientOptionsProvider implements OptionsProvider {
+                 .put(CodegenConstants.SORT_MODEL_PROPERTIES_BY_REQUIRED_FLAG, SORT_MODEL_PROPERTIES_VALUE)
+                 .put(CodegenConstants.SUPPORTS_ES6, SUPPORTS_ES6_VALUE)
+                 .put(AbstractTypeScriptClientCodegen.NULL_SAFE_ADDITIONAL_PROPS, NULL_SAFE_ADDITIONAL_PROPS_VALUE)
++                .put(AbstractTypeScriptClientCodegen.ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR, ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR_VALUE)
+                 .put(CodegenConstants.ENUM_NAME_SUFFIX, ENUM_NAME_SUFFIX)
+                 .put(CodegenConstants.ENSURE_UNIQUE_PARAMS, ENSURE_UNIQUE_PARAMS_VALUE)
+                 .put(CodegenConstants.ENUM_PROPERTY_NAMING, ENUM_PROPERTY_NAMING_VALUE)
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/typescript/fetch/TypeScriptFetchClientCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/typescript/fetch/TypeScriptFetchClientCodegenTest.java
+index 0f19827b448..a6bccbff1ac 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/typescript/fetch/TypeScriptFetchClientCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/typescript/fetch/TypeScriptFetchClientCodegenTest.java
+@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.media.StringSchema;
+ import org.openapitools.codegen.CodegenConstants;
+ import org.openapitools.codegen.SupportingFile;
+ import org.openapitools.codegen.TestUtils;
++import org.openapitools.codegen.languages.AbstractTypeScriptClientCodegen;
+ import org.openapitools.codegen.languages.TypeScriptFetchClientCodegen;
+ import org.openapitools.codegen.typescript.TypeScriptGroups;
+ import org.openapitools.codegen.utils.ModelUtils;
+@@ -78,6 +79,38 @@ public class TypeScriptFetchClientCodegenTest {
+         Assert.assertEquals(codegen.toVarName("valid_var"), "valid_var");
+     }
+ 
++    @Test
++    public void toEnumVarName() {
++        TypeScriptFetchClientCodegen codegen = new TypeScriptFetchClientCodegen();
++        codegen.processOpts();
++        Assert.assertEquals(codegen.toEnumVarName("", "string"), "Empty");
++        Assert.assertEquals(codegen.toEnumVarName("$", "string"), "Dollar");
++        Assert.assertEquals(codegen.toEnumVarName("valid_var", "string"), "ValidVar");
++        Assert.assertEquals(codegen.toEnumVarName("-valid_var+", "string"), "ValidVar");
++        Assert.assertEquals(codegen.toEnumVarName("30valid_+var", "string"), "_30validVar");
++
++        codegen = new TypeScriptFetchClientCodegen();
++        codegen.additionalProperties().put(CodegenConstants.ENUM_PROPERTY_NAMING, "original");
++        codegen.processOpts();
++        Assert.assertEquals(codegen.toEnumVarName("", "string"), "empty");
++        Assert.assertEquals(codegen.toEnumVarName("$", "string"), "Dollar");
++        Assert.assertEquals(codegen.toEnumVarName("valid_var", "string"), "valid_var");
++        Assert.assertEquals(codegen.toEnumVarName("-valid_var+", "string"), "valid_var");
++        Assert.assertEquals(codegen.toEnumVarName("30valid_+var", "string"), "_30valid_var");
++
++        codegen = new TypeScriptFetchClientCodegen();
++        codegen.additionalProperties().put(CodegenConstants.ENUM_PROPERTY_NAMING, "UPPERCASE");
++        codegen.additionalProperties().put(AbstractTypeScriptClientCodegen.ENUM_PROPERTY_NAMING_REPLACE_SPECIAL_CHAR, "true");
++        codegen.processOpts();
++        Assert.assertEquals(codegen.toEnumVarName("", "string"), "EMPTY");
++        Assert.assertEquals(codegen.toEnumVarName("$", "string"), "DOLLAR");
++        Assert.assertEquals(codegen.toEnumVarName("valid_var", "string"), "VALID_VAR");
++        Assert.assertEquals(codegen.toEnumVarName("-valid_+var", "string"), "MINUS_VALID_PLUS_VAR");
++        Assert.assertEquals(codegen.toEnumVarName("-valid_var+", "string"), "MINUS_VALID_VAR_PLUS");
++        Assert.assertEquals(codegen.toEnumVarName("30valid_+var", "string"), "_30VALID_PLUS_VAR");
++
++    }
++
+     @Test
+     public void getTypeDeclarationTest() {
+         Schema<?> childSchema = new ArraySchema().items(new StringSchema());

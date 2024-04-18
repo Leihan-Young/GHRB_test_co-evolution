@@ -1,0 +1,7 @@
+{
+  "issue_id": 3112,
+  "issue_url": "https://github.com/iBotPeaches/Apktool/issues/3112",
+  "title": "Update for VanillaIceCream",
+  "description": "<p dir=\"auto\"><a class=\"commit-link\" data-hovercard-type=\"commit\" data-hovercard-url=\"https://github.com/aosp-mirror/platform_frameworks_base/commit/1dd09eb77941713254f5c0192d1332c5826dd3f9/hovercard\" href=\"https://github.com/aosp-mirror/platform_frameworks_base/commit/1dd09eb77941713254f5c0192d1332c5826dd3f9\">aosp-mirror/platform_frameworks_base@<tt>1dd09eb</tt></a></p>\n<ul dir=\"auto\">\n<li>Also support <code class=\"notranslate\">UpsideDownCake</code></li>\n</ul>",
+  "description_text": "aosp-mirror/platform_frameworks_base@1dd09eb\n\nAlso support UpsideDownCake\n"
+}

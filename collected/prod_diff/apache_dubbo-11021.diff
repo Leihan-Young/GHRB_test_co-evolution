@@ -1,0 +1,1124 @@
+diff --git a/dubbo-demo/dubbo-demo-spring-boot/dubbo-demo-spring-boot-consumer/src/main/java/org/apache/dubbo/springboot/demo/consumer/ObservationConfiguration.java b/dubbo-demo/dubbo-demo-spring-boot/dubbo-demo-spring-boot-consumer/src/main/java/org/apache/dubbo/springboot/demo/consumer/ObservationConfiguration.java
+new file mode 100644
+index 0000000000..450415362a
+--- /dev/null
++++ b/dubbo-demo/dubbo-demo-spring-boot/dubbo-demo-spring-boot-consumer/src/main/java/org/apache/dubbo/springboot/demo/consumer/ObservationConfiguration.java
+@@ -0,0 +1,214 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.dubbo.springboot.demo.consumer;
++
++
++import java.util.Collections;
++
++import javax.annotation.PostConstruct;
++import javax.annotation.PreDestroy;
++
++import io.micrometer.core.instrument.MeterRegistry;
++import io.micrometer.core.instrument.observation.DefaultMeterObservationHandler;
++import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
++import io.micrometer.observation.ObservationHandler;
++import io.micrometer.observation.ObservationRegistry;
++import io.micrometer.tracing.Tracer;
++import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
++import io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler;
++import io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler;
++import io.micrometer.tracing.handler.TracingAwareMeterObservationHandler;
++import io.micrometer.tracing.otel.bridge.ArrayListSpanProcessor;
++import io.micrometer.tracing.otel.bridge.OtelBaggageManager;
++import io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext;
++import io.micrometer.tracing.otel.bridge.OtelPropagator;
++import io.micrometer.tracing.otel.bridge.OtelTracer;
++import io.micrometer.tracing.otel.bridge.Slf4JBaggageEventListener;
++import io.micrometer.tracing.otel.bridge.Slf4JEventListener;
++import io.micrometer.tracing.propagation.Propagator;
++import io.opentelemetry.api.common.Attributes;
++import io.opentelemetry.context.propagation.ContextPropagators;
++import io.opentelemetry.extension.trace.propagation.B3Propagator;
++import io.opentelemetry.sdk.OpenTelemetrySdk;
++import io.opentelemetry.sdk.resources.Resource;
++import io.opentelemetry.sdk.trace.SdkTracerProvider;
++import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
++import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
++import org.apache.dubbo.rpc.model.ApplicationModel;
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.core.env.Environment;
++
++import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
++
++@Configuration
++public class ObservationConfiguration {
++
++    /**
++     * Default value for application name if {@code spring.application.name} is not set.
++     */
++    private static final String DEFAULT_APPLICATION_NAME = "application";
++
++    @Bean
++    ApplicationModel applicationModel() {
++        ApplicationModel applicationModel = ApplicationModel.defaultModel();
++        applicationModel.getBeanFactory().registerBean(observationRegistry());
++        return applicationModel;
++    }
++
++    @Bean
++    ObservationRegistry observationRegistry() {
++        return ObservationRegistry.create();
++    }
++
++    @Bean
++    MeterRegistry meterRegistry() {
++        return new SimpleMeterRegistry();
++    }
++
++    @Bean
++    ArrayListSpanProcessor spanExporter() {
++        return new ArrayListSpanProcessor();
++    }
++
++    @Bean
++    SdkTracerProvider sdkTracerProvider(Environment environment) {
++        String applicationName = environment.getProperty("dubbo.application.name", DEFAULT_APPLICATION_NAME);
++        return SdkTracerProvider.builder().setSampler(alwaysOn())
++            .addSpanProcessor(BatchSpanProcessor.builder(spanExporter()).build())
++            .setResource(Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, applicationName)))
++            .build();
++    }
++
++    @Bean
++    ContextPropagators contextPropagators() {
++        return ContextPropagators.create(B3Propagator.injectingSingleHeader());
++    }
++
++    @Bean
++    OpenTelemetrySdk openTelemetrySdk(SdkTracerProvider sdkTracerProvider) {
++        return OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider)
++            .setPropagators(contextPropagators()).build();
++    }
++
++    @Bean
++    io.opentelemetry.api.trace.Tracer otelTracer(OpenTelemetrySdk openTelemetrySdk) {
++        return openTelemetrySdk.getTracerProvider()
++            .get("io.micrometer.micrometer-tracing");
++    }
++
++    @Bean
++    OtelCurrentTraceContext otelCurrentTraceContext() {
++        return new OtelCurrentTraceContext();
++    }
++
++    Slf4JEventListener slf4JEventListener() {
++        return new Slf4JEventListener();
++    }
++
++    Slf4JBaggageEventListener slf4JBaggageEventListener() {
++        return new Slf4JBaggageEventListener(Collections.emptyList());
++    }
++
++    @Bean
++    OtelTracer tracer(io.opentelemetry.api.trace.Tracer otelTracer, OtelCurrentTraceContext otelCurrentTraceContext) {
++        Slf4JEventListener slf4JEventListener = slf4JEventListener();
++        Slf4JBaggageEventListener slf4JBaggageEventListener = slf4JBaggageEventListener();
++        return new OtelTracer(otelTracer, otelCurrentTraceContext, event -> {
++            slf4JEventListener.onEvent(event);
++            slf4JBaggageEventListener.onEvent(event);
++        }, new OtelBaggageManager(otelCurrentTraceContext, Collections.emptyList(), Collections.emptyList()));
++    }
++
++    @Bean
++    Propagator propagator(io.opentelemetry.api.trace.Tracer otelTracer) {
++        return new OtelPropagator(contextPropagators(), otelTracer);
++    }
++
++    @Bean
++    ObservationHandlerRegistrar observationHandlerRegistrar(ObservationRegistry observationRegistry, OtelTracer tracer, Propagator propagator, MeterRegistry meterRegistry) {
++        return new ObservationHandlerRegistrar(observationRegistry, tracer, propagator, meterRegistry);
++    }
++
++    @Bean
++    MetricsDumper metricsDumper(MeterRegistry meterRegistry) {
++        return new MetricsDumper(meterRegistry);
++    }
++
++    @Bean
++    TracesDumper tracesDumper(ArrayListSpanProcessor arrayListSpanProcessor) {
++        return new TracesDumper(arrayListSpanProcessor);
++    }
++
++    static class ObservationHandlerRegistrar {
++
++        private final ObservationRegistry observationRegistry;
++
++        private final Tracer tracer;
++
++        private final Propagator propagator;
++
++        private final MeterRegistry meterRegistry;
++
++        ObservationHandlerRegistrar(ObservationRegistry observationRegistry, Tracer tracer, Propagator propagator, MeterRegistry meterRegistry) {
++            this.observationRegistry = observationRegistry;
++            this.tracer = tracer;
++            this.propagator = propagator;
++            this.meterRegistry = meterRegistry;
++        }
++
++        @PostConstruct
++        void setup() {
++            observationRegistry.observationConfig().observationHandler(new TracingAwareMeterObservationHandler<>(new DefaultMeterObservationHandler(meterRegistry), tracer));
++            observationRegistry.observationConfig()
++                .observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(new PropagatingReceiverTracingObservationHandler<>(tracer, propagator), new PropagatingSenderTracingObservationHandler<>(tracer, propagator), new DefaultTracingObservationHandler(tracer)));
++        }
++    }
++
++
++    static class MetricsDumper {
++        private final MeterRegistry meterRegistry;
++
++        MetricsDumper(MeterRegistry meterRegistry) {
++            this.meterRegistry = meterRegistry;
++        }
++
++        @PreDestroy
++        void dumpMetrics() {
++            System.out.println("==== METRICS ====");
++            this.meterRegistry.getMeters().forEach(meter -> System.out.println(" - Metric type \t[" + meter.getId().getType() + "],\tname [" + meter.getId().getName() + "],\ttags " + meter.getId().getTags() + ",\tmeasurements " + meter.measure()));
++            System.out.println("=================");
++        }
++    }
++
++
++    static class TracesDumper {
++        private final ArrayListSpanProcessor arrayListSpanProcessor;
++
++        TracesDumper(ArrayListSpanProcessor arrayListSpanProcessor) {
++            this.arrayListSpanProcessor = arrayListSpanProcessor;
++        }
++
++        @PreDestroy
++        void dumpTraces() {
++            System.out.println("==== TRACES ====");
++            this.arrayListSpanProcessor.spans().forEach(System.out::println);
++            System.out.println("=================");
++        }
++    }
++}
+diff --git a/dubbo-demo/dubbo-demo-spring-boot/dubbo-demo-spring-boot-provider/src/main/java/org/apache/dubbo/springboot/demo/provider/ObservationConfiguration.java b/dubbo-demo/dubbo-demo-spring-boot/dubbo-demo-spring-boot-provider/src/main/java/org/apache/dubbo/springboot/demo/provider/ObservationConfiguration.java
+new file mode 100644
+index 0000000000..77e0b06277
+--- /dev/null
++++ b/dubbo-demo/dubbo-demo-spring-boot/dubbo-demo-spring-boot-provider/src/main/java/org/apache/dubbo/springboot/demo/provider/ObservationConfiguration.java
+@@ -0,0 +1,215 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.dubbo.springboot.demo.provider;
++
++
++import java.util.Collections;
++
++import javax.annotation.PostConstruct;
++import javax.annotation.PreDestroy;
++
++import io.micrometer.core.instrument.MeterRegistry;
++import io.micrometer.core.instrument.observation.DefaultMeterObservationHandler;
++import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
++import io.micrometer.observation.ObservationHandler;
++import io.micrometer.observation.ObservationRegistry;
++import io.micrometer.tracing.Tracer;
++import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
++import io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler;
++import io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler;
++import io.micrometer.tracing.handler.TracingAwareMeterObservationHandler;
++import io.micrometer.tracing.otel.bridge.ArrayListSpanProcessor;
++import io.micrometer.tracing.otel.bridge.OtelBaggageManager;
++import io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext;
++import io.micrometer.tracing.otel.bridge.OtelPropagator;
++import io.micrometer.tracing.otel.bridge.OtelTracer;
++import io.micrometer.tracing.otel.bridge.Slf4JBaggageEventListener;
++import io.micrometer.tracing.otel.bridge.Slf4JEventListener;
++import io.micrometer.tracing.propagation.Propagator;
++import io.opentelemetry.api.common.Attributes;
++import io.opentelemetry.context.propagation.ContextPropagators;
++import io.opentelemetry.extension.trace.propagation.B3Propagator;
++import io.opentelemetry.sdk.OpenTelemetrySdk;
++import io.opentelemetry.sdk.resources.Resource;
++import io.opentelemetry.sdk.trace.SdkTracerProvider;
++import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
++import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
++import org.apache.dubbo.rpc.model.ApplicationModel;
++
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.core.env.Environment;
++
++import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
++
++@Configuration
++public class ObservationConfiguration {
++
++    /**
++     * Default value for application name if {@code spring.application.name} is not set.
++     */
++    private static final String DEFAULT_APPLICATION_NAME = "application";
++
++    @Bean
++    ApplicationModel applicationModel() {
++        ApplicationModel applicationModel = ApplicationModel.defaultModel();
++        applicationModel.getBeanFactory().registerBean(observationRegistry());
++        return applicationModel;
++    }
++
++    @Bean
++    ObservationRegistry observationRegistry() {
++        return ObservationRegistry.create();
++    }
++
++    @Bean
++    MeterRegistry meterRegistry() {
++        return new SimpleMeterRegistry();
++    }
++
++    @Bean
++    ArrayListSpanProcessor spanExporter() {
++        return new ArrayListSpanProcessor();
++    }
++
++    @Bean
++    SdkTracerProvider sdkTracerProvider(Environment environment) {
++        String applicationName = environment.getProperty("dubbo.application.name", DEFAULT_APPLICATION_NAME);
++        return SdkTracerProvider.builder().setSampler(alwaysOn())
++            .addSpanProcessor(BatchSpanProcessor.builder(spanExporter()).build())
++            .setResource(Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, applicationName)))
++            .build();
++    }
++
++    @Bean
++    ContextPropagators contextPropagators() {
++        return ContextPropagators.create(B3Propagator.injectingSingleHeader());
++    }
++
++    @Bean
++    OpenTelemetrySdk openTelemetrySdk(SdkTracerProvider sdkTracerProvider) {
++        return OpenTelemetrySdk.builder().setTracerProvider(sdkTracerProvider)
++            .setPropagators(contextPropagators()).build();
++    }
++
++    @Bean
++    io.opentelemetry.api.trace.Tracer otelTracer(OpenTelemetrySdk openTelemetrySdk) {
++        return openTelemetrySdk.getTracerProvider()
++            .get("io.micrometer.micrometer-tracing");
++    }
++
++    @Bean
++    OtelCurrentTraceContext otelCurrentTraceContext() {
++        return new OtelCurrentTraceContext();
++    }
++
++    Slf4JEventListener slf4JEventListener() {
++        return new Slf4JEventListener();
++    }
++
++    Slf4JBaggageEventListener slf4JBaggageEventListener() {
++        return new Slf4JBaggageEventListener(Collections.emptyList());
++    }
++
++    @Bean
++    OtelTracer tracer(io.opentelemetry.api.trace.Tracer otelTracer, OtelCurrentTraceContext otelCurrentTraceContext) {
++        Slf4JEventListener slf4JEventListener = slf4JEventListener();
++        Slf4JBaggageEventListener slf4JBaggageEventListener = slf4JBaggageEventListener();
++        return new OtelTracer(otelTracer, otelCurrentTraceContext, event -> {
++            slf4JEventListener.onEvent(event);
++            slf4JBaggageEventListener.onEvent(event);
++        }, new OtelBaggageManager(otelCurrentTraceContext, Collections.emptyList(), Collections.emptyList()));
++    }
++
++    @Bean
++    Propagator propagator(io.opentelemetry.api.trace.Tracer otelTracer) {
++        return new OtelPropagator(contextPropagators(), otelTracer);
++    }
++
++    @Bean
++    ObservationHandlerRegistrar observationHandlerRegistrar(ObservationRegistry observationRegistry, OtelTracer tracer, Propagator propagator, MeterRegistry meterRegistry) {
++        return new ObservationHandlerRegistrar(observationRegistry, tracer, propagator, meterRegistry);
++    }
++
++    @Bean
++    MetricsDumper metricsDumper(MeterRegistry meterRegistry) {
++        return new MetricsDumper(meterRegistry);
++    }
++
++    @Bean
++    TracesDumper tracesDumper(ArrayListSpanProcessor arrayListSpanProcessor) {
++        return new TracesDumper(arrayListSpanProcessor);
++    }
++
++    static class ObservationHandlerRegistrar {
++
++        private final ObservationRegistry observationRegistry;
++
++        private final Tracer tracer;
++
++        private final Propagator propagator;
++
++        private final MeterRegistry meterRegistry;
++
++        ObservationHandlerRegistrar(ObservationRegistry observationRegistry, Tracer tracer, Propagator propagator, MeterRegistry meterRegistry) {
++            this.observationRegistry = observationRegistry;
++            this.tracer = tracer;
++            this.propagator = propagator;
++            this.meterRegistry = meterRegistry;
++        }
++
++        @PostConstruct
++        void setup() {
++            observationRegistry.observationConfig().observationHandler(new TracingAwareMeterObservationHandler<>(new DefaultMeterObservationHandler(meterRegistry), tracer));
++            observationRegistry.observationConfig()
++                .observationHandler(new ObservationHandler.FirstMatchingCompositeObservationHandler(new PropagatingReceiverTracingObservationHandler<>(tracer, propagator), new PropagatingSenderTracingObservationHandler<>(tracer, propagator), new DefaultTracingObservationHandler(tracer)));
++        }
++    }
++
++
++    static class MetricsDumper {
++        private final MeterRegistry meterRegistry;
++
++        MetricsDumper(MeterRegistry meterRegistry) {
++            this.meterRegistry = meterRegistry;
++        }
++
++        @PreDestroy
++        void dumpMetrics() {
++            System.out.println("==== METRICS ====");
++            this.meterRegistry.getMeters().forEach(meter -> System.out.println(" - Metric type \t[" + meter.getId().getType() + "],\tname [" + meter.getId().getName() + "],\ttags " + meter.getId().getTags() + ",\tmeasurements " + meter.measure()));
++            System.out.println("=================");
++        }
++    }
++
++
++    static class TracesDumper {
++        private final ArrayListSpanProcessor arrayListSpanProcessor;
++
++        TracesDumper(ArrayListSpanProcessor arrayListSpanProcessor) {
++            this.arrayListSpanProcessor = arrayListSpanProcessor;
++        }
++
++        @PreDestroy
++        void dumpTraces() {
++            System.out.println("==== TRACES ====");
++            this.arrayListSpanProcessor.spans().forEach(System.out::println);
++            System.out.println("=================");
++        }
++    }
++}
+diff --git a/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/AbstractDefaultDubboObservationConvention.java b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/AbstractDefaultDubboObservationConvention.java
+new file mode 100644
+index 0000000000..de52947673
+--- /dev/null
++++ b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/AbstractDefaultDubboObservationConvention.java
+@@ -0,0 +1,61 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.metrics.filter.observation;
++
++import io.micrometer.common.KeyValues;
++import io.micrometer.common.docs.KeyName;
++import io.micrometer.common.lang.Nullable;
++import org.apache.dubbo.common.utils.StringUtils;
++import org.apache.dubbo.rpc.Invocation;
++import org.apache.dubbo.rpc.support.RpcUtils;
++
++import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.RPC_METHOD;
++import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.RPC_SERVICE;
++import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.RPC_SYSTEM;
++
++class AbstractDefaultDubboObservationConvention {
++    KeyValues getLowCardinalityKeyValues(Invocation invocation) {
++        KeyValues keyValues = KeyValues.of(RPC_SYSTEM.withValue("apache_dubbo"));
++        String serviceName = StringUtils.hasText(invocation.getServiceName()) ? invocation.getServiceName() : readServiceName(invocation.getTargetServiceUniqueName());
++        keyValues = appendNonNull(keyValues, RPC_SERVICE, serviceName);
++        return appendNonNull(keyValues, RPC_METHOD, RpcUtils.getMethodName(invocation));
++    }
++
++    protected KeyValues appendNonNull(KeyValues keyValues, KeyName keyName, @Nullable String value) {
++        if (value != null) {
++            return keyValues.and(keyName.withValue(value));
++        }
++        return keyValues;
++    }
++
++    String getContextualName(Invocation invocation) {
++        String serviceName = StringUtils.hasText(invocation.getServiceName()) ? invocation.getServiceName() : readServiceName(invocation.getTargetServiceUniqueName());
++        String methodName = RpcUtils.getMethodName(invocation);
++        String method = StringUtils.hasText(methodName) ? methodName : "";
++        return serviceName + "/" + method;
++    }
++
++    private String readServiceName(String targetServiceUniqueName) {
++        String[] splitByHyphen = targetServiceUniqueName.split("/"); // foo-provider/a.b.c:1.0.0 or a.b.c:1.0.0
++        String withVersion = splitByHyphen.length == 1 ? targetServiceUniqueName : splitByHyphen[1];
++        String[] splitByVersion = withVersion.split(":"); // a.b.c:1.0.0
++        if (splitByVersion.length == 1) {
++            return withVersion;
++        }
++        return splitByVersion[0]; // a.b.c
++    }
++}
+diff --git a/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DefaultDubboClientObservationConvention.java b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DefaultDubboClientObservationConvention.java
+new file mode 100644
+index 0000000000..5849f5e165
+--- /dev/null
++++ b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DefaultDubboClientObservationConvention.java
+@@ -0,0 +1,89 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.metrics.filter.observation;
++
++import java.util.List;
++
++import io.micrometer.common.KeyValues;
++import org.apache.dubbo.common.URL;
++import org.apache.dubbo.rpc.Invoker;
++import org.apache.dubbo.rpc.RpcContext;
++import org.apache.dubbo.rpc.RpcContextAttachment;
++
++import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_NAME;
++import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_PORT;
++
++/**
++ * Default implementation of the {@link DubboClientObservationConvention}.
++ */
++public class DefaultDubboClientObservationConvention extends AbstractDefaultDubboObservationConvention implements DubboClientObservationConvention {
++    /**
++     * Singleton instance of {@link DefaultDubboClientObservationConvention}.
++     */
++    public static final DubboClientObservationConvention INSTANCE = new DefaultDubboClientObservationConvention();
++
++    @Override
++    public String getName() {
++        return "rpc.client.duration";
++    }
++
++    @Override
++    public KeyValues getLowCardinalityKeyValues(DubboClientContext context) {
++        KeyValues keyValues = super.getLowCardinalityKeyValues(context.getInvocation());
++        return withRemoteHostPort(keyValues, context);
++    }
++
++    private KeyValues withRemoteHostPort(KeyValues keyValues, DubboClientContext context) {
++        List<Invoker<?>> invokedInvokers = context.getInvocation().getInvokedInvokers();
++        if (invokedInvokers.isEmpty()) {
++            return keyValues;
++        }
++        // We'll attach tags only from the first invoker
++        Invoker<?> invoker = invokedInvokers.get(0);
++        URL url = invoker.getUrl();
++        RpcContextAttachment rpcContextAttachment = RpcContext.getClientAttachment();
++        String remoteHost = remoteHost(rpcContextAttachment, url);
++        int remotePort = remotePort(rpcContextAttachment, url);
++        return withRemoteHostPort(keyValues, remoteHost, remotePort);
++    }
++
++    private String remoteHost(RpcContextAttachment rpcContextAttachment, URL url) {
++        String remoteHost = url != null ? url.getHost() : null;
++        return remoteHost != null ? remoteHost : rpcContextAttachment.getRemoteHost();
++    }
++
++    private int remotePort(RpcContextAttachment rpcContextAttachment, URL url) {
++        Integer remotePort = url != null ? url.getPort() : null;
++        if (remotePort != null) {
++            return remotePort;
++        }
++        return rpcContextAttachment.getRemotePort() != 0 ? rpcContextAttachment.getRemotePort() : rpcContextAttachment.getLocalPort();
++    }
++
++    private KeyValues withRemoteHostPort(KeyValues keyValues, String remoteHostName, int remotePort) {
++        keyValues = appendNonNull(keyValues, NET_PEER_NAME, remoteHostName);
++        if (remotePort == 0) {
++            return keyValues;
++        }
++        return appendNonNull(keyValues, NET_PEER_PORT, String.valueOf(remotePort));
++    }
++
++    @Override
++    public String getContextualName(DubboClientContext context) {
++        return super.getContextualName(context.getInvocation());
++    }
++}
+diff --git a/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DefaultDubboServerObservationConvention.java b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DefaultDubboServerObservationConvention.java
+new file mode 100644
+index 0000000000..094d17b50d
+--- /dev/null
++++ b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DefaultDubboServerObservationConvention.java
+@@ -0,0 +1,45 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.metrics.filter.observation;
++
++import io.micrometer.common.KeyValues;
++
++/**
++ * Default implementation of the {@link DubboServerObservationConvention}.
++ */
++public class DefaultDubboServerObservationConvention extends AbstractDefaultDubboObservationConvention implements DubboServerObservationConvention {
++
++    /**
++     * Singleton instance of {@link DefaultDubboServerObservationConvention}.
++     */
++    public static final DubboServerObservationConvention INSTANCE = new DefaultDubboServerObservationConvention();
++
++    @Override
++    public String getName() {
++        return "rpc.server.duration";
++    }
++
++    @Override
++    public KeyValues getLowCardinalityKeyValues(DubboServerContext context) {
++        return super.getLowCardinalityKeyValues(context.getInvocation());
++    }
++
++    @Override
++    public String getContextualName(DubboServerContext context) {
++        return super.getContextualName(context.getInvocation());
++    }
++}
+diff --git a/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboClientContext.java b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboClientContext.java
+new file mode 100644
+index 0000000000..4a0baa536f
+--- /dev/null
++++ b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboClientContext.java
+@@ -0,0 +1,48 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.metrics.filter.observation;
++
++import java.util.Objects;
++
++import io.micrometer.observation.transport.SenderContext;
++import org.apache.dubbo.rpc.Invocation;
++import org.apache.dubbo.rpc.Invoker;
++
++/**
++ * Provider context for RPC.
++ */
++public class DubboClientContext extends SenderContext<Invocation> {
++
++    private final Invoker<?> invoker;
++
++    private final Invocation invocation;
++
++    public DubboClientContext(Invoker<?> invoker, Invocation invocation) {
++        super((map, key, value) -> Objects.requireNonNull(map).setAttachment(key, value));
++        this.invoker = invoker;
++        this.invocation = invocation;
++        setCarrier(invocation);
++    }
++
++    public Invoker<?> getInvoker() {
++        return invoker;
++    }
++
++    public Invocation getInvocation() {
++        return invocation;
++    }
++}
+diff --git a/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboClientObservationConvention.java b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboClientObservationConvention.java
+new file mode 100644
+index 0000000000..044c548434
+--- /dev/null
++++ b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboClientObservationConvention.java
+@@ -0,0 +1,30 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.metrics.filter.observation;
++
++import io.micrometer.observation.Observation;
++import io.micrometer.observation.ObservationConvention;
++
++/**
++ * {@link ObservationConvention} for a {@link DubboClientContext}.
++ */
++public interface DubboClientObservationConvention extends ObservationConvention<DubboClientContext> {
++    @Override
++    default boolean supportsContext(Observation.Context context) {
++        return context instanceof DubboClientContext;
++    }
++}
+diff --git a/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboObservation.java b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboObservation.java
+new file mode 100644
+index 0000000000..d2b1891446
+--- /dev/null
++++ b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboObservation.java
+@@ -0,0 +1,119 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.metrics.filter.observation;
++
++import io.micrometer.common.docs.KeyName;
++import io.micrometer.observation.Observation;
++import io.micrometer.observation.ObservationConvention;
++import io.micrometer.observation.docs.ObservationDocumentation;
++
++/**
++ * Documentation of Dubbo observations.
++ */
++enum DubboObservation implements ObservationDocumentation {
++
++    /**
++     * Server side Dubbo RPC Observation.
++     */
++    SERVER {
++        @Override
++        public Class<? extends ObservationConvention<? extends Observation.Context>> getDefaultConvention() {
++            return DefaultDubboServerObservationConvention.class;
++        }
++
++        @Override
++        public KeyName[] getLowCardinalityKeyNames() {
++            return LowCardinalityKeyNames.values();
++        }
++
++    },
++
++    /**
++     * Client side Dubbo RPC Observation.
++     */
++    CLIENT {
++        @Override
++        public Class<? extends ObservationConvention<? extends Observation.Context>> getDefaultConvention() {
++            return DefaultDubboClientObservationConvention.class;
++        }
++
++        @Override
++        public KeyName[] getLowCardinalityKeyNames() {
++            return LowCardinalityKeyNames.values();
++        }
++
++    };
++
++    enum LowCardinalityKeyNames implements KeyName {
++
++        /**
++         * A string identifying the remoting system.
++         * Must be "apache_dubbo".
++         */
++        RPC_SYSTEM {
++            @Override
++            public String asString() {
++                return "rpc.system";
++            }
++        },
++
++        /**
++         * The full (logical) name of the service being called, including its package name, if applicable.
++         * Example: "myservice.EchoService".
++         */
++        RPC_SERVICE {
++            @Override
++            public String asString() {
++                return "rpc.service";
++            }
++        },
++
++        /**
++         * The name of the (logical) method being called, must be equal to the $method part in the span name.
++         * Example: "exampleMethod".
++         */
++        RPC_METHOD {
++            @Override
++            public String asString() {
++                return "rpc.method";
++            }
++        },
++
++        /**
++         * RPC server host name.
++         * Example: "example.com".
++         */
++        NET_PEER_NAME {
++            @Override
++            public String asString() {
++                return "net.peer.name";
++            }
++        },
++
++        /**
++         * Logical remote port number.
++         * Example: 80; 8080; 443.
++         */
++        NET_PEER_PORT {
++            @Override
++            public String asString() {
++                return "net.peer.port";
++            }
++        }
++    }
++
++}
+diff --git a/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboServerContext.java b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboServerContext.java
+new file mode 100644
+index 0000000000..1f1fc4c5a4
+--- /dev/null
++++ b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboServerContext.java
+@@ -0,0 +1,46 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.metrics.filter.observation;
++
++import io.micrometer.observation.transport.ReceiverContext;
++import org.apache.dubbo.rpc.Invocation;
++import org.apache.dubbo.rpc.Invoker;
++
++/**
++ * Consumer context for RPC.
++ */
++public class DubboServerContext extends ReceiverContext<Invocation> {
++
++    private final Invoker<?> invoker;
++
++    private final Invocation invocation;
++
++    public DubboServerContext(Invoker<?> invoker, Invocation invocation) {
++        super((stringObjectMap, s) -> String.valueOf(stringObjectMap.getAttachment(s)));
++        this.invoker = invoker;
++        this.invocation = invocation;
++        setCarrier(invocation);
++    }
++
++    public Invoker<?> getInvoker() {
++        return invoker;
++    }
++
++    public Invocation getInvocation() {
++        return invocation;
++    }
++}
+diff --git a/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboServerObservationConvention.java b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboServerObservationConvention.java
+new file mode 100644
+index 0000000000..bd6c66f11d
+--- /dev/null
++++ b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/DubboServerObservationConvention.java
+@@ -0,0 +1,30 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.metrics.filter.observation;
++
++import io.micrometer.observation.Observation;
++import io.micrometer.observation.ObservationConvention;
++
++/**
++ * {@link ObservationConvention} for a {@link DubboServerContext}.
++ */
++public interface DubboServerObservationConvention extends ObservationConvention<DubboServerContext> {
++    @Override
++    default boolean supportsContext(Observation.Context context) {
++        return context instanceof DubboServerContext;
++    }
++}
+diff --git a/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/ObservationReceiverFilter.java b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/ObservationReceiverFilter.java
+new file mode 100644
+index 0000000000..ee9bdf2588
+--- /dev/null
++++ b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/ObservationReceiverFilter.java
+@@ -0,0 +1,77 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.metrics.filter.observation;
++
++import io.micrometer.observation.Observation;
++import io.micrometer.observation.ObservationRegistry;
++import org.apache.dubbo.common.extension.Activate;
++import org.apache.dubbo.rpc.BaseFilter;
++import org.apache.dubbo.rpc.Filter;
++import org.apache.dubbo.rpc.Invocation;
++import org.apache.dubbo.rpc.Invoker;
++import org.apache.dubbo.rpc.Result;
++import org.apache.dubbo.rpc.RpcException;
++import org.apache.dubbo.rpc.model.ApplicationModel;
++import org.apache.dubbo.rpc.model.ScopeModelAware;
++
++import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
++
++/**
++ * A {@link Filter} that creates an {@link Observation} around the incoming message.
++ */
++@Activate(group = PROVIDER, order = -1)
++public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
++
++    private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
++
++    private DubboServerObservationConvention serverObservationConvention = null;
++
++    public ObservationReceiverFilter(ApplicationModel applicationModel) {
++        observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
++        serverObservationConvention = applicationModel.getBeanFactory().getBean(DubboServerObservationConvention.class);
++    }
++
++    @Override
++    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
++        if (observationRegistry == null) {
++            return invoker.invoke(invocation);
++        }
++        DubboServerContext receiverContext = new DubboServerContext(invoker, invocation);
++        Observation observation = DubboObservation.SERVER.observation(this.serverObservationConvention, DefaultDubboServerObservationConvention.INSTANCE, () -> receiverContext, observationRegistry);
++        invocation.put(Observation.class, observation.start());
++        return observation.scoped(() -> invoker.invoke(invocation));
++    }
++
++    @Override
++    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
++        Observation observation = (Observation) invocation.get(Observation.class);
++        if (observation == null) {
++            return;
++        }
++        observation.stop();
++    }
++
++    @Override
++    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
++        Observation observation = (Observation) invocation.get(Observation.class);
++        if (observation == null) {
++            return;
++        }
++        observation.error(t);
++        observation.stop();
++    }
++}
+diff --git a/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/ObservationSenderFilter.java b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/ObservationSenderFilter.java
+new file mode 100644
+index 0000000000..e8d39b2d3f
+--- /dev/null
++++ b/dubbo-metrics/dubbo-metrics-api/src/main/java/org/apache/dubbo/metrics/filter/observation/ObservationSenderFilter.java
+@@ -0,0 +1,78 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.metrics.filter.observation;
++
++import io.micrometer.observation.Observation;
++import io.micrometer.observation.ObservationRegistry;
++import org.apache.dubbo.common.extension.Activate;
++import org.apache.dubbo.rpc.BaseFilter;
++import org.apache.dubbo.rpc.Filter;
++import org.apache.dubbo.rpc.Invocation;
++import org.apache.dubbo.rpc.Invoker;
++import org.apache.dubbo.rpc.Result;
++import org.apache.dubbo.rpc.RpcException;
++import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
++import org.apache.dubbo.rpc.model.ApplicationModel;
++import org.apache.dubbo.rpc.model.ScopeModelAware;
++
++import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
++
++/**
++ * A {@link Filter} that creates an {@link Observation} around the outgoing message.
++ */
++@Activate(group = CONSUMER, order = -1)
++public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
++
++    private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
++
++    private DubboClientObservationConvention clientObservationConvention = null;
++
++    public ObservationSenderFilter(ApplicationModel applicationModel) {
++        observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
++        clientObservationConvention = applicationModel.getBeanFactory().getBean(DubboClientObservationConvention.class);
++    }
++
++    @Override
++    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
++        if (observationRegistry == null) {
++            return invoker.invoke(invocation);
++        }
++        DubboClientContext senderContext = new DubboClientContext(invoker, invocation);
++        Observation observation = DubboObservation.CLIENT.observation(this.clientObservationConvention, DefaultDubboClientObservationConvention.INSTANCE, () -> senderContext, observationRegistry);
++        invocation.put(Observation.class, observation.start());
++        return observation.scoped(() -> invoker.invoke(invocation));
++    }
++
++    @Override
++    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
++        Observation observation = (Observation) invocation.get(Observation.class);
++        if (observation == null) {
++            return;
++        }
++        observation.stop();
++    }
++
++    @Override
++    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
++        Observation observation = (Observation) invocation.get(Observation.class);
++        if (observation == null) {
++            return;
++        }
++        observation.error(t);
++        observation.stop();
++    }
++}

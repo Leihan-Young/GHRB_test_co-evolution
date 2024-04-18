@@ -1,0 +1,7 @@
+{
+  "issue_id": 9331,
+  "issue_url": "https://github.com/alibaba/nacos/issues/9331",
+  "title": "Support batch de registration of instances and proxy de registration scenarios.",
+  "description": "\n<p dir=\"auto\"><strong>Is your feature request related to a problem? Please describe.</strong><br>\nA clear and concise description of what the problem is. Ex. I'm always frustrated when [...]</p>\n<p dir=\"auto\"><strong>Describe the solution you'd like</strong><br>\nA clear and concise description of what you want to happen.</p>\n<p dir=\"auto\"><strong>Describe alternatives you've considered</strong><br>\nA clear and concise description of any alternative solutions or features you've considered.</p>\n<p dir=\"auto\"><strong>Additional context</strong><br>\nAdd any other context or screenshots about the feature request here.</p>",
+  "description_text": "\nIs your feature request related to a problem? Please describe.\nA clear and concise description of what the problem is. Ex. I'm always frustrated when [...]\nDescribe the solution you'd like\nA clear and concise description of what you want to happen.\nDescribe alternatives you've considered\nA clear and concise description of any alternative solutions or features you've considered.\nAdditional context\nAdd any other context or screenshots about the feature request here."
+}

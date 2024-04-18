@@ -1,0 +1,201 @@
+diff --git a/sslcontext-kickstart/src/main/java/module-info.java b/sslcontext-kickstart/src/main/java/module-info.java
+index 09a1f3c..cbc0bf6 100644
+--- a/sslcontext-kickstart/src/main/java/module-info.java
++++ b/sslcontext-kickstart/src/main/java/module-info.java
+@@ -23,6 +23,8 @@ module nl.altindag.ssl {
+     exports nl.altindag.ssl.trustmanager.validator;
+     exports nl.altindag.ssl.trustmanager.trustoptions;
+     exports nl.altindag.ssl.util;
++    exports nl.altindag.ssl.provider;
++    exports nl.altindag.ssl.sslcontext to java.base;
+     exports nl.altindag.ssl.util.internal to nl.altindag.ssl.pem;
+ 
+ }
+\ No newline at end of file
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/provider/FenixProvider.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/provider/FenixProvider.java
+new file mode 100644
+index 0000000..9f8f710
+--- /dev/null
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/provider/FenixProvider.java
+@@ -0,0 +1,39 @@
++/*
++ * Copyright 2019 Thunderberry.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package nl.altindag.ssl.provider;
++
++import java.security.Provider;
++
++/**
++ * @author Hakan Altindag
++ */
++public final class FenixProvider extends Provider {
++
++    public FenixProvider() {
++        super("Fenix", 1.0, "Fenix Security Provider");
++
++        put("SSLContext.TLS", "nl.altindag.ssl.sslcontext.FenixSSLContextSpi");
++
++        put("Alg.Alias.SSLContext.SSL", "TLS");
++        put("Alg.Alias.SSLContext.SSLv2", "TLS");
++        put("Alg.Alias.SSLContext.SSLv3", "TLS");
++        put("Alg.Alias.SSLContext.TLSv1", "TLS");
++        put("Alg.Alias.SSLContext.TLSv1.1", "TLS");
++        put("Alg.Alias.SSLContext.TLSv1.2", "TLS");
++        put("Alg.Alias.SSLContext.TLSv1.3", "TLS");
++    }
++
++}
+\ No newline at end of file
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/provider/SSLFactoryProvider.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/provider/SSLFactoryProvider.java
+new file mode 100644
+index 0000000..998d937
+--- /dev/null
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/provider/SSLFactoryProvider.java
+@@ -0,0 +1,71 @@
++/*
++ * Copyright 2019 Thunderberry.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package nl.altindag.ssl.provider;
++
++import nl.altindag.ssl.SSLFactory;
++
++import java.util.Optional;
++import java.util.concurrent.locks.Lock;
++import java.util.concurrent.locks.ReadWriteLock;
++import java.util.concurrent.locks.ReentrantReadWriteLock;
++
++/**
++ * @author Hakan Altindag
++ */
++public final class SSLFactoryProvider {
++
++    private static SSLFactoryProvider INSTANCE;
++
++    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
++    private final Lock readLock = readWriteLock.readLock();
++    private final Lock writeLock = readWriteLock.writeLock();
++    private SSLFactory sslFactory;
++
++
++    private SSLFactoryProvider() {
++
++    }
++
++    public static void set(SSLFactory sslFactory) {
++        SSLFactoryProvider instance = getInstance();
++        instance.writeLock.lock();
++
++        try {
++            instance.sslFactory = sslFactory;
++        } finally {
++            instance.writeLock.unlock();
++        }
++    }
++
++    public static Optional<SSLFactory> get() {
++        SSLFactoryProvider instance = getInstance();
++        instance.readLock.lock();
++
++        try {
++            return Optional.ofNullable(instance.sslFactory);
++        } finally {
++            instance.readLock.unlock();
++        }
++    }
++
++    private static SSLFactoryProvider getInstance() {
++        if (INSTANCE == null) {
++            INSTANCE = new SSLFactoryProvider();
++        }
++        return INSTANCE;
++    }
++
++}
+\ No newline at end of file
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/sslcontext/FenixSSLContext.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/sslcontext/FenixSSLContext.java
+index 827a25c..53dffe0 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/sslcontext/FenixSSLContext.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/sslcontext/FenixSSLContext.java
+@@ -24,7 +24,7 @@ import javax.net.ssl.SSLParameters;
+  *
+  * @author Hakan Altindag
+  */
+-public class FenixSSLContext extends SSLContext {
++public final class FenixSSLContext extends SSLContext {
+ 
+     public FenixSSLContext(SSLContext baseSslContext, SSLParameters baseSslParameters) {
+         super(new FenixSSLContextSpi(baseSslContext, baseSslParameters), baseSslContext.getProvider(), baseSslContext.getProtocol());
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/sslcontext/FenixSSLContextSpi.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/sslcontext/FenixSSLContextSpi.java
+index f1a5bf1..7af2e3c 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/sslcontext/FenixSSLContextSpi.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/sslcontext/FenixSSLContextSpi.java
+@@ -15,6 +15,9 @@
+  */
+ package nl.altindag.ssl.sslcontext;
+ 
++import nl.altindag.ssl.SSLFactory;
++import nl.altindag.ssl.exception.GenericSecurityException;
++import nl.altindag.ssl.provider.SSLFactoryProvider;
+ import nl.altindag.ssl.util.SSLParametersUtils;
+ import nl.altindag.ssl.util.SSLSocketUtils;
+ import org.slf4j.Logger;
+@@ -30,13 +33,15 @@ import javax.net.ssl.SSLSessionContext;
+ import javax.net.ssl.SSLSocketFactory;
+ import javax.net.ssl.TrustManager;
+ import java.security.SecureRandom;
++import java.util.Optional;
+ 
+ import static java.util.Objects.nonNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
+ 
+ /**
+  * @author Hakan Altindag
+  */
+-class FenixSSLContextSpi extends SSLContextSpi {
++public final class FenixSSLContextSpi extends SSLContextSpi {
+ 
+     private static final Logger LOGGER = LoggerFactory.getLogger(FenixSSLContextSpi.class);
+ 
+@@ -48,6 +53,18 @@ class FenixSSLContextSpi extends SSLContextSpi {
+         this.sslParameters = sslParameters;
+     }
+ 
++    public FenixSSLContextSpi() {
++        Optional<SSLFactory> sslFactory = SSLFactoryProvider.get();
++        if (!sslFactory.isPresent()) {
++            String message = GENERIC_EXCEPTION_MESSAGE.apply("SSLFactory");
++            LOGGER.debug(message);
++            throw new GenericSecurityException(message);
++        }
++
++        sslContext = sslFactory.get().getSslContext();
++        sslParameters = sslFactory.get().getSslParameters();
++    }
++
+     @Override
+     protected void engineInit(KeyManager[] km, TrustManager[] tm, SecureRandom sr) {
+         LOGGER.debug("The provided parameters are being ignored as the SSLContext has already been initialized");

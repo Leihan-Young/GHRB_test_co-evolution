@@ -1,0 +1,7 @@
+{
+  "issue_id": 2347,
+  "issue_url": "https://github.com/assertj/assertj/issues/2347",
+  "title": "Test JAR should not be deployed to Central during releases",
+  "description": "<p dir=\"auto\"><a class=\"commit-link\" data-hovercard-type=\"commit\" data-hovercard-url=\"https://github.com/assertj/assertj/commit/c9807b9c9a300758ee262ea5026acd3be68781cf/hovercard\" href=\"https://github.com/assertj/assertj/commit/c9807b9c9a300758ee262ea5026acd3be68781cf\"><tt>c9807b9</tt></a> added the test JAR to the <code class=\"notranslate\">maven-jar-plugin</code> configuration for the OSGi integration tests. As a side effect, the test JAR was deployed starting from version 3.17.2.</p>\n<p dir=\"auto\">We should prevent the test JAR from being deployed during releases.</p>",
+  "description_text": "c9807b9 added the test JAR to the maven-jar-plugin configuration for the OSGi integration tests. As a side effect, the test JAR was deployed starting from version 3.17.2.\nWe should prevent the test JAR from being deployed during releases."
+}

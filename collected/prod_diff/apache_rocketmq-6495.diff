@@ -1,0 +1,1322 @@
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java
+index 5afa916d5..14469316a 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java
+@@ -189,6 +189,8 @@ public class TieredMessageStore extends AbstractPluginMessageStore {
+                     return next.getMessage(group, topic, queueId, offset, maxMsgNums, messageFilter);
+                 });
+         }
++        logger.debug("TieredMessageStore#getMessageAsync: get message from next store: topic: {}, queue: {}, queue offset: {}",
++            topic, queueId, offset);
+         return next.getMessageAsync(group, topic, queueId, offset, maxMsgNums, messageFilter);
+     }
+ 
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java
+index 8b44837b5..cadce9c3d 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java
+@@ -117,11 +117,15 @@ public class TieredMessageStoreConfig {
+ 
+     private String tieredStoreFilepath = "";
+ 
+-    // only for oss storage provider
+-    private String ossEndpoint = "";
+-    private String ossBucket = "";
+-    private String ossAccessKey = "";
+-    private String ossSecretKey = "";
++    private String objectStoreRegion = "";
++
++    private String objectStoreBucket = "";
++
++    private String objectStoreAccessKey = "";
++
++    private String objectStoreSecretKey = "";
++
++    private boolean enableMerge = false;
+ 
+     public static String localHostName() {
+         try {
+@@ -356,35 +360,43 @@ public class TieredMessageStoreConfig {
+         this.tieredStoreFilepath = tieredStoreFilepath;
+     }
+ 
+-    public String getOssEndpoint() {
+-        return ossEndpoint;
++    public void setObjectStoreRegion(String objectStoreRegion) {
++        this.objectStoreRegion = objectStoreRegion;
++    }
++
++    public String getObjectStoreBucket() {
++        return objectStoreBucket;
++    }
++
++    public void setObjectStoreBucket(String objectStoreBucket) {
++        this.objectStoreBucket = objectStoreBucket;
+     }
+ 
+-    public void setOssEndpoint(String ossEndpoint) {
+-        this.ossEndpoint = ossEndpoint;
++    public String getObjectStoreAccessKey() {
++        return objectStoreAccessKey;
+     }
+ 
+-    public String getOssBucket() {
+-        return ossBucket;
++    public void setObjectStoreAccessKey(String objectStoreAccessKey) {
++        this.objectStoreAccessKey = objectStoreAccessKey;
+     }
+ 
+-    public void setOssBucket(String ossBucket) {
+-        this.ossBucket = ossBucket;
++    public String getObjectStoreSecretKey() {
++        return objectStoreSecretKey;
+     }
+ 
+-    public String getOssAccessKey() {
+-        return ossAccessKey;
++    public void setObjectStoreSecretKey(String objectStoreSecretKey) {
++        this.objectStoreSecretKey = objectStoreSecretKey;
+     }
+ 
+-    public void setOssAccessKey(String ossAccessKey) {
+-        this.ossAccessKey = ossAccessKey;
++    public String getObjectStoreRegion() {
++        return objectStoreRegion;
+     }
+ 
+-    public String getOssSecretKey() {
+-        return ossSecretKey;
++    public boolean isEnableMerge() {
++        return enableMerge;
+     }
+ 
+-    public void setOssSecretKey(String ossSecretKey) {
+-        this.ossSecretKey = ossSecretKey;
++    public void setEnableMerge(boolean enableMerge) {
++        this.enableMerge = enableMerge;
+     }
+ }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredFileQueue.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredFileQueue.java
+index 1640e8daf..afc25d719 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredFileQueue.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredFileQueue.java
+@@ -144,6 +144,7 @@ public class TieredFileQueue {
+             segment.setEndTimestamp(metadata.getEndTimestamp());
+             if (metadata.getStatus() == FileSegmentMetadata.STATUS_SEALED) {
+                 segment.setFull(false);
++                segment.sealFile();
+             }
+             // TODO check coda/size
+             fileSegmentList.add(segment);
+@@ -254,7 +255,7 @@ public class TieredFileQueue {
+                 if (!segment.isFull()) {
+                     return segment;
+                 }
+-                if (segment.commit()) {
++                if (segment.commitAndSealFile()) {
+                     try {
+                         metadataStore.updateFileSegment(segment);
+                     } catch (Exception e) {
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreErrorCode.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreErrorCode.java
+index c1e5d91c2..5f13eb71a 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreErrorCode.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreErrorCode.java
+@@ -23,5 +23,6 @@ public enum TieredStoreErrorCode {
+     NO_NEW_DATA,
+     STORAGE_PROVIDER_ERROR,
+     IO_ERROR,
++    SEGMENT_SEALED,
+     UNKNOWN
+ }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreException.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreException.java
+index 04f253566..89bf1c312 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreException.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreException.java
+@@ -18,7 +18,7 @@ package org.apache.rocketmq.tieredstore.exception;
+ 
+ public class TieredStoreException extends RuntimeException {
+     private TieredStoreErrorCode errorCode;
+-    private int position = -1;
++    private long position = -1;
+ 
+     private String requestId;
+ 
+@@ -41,11 +41,11 @@ public class TieredStoreException extends RuntimeException {
+         this.errorCode = errorCode;
+     }
+ 
+-    public int getPosition() {
++    public long getPosition() {
+         return position;
+     }
+ 
+-    public void setPosition(int position) {
++    public void setPosition(long position) {
+         this.position = position;
+     }
+ 
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java
+index 274f03e79..cd4df7895 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java
+@@ -46,7 +46,7 @@ public abstract class TieredFileSegment implements Comparable<TieredFileSegment>
+     private final ReentrantLock bufferLock = new ReentrantLock();
+     private final Semaphore commitLock = new Semaphore(1);
+     private List<ByteBuffer> uploadBufferList = new ArrayList<>();
+-    private boolean full;
++    private volatile boolean full;
+     protected final FileSegmentType fileType;
+     protected final MessageQueue messageQueue;
+     protected final TieredMessageStoreConfig storeConfig;
+@@ -312,6 +312,31 @@ public abstract class TieredFileSegment implements Comparable<TieredFileSegment>
+         return result;
+     }
+ 
++    public boolean commitAndSealFile() {
++        if (closed) {
++            return false;
++        }
++        if (!this.isFull()) {
++            logger.error("Failed to commitAndSealFile, file is not full, file: {}, appendPosition: {}, commitPosition: {}, maxSize: {}", getPath(), appendPosition, commitPosition, maxSize);
++            return false;
++        }
++        // first time to commit, try to wait inflight commit request to be completed
++        inflightCommitRequest.join();
++        boolean success = false;
++        for (int i = 0; i < 3; i++) {
++            if (!needCommit() || commit()) {
++                success = true;
++                break;
++            }
++        }
++        if (!success) {
++            logger.error("Failed to commit all data, file: {}, appendPosition: {}, commitPosition: {}, maxSize: {}", getPath(), appendPosition, commitPosition, maxSize);
++            return false;
++        }
++        sealFile();
++        return true;
++    }
++
+     public CompletableFuture<Boolean> commitAsync() {
+         if (closed) {
+             return CompletableFuture.completedFuture(false);
+@@ -425,6 +450,8 @@ public abstract class TieredFileSegment implements Comparable<TieredFileSegment>
+                     throw new IllegalStateException("Unexpected value: " + type);
+             }
+         }
++
++
+     }
+ 
+ }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreProvider.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreProvider.java
+index f043e07f3..e9f0926f1 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreProvider.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreProvider.java
+@@ -48,6 +48,11 @@ public interface TieredStoreProvider {
+      */
+     void createFile();
+ 
++    /**
++     * Seal file with given path in backend file system
++     */
++    void sealFile();
++
+     /**
+      * Destroy file with given path in backend file system
+      */
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/inputstream/TieredFileSegmentInputStream.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/inputstream/TieredFileSegmentInputStream.java
+index d5118c146..f85ca68e1 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/inputstream/TieredFileSegmentInputStream.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/inputstream/TieredFileSegmentInputStream.java
+@@ -60,7 +60,7 @@ public class TieredFileSegmentInputStream extends InputStream {
+         this.fileType = fileType;
+         this.contentLength = contentLength;
+         this.uploadBufferList = uploadBufferList;
+-        if (uploadBufferList.size() > 0) {
++        if (uploadBufferList != null && uploadBufferList.size() > 0) {
+             this.curBuffer = uploadBufferList.get(curReadBufferIndex);
+         }
+     }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/posix/PosixFileSegment.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/posix/PosixFileSegment.java
+index 7032799eb..4a31199e8 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/posix/PosixFileSegment.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/posix/PosixFileSegment.java
+@@ -128,6 +128,11 @@ public class PosixFileSegment extends TieredFileSegment {
+         }
+     }
+ 
++    @Override
++    public void sealFile() {
++
++    }
++
+     @Override
+     public void destroyFile() {
+         try {
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/ChunkMetadata.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/ChunkMetadata.java
+new file mode 100644
+index 000000000..e7e0f3f51
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/ChunkMetadata.java
+@@ -0,0 +1,108 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++
++/**
++ * Metadata of a chunk in S3.
++ *
++ * <p>
++ * There are two types of chunks in S3:
++ * <ul>
++ *     <li>Normal chunk, represents a normal chunk in S3, which size is usually less than {@link TieredMessageStoreConfig#getTieredStoreGroupCommitSize()} ()}
++ *     <li>Segment chunk, means that this all normal chunks in one logic segment have been merged into a single chunk, which is named as segment chunk,
++ *     which size is usually equals to {@link TieredMessageStoreConfig#getTieredStoreCommitLogMaxSize()} or {@link TieredMessageStoreConfig#getTieredStoreConsumeQueueMaxSize()}
++ * </ul>
++ * Once a segment chunk is created, it will never be changed, and we should delete all normal chunks in this segment.
++ */
++public class ChunkMetadata {
++
++    /**
++     * Name of the chunk in S3. Format:
++     * <p>
++     * Chunk:
++     * <pre>
++     *     {@link S3FileSegment#getStorePath()}/chunk/chunk-${startPosition}
++     * </pre>
++     * <p>
++     * Segment:
++     * <pre>
++     *     {@link S3FileSegment#getStorePath()}/segment/segment-${startPosition}
++     * </pre>
++     */
++    private String chunkName;
++
++    private long startPosition;
++
++    private int chunkSize;
++
++    private boolean isSegmentType;
++
++    public ChunkMetadata() {
++
++    }
++
++    public ChunkMetadata(String chunkName, long startPosition, int chunkSize) {
++        this.startPosition = startPosition;
++        this.chunkName = chunkName;
++        this.chunkSize = chunkSize;
++        this.isSegmentType = this.chunkName.contains("segment");
++    }
++
++    public int getChunkSize() {
++        return chunkSize;
++    }
++
++    public String getChunkName() {
++        return chunkName;
++    }
++
++    public long getStartPosition() {
++        return startPosition;
++    }
++
++    public void setChunkName(String chunkName) {
++        this.chunkName = chunkName;
++    }
++
++    public void setStartPosition(long startPosition) {
++        this.startPosition = startPosition;
++    }
++
++    public void setChunkSize(int chunkSize) {
++        this.chunkSize = chunkSize;
++    }
++
++    public long getEndPosition() {
++        return startPosition + chunkSize - 1;
++    }
++
++    public boolean isSegmentType() {
++        return isSegmentType;
++    }
++
++    @Override
++    public String toString() {
++        return "ChunkMetadata{" +
++            "chunkName='" + chunkName + '\'' +
++            ", startPosition=" + startPosition +
++            ", endPosition=" + getEndPosition() +
++            '}';
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegment.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegment.java
+new file mode 100644
+index 000000000..c02efef05
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegment.java
+@@ -0,0 +1,391 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import io.opentelemetry.api.common.Attributes;
++import org.apache.rocketmq.common.ThreadFactoryImpl;
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.logging.org.slf4j.Logger;
++import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.exception.TieredStoreErrorCode;
++import org.apache.rocketmq.tieredstore.exception.TieredStoreException;
++import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManager;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.provider.inputstream.TieredFileSegmentInputStream;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
++
++import java.io.File;
++import java.nio.ByteBuffer;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.ExecutorService;
++import java.util.concurrent.Executors;
++import java.util.concurrent.atomic.AtomicBoolean;
++import java.util.concurrent.locks.ReentrantLock;
++import java.util.stream.Collectors;
++
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_FILE_TYPE;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_QUEUE_ID;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_TOPIC;
++
++public class S3FileSegment extends TieredFileSegment {
++
++    private static final Logger LOGGER = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
++
++    /**
++     * The path of the file segment in S3. Format:
++     * <pre>
++     *     ${hash of clusterName}/${clusterName}/${brokerName}/${topicName}/${queueId}/${fileType}/seg-${baseOffset}
++     * </pre>
++     */
++    private final String storePath;
++
++    /**
++     * The path of the chunk file in S3. Format:
++     * <pre>
++     *     {@link #storePath}/chunk
++     * </pre>
++     */
++    private final String chunkPath;
++
++    /**
++     * The path of the segment file in S3. Format:
++     * <pre>
++     *     {@link #storePath}/segment
++     * </pre>
++     */
++    private final String segmentPath;
++
++    private final TieredStorageS3Client client;
++
++    private final S3FileSegmentMetadata metadata;
++
++    private final Attributes attributes = TieredStoreMetricsManager.newAttributesBuilder().put(LABEL_TOPIC, messageQueue.getTopic())
++        .put(LABEL_QUEUE_ID, messageQueue.getQueueId()).put(LABEL_FILE_TYPE, this.fileType.name().toLowerCase()).build();
++
++    /**
++     * Executor for merging chunks into segment or deleting chunks.
++     * <p>
++     * TODO: Better to use a thread pool.
++     */
++    private static final ExecutorService MERGE_CHUNKS_INTO_SEGMENT_EXECUTOR = Executors.newSingleThreadExecutor(new ThreadFactoryImpl("S3FileSegment_MergeChunksIntoSegmentExecutor"));
++
++    // TODO: Uses the specified asynchronous thread pool
++
++    public S3FileSegment(FileSegmentType fileType, MessageQueue messageQueue, long baseOffset,
++        TieredMessageStoreConfig storeConfig) {
++        super(fileType, messageQueue, baseOffset, storeConfig);
++        String clusterName = storeConfig.getBrokerClusterName();
++        String hash = String.valueOf(clusterName.hashCode());
++        this.storePath = hash + File.separator + clusterName + File.separator + messageQueue.getBrokerName() +
++            File.separator + messageQueue.getTopic() + File.separator + messageQueue.getQueueId() + File.separator + fileType + File.separator + "seg-" + baseOffset;
++        this.chunkPath = this.storePath + File.separator + "chunk";
++        this.segmentPath = this.storePath + File.separator + "segment";
++        this.client = TieredStorageS3Client.getInstance(storeConfig);
++        this.metadata = new S3FileSegmentMetadata();
++        this.initialize();
++    }
++
++    private void initialize() {
++        // check if the file segment exists
++        CompletableFuture<List<ChunkMetadata>> listSegments = this.client.listChunks(this.segmentPath);
++        CompletableFuture<List<ChunkMetadata>> listChunks = this.client.listChunks(this.chunkPath);
++        List<ChunkMetadata> segments = listSegments.join();
++        if (segments.size() > 1) {
++            throw new RuntimeException("The segment " + segmentPath + " should be only one, but now have " + segments.size() + " segments, please check it.");
++        }
++        List<ChunkMetadata> chunks = listChunks.join();
++        if (segments.size() == 1) {
++            // now segment exist
++            // add segment into metadata
++            ChunkMetadata segment = segments.get(0);
++            this.metadata.setSegment(segment);
++            // delete chunks
++            this.client.deleteObjets(chunks.stream().map(ChunkMetadata::getChunkName).collect(Collectors.toList())).join();
++        } else {
++            // now segment not exist
++            // add all chunks into metadata
++            checkAndLoadChunks(chunks);
++        }
++    }
++
++    private void checkAndLoadChunks(List<ChunkMetadata> chunks) {
++        if (chunks.size() == 0) {
++            return;
++        }
++        for (ChunkMetadata chunk : chunks) {
++            if (!this.metadata.addChunk(chunk)) {
++                // the chunk is not valid
++                LOGGER.error("Check and load chunks failed, the chunk: {} is not valid, now chunks last end position: {}, please check it.", chunk, this.metadata.getEndPosition());
++                throw new RuntimeException("The chunk: " + chunk + " is not valid, now chunks last end position: " + this.metadata.getEndPosition() + ", please check it.");
++            }
++        }
++    }
++
++    @Override
++    public String getPath() {
++        return this.storePath;
++    }
++
++    public String getSegmentPath() {
++        return segmentPath;
++    }
++
++    public String getChunkPath() {
++        return chunkPath;
++    }
++
++    @Override
++    public long getSize() {
++        return this.metadata.getSize();
++    }
++
++    @Override
++    public boolean exists() {
++        return this.client.exist(this.storePath).join();
++    }
++
++    @Override
++    public void createFile() {
++
++    }
++
++    /**
++     * Merges all normal chunks into a segment file.
++     */
++    @Override
++    public void sealFile() {
++        // check if the segment file exists
++        if (this.metadata.isSealed() && this.metadata.getChunkCount() == 0) {
++            return;
++        }
++        // merge all chunks into a segment file and delete all chunks
++        MERGE_CHUNKS_INTO_SEGMENT_EXECUTOR.submit(this::trySealFile);
++    }
++
++    private void trySealFile() {
++        while (true) {
++            if (this.metadata.isSealed() && this.metadata.getChunkCount() == 0)
++                return;
++
++            boolean success = true;
++
++            if (!this.storeConfig.isEnableMerge()) {
++                this.metadata.setSealed(true);
++            }
++
++            if (!this.metadata.isSealed()) {
++                // merge all chunks
++                String segmentName = this.segmentPath + File.separator + "segment-" + 0;
++                boolean merged = this.client.mergeAllChunksIntoSegment(this.metadata.getChunks(), segmentName).join();
++                if (merged) {
++                    // set segment
++                    this.metadata.setSegment(new ChunkMetadata(segmentName, 0, (int) this.metadata.getSize()));
++                } else {
++                    LOGGER.error("Merge chunks into segment failed, chunk path is {}, segment path is {}.", this.chunkPath, this.segmentPath);
++                    success = false;
++                }
++            }
++            if (this.storeConfig.isEnableMerge() && success) {
++                // old chunks still exist, keep deleting them
++                List<String> chunkKeys = this.metadata.getChunks().stream().map(ChunkMetadata::getChunkName).collect(Collectors.toList());
++                List<String> undeleteList = this.client.deleteObjets(chunkKeys).join();
++                if (undeleteList.isEmpty()) {
++                    this.metadata.removeAllChunks();
++                } else {
++                    success = false;
++                    LOGGER.error("Delete chunks failed, chunk path is {}, undelete list is {}.", this.chunkPath, undeleteList);
++                }
++            }
++            if (success)
++                return;
++            // unsuccessful, retry
++            try {
++                Thread.sleep(1000);
++            } catch (Exception ignore) {
++
++            }
++
++        }
++    }
++
++    public boolean isSealed() {
++        return this.metadata.isSealed();
++    }
++
++    @Override
++    public void destroyFile() {
++        this.client.deleteObjects(this.storePath).join();
++        this.metadata.clear();
++    }
++
++    @Override
++    public CompletableFuture<ByteBuffer> read0(long position, int length) {
++        CompletableFuture<ByteBuffer> completableFuture = new CompletableFuture<>();
++        List<ChunkMetadata> chunks;
++        try {
++            chunks = this.metadata.seek(position, length);
++        } catch (IndexOutOfBoundsException e) {
++            LOGGER.error("Read position {} and length {} out of range, the file segment size is {}.", position, length, this.metadata.getSize());
++            completableFuture.completeExceptionally(new TieredStoreException(TieredStoreErrorCode.DOWNLOAD_LENGTH_NOT_CORRECT, "read data from segment error because of position or length not correct"));
++            return completableFuture;
++        }
++        long endPosition = position + length - 1;
++        ConcurrentByteBuffer concurrentByteBuffer = new ConcurrentByteBuffer(length);
++        List<CompletableFuture<byte[]>> subFutures = new ArrayList<>(chunks.size());
++        chunks.forEach(chunk -> {
++            long startPositionInChunk = position >= chunk.getStartPosition() ? position - chunk.getStartPosition() : 0;
++            long endPositionInChunk = endPosition <= chunk.getEndPosition() ? endPosition - chunk.getStartPosition() : chunk.getChunkSize() - 1;
++            CompletableFuture<byte[]> future = this.client.readChunk(chunk.getChunkName(), startPositionInChunk, endPositionInChunk);
++            CompletableFuture<byte[]> subFuture = future.whenComplete((bytes, throwable) -> {
++                if (throwable != null) {
++                    LOGGER.error("Failed to read data from s3, chunk: {}, start position: {}, end position: {}", chunk, startPositionInChunk, endPositionInChunk, throwable);
++                    TieredStoreException exception = new TieredStoreException(TieredStoreErrorCode.IO_ERROR, "read data from s3 error");
++                    completableFuture.completeExceptionally(exception);
++                } else {
++                    try {
++                        concurrentByteBuffer.put(bytes, 0, bytes.length, (int) (chunk.getStartPosition() + startPositionInChunk - position));
++                    } catch (Exception e) {
++                        LOGGER.error("Failed to put data from s3 into buffer, chunk: {}, start position: {}, end position: {}", chunk, startPositionInChunk, endPositionInChunk, e);
++                        TieredStoreException exception = new TieredStoreException(TieredStoreErrorCode.UNKNOWN, "put data from s3 into buffer error");
++                        completableFuture.completeExceptionally(exception);
++                    }
++                }
++            });
++            subFutures.add(subFuture);
++        });
++        CompletableFuture.allOf(subFutures.toArray(new CompletableFuture[chunks.size()])).whenComplete((v, throwable) -> {
++            if (throwable != null) {
++                LOGGER.error("Failed to read data from s3, position: {}, length: {}", position, length, throwable);
++                completableFuture.completeExceptionally(new TieredStoreException(TieredStoreErrorCode.IO_ERROR, "wait all sub download tasks complete error"));
++            } else {
++                ByteBuffer byteBuffer = concurrentByteBuffer.close();
++                byteBuffer.rewind();
++                completableFuture.complete(byteBuffer);
++                TieredStoreMetricsManager.downloadBytes.record(length, attributes);
++            }
++        });
++        return completableFuture;
++    }
++
++    @Override
++    public CompletableFuture<Boolean> commit0(TieredFileSegmentInputStream inputStream, long position, int length,
++        boolean append) {
++        // TODO: Deal with the case that the param: append is false
++        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
++        // check if now the segment is sealed
++        if (this.metadata.isSealed()) {
++            LOGGER.error("The segment is sealed, the position: {}, the length: {}.", position, length);
++            TieredStoreException exception = new TieredStoreException(TieredStoreErrorCode.SEGMENT_SEALED, "the segment is sealed");
++            exception.setPosition(this.metadata.getEndPosition() + 1);
++            completableFuture.completeExceptionally(exception);
++            return completableFuture;
++        }
++        // check if the position is valid
++        if (length < 0 || position != this.metadata.getEndPosition() + 1) {
++            LOGGER.error("The position is invalid, the position: {}, the length: {}, now segment end position: {}.", position, length, this.metadata.getEndPosition());
++            TieredStoreException exception = new TieredStoreException(TieredStoreErrorCode.ILLEGAL_OFFSET, "the position is invalid");
++            exception.setPosition(this.metadata.getEndPosition() + 1);
++            completableFuture.completeExceptionally(exception);
++            return completableFuture;
++        }
++        // upload chunk
++        String chunkPath = this.chunkPath + File.separator + "chunk-" + position;
++
++        this.client.writeChunk(chunkPath, inputStream, length).whenComplete((result, throwable) -> {
++            if (throwable != null) {
++                LOGGER.error("Failed to write data to s3, position: {}, length: {}", position, length, throwable);
++                TieredStoreException exception = new TieredStoreException(TieredStoreErrorCode.IO_ERROR, "write data to s3 error");
++                exception.setPosition(position);
++                completableFuture.completeExceptionally(exception);
++            } else {
++                if (result) {
++                    TieredStoreMetricsManager.uploadBytes.record(length, attributes);
++                    ChunkMetadata chunk = new ChunkMetadata(chunkPath, position, length);
++                    if (!this.metadata.addChunk(chunk)) {
++                        // the chunk is not valid
++                        LOGGER.error("Add chunk after uploading chunk to S3 failed, the chunk: {} is not valid, now chunks last end position: {}, please check it.", chunk, this.metadata.getEndPosition());
++                        throw new RuntimeException("The chunk: " + chunk + " is not valid, now chunks last end position: " + this.metadata.getEndPosition() + ", please check it.");
++                    }
++                    completableFuture.complete(true);
++                } else {
++                    completableFuture.complete(false);
++                }
++            }
++        });
++        return completableFuture;
++    }
++
++    public S3FileSegmentMetadata getMetadata() {
++        return metadata;
++    }
++
++    public String getStorePath() {
++        return storePath;
++    }
++
++    public TieredStorageS3Client getClient() {
++        return client;
++    }
++
++    static class ConcurrentByteBuffer {
++        private final ByteBuffer byteBuffer;
++        private final int length;
++
++        private final ReentrantLock reentrantLock;
++
++        private final AtomicBoolean closed = new AtomicBoolean(false);
++
++        public ConcurrentByteBuffer(int length) {
++            this.length = length;
++            this.byteBuffer = ByteBuffer.allocate(length);
++            this.byteBuffer.limit(this.length);
++            this.reentrantLock = new ReentrantLock();
++        }
++
++        public void put(byte[] bytes, int bytesIndex, int writeLength, int writePosition) throws Exception {
++            if (closed.get()) {
++                throw new RuntimeException("The ConcurrentByteBuffer has been closed");
++            }
++            this.reentrantLock.lock();
++            try {
++                this.byteBuffer.position(writePosition);
++                this.byteBuffer.put(bytes, bytesIndex, writeLength);
++            } catch (Exception e) {
++                LOGGER.error("Put bytes into byte buffer error. bytesIndex: {}, writeLength: {}, writePosition: {}, limit: {}", bytesIndex, writeLength, writePosition, this.byteBuffer.limit(), e);
++                throw e;
++            } finally {
++                this.reentrantLock.unlock();
++            }
++        }
++
++        public ByteBuffer close() {
++            this.closed.set(true);
++            this.reentrantLock.lock();
++            try {
++                this.byteBuffer.rewind();
++                return this.byteBuffer;
++            } finally {
++                this.reentrantLock.unlock();
++            }
++        }
++    }
++
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentMetadata.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentMetadata.java
+new file mode 100644
+index 000000000..19c77a5a6
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentMetadata.java
+@@ -0,0 +1,183 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import java.util.ArrayList;
++import java.util.LinkedList;
++import java.util.List;
++import java.util.concurrent.locks.ReentrantReadWriteLock;
++
++public class S3FileSegmentMetadata {
++
++    private final LinkedList<ChunkMetadata> chunks = new LinkedList<>();
++
++    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
++
++    private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
++
++    private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
++
++    private volatile boolean isSealed = false;
++
++    private ChunkMetadata segment;
++
++    public S3FileSegmentMetadata() {
++    }
++
++    /**
++     * Seek the chunks that need to be read, which is the intersection of the chunks and the range of [position, position + length)
++     *
++     * @param position start position
++     * @param length   data length
++     * @return the chunks that need to be read
++     * @throws IndexOutOfBoundsException if position or length is negative or position
++     */
++    public List<ChunkMetadata> seek(long position, int length) throws IndexOutOfBoundsException {
++        readLock.lock();
++        try {
++            long endPosition = position + length - 1;
++            if (position < 0 || length < 0 || position < getStartPosition() || endPosition > getEndPosition()) {
++                throw new IndexOutOfBoundsException("position: " + position + ", length: " + length + ", Metadata: start: " + getStartPosition() + ", end: " + getEndPosition());
++            }
++            List<ChunkMetadata> needChunks = new LinkedList<>();
++            if (length == 0)
++                return needChunks;
++            if (segment != null) {
++                needChunks.add(segment);
++                return needChunks;
++            }
++            for (ChunkMetadata chunk : chunks) {
++                if (endPosition < chunk.getStartPosition())
++                    break;
++                if (position > chunk.getEndPosition())
++                    continue;
++                if (position <= chunk.getEndPosition() || endPosition >= chunk.getStartPosition()) {
++                    needChunks.add(chunk);
++                }
++            }
++            return needChunks;
++        } finally {
++            readLock.unlock();
++        }
++    }
++
++    public boolean addChunk(ChunkMetadata chunk) {
++        this.writeLock.lock();
++        try {
++            if (chunks.size() == 0 && chunk.getStartPosition() != 0) {
++                return false;
++            }
++            if (chunks.size() > 0 && chunks.getLast().getEndPosition() + 1 != chunk.getStartPosition()) {
++                return false;
++            }
++            chunks.addLast(chunk);
++            return true;
++        } finally {
++            this.writeLock.unlock();
++        }
++    }
++
++    public void setSegment(ChunkMetadata segment) {
++        this.writeLock.lock();
++        try {
++            this.isSealed = true;
++            this.segment = segment;
++        } finally {
++            this.writeLock.unlock();
++        }
++    }
++
++    public void removeAllChunks() {
++        this.writeLock.lock();
++        try {
++            this.chunks.clear();
++        } finally {
++            this.writeLock.unlock();
++        }
++    }
++
++    public long getStartPosition() {
++        this.readLock.lock();
++        try {
++            if (segment != null)
++                return segment.getStartPosition();
++            if (chunks.size() == 0)
++                return -1;
++            return chunks.getFirst().getStartPosition();
++        } finally {
++            this.readLock.unlock();
++        }
++    }
++
++    public long getEndPosition() {
++        this.readLock.lock();
++        try {
++            if (segment != null)
++                return segment.getEndPosition();
++            if (chunks.size() == 0)
++                return -1;
++            return chunks.getLast().getEndPosition();
++        } finally {
++            this.readLock.unlock();
++        }
++    }
++
++    public long getSize() {
++        long start = getStartPosition();
++        long end = getEndPosition();
++        if (start == -1)
++            return 0;
++        return end - start + 1;
++    }
++
++    public void clear() {
++        this.writeLock.lock();
++        try {
++            chunks.clear();
++            segment = null;
++        } finally {
++            this.writeLock.unlock();
++        }
++    }
++
++    public long getChunkCount() {
++        this.readLock.lock();
++        try {
++            return chunks.size();
++        } finally {
++            this.readLock.unlock();
++        }
++    }
++
++    public boolean isSealed() {
++        return isSealed;
++    }
++
++    public List<ChunkMetadata> getChunks() {
++        this.readLock.lock();
++        try {
++            return new ArrayList<>(chunks);
++        } finally {
++            this.readLock.unlock();
++        }
++    }
++
++    public void setSealed(boolean sealed) {
++        this.isSealed = sealed;
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/TieredStorageS3Client.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/TieredStorageS3Client.java
+new file mode 100644
+index 000000000..912732076
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/s3/TieredStorageS3Client.java
+@@ -0,0 +1,359 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.tieredstore.provider.s3;
++
++import com.google.common.annotations.VisibleForTesting;
++import com.google.common.base.Stopwatch;
++import io.opentelemetry.api.common.AttributesBuilder;
++import java.util.concurrent.TimeUnit;
++import org.apache.rocketmq.common.ThreadFactoryImpl;
++import org.apache.rocketmq.logging.org.slf4j.Logger;
++import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManager;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
++import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
++import software.amazon.awssdk.core.async.AsyncRequestBody;
++import software.amazon.awssdk.core.async.AsyncResponseTransformer;
++import software.amazon.awssdk.regions.Region;
++import software.amazon.awssdk.services.s3.S3AsyncClient;
++import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest;
++import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
++import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
++import software.amazon.awssdk.services.s3.model.CompletedPart;
++import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
++import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
++import software.amazon.awssdk.services.s3.model.Delete;
++import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
++import software.amazon.awssdk.services.s3.model.DeletedObject;
++import software.amazon.awssdk.services.s3.model.GetObjectRequest;
++import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
++import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
++import software.amazon.awssdk.services.s3.model.PutObjectRequest;
++import software.amazon.awssdk.services.s3.model.PutObjectResponse;
++import software.amazon.awssdk.services.s3.model.S3Object;
++import software.amazon.awssdk.services.s3.model.UploadPartCopyRequest;
++
++import java.io.InputStream;
++import java.util.ArrayList;
++import java.util.Collections;
++import java.util.Comparator;
++import java.util.List;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.ExecutorService;
++import java.util.concurrent.Executors;
++import java.util.stream.Collectors;
++
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_OPERATION;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_SUCCESS;
++
++public class TieredStorageS3Client {
++
++    private static final String OPERATION_LIST_OBJECTS = "list_objects";
++
++    private static final String OPERATION_DELETE_OBJECTS = "delete_objects";
++
++    private static final String OPERATION_UPLOAD_OBJECT = "upload_object";
++
++    private static final String OPERATION_DOWNLOAD_OBJECT = "download_object";
++
++    private static final Logger LOGGER = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
++    private volatile static TieredStorageS3Client instance;
++
++    private final String region;
++
++    private final String bucket;
++
++    private final TieredMessageStoreConfig tieredMessageStoreConfig;
++
++    private final ExecutorService asyncRequestBodyExecutor;
++
++    private S3AsyncClient client;
++
++    public static TieredStorageS3Client getInstance(TieredMessageStoreConfig config) {
++        if (config == null) {
++            return instance;
++        }
++        if (instance == null) {
++            synchronized (TieredStorageS3Client.class) {
++                if (instance == null) {
++                    instance = new TieredStorageS3Client(config, true);
++                }
++            }
++        }
++        return instance;
++    }
++
++    @VisibleForTesting
++    protected TieredStorageS3Client(TieredMessageStoreConfig config) {
++        this(config, false);
++    }
++
++    private TieredStorageS3Client(TieredMessageStoreConfig config, boolean createClient) {
++        this.tieredMessageStoreConfig = config;
++        this.region = config.getObjectStoreRegion();
++        this.bucket = config.getObjectStoreBucket();
++        if (createClient) {
++            AwsBasicCredentials basicCredentials = AwsBasicCredentials.create(this.tieredMessageStoreConfig.getObjectStoreAccessKey(), this.tieredMessageStoreConfig.getObjectStoreSecretKey());
++            this.client = S3AsyncClient.builder().credentialsProvider(() -> basicCredentials).region(Region.of(config.getObjectStoreRegion())).build();
++        }
++        this.asyncRequestBodyExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryImpl("S3AsyncRequestBodyExecutor_"));
++    }
++
++    public CompletableFuture<Boolean> writeChunk(String key, InputStream inputStream, long length) {
++        PutObjectRequest putObjectRequest = PutObjectRequest.builder().bucket(this.bucket).key(key).build();
++        AsyncRequestBody requestBody = AsyncRequestBody.fromInputStream(inputStream, length, this.asyncRequestBodyExecutor);
++        AttributesBuilder attributesBuilder = TieredStoreMetricsManager.newAttributesBuilder().put(LABEL_OPERATION, OPERATION_UPLOAD_OBJECT);
++        Stopwatch stopwatch = Stopwatch.createStarted();
++        CompletableFuture<PutObjectResponse> putObjectResponseCompletableFuture = this.client.putObject(putObjectRequest, requestBody);
++        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
++        putObjectResponseCompletableFuture.whenComplete((putObjectResponse, throwable) -> {
++            if (throwable != null) {
++                LOGGER.error("Upload file to S3 failed, key: {}, region: {}, bucket: {}", key, this.region, this.bucket, throwable);
++                attributesBuilder.put(LABEL_SUCCESS, false);
++                completableFuture.complete(false);
++            } else {
++                attributesBuilder.put(LABEL_SUCCESS, true);
++                completableFuture.complete(true);
++            }
++            TieredStoreMetricsManager.providerRpcLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), attributesBuilder.build());
++        });
++        return completableFuture;
++    }
++
++    public CompletableFuture<List<ChunkMetadata>> listChunks(String prefix) {
++        CompletableFuture<List<ChunkMetadata>> completableFuture = new CompletableFuture<>();
++        AttributesBuilder attributesBuilder = TieredStoreMetricsManager.newAttributesBuilder().put(LABEL_OPERATION, OPERATION_LIST_OBJECTS);
++        Stopwatch stopwatch = Stopwatch.createStarted();
++        CompletableFuture<ListObjectsV2Response> listFuture = this.listObjects(prefix);
++        listFuture.whenComplete((listObjectsV2Response, throwable) -> {
++            if (throwable != null) {
++                attributesBuilder.put(LABEL_SUCCESS, false);
++                LOGGER.error("List objects from S3 failed, prefix: {}, region: {}, bucket: {}", prefix, this.region, this.bucket, throwable);
++                completableFuture.complete(Collections.emptyList());
++            } else {
++                attributesBuilder.put(LABEL_SUCCESS, true);
++                listObjectsV2Response.contents().forEach(s3Object -> LOGGER.info("List objects from S3, key: {}, region: {}, bucket: {}", s3Object.key(), this.region, this.bucket));
++                completableFuture.complete(listObjectsV2Response.contents().stream().map(obj -> {
++                    ChunkMetadata chunkMetadata = new ChunkMetadata();
++                    String key = obj.key();
++                    chunkMetadata.setChunkName(key);
++                    chunkMetadata.setChunkSize(obj.size().intValue());
++                    String[] paths = key.split("/");
++                    String chunkSubName = paths[paths.length - 1];
++                    Integer startPosition = Integer.valueOf(chunkSubName.split("-")[1]);
++                    chunkMetadata.setStartPosition(startPosition);
++                    return chunkMetadata;
++                }).sorted((o1, o2) -> (int) (o1.getStartPosition() - o2.getStartPosition())).collect(Collectors.toList()));
++            }
++            TieredStoreMetricsManager.providerRpcLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), attributesBuilder.build());
++        });
++        return completableFuture;
++    }
++
++    public CompletableFuture<ListObjectsV2Response> listObjects(String prefix) {
++        AttributesBuilder attributesBuilder = TieredStoreMetricsManager.newAttributesBuilder().put(LABEL_OPERATION, OPERATION_LIST_OBJECTS);
++        Stopwatch stopwatch = Stopwatch.createStarted();
++        CompletableFuture<ListObjectsV2Response> listFuture = this.client.listObjectsV2(builder -> builder.bucket(this.bucket).prefix(prefix));
++        return listFuture.thenApply(resp -> {
++            attributesBuilder.put(LABEL_SUCCESS, true);
++            TieredStoreMetricsManager.providerRpcLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), attributesBuilder.build());
++            return resp;
++        }).exceptionally(throwable -> {
++            attributesBuilder.put(LABEL_SUCCESS, false);
++            LOGGER.error("List objects from S3 failed, prefix: {}, region: {}, bucket: {}", prefix, this.region, this.bucket, throwable);
++            TieredStoreMetricsManager.providerRpcLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), attributesBuilder.build());
++            return null;
++        });
++    }
++
++    public CompletableFuture<Boolean> exist(String prefix) {
++        AttributesBuilder attributesBuilder = TieredStoreMetricsManager.newAttributesBuilder().put(LABEL_OPERATION, OPERATION_LIST_OBJECTS);
++        Stopwatch stopwatch = Stopwatch.createStarted();
++        CompletableFuture<ListObjectsV2Response> listFuture = this.listObjects(prefix);
++        return listFuture.thenApply(resp -> {
++            attributesBuilder.put(LABEL_SUCCESS, true);
++            TieredStoreMetricsManager.providerRpcLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), attributesBuilder.build());
++            return resp.contents().size() > 0;
++        }).exceptionally(throwable -> {
++            attributesBuilder.put(LABEL_SUCCESS, false);
++            LOGGER.error("Exist prefix failed, list objects from S3 failed, prefix: {}, region: {}, bucket: {}", prefix, this.region, this.bucket, throwable);
++            TieredStoreMetricsManager.providerRpcLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), attributesBuilder.build());
++            return false;
++        });
++    }
++
++    public CompletableFuture<List<String/*undeleted keys*/>> deleteObjets(final List<String> keys) {
++        if (keys == null || keys.isEmpty()) {
++            return CompletableFuture.completedFuture(Collections.emptyList());
++        }
++        List<ObjectIdentifier> objects = keys.stream().map(key -> ObjectIdentifier.builder().key(key).build()).collect(Collectors.toList());
++        Delete delete = Delete.builder().objects(objects).build();
++        DeleteObjectsRequest deleteObjectsRequest = DeleteObjectsRequest.builder().bucket(this.bucket).delete(delete).build();
++        AttributesBuilder attributesBuilder = TieredStoreMetricsManager.newAttributesBuilder().put(LABEL_OPERATION, OPERATION_DELETE_OBJECTS);
++        Stopwatch stopwatch = Stopwatch.createStarted();
++        return this.client.deleteObjects(deleteObjectsRequest).thenApply(resp -> {
++            attributesBuilder.put(LABEL_SUCCESS, true);
++            TieredStoreMetricsManager.providerRpcLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), attributesBuilder.build());
++            List<String> undeletedKeys;
++            if (resp.deleted().size() != keys.size()) {
++                List<String> deleted = resp.deleted().stream().map(DeletedObject::key).collect(Collectors.toList());
++                undeletedKeys = keys.stream().filter(key -> !deleted.contains(key)).collect(Collectors.toList());
++            } else {
++                undeletedKeys = Collections.emptyList();
++            }
++            return undeletedKeys;
++        }).exceptionally(throwable -> {
++            LOGGER.error("Delete objects from S3 failed, keys: {}, region: {}, bucket: {}", keys, this.region, this.bucket, throwable);
++            attributesBuilder.put(LABEL_SUCCESS, false);
++            TieredStoreMetricsManager.providerRpcLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), attributesBuilder.build());
++            return keys;
++        });
++    }
++
++    public CompletableFuture<List<String>> deleteObjects(String prefix) {
++        CompletableFuture<List<String>> readObjectsByPrefix = this.listObjects(prefix).
++            thenApply(resp -> resp.contents().stream().map(S3Object::key).collect(Collectors.toList()));
++        return readObjectsByPrefix.thenCompose(this::deleteObjets);
++    }
++
++    public CompletableFuture<byte[]> readChunk(String key, long startPosition, long endPosition) {
++        GetObjectRequest request = GetObjectRequest.builder().bucket(this.bucket).key(key).range("bytes=" + startPosition + "-" + endPosition).build();
++        CompletableFuture<byte[]> future = new CompletableFuture<>();
++        AttributesBuilder attributesBuilder = TieredStoreMetricsManager.newAttributesBuilder().put(LABEL_OPERATION, OPERATION_DOWNLOAD_OBJECT);
++        Stopwatch stopwatch = Stopwatch.createStarted();
++        this.client.getObject(request, AsyncResponseTransformer.toBytes()).whenComplete((response, throwable) -> {
++            if (throwable != null) {
++                LOGGER.error("Read chunk from S3 failed, key: {}, region: {}, bucket: {}", key, this.region, this.bucket, throwable);
++                attributesBuilder.put(LABEL_SUCCESS, false);
++                future.completeExceptionally(throwable);
++            } else {
++                attributesBuilder.put(LABEL_SUCCESS, true);
++                future.complete(response.asByteArray());
++            }
++            TieredStoreMetricsManager.providerRpcLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), attributesBuilder.build());
++        });
++        return future;
++    }
++
++    public CompletableFuture<Boolean> mergeAllChunksIntoSegment(List<ChunkMetadata> chunks, String segmentName) {
++        AsyncS3ChunksMerger merger = new AsyncS3ChunksMerger(segmentName, chunks);
++        return merger.run();
++    }
++
++    class AsyncS3ChunksMerger {
++        private final String segmentKey;
++        private String uploadId;
++        private final List<CompletedPart> completedParts;
++
++        private final List<ChunkMetadata> chunks;
++
++        public AsyncS3ChunksMerger(String segmentKey, List<ChunkMetadata> chunks) {
++            this.segmentKey = segmentKey;
++            this.uploadId = null;
++            this.completedParts = new ArrayList<>();
++            this.chunks = chunks;
++        }
++
++        public CompletableFuture<Boolean> run() {
++            return initiateUpload().thenCompose(uploadId -> {
++                List<CompletableFuture<CompletedPart>> uploadPartFutures = new ArrayList<>(chunks.size());
++                for (int i = 0; i < chunks.size(); i++) {
++                    String chunkKey = chunks.get(i).getChunkName();
++                    int partNumber = i + 1;
++                    uploadPartFutures.add(uploadPart(partNumber, chunkKey));
++                }
++                return CompletableFuture.allOf(uploadPartFutures.toArray(new CompletableFuture[0]));
++            }).thenCompose(v -> completeUpload()).handle((resp, err) -> {
++                if (err != null) {
++                    LOGGER.error("Merge all chunks into segment failed, chunks: {}, segmentName: {}, region: {}, bucket: {}", chunks, segmentKey, region, bucket, err);
++                    abortUpload().join();
++                    return false;
++                }
++                return resp;
++            });
++        }
++
++        private CompletableFuture<String> initiateUpload() {
++            CreateMultipartUploadRequest request = CreateMultipartUploadRequest.builder()
++                .bucket(bucket)
++                .key(segmentKey)
++                .build();
++
++            return client.createMultipartUpload(request)
++                .thenApply(CreateMultipartUploadResponse::uploadId)
++                .whenComplete((result, error) -> {
++                    if (error != null) {
++                        LOGGER.error("Error initiating multi part upload: " + error);
++                    } else {
++                        uploadId = result;
++                    }
++                });
++        }
++
++        private CompletableFuture<CompletedPart> uploadPart(int partNumber, String chunkKey) {
++            UploadPartCopyRequest request = UploadPartCopyRequest.builder()
++                .sourceBucket(bucket).sourceKey(chunkKey).uploadId(uploadId).partNumber(partNumber)
++                .destinationBucket(bucket).destinationKey(segmentKey)
++                .build();
++
++            return client.uploadPartCopy(request)
++                .thenApply(resp -> resp.copyPartResult().eTag())
++                .thenApply(eTag -> CompletedPart.builder().partNumber(partNumber).eTag(eTag).build())
++                .whenComplete((result, error) -> {
++                    if (error != null) {
++                        LOGGER.error("Error uploading part, chunkKey: {}, partNumber: {}, uploadId: {}, error: {}", chunkKey, partNumber, uploadId, error);
++                    } else {
++                        completedParts.add(result);
++                    }
++                });
++        }
++
++        private CompletableFuture<Boolean> completeUpload() {
++            Collections.sort(completedParts, Comparator.comparingInt(CompletedPart::partNumber));
++
++            CompletedMultipartUpload multipartUpload = CompletedMultipartUpload.builder()
++                .parts(completedParts)
++                .build();
++
++            CompleteMultipartUploadRequest request = CompleteMultipartUploadRequest.builder()
++                .bucket(bucket)
++                .key(segmentKey)
++                .uploadId(uploadId)
++                .multipartUpload(multipartUpload)
++                .build();
++
++            return client.completeMultipartUpload(request)
++                .thenApply(resp -> true)
++                .whenComplete((result, error) -> {
++                    if (error != null) {
++                        LOGGER.error("Error completing multi part upload, uploadId: {}, error: {}", uploadId, error);
++                    }
++                });
++        }
++
++        private CompletableFuture<Boolean> abortUpload() {
++            AbortMultipartUploadRequest request = AbortMultipartUploadRequest.builder()
++                .bucket(bucket)
++                .key(segmentKey)
++                .uploadId(uploadId)
++                .build();
++            return client.abortMultipartUpload(request).thenApply(v -> true).exceptionally(e -> false);
++        }
++    }
++}
+\ No newline at end of file

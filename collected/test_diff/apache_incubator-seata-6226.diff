@@ -1,0 +1,552 @@
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/BatchResultMessageSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/BatchResultMessageSerializerTest.java
+index 7da24e095..ca7ab1a43 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/BatchResultMessageSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/BatchResultMessageSerializerTest.java
+@@ -22,6 +22,7 @@ import java.util.List;
+ import org.apache.seata.core.model.BranchStatus;
+ import org.apache.seata.core.protocol.AbstractResultMessage;
+ import org.apache.seata.core.protocol.BatchResultMessage;
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.core.protocol.ResultCode;
+ import org.apache.seata.core.protocol.transaction.BranchCommitResponse;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+@@ -39,7 +40,7 @@ public class BatchResultMessageSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+ 
+     @Test
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/MergeResultMessageSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/MergeResultMessageSerializerTest.java
+index ee1ae8b83..b77771005 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/MergeResultMessageSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/MergeResultMessageSerializerTest.java
+@@ -23,7 +23,7 @@ import org.apache.seata.core.protocol.MergeResultMessage;
+ import org.apache.seata.core.protocol.ResultCode;
+ import org.apache.seata.core.protocol.transaction.GlobalBeginResponse;
+ import org.junit.jupiter.api.Test;
+-
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import static org.assertj.core.api.Assertions.assertThat;
+ 
+ /**
+@@ -35,7 +35,7 @@ public class MergeResultMessageSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/MergedWarpMessageSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/MergedWarpMessageSerializerTest.java
+index 499621097..98cce5663 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/MergedWarpMessageSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/MergedWarpMessageSerializerTest.java
+@@ -24,7 +24,7 @@ import org.apache.seata.core.protocol.MergedWarpMessage;
+ import org.apache.seata.core.protocol.transaction.GlobalBeginRequest;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.junit.jupiter.api.Test;
+-
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import static org.assertj.core.api.Assertions.assertThat;
+ 
+ 
+@@ -37,7 +37,7 @@ public class MergedWarpMessageSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterRMRequestSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterRMRequestSerializerTest.java
+index 46a73801d..b469bada9 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterRMRequestSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterRMRequestSerializerTest.java
+@@ -19,7 +19,7 @@ package org.apache.seata.serializer.seata.protocol;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.protocol.RegisterRMRequest;
+ import org.junit.jupiter.api.Test;
+-
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import static org.assertj.core.api.Assertions.assertThat;
+ 
+ /**
+@@ -31,7 +31,7 @@ public class RegisterRMRequestSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterRMResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterRMResponseSerializerTest.java
+index b0115a048..c766eb203 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterRMResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterRMResponseSerializerTest.java
+@@ -20,7 +20,7 @@ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.protocol.RegisterRMResponse;
+ import org.apache.seata.core.protocol.ResultCode;
+ import org.junit.jupiter.api.Test;
+-
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import static org.assertj.core.api.Assertions.assertThat;
+ 
+ 
+@@ -33,7 +33,7 @@ public class RegisterRMResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterTMRequestSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterTMRequestSerializerTest.java
+index f3112aa1e..73c53e89a 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterTMRequestSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterTMRequestSerializerTest.java
+@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.Test;
+ import org.mockito.Mockito;
+-
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import static io.netty.buffer.Unpooled.buffer;
+ import static org.assertj.core.api.Assertions.assertThat;
+ 
+@@ -37,7 +37,7 @@ public class RegisterTMRequestSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     private static       RegisterTMRequest       registerTMRequest;
+     private static       AbstractIdentifyRequest air;
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterTMResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterTMResponseSerializerTest.java
+index 349ef1949..b2cbb8823 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterTMResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/RegisterTMResponseSerializerTest.java
+@@ -20,7 +20,7 @@ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.protocol.RegisterTMResponse;
+ import org.apache.seata.core.protocol.ResultCode;
+ import org.junit.jupiter.api.Test;
+-
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import static org.assertj.core.api.Assertions.assertThat;
+ 
+ /**
+@@ -32,7 +32,7 @@ public class RegisterTMResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchCommitRequestSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchCommitRequestSerializerTest.java
+index 46f512ad9..fa66b63a3 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchCommitRequestSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchCommitRequestSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.model.BranchType;
+ import org.apache.seata.core.protocol.transaction.BranchCommitRequest;
+@@ -32,7 +33,7 @@ public class BranchCommitRequestSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchCommitResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchCommitResponseSerializerTest.java
+index d9e028613..d16ccbfa1 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchCommitResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchCommitResponseSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.exception.TransactionExceptionCode;
+ import org.apache.seata.core.model.BranchStatus;
+@@ -34,7 +35,7 @@ public class BranchCommitResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRegisterRequestSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRegisterRequestSerializerTest.java
+index dbd380fa5..dd18665a4 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRegisterRequestSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRegisterRequestSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.model.BranchType;
+ import org.apache.seata.core.protocol.transaction.BranchRegisterRequest;
+@@ -32,7 +33,7 @@ public class BranchRegisterRequestSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRegisterResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRegisterResponseSerializerTest.java
+index ef0db9b0b..d10bf6f09 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRegisterResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRegisterResponseSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.exception.TransactionExceptionCode;
+ import org.apache.seata.core.protocol.ResultCode;
+@@ -33,7 +34,7 @@ public class BranchRegisterResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchReportRequestSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchReportRequestSerializerTest.java
+index a114c9d49..0ea5c0d36 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchReportRequestSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchReportRequestSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.model.BranchStatus;
+ import org.apache.seata.core.model.BranchType;
+@@ -33,7 +34,7 @@ public class BranchReportRequestSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchReportResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchReportResponseSerializerTest.java
+index 0edbc30f0..2a1fea6cb 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchReportResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchReportResponseSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.exception.TransactionExceptionCode;
+ import org.apache.seata.core.protocol.ResultCode;
+@@ -33,7 +34,7 @@ public class BranchReportResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRollbackRequestSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRollbackRequestSerializerTest.java
+index 2a7d30a52..a73f623a1 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRollbackRequestSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRollbackRequestSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.model.BranchType;
+ import org.apache.seata.core.protocol.transaction.BranchRollbackRequest;
+@@ -32,7 +33,7 @@ public class BranchRollbackRequestSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRollbackResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRollbackResponseSerializerTest.java
+index 49dca4436..629ec6a4c 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRollbackResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/BranchRollbackResponseSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.exception.TransactionExceptionCode;
+ import org.apache.seata.core.model.BranchStatus;
+@@ -34,7 +35,7 @@ public class BranchRollbackResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalBeginRequestSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalBeginRequestSerializerTest.java
+index ddc3b8248..16cd14a8d 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalBeginRequestSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalBeginRequestSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.protocol.transaction.GlobalBeginRequest;
+ import org.junit.jupiter.api.Test;
+@@ -31,7 +32,7 @@ public class GlobalBeginRequestSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalBeginResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalBeginResponseSerializerTest.java
+index 8b9cadfcc..c3bb00f93 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalBeginResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalBeginResponseSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.exception.TransactionExceptionCode;
+ import org.apache.seata.core.protocol.ResultCode;
+@@ -32,7 +33,7 @@ public class GlobalBeginResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalCommitRequestCodecTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalCommitRequestCodecTest.java
+index 8eea0d3ae..502d4db70 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalCommitRequestCodecTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalCommitRequestCodecTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.protocol.transaction.GlobalCommitRequest;
+ import org.junit.jupiter.api.Test;
+@@ -31,7 +32,7 @@ public class GlobalCommitRequestCodecTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalCommitResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalCommitResponseSerializerTest.java
+index a4418cb29..d9f2f2e8d 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalCommitResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalCommitResponseSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.exception.TransactionExceptionCode;
+ import org.apache.seata.core.model.GlobalStatus;
+@@ -33,7 +34,7 @@ public class GlobalCommitResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalLockQueryRequestSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalLockQueryRequestSerializerTest.java
+index 5c2951fed..be9a494f7 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalLockQueryRequestSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalLockQueryRequestSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.model.BranchType;
+ import org.apache.seata.core.protocol.transaction.GlobalLockQueryRequest;
+@@ -31,7 +32,7 @@ public class GlobalLockQueryRequestSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalLockQueryResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalLockQueryResponseSerializerTest.java
+index 2d367ca4d..1761a11c9 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalLockQueryResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalLockQueryResponseSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.exception.TransactionExceptionCode;
+ import org.apache.seata.core.protocol.ResultCode;
+@@ -33,7 +34,7 @@ public class GlobalLockQueryResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalRollbackRequestCodecTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalRollbackRequestCodecTest.java
+index 1b6bf6a12..204bafa69 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalRollbackRequestCodecTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalRollbackRequestCodecTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.protocol.transaction.GlobalRollbackRequest;
+ import org.junit.jupiter.api.Test;
+@@ -31,7 +32,7 @@ public class GlobalRollbackRequestCodecTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalRollbackResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalRollbackResponseSerializerTest.java
+index 32cbd7b33..084cbc62c 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalRollbackResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalRollbackResponseSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.exception.TransactionExceptionCode;
+ import org.apache.seata.core.model.GlobalStatus;
+@@ -34,7 +35,7 @@ public class GlobalRollbackResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalStatusRequestCodecTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalStatusRequestCodecTest.java
+index 2fe58490c..0ea3bbba8 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalStatusRequestCodecTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalStatusRequestCodecTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.protocol.transaction.GlobalStatusRequest;
+ import org.junit.jupiter.api.Test;
+@@ -31,7 +32,7 @@ public class GlobalStatusRequestCodecTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalStatusResponseSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalStatusResponseSerializerTest.java
+index fc1ebe735..9122db6d3 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalStatusResponseSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/GlobalStatusResponseSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.exception.TransactionExceptionCode;
+ import org.apache.seata.core.model.GlobalStatus;
+@@ -33,7 +34,7 @@ public class GlobalStatusResponseSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.
+diff --git a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/UndoLogDeleteRequestSerializerTest.java b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/UndoLogDeleteRequestSerializerTest.java
+index 3c2742390..17ff92103 100644
+--- a/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/UndoLogDeleteRequestSerializerTest.java
++++ b/serializer/seata-serializer-seata/src/test/java/org/apache/seata/serializer/seata/protocol/transaction/UndoLogDeleteRequestSerializerTest.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.seata.serializer.seata.protocol.transaction;
+ 
++import org.apache.seata.core.protocol.ProtocolConstants;
+ import org.apache.seata.serializer.seata.SeataSerializer;
+ import org.apache.seata.core.model.BranchType;
+ import org.apache.seata.core.protocol.transaction.UndoLogDeleteRequest;
+@@ -32,7 +33,7 @@ public class UndoLogDeleteRequestSerializerTest {
+     /**
+      * The Seata codec.
+      */
+-    SeataSerializer seataSerializer = new SeataSerializer();
++    SeataSerializer seataSerializer = new SeataSerializer(ProtocolConstants.VERSION);
+ 
+     /**
+      * Test codec.

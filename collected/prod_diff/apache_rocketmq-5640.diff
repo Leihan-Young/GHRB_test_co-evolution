@@ -1,0 +1,115 @@
+diff --git a/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultLitePullConsumer.java b/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultLitePullConsumer.java
+index d5edd30d6..41461ec26 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultLitePullConsumer.java
++++ b/client/src/main/java/org/apache/rocketmq/client/consumer/DefaultLitePullConsumer.java
+@@ -317,21 +317,27 @@ public class DefaultLitePullConsumer extends ClientConfig implements LitePullCon
+         this.defaultLitePullConsumerImpl.registerTopicMessageQueueChangeListener(withNamespace(topic), topicMessageQueueChangeListener);
+     }
+ 
++    @Deprecated
+     @Override
+     public void commitSync() {
+         this.defaultLitePullConsumerImpl.commitAll();
+     }
+ 
+-    /**
+-     * Offset specified by batch commit
+-     * @param offsetMap
+-     * @param persist
+-     */
++    @Deprecated
+     @Override
+     public void commitSync(Map<MessageQueue, Long> offsetMap, boolean persist) {
+         this.defaultLitePullConsumerImpl.commit(offsetMap, persist);
+     }
+ 
++    @Override
++    public void commit() {
++        this.defaultLitePullConsumerImpl.commitAll();
++    }
++
++    @Override public void commit(Map<MessageQueue, Long> offsetMap, boolean persist) {
++        this.defaultLitePullConsumerImpl.commit(offsetMap, persist);
++    }
++
+     /**
+      * Get the MessageQueue assigned in subscribe mode
+      *
+diff --git a/client/src/main/java/org/apache/rocketmq/client/consumer/LitePullConsumer.java b/client/src/main/java/org/apache/rocketmq/client/consumer/LitePullConsumer.java
+index e9e67d055..1c7f74222 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/consumer/LitePullConsumer.java
++++ b/client/src/main/java/org/apache/rocketmq/client/consumer/LitePullConsumer.java
+@@ -182,18 +182,43 @@ public interface LitePullConsumer {
+      */
+     Long offsetForTimestamp(MessageQueue messageQueue, Long timestamp) throws MQClientException;
+ 
++    @Deprecated
+     /**
+-     * Manually commit consume offset.
++     * The method is deprecated because its name is ambiguous, this method relies on the background thread commit consumerOffset rather than the synchronous commit offset.
++     * The method is expected to be removed after version 5.1.0. It is recommended to use the {@link #commit()} method.
++     *
++     * Manually commit consume offset saved by the system.
+      */
+     void commitSync();
+ 
++    @Deprecated
+     /**
+-     * Offset specified by batch commit
+-     * @param offsetMap
+-     * @param persist
++     * The method is deprecated because its name is ambiguous, this method relies on the background thread commit consumerOffset rather than the synchronous commit offset.
++     * The method is expected to be removed after version 5.1.0. It is recommended to use the {@link #commit(java.util.Map, boolean)} method.
++     *
++     * @param offsetMap Offset specified by batch commit
+      */
+     void commitSync(Map<MessageQueue, Long> offsetMap, boolean persist);
+ 
++    /**
++     * Manually commit consume offset saved by the system. This is a non-blocking method.
++     */
++    void commit();
++
++    /**
++     * Offset specified by batch commit
++     *
++     * @param offsetMap Offset specified by batch commit
++     * @param persist Whether to persist to the broker
++     */
++    void commit(Map<MessageQueue, Long> offsetMap, boolean persist);
++
++    /**
++     * Manually commit consume offset saved by the system.
++     *
++     * @param messageQueues Message queues that need to submit consumer offset
++     * @param persist hether to persist to the broker
++     */
+     void commit(final Set<MessageQueue> messageQueues, boolean persist);
+ 
+     /**
+diff --git a/example/src/main/java/org/apache/rocketmq/example/simple/LitePullConsumerAssign.java b/example/src/main/java/org/apache/rocketmq/example/simple/LitePullConsumerAssign.java
+index e638de1c9..0d8fc1c69 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/simple/LitePullConsumerAssign.java
++++ b/example/src/main/java/org/apache/rocketmq/example/simple/LitePullConsumerAssign.java
+@@ -43,7 +43,7 @@ public class LitePullConsumerAssign {
+             while (running) {
+                 List<MessageExt> messageExts = litePullConsumer.poll();
+                 System.out.printf("%s %n", messageExts);
+-                litePullConsumer.commitSync();
++                litePullConsumer.commit();
+             }
+         } finally {
+             litePullConsumer.shutdown();
+diff --git a/example/src/main/java/org/apache/rocketmq/example/simple/LitePullConsumerAssignWithSubExpression.java b/example/src/main/java/org/apache/rocketmq/example/simple/LitePullConsumerAssignWithSubExpression.java
+index 0ab106fa1..fb673df3f 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/simple/LitePullConsumerAssignWithSubExpression.java
++++ b/example/src/main/java/org/apache/rocketmq/example/simple/LitePullConsumerAssignWithSubExpression.java
+@@ -50,7 +50,7 @@ public class LitePullConsumerAssignWithSubExpression {
+             while (running) {
+                 List<MessageExt> messageExts = litePullConsumer.poll();
+                 System.out.printf("%s %n", messageExts);
+-                litePullConsumer.commitSync();
++                litePullConsumer.commit();
+             }
+         } finally {
+             litePullConsumer.shutdown();

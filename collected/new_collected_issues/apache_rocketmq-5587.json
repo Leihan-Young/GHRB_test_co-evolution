@@ -1,0 +1,7 @@
+{
+  "issue_id": 5531,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5531",
+  "title": "Logging isolation of broker container is hacky",
+  "description": "<p dir=\"auto\">Current solution of logging isolation is hacky: <a href=\"https://github.com/apache/rocketmq/blob/develop/docs/cn/BrokerContainer.md#%E6%97%A5%E5%BF%97%E5%8F%98%E5%8C%96\">https://github.com/apache/rocketmq/blob/develop/docs/cn/BrokerContainer.md#%E6%97%A5%E5%BF%97%E5%8F%98%E5%8C%96</a></p>\n<p dir=\"auto\">Maybe we should try <a href=\"https://logback.qos.ch/manual/mdc.html\" rel=\"nofollow\">logback MDC</a></p>",
+  "description_text": "Current solution of logging isolation is hacky: https://github.com/apache/rocketmq/blob/develop/docs/cn/BrokerContainer.md#%E6%97%A5%E5%BF%97%E5%8F%98%E5%8C%96\nMaybe we should try logback MDC"
+}

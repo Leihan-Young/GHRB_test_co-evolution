@@ -1,0 +1,7 @@
+{
+  "issue_id": 5481,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5481",
+  "title": "Decrease the repeated consumption probability of expired message",
+  "description": "<p dir=\"auto\">RocketMQ client will send back the expired message in push consumer, which should not be sent back.</p>\n<p dir=\"auto\">We should ignore the message which is removed from process queue.</p>",
+  "description_text": "RocketMQ client will send back the expired message in push consumer, which should not be sent back.\nWe should ignore the message which is removed from process queue."
+}

@@ -1,0 +1,559 @@
+diff --git a/src/main/java/org/assertj/core/api/Array2DAssert.java b/src/main/java/org/assertj/core/api/Array2DAssert.java
+index 327fdd716..b90079916 100644
+--- a/src/main/java/org/assertj/core/api/Array2DAssert.java
++++ b/src/main/java/org/assertj/core/api/Array2DAssert.java
+@@ -13,7 +13,7 @@
+ package org.assertj.core.api;
+ 
+ /**
+- * Assertions applicable to two-dimensional arrays,
++ * Assertions applicable to two-dimensional arrays.
+  *
+  * @param <SELF> the "self" type of this assertion class. Please read &quot;<a href="http://bit.ly/1IZIRcY"
+  *          target="_blank">Emulating
+@@ -104,6 +104,25 @@ public interface Array2DAssert<SELF extends Array2DAssert<SELF, ELEMENT>, ELEMEN
+    */
+   SELF hasDimensions(int expectedFirstDimension, int expectedSecondDimension);
+ 
++  /**
++   * Verifies that the actual two-dimensional array has the given number of rows.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThat(new int[][] {{1, 2, 3}, {4, 5, 6}}).hasNumberOfRows(2);
++   * assertThat(new int[][] {{1}, {1, 2}, {1, 2, 3}}).hasNumberOfRows(3);
++   *
++   * // assertions will fail
++   * assertThat(new int[][] { }).hasNumberOfRows(1);
++   * assertThat(new int[][] {{1, 2, 3}, {4, 5, 6}}).hasNumberOfRows(3);
++   * assertThat(new int[][] {{1, 2, 3}, {4, 5, 6, 7}}).hasNumberOfRows(1); </code></pre>
++   *
++   * @param expected the expected number of rows of the two-dimensional array.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual number of rows are not equal to the given one.
++   */
++  SELF hasNumberOfRows(int expected);
++
+   /**
+    * Verifies that the actual array has the same dimensions as the given array.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/api/Boolean2DArrayAssert.java b/src/main/java/org/assertj/core/api/Boolean2DArrayAssert.java
+index 8ef7bd2e1..dae09ebeb 100644
+--- a/src/main/java/org/assertj/core/api/Boolean2DArrayAssert.java
++++ b/src/main/java/org/assertj/core/api/Boolean2DArrayAssert.java
+@@ -211,6 +211,29 @@ public class Boolean2DArrayAssert extends Abstract2DArrayAssert<Boolean2DArrayAs
+     return myself;
+   }
+ 
++  /**
++   * Verifies that the actual two-dimensional array has the given number of rows.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThat(new boolean[][] {{true, true, true}, {false, false, false}}).hasNumberOfRows(2);
++   * assertThat(new boolean[][] {{true}, {true, false}, {true, false, false}}).hasNumberOfRows(3);
++   *
++   * // assertions will fail
++   * assertThat(new boolean[][] { }).hasNumberOfRows(1);
++   * assertThat(new boolean[][] {{true, true, true}, {false, false, false}}).hasNumberOfRows(3);
++   * assertThat(new boolean[][] {{true, true, true}, {false, false, false, false}}).hasNumberOfRows(1); </code></pre>
++   *
++   * @param expected the expected number of rows of the two-dimensional array.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual number of rows are not equal to the given one.
++   */
++  @Override
++  public Boolean2DArrayAssert hasNumberOfRows(int expected) {
++    boolean2dArrays.assertNumberOfRows(info, actual, expected);
++    return myself;
++  }
++
+   /**
+    * Verifies that the actual {@code boolean[][]} has the same dimensions as the given array.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/api/Byte2DArrayAssert.java b/src/main/java/org/assertj/core/api/Byte2DArrayAssert.java
+index 548b5f378..0c6e32c3f 100644
+--- a/src/main/java/org/assertj/core/api/Byte2DArrayAssert.java
++++ b/src/main/java/org/assertj/core/api/Byte2DArrayAssert.java
+@@ -212,6 +212,30 @@ public class Byte2DArrayAssert extends Abstract2DArrayAssert<Byte2DArrayAssert,
+     return myself;
+   }
+ 
++  /**
++   * Verifies that the actual two-dimensional array has the given number of rows.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThat(new byte[][] {{1, 2, 3}, {4, 5, 6}}).hasNumberOfRows(2);
++   * assertThat(new byte[][] {{1}, {1, 2}, {1, 2, 3}}).hasNumberOfRows(3);
++   *
++   * // assertions will fail
++   * assertThat(new byte[][] { }).hasNumberOfRows(1);
++   * assertThat(new byte[][] {{1, 2, 3}, {4, 5, 6}}).hasNumberOfRows(3);
++   * assertThat(new byte[][] {{1, 2, 3}, {4, 5, 6, 7}}).hasNumberOfRows(1); </code></pre>
++   *
++   * @param expected the expected number of rows of the two-dimensional array.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual number of rows are not equal to the given one.
++   */
++  @Override
++  public Byte2DArrayAssert hasNumberOfRows(int expected) {
++    byte2dArrays.assertNumberOfRows(info, actual, expected);
++    return myself;
++  }
++
++
+   /**
+    * Verifies that the actual {@code byte[][]} has the same dimensions as the given array.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/api/Char2DArrayAssert.java b/src/main/java/org/assertj/core/api/Char2DArrayAssert.java
+index ff88b5261..cd46ed5d9 100644
+--- a/src/main/java/org/assertj/core/api/Char2DArrayAssert.java
++++ b/src/main/java/org/assertj/core/api/Char2DArrayAssert.java
+@@ -212,6 +212,29 @@ public class Char2DArrayAssert extends Abstract2DArrayAssert<Char2DArrayAssert,
+     return myself;
+   }
+ 
++  /**
++   * Verifies that the actual two-dimensional array has the given number of rows.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThat(new char[][] {{'1', '2', '3'}, {'4', '5', '6'}}).hasNumberOfRows(2);
++   * assertThat(new char[][] {{'1'}, {'1', '2'}, {'1', '2', '3'}}).hasNumberOfRows(3);
++   *
++   * // assertions will fail
++   * assertThat(new char[][] { }).hasNumberOfRows(1);
++   * assertThat(new char[][] {{'1', '2', '3'}, {'4', '5', '6'}}).hasNumberOfRows(3);
++   * assertThat(new char[][] {{'1', '2', '3'}, {'4', '5', '6', '7'}}).hasNumberOfRows(1); </code></pre>
++   *
++   * @param expected the expected number of rows of the two-dimensional array.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual number of rows are not equal to the given one.
++   */
++  @Override
++  public Char2DArrayAssert hasNumberOfRows(int expected) {
++    char2dArrays.assertNumberOfRows(info, actual, expected);
++    return myself;
++  }
++
+   /**
+    * Verifies that the actual {@code char[][]} has the same dimensions as the given array.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/api/Double2DArrayAssert.java b/src/main/java/org/assertj/core/api/Double2DArrayAssert.java
+index 35c65d0fa..32b9bce9d 100755
+--- a/src/main/java/org/assertj/core/api/Double2DArrayAssert.java
++++ b/src/main/java/org/assertj/core/api/Double2DArrayAssert.java
+@@ -212,6 +212,29 @@ public class Double2DArrayAssert extends Abstract2DArrayAssert<Double2DArrayAsse
+     return myself;
+   }
+ 
++  /**
++   * Verifies that the actual two-dimensional array has the given number of rows.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThat(new double[][] {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}}).hasNumberOfRows(2);
++   * assertThat(new double[][] {{1.0}, {1.0, 2.0}, {1.0, 2.0, 3.0}}).hasNumberOfRows(3);
++   *
++   * // assertions will fail
++   * assertThat(new double[][] { }).hasNumberOfRows(1);
++   * assertThat(new double[][] {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}}).hasNumberOfRows(3);
++   * assertThat(new double[][] {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0, 7.0}}).hasNumberOfRows(1); </code></pre>
++   *
++   * @param expected the expected number of rows of the two-dimensional array.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual number of rows are not equal to the given one.
++   */
++  @Override
++  public Double2DArrayAssert hasNumberOfRows(int expected) {
++    double2dArrays.assertNumberOfRows(info, actual, expected);
++    return myself;
++  }
++
+   /**
+    * Verifies that the actual {@code double[][]} has the same dimensions as the given array.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/api/Float2DArrayAssert.java b/src/main/java/org/assertj/core/api/Float2DArrayAssert.java
+index 3c484e579..75bbb3237 100644
+--- a/src/main/java/org/assertj/core/api/Float2DArrayAssert.java
++++ b/src/main/java/org/assertj/core/api/Float2DArrayAssert.java
+@@ -207,6 +207,29 @@ public class Float2DArrayAssert extends Abstract2DArrayAssert<Float2DArrayAssert
+     return myself;
+   }
+ 
++  /**
++   * Verifies that the actual two-dimensional array has the given number of rows.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThat(new float[][] {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}}).hasNumberOfRows(2);
++   * assertThat(new float[][] {{1.0f}, {1.0f, 2.0f}, {1.0f, 2.0f, 3.0f}}).hasNumberOfRows(3);
++   *
++   * // assertions will fail
++   * assertThat(new float[][] { }).hasNumberOfRows(1);
++   * assertThat(new float[][] {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}}).hasNumberOfRows(3);
++   * assertThat(new float[][] {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f, 7.0f}}).hasNumberOfRows(1); </code></pre>
++   *
++   * @param expected the expected number of rows of the two-dimensional array.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual number of rows are not equal to the given one.
++   */
++  @Override
++  public Float2DArrayAssert hasNumberOfRows(int expected) {
++    float2dArrays.assertNumberOfRows(info, actual, expected);
++    return myself;
++  }
++
+   /**
+    * Verifies that the actual {@code float[][]} has the same dimensions as the given array.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/api/Int2DArrayAssert.java b/src/main/java/org/assertj/core/api/Int2DArrayAssert.java
+index a7e453fc6..87e386602 100644
+--- a/src/main/java/org/assertj/core/api/Int2DArrayAssert.java
++++ b/src/main/java/org/assertj/core/api/Int2DArrayAssert.java
+@@ -125,6 +125,30 @@ public class Int2DArrayAssert extends Abstract2DArrayAssert<Int2DArrayAssert, in
+     return myself;
+   }
+ 
++
++  /**
++   * Verifies that the actual two-dimensional array has the given number of rows.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThat(new int[][] {{1, 2, 3}, {4, 5, 6}}).hasNumberOfRows(2);
++   * assertThat(new int[][] {{1}, {1, 2}, {1, 2, 3}}).hasNumberOfRows(3);
++   *
++   * // assertions will fail
++   * assertThat(new int[][] { }).hasNumberOfRows(1);
++   * assertThat(new int[][] {{1, 2, 3}, {4, 5, 6}}).hasNumberOfRows(3);
++   * assertThat(new int[][] {{1, 2, 3}, {4, 5, 6, 7}}).hasNumberOfRows(1); </code></pre>
++   *
++   * @param expected the expected number of rows of the two-dimensional array.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual number of rows are not equal to the given one.
++   */
++  @Override
++  public Int2DArrayAssert hasNumberOfRows(int expected) {
++    int2dArrays.assertNumberOfRows(info, actual, expected);
++    return myself;
++  }
++
+   /**
+    * Verifies that the actual {@code int[][]} has the same dimensions as the given array.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/api/Long2DArrayAssert.java b/src/main/java/org/assertj/core/api/Long2DArrayAssert.java
+index 316ea10f2..9d19610c2 100644
+--- a/src/main/java/org/assertj/core/api/Long2DArrayAssert.java
++++ b/src/main/java/org/assertj/core/api/Long2DArrayAssert.java
+@@ -211,6 +211,29 @@ public class Long2DArrayAssert extends Abstract2DArrayAssert<Long2DArrayAssert,
+     return myself;
+   }
+ 
++  /**
++   * Verifies that the actual two-dimensional array has the given number of rows.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThat(new long[][] {{1, 2, 3}, {4, 5, 6}}).hasNumberOfRows(2);
++   * assertThat(new long[][] {{1}, {1, 2}, {1, 2, 3}}).hasNumberOfRows(3);
++   *
++   * // assertions will fail
++   * assertThat(new long[][] { }).hasNumberOfRows(1);
++   * assertThat(new long[][] {{1, 2, 3}, {4, 5, 6}}).hasNumberOfRows(3);
++   * assertThat(new long[][] {{1, 2, 3}, {4, 5, 6, 7}}).hasNumberOfRows(1); </code></pre>
++   *
++   * @param expected the expected number of rows of the two-dimensional array.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual number of rows are not equal to the given one.
++   */
++  @Override
++  public Long2DArrayAssert hasNumberOfRows(int expected) {
++    long2dArrays.assertNumberOfRows(info, actual, expected);
++    return myself;
++  }
++
+   /**
+    * Verifies that the actual {@code long[][]} has the same dimensions as the given array.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/api/Object2DArrayAssert.java b/src/main/java/org/assertj/core/api/Object2DArrayAssert.java
+index 02ccf0deb..16b196dd6 100644
+--- a/src/main/java/org/assertj/core/api/Object2DArrayAssert.java
++++ b/src/main/java/org/assertj/core/api/Object2DArrayAssert.java
+@@ -214,6 +214,29 @@ public class Object2DArrayAssert<ELEMENT> extends
+     return myself;
+   }
+ 
++  /**
++   * Verifies that the actual two-dimensional array has the given number of rows.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThat(new String[][] {{"1", "2", "3"}, {"4", "5", "6"}}).hasNumberOfRows(2);
++   * assertThat(new String[][] {{"1"}, {"1", "2"}, {"1", "2", "3"}}).hasNumberOfRows(3);
++   *
++   * // assertions will fail
++   * assertThat(new String[][] { }).hasNumberOfRows(1);
++   * assertThat(new String[][] {{"1", "2", "3"}, {"4", "5", "6"}}).hasNumberOfRows(3);
++   * assertThat(new String[][] {{"1", "2", "3"}, {"4", "5", "6", "7"}}).hasNumberOfRows(1); </code></pre>
++   *
++   * @param expected the expected number of rows of the two-dimensional array.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual number of rows are not equal to the given one.
++   */
++  @Override
++  public Object2DArrayAssert<ELEMENT> hasNumberOfRows(int expected) {
++    object2dArrays.assertNumberOfRows(info, actual, expected);
++    return myself;
++  }
++
+   /**
+    * Verifies that the actual {@code ELEMENT[][]} has the same dimensions as the given array.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/api/Short2DArrayAssert.java b/src/main/java/org/assertj/core/api/Short2DArrayAssert.java
+index 4dd17ad96..1adbb9164 100644
+--- a/src/main/java/org/assertj/core/api/Short2DArrayAssert.java
++++ b/src/main/java/org/assertj/core/api/Short2DArrayAssert.java
+@@ -210,6 +210,29 @@ public class Short2DArrayAssert extends Abstract2DArrayAssert<Short2DArrayAssert
+     return myself;
+   }
+ 
++  /**
++   * Verifies that the actual two-dimensional array has the given number of rows.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThat(new short[][] {{1, 2, 3}, {4, 5, 6}}).hasNumberOfRows(2);
++   * assertThat(new short[][] {{1}, {1, 2}, {1, 2, 3}}).hasNumberOfRows(3);
++   *
++   * // assertions will fail
++   * assertThat(new short[][] { }).hasNumberOfRows(1);
++   * assertThat(new short[][] {{1, 2, 3}, {4, 5, 6}}).hasNumberOfRows(3);
++   * assertThat(new short[][] {{1, 2, 3}, {4, 5, 6, 7}}).hasNumberOfRows(1); </code></pre>
++   *
++   * @param expected the expected number of rows of the two-dimensional array.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual number of rows are not equal to the given one.
++   */
++  @Override
++  public Short2DArrayAssert hasNumberOfRows(int expected) {
++    short2dArrays.assertNumberOfRows(info, actual, expected);
++    return myself;
++  }
++
+   /**
+    * Verifies that the actual {@code short[][]} has the same dimensions as the given array.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/internal/Arrays2D.java b/src/main/java/org/assertj/core/internal/Arrays2D.java
+index 3a481beda..19048afd2 100644
+--- a/src/main/java/org/assertj/core/internal/Arrays2D.java
++++ b/src/main/java/org/assertj/core/internal/Arrays2D.java
+@@ -80,7 +80,8 @@ public class Arrays2D {
+     }
+   }
+ 
+-  private void assertNumberOfRows(AssertionInfo info, Failures failures, Object array, int expectedSize) {
++  @VisibleForTesting
++  public void assertNumberOfRows(AssertionInfo info, Failures failures, Object array, int expectedSize) {
+     assertNotNull(info, array);
+     int sizeOfActual = sizeOf(array);
+     if (sizeOfActual != expectedSize)
+diff --git a/src/main/java/org/assertj/core/internal/Boolean2DArrays.java b/src/main/java/org/assertj/core/internal/Boolean2DArrays.java
+index 5db6a38f3..c6a86f49f 100644
+--- a/src/main/java/org/assertj/core/internal/Boolean2DArrays.java
++++ b/src/main/java/org/assertj/core/internal/Boolean2DArrays.java
+@@ -108,6 +108,17 @@ public class Boolean2DArrays {
+     arrays.assertHasSameDimensionsAs(info, actual, other);
+   }
+ 
++  /**
++   * Asserts that the number of rows in the given array is equal to the expected one.
++   *
++   * @param info contains information about the assertion.
++   * @param actual the given array.
++   * @param expectedNumberOfRows the expected first dimension size of {@code actual}.
++   */
++  public void assertNumberOfRows(AssertionInfo info, boolean[][] actual, int expectedNumberOfRows) {
++    arrays.assertNumberOfRows(info, failures, actual, expectedNumberOfRows);
++  }
++
+   /**
+    * Verifies that the given array contains the given value at the given index.
+    * 
+diff --git a/src/main/java/org/assertj/core/internal/Byte2DArrays.java b/src/main/java/org/assertj/core/internal/Byte2DArrays.java
+index 4c3f67d21..1a60ee189 100644
+--- a/src/main/java/org/assertj/core/internal/Byte2DArrays.java
++++ b/src/main/java/org/assertj/core/internal/Byte2DArrays.java
+@@ -103,6 +103,17 @@ public class Byte2DArrays {
+     arrays.assertHasSameDimensionsAs(info, actual, other);
+   }
+ 
++  /**
++   * Asserts that the number of rows in the given array is equal to the expected one.
++   *
++   * @param info contains information about the assertion.
++   * @param actual the given array.
++   * @param expectedNumberOfRows the expected first dimension size of {@code actual}.
++   */
++  public void assertNumberOfRows(AssertionInfo info, byte[][] actual, int expectedNumberOfRows) {
++    arrays.assertNumberOfRows(info, failures, actual, expectedNumberOfRows);
++  }
++
+   /**
+    * Verifies that the given array contains the given value at the given index.
+    * @param info contains information about the assertion.
+diff --git a/src/main/java/org/assertj/core/internal/Char2DArrays.java b/src/main/java/org/assertj/core/internal/Char2DArrays.java
+index 4bfab42d7..69b3bae8a 100644
+--- a/src/main/java/org/assertj/core/internal/Char2DArrays.java
++++ b/src/main/java/org/assertj/core/internal/Char2DArrays.java
+@@ -107,6 +107,17 @@ public class Char2DArrays {
+     arrays.assertHasSameDimensionsAs(info, actual, other);
+   }
+ 
++  /**
++   * Asserts that the number of rows in the given array is equal to the expected one.
++   *
++   * @param info contains information about the assertion.
++   * @param actual the given array.
++   * @param expectedNumberOfRows the expected first dimension size of {@code actual}.
++   */
++  public void assertNumberOfRows(AssertionInfo info, char[][] actual, int expectedNumberOfRows) {
++    arrays.assertNumberOfRows(info, failures, actual, expectedNumberOfRows);
++  }
++
+   /**
+    * Verifies that the given array contains the given value at the given index.
+    *
+diff --git a/src/main/java/org/assertj/core/internal/Double2DArrays.java b/src/main/java/org/assertj/core/internal/Double2DArrays.java
+index 547ec2fbf..95c9a94a6 100644
+--- a/src/main/java/org/assertj/core/internal/Double2DArrays.java
++++ b/src/main/java/org/assertj/core/internal/Double2DArrays.java
+@@ -108,6 +108,17 @@ public class Double2DArrays {
+     arrays.assertHasSameDimensionsAs(info, actual, other);
+   }
+ 
++  /**
++   * Asserts that the number of rows in the given array is equal to the expected one.
++   *
++   * @param info contains information about the assertion.
++   * @param actual the given array.
++   * @param expectedNumberOfRows the expected first dimension size of {@code actual}.
++   */
++  public void assertNumberOfRows(AssertionInfo info, double[][] actual, int expectedNumberOfRows) {
++    arrays.assertNumberOfRows(info, failures, actual, expectedNumberOfRows);
++  }
++
+   /**
+    * Verifies that the given array contains the given value at the given index.
+    * 
+diff --git a/src/main/java/org/assertj/core/internal/Float2DArrays.java b/src/main/java/org/assertj/core/internal/Float2DArrays.java
+index 04b57894a..c66342b2a 100644
+--- a/src/main/java/org/assertj/core/internal/Float2DArrays.java
++++ b/src/main/java/org/assertj/core/internal/Float2DArrays.java
+@@ -104,6 +104,17 @@ public class Float2DArrays {
+     arrays.assertHasSameDimensionsAs(info, actual, other);
+   }
+ 
++  /**
++   * Asserts that the number of rows in the given array is equal to the expected one.
++   *
++   * @param info contains information about the assertion.
++   * @param actual the given array.
++   * @param expectedNumberOfRows the expected first dimension size of {@code actual}.
++   */
++  public void assertNumberOfRows(AssertionInfo info, float[][] actual, int expectedNumberOfRows) {
++    arrays.assertNumberOfRows(info, failures, actual, expectedNumberOfRows);
++  }
++
+   /**
+    * Verifies that the given array contains the given value at the given index.
+    *
+diff --git a/src/main/java/org/assertj/core/internal/Int2DArrays.java b/src/main/java/org/assertj/core/internal/Int2DArrays.java
+index 8c5f25a39..ff163d251 100644
+--- a/src/main/java/org/assertj/core/internal/Int2DArrays.java
++++ b/src/main/java/org/assertj/core/internal/Int2DArrays.java
+@@ -107,6 +107,17 @@ public class Int2DArrays {
+     arrays.assertHasSameDimensionsAs(info, actual, other);
+   }
+ 
++  /**
++   * Asserts that the number of rows in the given array is equal to the expected one.
++   *
++   * @param info contains information about the assertion.
++   * @param actual the given array.
++   * @param expectedNumberOfRows the expected first dimension size of {@code actual}.
++   */
++  public void assertNumberOfRows(AssertionInfo info, int[][] actual, int expectedNumberOfRows) {
++    arrays.assertNumberOfRows(info, failures, actual, expectedNumberOfRows);
++  }
++
+   /**
+    * Verifies that the given array contains the given value at the given index.
+    *
+diff --git a/src/main/java/org/assertj/core/internal/Long2DArrays.java b/src/main/java/org/assertj/core/internal/Long2DArrays.java
+index 6f80c67c9..845e59b22 100644
+--- a/src/main/java/org/assertj/core/internal/Long2DArrays.java
++++ b/src/main/java/org/assertj/core/internal/Long2DArrays.java
+@@ -108,6 +108,17 @@ public class Long2DArrays {
+     arrays.assertHasSameDimensionsAs(info, actual, other);
+   }
+ 
++  /**
++   * Asserts that the number of rows in the given array is equal to the expected one.
++   *
++   * @param info contains information about the assertion.
++   * @param actual the given array.
++   * @param expectedNumberOfRows the expected first dimension size of {@code actual}.
++   */
++  public void assertNumberOfRows(AssertionInfo info, long[][] actual, int expectedNumberOfRows) {
++    arrays.assertNumberOfRows(info, failures, actual, expectedNumberOfRows);
++  }
++
+   /**
+    * Verifies that the given array contains the given value at the given index.
+    * 
+diff --git a/src/main/java/org/assertj/core/internal/Object2DArrays.java b/src/main/java/org/assertj/core/internal/Object2DArrays.java
+index 74b916ed3..23a596bab 100644
+--- a/src/main/java/org/assertj/core/internal/Object2DArrays.java
++++ b/src/main/java/org/assertj/core/internal/Object2DArrays.java
+@@ -110,6 +110,17 @@ public class Object2DArrays<ELEMENT> {
+     arrays.assertHasSameDimensionsAs(info, actual, other);
+   }
+ 
++  /**
++   * Asserts that the number of rows in the given array is equal to the expected one.
++   *
++   * @param info contains information about the assertion.
++   * @param actual the given array.
++   * @param expectedNumberOfRows the expected first dimension size of {@code actual}.
++   */
++  public void assertNumberOfRows(AssertionInfo info, ELEMENT[][] actual, int expectedNumberOfRows) {
++    arrays.assertNumberOfRows(info, failures, actual, expectedNumberOfRows);
++  }
++
+   /**
+    * Verifies that the given array contains the given object at the given index.
+    *
+diff --git a/src/main/java/org/assertj/core/internal/Short2DArrays.java b/src/main/java/org/assertj/core/internal/Short2DArrays.java
+index 01a61fe99..08079c134 100644
+--- a/src/main/java/org/assertj/core/internal/Short2DArrays.java
++++ b/src/main/java/org/assertj/core/internal/Short2DArrays.java
+@@ -108,6 +108,17 @@ public class Short2DArrays {
+     arrays.assertHasSameDimensionsAs(info, actual, other);
+   }
+ 
++  /**
++   * Asserts that the number of rows in the given array is equal to the expected one.
++   *
++   * @param info contains information about the assertion.
++   * @param actual the given array.
++   * @param expectedNumberOfRows the expected first dimension size of {@code actual}.
++   */
++  public void assertNumberOfRows(AssertionInfo info, short[][] actual, int expectedNumberOfRows) {
++    arrays.assertNumberOfRows(info, failures, actual, expectedNumberOfRows);
++  }
++
+   /**
+    * Verifies that the given array contains the given value at the given index.
+    * 

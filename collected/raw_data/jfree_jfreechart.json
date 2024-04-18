@@ -1,0 +1,174 @@
+[
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Use a specific english locale to make month parsing in testParseMonth\u2026",
+        "url": "https://github.com/jfree/jfreechart/pull/52",
+        "resourcePath": "/jfree/jfreechart/pull/52",
+        "createdAt": "2017-07-07T09:59:56Z",
+        "number": 52,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/jfree/chart/date/SerialDate.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MTI5MzcwNDQxOjRmZTIyMGQwNDE5ZWVhNTdkZDU2ODBlN2Y0MTE4ZTJjNDE2ZGQzNjI=",
+                "url": "https://github.com/jfree/jfreechart/pull/52/commits/4fe220d0419eea57dd5680e7f4118e2c416dd362"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 46,
+                "url": "https://github.com/jfree/jfreechart/issues/46",
+                "title": "MonthTest JUnit test failed",
+                "bodyHTML": "<p dir=\"auto\">Failed tests:   testParseMonth(org.jfree.data.time.MonthTest): expected:&lt;3&gt; but was:&lt;1&gt;</p>\n<p dir=\"auto\">Change what I thought was wrong and got no further problems</p>\n<p dir=\"auto\">diff --git a/src/test/java/org/jfree/data/time/MonthTest.java b/src/test/java/org/jfree/data/time/MonthTest.java<br>\nindex 91dc9c22..1733f222 100644<br>\n--- a/src/test/java/org/jfree/data/time/MonthTest.java<br>\n+++ b/src/test/java/org/jfree/data/time/MonthTest.java<br>\n@@ -218,7 +218,7 @@ public class MonthTest {<br>\nmonth = Month.parseMonth(\"02-1991\");<br>\n}<br>\ncatch (TimePeriodFormatException e) {<br>\n'-            month = new Month(1, 1900);<br>\n'+            month = new Month(2, 1991);<br>\n}<br>\nassertEquals(2, month.getMonth());<br>\nassertEquals(1991, month.getYear().getYear());<br>\n@@ -228,7 +228,7 @@ public class MonthTest {<br>\nmonth = Month.parseMonth(\"March 1993\");<br>\n}<br>\ncatch (TimePeriodFormatException e) {<br>\n'-            month = new Month(1, 1900);<br>\n'+            month = new Month(3, 1993);<br>\n}<br>\nassertEquals(3, month.getMonth());<br>\nassertEquals(1993, month.getYear().getYear());</p>",
+                "resourcePath": "/jfree/jfreechart/issues/46",
+                "createdAt": "2017-03-21T11:42:13Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Added option to disable far outs in the BoxAndWhisker plot",
+        "url": "https://github.com/jfree/jfreechart/pull/79",
+        "resourcePath": "/jfree/jfreechart/pull/79",
+        "createdAt": "2018-02-13T18:25:41Z",
+        "number": 79,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/jfree/chart/renderer/category/BoxAndWhiskerRenderer.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MTY4OTIxMDQzOmYxMGQ5NTk2Yzc0YzI5ZjZmMTU5ZGZjMDE2N2VlZWQwZWE4MjdjODI=",
+                "url": "https://github.com/jfree/jfreechart/pull/79/commits/f10d9596c74c29f6f159dfc0167eeed0ea827c82"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 74,
+                "url": "https://github.com/jfree/jfreechart/issues/74",
+                "title": "BoxAndWhiskerRenderer: Please add setOutliersVisible()",
+                "bodyHTML": "<p dir=\"auto\">Please add a <code class=\"notranslate\">BoxAndWhiskerRenderer</code> method <code class=\"notranslate\">setOutliersVisible(boolean visible)</code> such that one can switch off the outlier circles and the far-out indicators.</p>\n<p dir=\"auto\">(There is a <a href=\"http://www.jfree.org/forum/viewtopic.php?f=3&amp;t=117433\" rel=\"nofollow\">corresponding forum thread</a>.)</p>",
+                "resourcePath": "/jfree/jfreechart/issues/74",
+                "createdAt": "2017-12-19T07:56:05Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Fixed Bug in Week.java #134 ",
+        "url": "https://github.com/jfree/jfreechart/pull/137",
+        "resourcePath": "/jfree/jfreechart/pull/137",
+        "createdAt": "2019-12-11T02:25:08Z",
+        "number": 137,
+        "mergeCommit": {
+          "oid": "97d995549452b1e966c9391b07e9532f080ad41c",
+          "message": "Merge pull request #137 from hashtagviv/patch2\n\nFixed Bug in Week.java #134",
+          "commitUrl": "https://github.com/jfree/jfreechart/commit/97d995549452b1e966c9391b07e9532f080ad41c",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "952e96e8a3297c9bdd96d059aaf6212a3e6a0cfa",
+                "message": "Add test for bug 134"
+              },
+              {
+                "oid": "dc6b0cfe42e3c4f9c671219a32f31a3cc69fb263",
+                "message": "patch issue 134"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/jfree/chart/plot/SpiderWebPlot.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/org/jfree/data/time/Week.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "MDE3OlB1bGxSZXF1ZXN0Q29tbWl0MzUxNjkzMjAwOmRjNmIwY2ZlNDJlM2M0ZjljNjcxMjE5YTMyZjMxYTNjYzY5ZmIyNjM=",
+                "url": "https://github.com/jfree/jfreechart/pull/137/commits/dc6b0cfe42e3c4f9c671219a32f31a3cc69fb263"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 134,
+                "url": "https://github.com/jfree/jfreechart/issues/134",
+                "title": "Bug in Week.java",
+                "bodyHTML": "<p dir=\"auto\">There are two same bugs in the code of Week.java.</p>\n<h3 dir=\"auto\">The url for Week.java</h3>\n<p dir=\"auto\"><a href=\"https://github.com/jfree/jfreechart/blob/master/src/main/java/org/jfree/data/time/Week.java\">https://github.com/jfree/jfreechart/blob/master/src/main/java/org/jfree/data/time/Week.java</a></p>\n<h3 dir=\"auto\">Description</h3>\n<p dir=\"auto\">There are two bugs in line 132 and line 148 ( highlighted in the screenshot below ).<br>\nNotice that <strong>FIRST_WEEK_IN_YEAR</strong> = 1, <strong>LAST_WEEK_IN_YEAR</strong> =53  and they are both final int.<br>\nTherefore, the if condition is always False, since you cannot let a value be smaller than 1 and larger than 53 at the same time.</p>\n<p dir=\"auto\">Instead, the if condition should be written as :<br>\nif ((week &lt; FIRST_WEEK_IN_YEAR) <strong>||</strong> (week &gt; LAST_WEEK_IN_YEAR))  { \u2026\u2026 }</p>\n<h3 dir=\"auto\">Bug screenshot</h3>\n<p dir=\"auto\">The constant declaration :</p>\n<p dir=\"auto\"><a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://user-images.githubusercontent.com/39701893/67294341-49f00e00-f518-11e9-9dc7-0fac9582a228.png\"><img src=\"https://user-images.githubusercontent.com/39701893/67294341-49f00e00-f518-11e9-9dc7-0fac9582a228.png\" alt=\"bug_1\" style=\"max-width: 100%;\"></a></p>\n<p dir=\"auto\">The buggy codes :</p>\n<p dir=\"auto\"><a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://user-images.githubusercontent.com/39701893/67292374-82421d00-f515-11e9-8266-05fe21f6e1c0.png\"><img src=\"https://user-images.githubusercontent.com/39701893/67292374-82421d00-f515-11e9-8266-05fe21f6e1c0.png\" alt=\"bug_time_week\" style=\"max-width: 100%;\"></a></p>",
+                "resourcePath": "/jfree/jfreechart/issues/134",
+                "createdAt": "2019-10-22T14:24:15Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+]

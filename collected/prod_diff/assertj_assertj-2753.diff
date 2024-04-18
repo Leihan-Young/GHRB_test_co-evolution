@@ -1,0 +1,367 @@
+diff --git a/assertj-core/src/main/java/org/assertj/core/api/Assertions.java b/assertj-core/src/main/java/org/assertj/core/api/Assertions.java
+index a34fa8d16..3084e022d 100644
+--- a/assertj-core/src/main/java/org/assertj/core/api/Assertions.java
++++ b/assertj-core/src/main/java/org/assertj/core/api/Assertions.java
+@@ -25,6 +25,7 @@ import java.net.URI;
+ import java.net.URL;
+ import java.nio.charset.Charset;
+ import java.nio.file.Path;
++import java.sql.SQLException;
+ import java.text.DateFormat;
+ import java.time.Duration;
+ import java.time.Instant;
+@@ -1200,6 +1201,20 @@ public class Assertions implements InstanceOfAssertFactories {
+     return AssertionsForClassTypes.assertThat(actual);
+   }
+ 
++  /**
++   * Creates a new instance of <code>{@link ThrowableAssert}</code>.
++   * This overload's purpose is to disambiguate the call for <code>{@link SQLException}</code>.
++   * Indeed, this class implements <code>{@link Iterable}</code> and is considered ambiguous.
++   *
++   * @param <T> the type of the actual SQL exception.
++   * @param actual the actual value.
++   * @return the created {@link ThrowableAssert}.
++   * @since 3.23.1
++   */
++  public static <T extends SQLException> AbstractThrowableAssert<?, T> assertThat(T actual) {
++    return AssertionsForClassTypes.assertThat(actual);
++  }
++
+   /**
+    * Allows to capture and then assert on a {@link Throwable} (easier done with lambdas).
+    * <p>
+diff --git a/assertj-core/src/main/java/org/assertj/core/api/Assumptions.java b/assertj-core/src/main/java/org/assertj/core/api/Assumptions.java
+index e5c7fd365..02da88f3c 100644
+--- a/assertj-core/src/main/java/org/assertj/core/api/Assumptions.java
++++ b/assertj-core/src/main/java/org/assertj/core/api/Assumptions.java
+@@ -30,6 +30,7 @@ import java.math.BigInteger;
+ import java.net.URI;
+ import java.net.URL;
+ import java.nio.file.Path;
++import java.sql.SQLException;
+ import java.time.Duration;
+ import java.time.Instant;
+ import java.time.LocalDate;
+@@ -1033,6 +1034,21 @@ public class Assumptions {
+     return asAssumption(ThrowableAssert.class, Throwable.class, actual);
+   }
+ 
++  /**
++   * Creates a new instance of <code>{@link ThrowableAssert}</code> assumption.
++   * This overload's purpose is to disambiguate the call for <code>{@link SQLException}</code>.
++   * Indeed, this class implements <code>{@link Iterable}</code> and is considered ambiguous.
++   *
++   * @param <T> the type of the actual SQL exception.
++   * @param actual the actual value.
++   * @return the created assumption for assertion object.
++   * @since 3.23.1
++   */
++  @SuppressWarnings("unchecked")
++  public static <T extends SQLException> AbstractThrowableAssert<?, T> assumeThat(T actual) {
++    return asAssumption(ThrowableAssert.class, Throwable.class, actual);
++  }
++
+   /**
+    * Entry point to check that an exception of type T is thrown by a given {@code throwingCallable}
+    * which allows to chain assertions on the thrown exception.
+diff --git a/assertj-core/src/main/java/org/assertj/core/api/BDDAssertions.java b/assertj-core/src/main/java/org/assertj/core/api/BDDAssertions.java
+index e3b46f22b..f747b2301 100644
+--- a/assertj-core/src/main/java/org/assertj/core/api/BDDAssertions.java
++++ b/assertj-core/src/main/java/org/assertj/core/api/BDDAssertions.java
+@@ -22,6 +22,7 @@ import java.net.URI;
+ import java.net.URL;
+ import java.nio.charset.Charset;
+ import java.nio.file.Path;
++import java.sql.SQLException;
+ import java.text.DateFormat;
+ import java.time.Duration;
+ import java.time.Instant;
+@@ -1299,6 +1300,20 @@ public class BDDAssertions extends Assertions {
+     return assertThat(actual);
+   }
+ 
++  /**
++   * Creates a new instance of <code>{@link org.assertj.core.api.ThrowableAssert}</code>.
++   * This overload's purpose is to disambiguate the call for <code>{@link SQLException}</code>.
++   * Indeed, this class implements <code>{@link Iterable}</code> and is considered ambiguous.
++   *
++   * @param <T> the type of the actual SQL exception.
++   * @param actual the actual value.
++   * @return the created assertion Throwable.
++   * @since 3.23.1
++   */
++  public static <T extends SQLException> AbstractThrowableAssert<?, T> then(T actual) {
++    return assertThat(actual);
++  }
++
+   /**
+    * Allows to capture and then assert on a {@link Throwable} (easier done with lambdas).
+    * <p>
+diff --git a/assertj-core/src/main/java/org/assertj/core/api/BDDAssumptions.java b/assertj-core/src/main/java/org/assertj/core/api/BDDAssumptions.java
+index 60d036760..fa0479280 100644
+--- a/assertj-core/src/main/java/org/assertj/core/api/BDDAssumptions.java
++++ b/assertj-core/src/main/java/org/assertj/core/api/BDDAssumptions.java
+@@ -20,6 +20,7 @@ import java.math.BigInteger;
+ import java.net.URI;
+ import java.net.URL;
+ import java.nio.file.Path;
++import java.sql.SQLException;
+ import java.time.Duration;
+ import java.time.Instant;
+ import java.time.LocalDate;
+@@ -1447,6 +1448,36 @@ public final class BDDAssumptions extends Assumptions {
+     return assumeThat(actual);
+   }
+ 
++  /**
++   * Creates a new assumption's instance for a {@link java.sql.SQLException} value.
++   * <p>
++   * Examples:
++   * <p>
++   * Executed test:
++   * <pre><code class='java'> {@literal @Test}
++   * public void given_the_assumption_is_met_the_test_is_executed() {
++   *   given(new SQLException("Yoda time")).hasMessage("Yoda time");
++   *   // the remaining code is executed
++   *   // ...
++   * }</code></pre>
++   * <p>
++   * Skipped test:
++   * <pre><code class='java'> {@literal @Test}
++   * public void given_the_assumption_is_not_met_the_test_is_skipped() {
++   *   given(new SQLException("Yoda time")).hasMessage("");
++   *   // the remaining code is NOT executed.
++   *   // ...
++   *}</code></pre>
++   *
++   * @param <T> the type of the actual SQL exception.
++   * @param actual the actual {@link java.sql.SQLException} value to be validated.
++   * @return the {@link AbstractThrowableAssert} assertion object to be used for assumptions.
++   * @since 3.23.1
++   */
++  public static <T extends SQLException> AbstractThrowableAssert<?, T> given(T actual) {
++    return assumeThat(actual);
++  }
++
+   /**
+    * Creates a new assumption's instance for a {@link Throwable} value.
+    *
+diff --git a/assertj-core/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java b/assertj-core/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java
+index 6f3772769..fc19675d9 100644
+--- a/assertj-core/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java
++++ b/assertj-core/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java
+@@ -19,6 +19,7 @@ import java.math.BigInteger;
+ import java.net.URI;
+ import java.net.URL;
+ import java.nio.file.Path;
++import java.sql.SQLException;
+ import java.time.Duration;
+ import java.time.Instant;
+ import java.time.LocalDate;
+@@ -805,6 +806,26 @@ public interface InstanceOfAssertFactories {
+     return new InstanceOfAssertFactory<>(type, Assertions::assertThat);
+   }
+ 
++  /**
++   * {@link InstanceOfAssertFactory} for a {@link SQLException}.
++   */
++  InstanceOfAssertFactory<SQLException, AbstractThrowableAssert<?, SQLException>> SQL_EXCEPTION = new InstanceOfAssertFactory<>(SQLException.class,
++    Assertions::assertThat);
++
++  /**
++   * {@link InstanceOfAssertFactory} for a {@link SQLException}.
++   *
++   * @param <T>  the {@code SQLException} type.
++   * @param type the element type instance.
++   * @return the factory instance.
++   *
++   * @see #SQL_EXCEPTION
++   * @since 3.23.1
++   */
++  static <T extends SQLException> InstanceOfAssertFactory<T, AbstractThrowableAssert<?, T>> sqlException(Class<T> type) {
++    return new InstanceOfAssertFactory<>(type, Assertions::assertThat);
++  }
++
+   /**
+    * {@link InstanceOfAssertFactory} for a {@link CharSequence}.
+    */
+diff --git a/assertj-core/src/main/java/org/assertj/core/api/Java6Assertions.java b/assertj-core/src/main/java/org/assertj/core/api/Java6Assertions.java
+index 34c5d54c3..805722869 100644
+--- a/assertj-core/src/main/java/org/assertj/core/api/Java6Assertions.java
++++ b/assertj-core/src/main/java/org/assertj/core/api/Java6Assertions.java
+@@ -22,6 +22,7 @@ import java.math.BigInteger;
+ import java.net.URI;
+ import java.net.URL;
+ import java.nio.charset.Charset;
++import java.sql.SQLException;
+ import java.text.DateFormat;
+ import java.util.Collection;
+ import java.util.Date;
+@@ -1068,6 +1069,20 @@ public class Java6Assertions {
+     return new ThrowableAssert<>(actual);
+   }
+ 
++  /**
++   * Creates a new instance of <code>{@link ThrowableAssert}</code>.
++   * This overload's purpose is to disambiguate the call for <code>{@link SQLException}</code>.
++   * Indeed, this class implements <code>{@link Iterable}</code> and is considered ambiguous.
++   *
++   * @param <T> the type of the actual SQL exception.
++   * @param actual the actual value.
++   * @return the created {@link ThrowableAssert}.
++   * @since 3.23.1
++   */
++  public static <T extends SQLException> AbstractThrowableAssert<?, T> assertThat(T actual) {
++    return new ThrowableAssert<>(actual);
++  }
++
+   /**
+    * Allows to capture and then assert on a {@link Throwable} more easily when used with Java 8 lambdas.
+    *
+diff --git a/assertj-core/src/main/java/org/assertj/core/api/Java6BDDAssertions.java b/assertj-core/src/main/java/org/assertj/core/api/Java6BDDAssertions.java
+index 2f9d68298..d69c48050 100644
+--- a/assertj-core/src/main/java/org/assertj/core/api/Java6BDDAssertions.java
++++ b/assertj-core/src/main/java/org/assertj/core/api/Java6BDDAssertions.java
+@@ -21,6 +21,7 @@ import java.math.BigDecimal;
+ import java.math.BigInteger;
+ import java.net.URI;
+ import java.net.URL;
++import java.sql.SQLException;
+ import java.util.Collection;
+ import java.util.Date;
+ import java.util.Iterator;
+@@ -940,6 +941,20 @@ public class Java6BDDAssertions {
+     return assertThat(actual);
+   }
+ 
++  /**
++   * Creates a new instance of <code>{@link ThrowableAssert}</code>.
++   * This overload's purpose is to disambiguate the call for <code>{@link SQLException}</code>.
++   * Indeed, this class implements <code>{@link Iterable}</code> and is considered ambiguous.
++   *
++   * @param <T> the type of the actual SQL exception.
++   * @param actual the actual value.
++   * @return the created assertion Throwable.
++   * @since 3.23.1
++   */
++  public static <T extends SQLException> AbstractThrowableAssert<?, T> then(T actual) {
++    return assertThat(actual);
++  }
++
+   /**
+    * Allows to capture and then assert on a {@link Throwable} more easily when used with Java 8 lambdas.
+    *
+diff --git a/assertj-core/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java b/assertj-core/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java
+index f196604e9..eec3d6a7a 100644
+--- a/assertj-core/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java
++++ b/assertj-core/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java
+@@ -21,6 +21,7 @@ import java.math.BigDecimal;
+ import java.math.BigInteger;
+ import java.net.URI;
+ import java.net.URL;
++import java.sql.SQLException;
+ import java.util.Collection;
+ import java.util.Date;
+ import java.util.Iterator;
+@@ -865,6 +866,21 @@ public interface Java6BDDSoftAssertionsProvider extends SoftAssertionsProvider {
+     return proxy(ThrowableAssert.class, Throwable.class, actual);
+   }
+ 
++  /**
++   * Creates a new instance of <code>{@link ThrowableAssert}</code>.
++   * This overload's purpose is to disambiguate the call for <code>{@link SQLException}</code>.
++   * Indeed, this class implements <code>{@link Iterable}</code> and is considered ambiguous.
++   *
++   * @param <T> the type of the actual SQL exception.
++   * @param actual the actual value.
++   * @return the created assertion Throwable.
++   * @since 3.23.1
++   */
++  @SuppressWarnings("unchecked")
++  default <T extends SQLException> ThrowableAssert<T> then(T actual) {
++    return proxy(ThrowableAssert.class, Throwable.class, actual);
++  }
++
+   /**
+    * Allows to capture and then assert on a {@link Throwable} more easily when used with Java 8 lambdas.
+    *
+diff --git a/assertj-core/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java b/assertj-core/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java
+index 4175feb50..927be118c 100644
+--- a/assertj-core/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java
++++ b/assertj-core/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java
+@@ -21,6 +21,7 @@ import java.math.BigDecimal;
+ import java.math.BigInteger;
+ import java.net.URI;
+ import java.net.URL;
++import java.sql.SQLException;
+ import java.util.Collection;
+ import java.util.Date;
+ import java.util.Iterator;
+@@ -857,6 +858,21 @@ public interface Java6StandardSoftAssertionsProvider extends SoftAssertionsProvi
+     return proxy(ThrowableAssert.class, Throwable.class, actual);
+   }
+ 
++  /**
++   * Creates a new instance of <code>{@link ThrowableAssert}</code>.
++   * This overload's purpose is to disambiguate the call for <code>{@link SQLException}</code>.
++   * Indeed, this class implements <code>{@link Iterable}</code> and is considered ambiguous.
++   *
++   * @param <T> the type of the actual SQL exception.
++   * @param actual the actual value.
++   * @return the created assertion Throwable.
++   * @since 3.23.1
++   */
++  @SuppressWarnings("unchecked")
++  default <T extends SQLException> ThrowableAssert<T> assertThat(T actual) {
++    return proxy(ThrowableAssert.class, Throwable.class, actual);
++  }
++
+   /**
+    * Allows to capture and then assert on a {@link Throwable} more easily when used with Java 8 lambdas.
+    *
+diff --git a/assertj-core/src/main/java/org/assertj/core/api/WithAssertions.java b/assertj-core/src/main/java/org/assertj/core/api/WithAssertions.java
+index 2838d484e..c344d06b8 100644
+--- a/assertj-core/src/main/java/org/assertj/core/api/WithAssertions.java
++++ b/assertj-core/src/main/java/org/assertj/core/api/WithAssertions.java
+@@ -22,6 +22,7 @@ import java.net.URI;
+ import java.net.URL;
+ import java.nio.charset.Charset;
+ import java.nio.file.Path;
++import java.sql.SQLException;
+ import java.text.DateFormat;
+ import java.time.Duration;
+ import java.time.Instant;
+@@ -441,6 +442,20 @@ public interface WithAssertions extends InstanceOfAssertFactories {
+     return Assertions.assertThat(actual);
+   }
+ 
++  /**
++   * Creates a new instance of <code>{@link ThrowableAssert}</code>.
++   * This overload's purpose is to disambiguate the call for <code>{@link SQLException}</code>.
++   * Indeed, this class implements <code>{@link Iterable}</code> and is considered ambiguous.
++   *
++   * @param <T> the type of the actual SQL exception.
++   * @param actual the actual value.
++   * @return the created {@link ThrowableAssert}.
++   * @since 3.23.1
++   */
++  default <T extends SQLException> AbstractThrowableAssert<?, T> assertThat(final T actual) {
++    return Assertions.assertThat(actual);
++  }
++
+   /**
+    * Creates a new instance of <code>{@link BigDecimalAssert}</code>.
+    *
+diff --git a/assertj-core/src/main/java9/module-info.java b/assertj-core/src/main/java9/module-info.java
+index 4d3d60be3..c8a8a63cb 100644
+--- a/assertj-core/src/main/java9/module-info.java
++++ b/assertj-core/src/main/java9/module-info.java
+@@ -38,6 +38,7 @@ module org.assertj.core {
+ 
+   requires static java.logging; // required when printThreadDump is true
+   requires static java.management;
++  requires static java.sql;
+   requires static java.xml; // used for XML pretty print
+   requires static junit;
+   requires static net.bytebuddy;

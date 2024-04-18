@@ -1,0 +1,751 @@
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/BrokerController.java b/broker/src/main/java/org/apache/rocketmq/broker/BrokerController.java
+index 2cb1c3bb5..5697afce3 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/BrokerController.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/BrokerController.java
+@@ -1562,7 +1562,7 @@ public class BrokerController {
+ 
+         scheduledFutures.add(this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(this.getBrokerIdentity()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 try {
+                     if (System.currentTimeMillis() < shouldStartTime) {
+                         BrokerController.LOG.info("Register to namesrv after {}", shouldStartTime);
+@@ -1584,7 +1584,7 @@ public class BrokerController {
+ 
+             scheduledFutures.add(this.syncBrokerMemberGroupExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(this.getBrokerIdentity()) {
+                 @Override
+-                public void run2() {
++                public void run0() {
+                     try {
+                         BrokerController.this.syncBrokerMemberGroup();
+                     } catch (Throwable e) {
+@@ -1606,7 +1606,7 @@ public class BrokerController {
+     protected void scheduleSendHeartbeat() {
+         scheduledFutures.add(this.brokerHeartbeatExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(this.getBrokerIdentity()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 if (isIsolated) {
+                     return;
+                 }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/BrokerPreOnlineService.java b/broker/src/main/java/org/apache/rocketmq/broker/BrokerPreOnlineService.java
+index ab5d39e8f..de2ccb293 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/BrokerPreOnlineService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/BrokerPreOnlineService.java
+@@ -53,7 +53,7 @@ public class BrokerPreOnlineService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (this.brokerController != null && this.brokerController.getBrokerConfig().isInBrokerContainer()) {
+-            return brokerController.getBrokerIdentity().getLoggerIdentifier() + BrokerPreOnlineService.class.getSimpleName();
++            return brokerController.getBrokerIdentity().getIdentifier() + BrokerPreOnlineService.class.getSimpleName();
+         }
+         return BrokerPreOnlineService.class.getSimpleName();
+     }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/client/DefaultConsumerIdsChangeListener.java b/broker/src/main/java/org/apache/rocketmq/broker/client/DefaultConsumerIdsChangeListener.java
+index 2dc6ebe91..2ce036a0f 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/client/DefaultConsumerIdsChangeListener.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/client/DefaultConsumerIdsChangeListener.java
+@@ -47,7 +47,7 @@ public class DefaultConsumerIdsChangeListener implements ConsumerIdsChangeListen
+ 
+         scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(brokerController.getBrokerConfig()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 try {
+                     notifyConsumerChange();
+                 } catch (Exception e) {
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/filtersrv/FilterServerManager.java b/broker/src/main/java/org/apache/rocketmq/broker/filtersrv/FilterServerManager.java
+index 96e69ca08..f6628a158 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/filtersrv/FilterServerManager.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/filtersrv/FilterServerManager.java
+@@ -56,7 +56,7 @@ public class FilterServerManager {
+ 
+         this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(brokerController.getBrokerConfig()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 try {
+                     FilterServerManager.this.createFilterServer();
+                 } catch (Exception e) {
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/latency/BrokerFastFailure.java b/broker/src/main/java/org/apache/rocketmq/broker/latency/BrokerFastFailure.java
+index c3a160b2f..d3d0bc8ba 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/latency/BrokerFastFailure.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/latency/BrokerFastFailure.java
+@@ -64,7 +64,7 @@ public class BrokerFastFailure {
+     public void start() {
+         this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(this.brokerController.getBrokerConfig()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 if (brokerController.getBrokerConfig().isBrokerFastFailureEnable()) {
+                     cleanExpiredRequest();
+                 }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/longpolling/LmqPullRequestHoldService.java b/broker/src/main/java/org/apache/rocketmq/broker/longpolling/LmqPullRequestHoldService.java
+index 43b273d01..88e74fd6e 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/longpolling/LmqPullRequestHoldService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/longpolling/LmqPullRequestHoldService.java
+@@ -33,7 +33,7 @@ public class LmqPullRequestHoldService extends PullRequestHoldService {
+     @Override
+     public String getServiceName() {
+         if (brokerController != null && brokerController.getBrokerConfig().isInBrokerContainer()) {
+-            return this.brokerController.getBrokerIdentity().getLoggerIdentifier() + LmqPullRequestHoldService.class.getSimpleName();
++            return this.brokerController.getBrokerIdentity().getIdentifier() + LmqPullRequestHoldService.class.getSimpleName();
+         }
+         return LmqPullRequestHoldService.class.getSimpleName();
+     }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/longpolling/PullRequestHoldService.java b/broker/src/main/java/org/apache/rocketmq/broker/longpolling/PullRequestHoldService.java
+index 88ccbbcef..e8da9d0c4 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/longpolling/PullRequestHoldService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/longpolling/PullRequestHoldService.java
+@@ -92,7 +92,7 @@ public class PullRequestHoldService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (brokerController != null && brokerController.getBrokerConfig().isInBrokerContainer()) {
+-            return this.brokerController.getBrokerIdentity().getLoggerIdentifier() + PullRequestHoldService.class.getSimpleName();
++            return this.brokerController.getBrokerIdentity().getIdentifier() + PullRequestHoldService.class.getSimpleName();
+         }
+         return PullRequestHoldService.class.getSimpleName();
+     }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java b/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java
+index a6853350e..8d1690874 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java
+@@ -314,7 +314,7 @@ public class BrokerOuterAPI {
+                 brokerOuterExecutor.execute(new AbstractBrokerRunnable(new BrokerIdentity(clusterName, brokerName, brokerId, isInBrokerContainer)) {
+ 
+                     @Override
+-                    public void run2() {
++                    public void run0() {
+                         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.QUERY_DATA_VERSION, requestHeader);
+                         request.setBody(dataVersion.encode());
+ 
+@@ -346,7 +346,7 @@ public class BrokerOuterAPI {
+             for (final String namesrvAddr : nameServerAddressList) {
+                 brokerOuterExecutor.execute(new AbstractBrokerRunnable(new BrokerIdentity(clusterName, brokerName, brokerId, isInBrokerContainer)) {
+                     @Override
+-                    public void run2() {
++                    public void run0() {
+                         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.BROKER_HEARTBEAT, requestHeader);
+ 
+                         try {
+@@ -489,7 +489,7 @@ public class BrokerOuterAPI {
+             for (final String namesrvAddr : nameServerAddressList) {
+                 brokerOuterExecutor.execute(new AbstractBrokerRunnable(brokerIdentity) {
+                     @Override
+-                    public void run2() {
++                    public void run0() {
+                         try {
+                             RegisterBrokerResult result = registerBroker(namesrvAddr, oneway, timeoutMills, requestHeader, body);
+                             if (result != null) {
+@@ -622,7 +622,7 @@ public class BrokerOuterAPI {
+             for (final String namesrvAddr : nameServerAddressList) {
+                 brokerOuterExecutor.execute(new AbstractBrokerRunnable(new BrokerIdentity(clusterName, brokerName, brokerId, isInBrokerContainer)) {
+                     @Override
+-                    public void run2() {
++                    public void run0() {
+                         try {
+                             QueryDataVersionRequestHeader requestHeader = new QueryDataVersionRequestHeader();
+                             requestHeader.setBrokerAddr(brokerAddr);
+@@ -1230,7 +1230,7 @@ public class BrokerOuterAPI {
+         requestHeader.setConfirmOffset(confirmOffset);
+         brokerOuterExecutor.execute(new AbstractBrokerRunnable(new BrokerIdentity(clusterName, brokerName, brokerId, isInBrokerContainer)) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.BROKER_HEARTBEAT, requestHeader);
+ 
+                 try {
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/NotificationProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/NotificationProcessor.java
+index eab7906e6..0b580df0f 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/NotificationProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/NotificationProcessor.java
+@@ -57,7 +57,7 @@ public class NotificationProcessor implements NettyRequestProcessor {
+         this.brokerController = brokerController;
+         this.checkNotificationPollingThread = new Thread(new AbstractBrokerRunnable(brokerController.getBrokerConfig()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 while (true) {
+                     if (Thread.currentThread().isInterrupted()) {
+                         break;
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopBufferMergeService.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopBufferMergeService.java
+index da820a9d1..2ccf4b8b3 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopBufferMergeService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopBufferMergeService.java
+@@ -77,7 +77,7 @@ public class PopBufferMergeService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (this.brokerController != null && this.brokerController.getBrokerConfig().isInBrokerContainer()) {
+-            return brokerController.getBrokerIdentity().getLoggerIdentifier() + PopBufferMergeService.class.getSimpleName();
++            return brokerController.getBrokerIdentity().getIdentifier() + PopBufferMergeService.class.getSimpleName();
+         }
+         return PopBufferMergeService.class.getSimpleName();
+     }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
+index 25beddb6d..dba56102a 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
+@@ -783,7 +783,7 @@ public class PopMessageProcessor implements NettyRequestProcessor {
+         @Override
+         public String getServiceName() {
+             if (PopMessageProcessor.this.brokerController.getBrokerConfig().isInBrokerContainer()) {
+-                return PopMessageProcessor.this.brokerController.getBrokerIdentity().getLoggerIdentifier() + PopLongPollingService.class.getSimpleName();
++                return PopMessageProcessor.this.brokerController.getBrokerIdentity().getIdentifier() + PopLongPollingService.class.getSimpleName();
+             }
+             return PopLongPollingService.class.getSimpleName();
+         }
+@@ -1026,7 +1026,7 @@ public class PopMessageProcessor implements NettyRequestProcessor {
+         @Override
+         public String getServiceName() {
+             if (PopMessageProcessor.this.brokerController.getBrokerConfig().isInBrokerContainer()) {
+-                return PopMessageProcessor.this.brokerController.getBrokerIdentity().getLoggerIdentifier() + QueueLockManager.class.getSimpleName();
++                return PopMessageProcessor.this.brokerController.getBrokerIdentity().getIdentifier() + QueueLockManager.class.getSimpleName();
+             }
+             return QueueLockManager.class.getSimpleName();
+         }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java
+index 173a3a8f3..49de7433b 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopReviveService.java
+@@ -72,7 +72,7 @@ public class PopReviveService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (brokerController != null && brokerController.getBrokerConfig().isInBrokerContainer()) {
+-            return brokerController.getBrokerIdentity().getLoggerIdentifier() + "PopReviveService_" + this.queueId;
++            return brokerController.getBrokerIdentity().getIdentifier() + "PopReviveService_" + this.queueId;
+         }
+         return "PopReviveService_" + this.queueId;
+     }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/topic/TopicQueueMappingCleanService.java b/broker/src/main/java/org/apache/rocketmq/broker/topic/TopicQueueMappingCleanService.java
+index f0e555565..7047ef8b4 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/topic/TopicQueueMappingCleanService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/topic/TopicQueueMappingCleanService.java
+@@ -70,7 +70,7 @@ public class TopicQueueMappingCleanService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (this.brokerConfig.isInBrokerContainer()) {
+-            return this.brokerController.getBrokerIdentity().getLoggerIdentifier() + TopicQueueMappingCleanService.class.getSimpleName();
++            return this.brokerController.getBrokerIdentity().getIdentifier() + TopicQueueMappingCleanService.class.getSimpleName();
+         }
+         return TopicQueueMappingCleanService.class.getSimpleName();
+     }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/transaction/TransactionalMessageCheckService.java b/broker/src/main/java/org/apache/rocketmq/broker/transaction/TransactionalMessageCheckService.java
+index 9f4fef20d..52209c3fb 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/transaction/TransactionalMessageCheckService.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/transaction/TransactionalMessageCheckService.java
+@@ -34,7 +34,7 @@ public class TransactionalMessageCheckService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (brokerController != null && brokerController.getBrokerConfig().isInBrokerContainer()) {
+-            return brokerController.getBrokerIdentity().getLoggerIdentifier() + TransactionalMessageCheckService.class.getSimpleName();
++            return brokerController.getBrokerIdentity().getIdentifier() + TransactionalMessageCheckService.class.getSimpleName();
+         }
+         return TransactionalMessageCheckService.class.getSimpleName();
+     }
+diff --git a/common/src/main/java/org/apache/rocketmq/common/AbstractBrokerRunnable.java b/common/src/main/java/org/apache/rocketmq/common/AbstractBrokerRunnable.java
+index 8bce59d76..34aabc577 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/AbstractBrokerRunnable.java
++++ b/common/src/main/java/org/apache/rocketmq/common/AbstractBrokerRunnable.java
+@@ -17,6 +17,9 @@
+ 
+ package org.apache.rocketmq.common;
+ 
++import java.io.File;
++import org.apache.rocketmq.logging.org.slf4j.MDC;
++
+ public abstract class AbstractBrokerRunnable implements Runnable {
+     protected final BrokerIdentity brokerIdentity;
+ 
+@@ -24,17 +27,22 @@ public abstract class AbstractBrokerRunnable implements Runnable {
+         this.brokerIdentity = brokerIdentity;
+     }
+ 
++    private static final String MDC_BROKER_CONTAINER_LOG_DIR = "brokerContainerLogDir";
++
+     /**
+      * real logic for running
+      */
+-    public abstract void run2();
++    public abstract void run0();
+ 
+     @Override
+     public void run() {
+-        if (brokerIdentity.isInBrokerContainer()) {
+-            // set threadlocal broker identity to forward logging to corresponding broker
+-//            InnerLoggerFactory.BROKER_IDENTITY.set(brokerIdentity.getCanonicalName());
++        try {
++            if (brokerIdentity.isInBrokerContainer()) {
++                MDC.put(MDC_BROKER_CONTAINER_LOG_DIR, File.separator + brokerIdentity.getCanonicalName());
++            }
++            run0();
++        } finally {
++            MDC.clear();
+         }
+-        run2();
+     }
+ }
+diff --git a/common/src/main/java/org/apache/rocketmq/common/BrokerIdentity.java b/common/src/main/java/org/apache/rocketmq/common/BrokerIdentity.java
+index 28e867ad5..4115744a4 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/BrokerIdentity.java
++++ b/common/src/main/java/org/apache/rocketmq/common/BrokerIdentity.java
+@@ -115,13 +115,11 @@ public class BrokerIdentity {
+     }
+ 
+     public String getCanonicalName() {
+-        if (isBrokerContainer) {
+-//            return InnerLoggerFactory.BROKER_CONTAINER_NAME;
+-        }
+-        return this.getBrokerClusterName() + "_" + this.getBrokerName() + "_" + this.getBrokerId();
++        return isBrokerContainer ? "BrokerContainer" : String.format("%s_%s_%d", brokerClusterName, brokerName,
++            brokerId);
+     }
+ 
+-    public String getLoggerIdentifier() {
++    public String getIdentifier() {
+         return "#" + getCanonicalName() + "#";
+     }
+ 
+diff --git a/common/src/main/java/org/apache/rocketmq/common/ThreadFactoryImpl.java b/common/src/main/java/org/apache/rocketmq/common/ThreadFactoryImpl.java
+index cb6d0d71a..bb0d141da 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/ThreadFactoryImpl.java
++++ b/common/src/main/java/org/apache/rocketmq/common/ThreadFactoryImpl.java
+@@ -47,7 +47,7 @@ public class ThreadFactoryImpl implements ThreadFactory {
+     public ThreadFactoryImpl(final String threadNamePrefix, boolean daemon, BrokerIdentity brokerIdentity) {
+         this.daemon = daemon;
+         if (brokerIdentity != null && brokerIdentity.isInBrokerContainer()) {
+-            this.threadNamePrefix = brokerIdentity.getLoggerIdentifier() + threadNamePrefix;
++            this.threadNamePrefix = brokerIdentity.getIdentifier() + threadNamePrefix;
+         } else {
+             this.threadNamePrefix = threadNamePrefix;
+         }
+diff --git a/container/src/main/java/org/apache/rocketmq/container/BrokerContainer.java b/container/src/main/java/org/apache/rocketmq/container/BrokerContainer.java
+index 680f38443..47ca8e704 100644
+--- a/container/src/main/java/org/apache/rocketmq/container/BrokerContainer.java
++++ b/container/src/main/java/org/apache/rocketmq/container/BrokerContainer.java
+@@ -158,7 +158,7 @@ public class BrokerContainer implements IBrokerContainer {
+             // also auto update namesrv if specify
+             this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(BrokerIdentity.BROKER_CONTAINER_IDENTITY) {
+                 @Override
+-                public void run2() {
++                public void run0() {
+                     try {
+                         BrokerContainer.this.updateNamesrvAddr();
+                     } catch (Throwable e) {
+@@ -170,7 +170,7 @@ public class BrokerContainer implements IBrokerContainer {
+             this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(BrokerIdentity.BROKER_CONTAINER_IDENTITY) {
+ 
+                 @Override
+-                public void run2() {
++                public void run0() {
+                     try {
+                         BrokerContainer.this.brokerOuterAPI.fetchNameServerAddr();
+                     } catch (Throwable e) {
+@@ -182,7 +182,7 @@ public class BrokerContainer implements IBrokerContainer {
+ 
+         this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(BrokerIdentity.BROKER_CONTAINER_IDENTITY) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 try {
+                     BrokerContainer.this.brokerOuterAPI.refreshMetadata();
+                 } catch (Exception e) {
+diff --git a/container/src/main/java/org/apache/rocketmq/container/BrokerContainerStartup.java b/container/src/main/java/org/apache/rocketmq/container/BrokerContainerStartup.java
+index 02db476a0..f909e623b 100644
+--- a/container/src/main/java/org/apache/rocketmq/container/BrokerContainerStartup.java
++++ b/container/src/main/java/org/apache/rocketmq/container/BrokerContainerStartup.java
+@@ -168,7 +168,7 @@ public class BrokerContainerStartup {
+ 
+         brokerConfig.setBrokerConfigPath(filePath);
+ 
+-        log = LoggerFactory.getLogger(brokerConfig.getLoggerIdentifier() + LoggerName.BROKER_LOGGER_NAME);
++        log = LoggerFactory.getLogger(brokerConfig.getIdentifier() + LoggerName.BROKER_LOGGER_NAME);
+         MixAll.printObjectProperties(log, brokerConfig);
+         MixAll.printObjectProperties(log, messageStoreConfig);
+ 
+diff --git a/container/src/main/java/org/apache/rocketmq/container/InnerBrokerController.java b/container/src/main/java/org/apache/rocketmq/container/InnerBrokerController.java
+index 47edd56e5..a1c1eecf5 100644
+--- a/container/src/main/java/org/apache/rocketmq/container/InnerBrokerController.java
++++ b/container/src/main/java/org/apache/rocketmq/container/InnerBrokerController.java
+@@ -69,7 +69,7 @@ public class InnerBrokerController extends BrokerController {
+ 
+         scheduledFutures.add(this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(this.getBrokerIdentity()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 try {
+                     if (System.currentTimeMillis() < shouldStartTime) {
+                         BrokerController.LOG.info("Register to namesrv after {}", shouldStartTime);
+@@ -91,7 +91,7 @@ public class InnerBrokerController extends BrokerController {
+ 
+             scheduledFutures.add(this.syncBrokerMemberGroupExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(this.getBrokerIdentity()) {
+                 @Override
+-                public void run2() {
++                public void run0() {
+                     try {
+                         InnerBrokerController.this.syncBrokerMemberGroup();
+                     } catch (Throwable e) {
+diff --git a/store/src/main/java/org/apache/rocketmq/store/AllocateMappedFileService.java b/store/src/main/java/org/apache/rocketmq/store/AllocateMappedFileService.java
+index b2fcc2ceb..4d2fc5168 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/AllocateMappedFileService.java
++++ b/store/src/main/java/org/apache/rocketmq/store/AllocateMappedFileService.java
+@@ -122,7 +122,7 @@ public class AllocateMappedFileService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (messageStore != null && messageStore.getBrokerConfig().isInBrokerContainer()) {
+-            return messageStore.getBrokerIdentity().getLoggerIdentifier() + AllocateMappedFileService.class.getSimpleName();
++            return messageStore.getBrokerIdentity().getIdentifier() + AllocateMappedFileService.class.getSimpleName();
+         }
+         return AllocateMappedFileService.class.getSimpleName();
+     }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/CommitLog.java b/store/src/main/java/org/apache/rocketmq/store/CommitLog.java
+index 2ea07695c..d876f73b0 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/CommitLog.java
++++ b/store/src/main/java/org/apache/rocketmq/store/CommitLog.java
+@@ -1240,7 +1240,7 @@ public class CommitLog implements Swappable {
+         @Override
+         public String getServiceName() {
+             if (CommitLog.this.defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
+-                return CommitLog.this.defaultMessageStore.getBrokerIdentity().getLoggerIdentifier() + CommitRealTimeService.class.getSimpleName();
++                return CommitLog.this.defaultMessageStore.getBrokerIdentity().getIdentifier() + CommitRealTimeService.class.getSimpleName();
+             }
+             return CommitRealTimeService.class.getSimpleName();
+         }
+@@ -1358,7 +1358,7 @@ public class CommitLog implements Swappable {
+         @Override
+         public String getServiceName() {
+             if (CommitLog.this.defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
+-                return CommitLog.this.defaultMessageStore.getBrokerConfig().getLoggerIdentifier() + FlushRealTimeService.class.getSimpleName();
++                return CommitLog.this.defaultMessageStore.getBrokerConfig().getIdentifier() + FlushRealTimeService.class.getSimpleName();
+             }
+             return FlushRealTimeService.class.getSimpleName();
+         }
+@@ -1503,7 +1503,7 @@ public class CommitLog implements Swappable {
+         @Override
+         public String getServiceName() {
+             if (CommitLog.this.defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
+-                return CommitLog.this.defaultMessageStore.getBrokerConfig().getLoggerIdentifier() + GroupCommitService.class.getSimpleName();
++                return CommitLog.this.defaultMessageStore.getBrokerConfig().getIdentifier() + GroupCommitService.class.getSimpleName();
+             }
+             return GroupCommitService.class.getSimpleName();
+         }
+@@ -1614,7 +1614,7 @@ public class CommitLog implements Swappable {
+         @Override
+         public String getServiceName() {
+             if (CommitLog.this.defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
+-                return CommitLog.this.defaultMessageStore.getBrokerConfig().getLoggerIdentifier() + GroupCheckService.class.getSimpleName();
++                return CommitLog.this.defaultMessageStore.getBrokerConfig().getIdentifier() + GroupCheckService.class.getSimpleName();
+             }
+             return GroupCheckService.class.getSimpleName();
+         }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/DefaultMessageStore.java b/store/src/main/java/org/apache/rocketmq/store/DefaultMessageStore.java
+index 60c9331d4..31c1a2cb4 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/DefaultMessageStore.java
++++ b/store/src/main/java/org/apache/rocketmq/store/DefaultMessageStore.java
+@@ -1593,21 +1593,21 @@ public class DefaultMessageStore implements MessageStore {
+ 
+         this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(this.getBrokerIdentity()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 DefaultMessageStore.this.cleanFilesPeriodically();
+             }
+         }, 1000 * 60, this.messageStoreConfig.getCleanResourceInterval(), TimeUnit.MILLISECONDS);
+ 
+         this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(this.getBrokerIdentity()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 DefaultMessageStore.this.checkSelf();
+             }
+         }, 1, 10, TimeUnit.MINUTES);
+ 
+         this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(this.getBrokerIdentity()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 if (DefaultMessageStore.this.getMessageStoreConfig().isDebugLockEnable()) {
+                     try {
+                         if (DefaultMessageStore.this.commitLog.getBeginTimeInLock() != 0) {
+@@ -1628,7 +1628,7 @@ public class DefaultMessageStore implements MessageStore {
+ 
+         this.scheduledExecutorService.scheduleAtFixedRate(new AbstractBrokerRunnable(this.getBrokerIdentity()) {
+             @Override
+-            public void run2() {
++            public void run0() {
+                 DefaultMessageStore.this.storeCheckpoint.flush();
+             }
+         }, 1, 1, TimeUnit.SECONDS);
+@@ -2056,7 +2056,7 @@ public class DefaultMessageStore implements MessageStore {
+         }
+ 
+         public String getServiceName() {
+-            return DefaultMessageStore.this.brokerConfig.getLoggerIdentifier() + CleanCommitLogService.class.getSimpleName();
++            return DefaultMessageStore.this.brokerConfig.getIdentifier() + CleanCommitLogService.class.getSimpleName();
+         }
+ 
+         private boolean isTimeToDelete() {
+@@ -2253,7 +2253,7 @@ public class DefaultMessageStore implements MessageStore {
+         }
+ 
+         public String getServiceName() {
+-            return DefaultMessageStore.this.brokerConfig.getLoggerIdentifier() + CleanConsumeQueueService.class.getSimpleName();
++            return DefaultMessageStore.this.brokerConfig.getIdentifier() + CleanConsumeQueueService.class.getSimpleName();
+         }
+     }
+ 
+@@ -2371,7 +2371,7 @@ public class DefaultMessageStore implements MessageStore {
+ 
+         public String getServiceName() {
+             if (brokerConfig.isInBrokerContainer()) {
+-                return brokerConfig.getLoggerIdentifier() + CorrectLogicOffsetService.class.getSimpleName();
++                return brokerConfig.getIdentifier() + CorrectLogicOffsetService.class.getSimpleName();
+             }
+             return CorrectLogicOffsetService.class.getSimpleName();
+         }
+@@ -2443,7 +2443,7 @@ public class DefaultMessageStore implements MessageStore {
+         @Override
+         public String getServiceName() {
+             if (DefaultMessageStore.this.brokerConfig.isInBrokerContainer()) {
+-                return DefaultMessageStore.this.getBrokerIdentity().getLoggerIdentifier() + FlushConsumeQueueService.class.getSimpleName();
++                return DefaultMessageStore.this.getBrokerIdentity().getIdentifier() + FlushConsumeQueueService.class.getSimpleName();
+             }
+             return FlushConsumeQueueService.class.getSimpleName();
+         }
+@@ -2619,7 +2619,7 @@ public class DefaultMessageStore implements MessageStore {
+         @Override
+         public String getServiceName() {
+             if (DefaultMessageStore.this.getBrokerConfig().isInBrokerContainer()) {
+-                return DefaultMessageStore.this.getBrokerIdentity().getLoggerIdentifier() + ReputMessageService.class.getSimpleName();
++                return DefaultMessageStore.this.getBrokerIdentity().getIdentifier() + ReputMessageService.class.getSimpleName();
+             }
+             return ReputMessageService.class.getSimpleName();
+         }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/StoreStatsService.java b/store/src/main/java/org/apache/rocketmq/store/StoreStatsService.java
+index bb6dc9774..1969b146a 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/StoreStatsService.java
++++ b/store/src/main/java/org/apache/rocketmq/store/StoreStatsService.java
+@@ -546,7 +546,7 @@ public class StoreStatsService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (this.brokerIdentity != null && this.brokerIdentity.isInBrokerContainer()) {
+-            return brokerIdentity.getLoggerIdentifier() + StoreStatsService.class.getSimpleName();
++            return brokerIdentity.getIdentifier() + StoreStatsService.class.getSimpleName();
+         }
+         return StoreStatsService.class.getSimpleName();
+     }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAClient.java b/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAClient.java
+index fce9f0868..02668558a 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAClient.java
++++ b/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAClient.java
+@@ -388,7 +388,7 @@ public class DefaultHAClient extends ServiceThread implements HAClient {
+     @Override
+     public String getServiceName() {
+         if (this.defaultMessageStore != null && this.defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
+-            return this.defaultMessageStore.getBrokerIdentity().getLoggerIdentifier() + DefaultHAClient.class.getSimpleName();
++            return this.defaultMessageStore.getBrokerIdentity().getIdentifier() + DefaultHAClient.class.getSimpleName();
+         }
+         return DefaultHAClient.class.getSimpleName();
+     }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAConnection.java b/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAConnection.java
+index de7bfe3d7..8b3598666 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAConnection.java
++++ b/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAConnection.java
+@@ -185,7 +185,7 @@ public class DefaultHAConnection implements HAConnection {
+         @Override
+         public String getServiceName() {
+             if (haService.getDefaultMessageStore().getBrokerConfig().isInBrokerContainer()) {
+-                return haService.getDefaultMessageStore().getBrokerIdentity().getLoggerIdentifier() + ReadSocketService.class.getSimpleName();
++                return haService.getDefaultMessageStore().getBrokerIdentity().getIdentifier() + ReadSocketService.class.getSimpleName();
+             }
+             return ReadSocketService.class.getSimpleName();
+         }
+@@ -440,7 +440,7 @@ public class DefaultHAConnection implements HAConnection {
+         @Override
+         public String getServiceName() {
+             if (haService.getDefaultMessageStore().getBrokerConfig().isInBrokerContainer()) {
+-                return haService.getDefaultMessageStore().getBrokerIdentity().getLoggerIdentifier() + WriteSocketService.class.getSimpleName();
++                return haService.getDefaultMessageStore().getBrokerIdentity().getIdentifier() + WriteSocketService.class.getSimpleName();
+             }
+             return WriteSocketService.class.getSimpleName();
+         }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAService.java b/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAService.java
+index a9f8a3835..98deb233f 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAService.java
++++ b/store/src/main/java/org/apache/rocketmq/store/ha/DefaultHAService.java
+@@ -270,7 +270,7 @@ public class DefaultHAService implements HAService {
+         @Override
+         public String getServiceName() {
+             if (defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
+-                return defaultMessageStore.getBrokerConfig().getLoggerIdentifier() + AcceptSocketService.class.getSimpleName();
++                return defaultMessageStore.getBrokerConfig().getIdentifier() + AcceptSocketService.class.getSimpleName();
+             }
+             return DefaultAcceptSocketService.class.getSimpleName();
+         }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/ha/GroupTransferService.java b/store/src/main/java/org/apache/rocketmq/store/ha/GroupTransferService.java
+index 8896e7498..5318dee8f 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/ha/GroupTransferService.java
++++ b/store/src/main/java/org/apache/rocketmq/store/ha/GroupTransferService.java
+@@ -169,7 +169,7 @@ public class GroupTransferService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (defaultMessageStore != null && defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
+-            return defaultMessageStore.getBrokerIdentity().getLoggerIdentifier() + GroupTransferService.class.getSimpleName();
++            return defaultMessageStore.getBrokerIdentity().getIdentifier() + GroupTransferService.class.getSimpleName();
+         }
+         return GroupTransferService.class.getSimpleName();
+     }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/ha/HAConnectionStateNotificationService.java b/store/src/main/java/org/apache/rocketmq/store/ha/HAConnectionStateNotificationService.java
+index 750f1ca4d..197d9f6ba 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/ha/HAConnectionStateNotificationService.java
++++ b/store/src/main/java/org/apache/rocketmq/store/ha/HAConnectionStateNotificationService.java
+@@ -47,7 +47,7 @@ public class HAConnectionStateNotificationService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (defaultMessageStore != null && defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
+-            return defaultMessageStore.getBrokerIdentity().getLoggerIdentifier() + HAConnectionStateNotificationService.class.getSimpleName();
++            return defaultMessageStore.getBrokerIdentity().getIdentifier() + HAConnectionStateNotificationService.class.getSimpleName();
+         }
+         return HAConnectionStateNotificationService.class.getSimpleName();
+     }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAClient.java b/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAClient.java
+index 55ca1cc17..4e0e37aed 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAClient.java
++++ b/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAClient.java
+@@ -136,7 +136,7 @@ public class AutoSwitchHAClient extends ServiceThread implements HAClient {
+     @Override
+     public String getServiceName() {
+         if (haService.getDefaultMessageStore().getBrokerConfig().isInBrokerContainer()) {
+-            return haService.getDefaultMessageStore().getBrokerIdentity().getLoggerIdentifier() + AutoSwitchHAClient.class.getSimpleName();
++            return haService.getDefaultMessageStore().getBrokerIdentity().getIdentifier() + AutoSwitchHAClient.class.getSimpleName();
+         }
+         return AutoSwitchHAClient.class.getSimpleName();
+     }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAConnection.java b/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAConnection.java
+index 3e7d0cb81..1afb9f6de 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAConnection.java
++++ b/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAConnection.java
+@@ -300,7 +300,7 @@ public class AutoSwitchHAConnection implements HAConnection {
+         @Override
+         public String getServiceName() {
+             if (haService.getDefaultMessageStore().getBrokerConfig().isInBrokerContainer()) {
+-                return haService.getDefaultMessageStore().getBrokerIdentity().getLoggerIdentifier() + ReadSocketService.class.getSimpleName();
++                return haService.getDefaultMessageStore().getBrokerIdentity().getIdentifier() + ReadSocketService.class.getSimpleName();
+             }
+             return ReadSocketService.class.getSimpleName();
+         }
+@@ -446,7 +446,7 @@ public class AutoSwitchHAConnection implements HAConnection {
+         @Override
+         public String getServiceName() {
+             if (haService.getDefaultMessageStore().getBrokerConfig().isInBrokerContainer()) {
+-                return haService.getDefaultMessageStore().getBrokerIdentity().getLoggerIdentifier() + WriteSocketService.class.getSimpleName();
++                return haService.getDefaultMessageStore().getBrokerIdentity().getIdentifier() + WriteSocketService.class.getSimpleName();
+             }
+             return WriteSocketService.class.getSimpleName();
+         }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAService.java b/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAService.java
+index 72612d308..59eb14033 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAService.java
++++ b/store/src/main/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHAService.java
+@@ -409,7 +409,7 @@ public class AutoSwitchHAService extends DefaultHAService {
+         @Override
+         public String getServiceName() {
+             if (defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
+-                return defaultMessageStore.getBrokerConfig().getLoggerIdentifier() + AcceptSocketService.class.getSimpleName();
++                return defaultMessageStore.getBrokerConfig().getIdentifier() + AcceptSocketService.class.getSimpleName();
+             }
+             return AutoSwitchAcceptSocketService.class.getSimpleName();
+         }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/index/IndexService.java b/store/src/main/java/org/apache/rocketmq/store/index/IndexService.java
+index 89a69e375..ef5d21ac7 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/index/IndexService.java
++++ b/store/src/main/java/org/apache/rocketmq/store/index/IndexService.java
+@@ -342,7 +342,7 @@ public class IndexService {
+ 
+                 Thread flushThread = new Thread(new AbstractBrokerRunnable(defaultMessageStore.getBrokerConfig()) {
+                     @Override
+-                    public void run2() {
++                    public void run0() {
+                         IndexService.this.flush(flushThisFile);
+                     }
+                 }, "FlushIndexFileThread");
+diff --git a/store/src/main/java/org/apache/rocketmq/store/kv/CompactionService.java b/store/src/main/java/org/apache/rocketmq/store/kv/CompactionService.java
+index 3688ab641..1b5d38913 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/kv/CompactionService.java
++++ b/store/src/main/java/org/apache/rocketmq/store/kv/CompactionService.java
+@@ -74,7 +74,7 @@ public class CompactionService extends ServiceThread {
+     @Override
+     public String getServiceName() {
+         if (defaultMessageStore != null && defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
+-            return defaultMessageStore.getBrokerConfig().getLoggerIdentifier() + CompactionService.class.getSimpleName();
++            return defaultMessageStore.getBrokerConfig().getIdentifier() + CompactionService.class.getSimpleName();
+         }
+         return CompactionService.class.getSimpleName();
+     }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/timer/TimerMessageStore.java b/store/src/main/java/org/apache/rocketmq/store/timer/TimerMessageStore.java
+index 1c7253c82..89b93abd0 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/timer/TimerMessageStore.java
++++ b/store/src/main/java/org/apache/rocketmq/store/timer/TimerMessageStore.java
+@@ -1235,7 +1235,7 @@ public class TimerMessageStore {
+         @Override public String getServiceName() {
+             String brokerIdentifier = "";
+             if (TimerMessageStore.this.messageStore instanceof DefaultMessageStore && ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().isInBrokerContainer()) {
+-                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getLoggerIdentifier();
++                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getIdentifier();
+             }
+             return brokerIdentifier + this.getClass().getSimpleName();
+         }
+@@ -1261,7 +1261,7 @@ public class TimerMessageStore {
+         @Override public String getServiceName() {
+             String brokerIdentifier = "";
+             if (TimerMessageStore.this.messageStore instanceof DefaultMessageStore && ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().isInBrokerContainer()) {
+-                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getLoggerIdentifier();
++                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getIdentifier();
+             }
+             return brokerIdentifier + this.getClass().getSimpleName();
+         }
+@@ -1342,7 +1342,7 @@ public class TimerMessageStore {
+         @Override public String getServiceName() {
+             String brokerIdentifier = "";
+             if (TimerMessageStore.this.messageStore instanceof DefaultMessageStore && ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().isInBrokerContainer()) {
+-                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getLoggerIdentifier();
++                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getIdentifier();
+             }
+             return brokerIdentifier + this.getClass().getSimpleName();
+         }
+@@ -1386,7 +1386,7 @@ public class TimerMessageStore {
+         @Override public String getServiceName() {
+             String brokerIdentifier = "";
+             if (TimerMessageStore.this.messageStore instanceof DefaultMessageStore && ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().isInBrokerContainer()) {
+-                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getLoggerIdentifier();
++                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getIdentifier();
+             }
+             return brokerIdentifier + this.getClass().getSimpleName();
+         }
+@@ -1454,7 +1454,7 @@ public class TimerMessageStore {
+         @Override public String getServiceName() {
+             String brokerIdentifier = "";
+             if (TimerMessageStore.this.messageStore instanceof DefaultMessageStore && ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().isInBrokerContainer()) {
+-                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getLoggerIdentifier();
++                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getIdentifier();
+             }
+             return brokerIdentifier + this.getClass().getSimpleName();
+         }
+@@ -1537,7 +1537,7 @@ public class TimerMessageStore {
+         public String getServiceName() {
+             String brokerIdentifier = "";
+             if (TimerMessageStore.this.messageStore instanceof DefaultMessageStore && ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().isInBrokerContainer()) {
+-                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getLoggerIdentifier();
++                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getIdentifier();
+             }
+             return brokerIdentifier + this.getClass().getSimpleName();
+         }
+@@ -1572,7 +1572,7 @@ public class TimerMessageStore {
+         @Override public String getServiceName() {
+             String brokerIdentifier = "";
+             if (TimerMessageStore.this.messageStore instanceof DefaultMessageStore && ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().isInBrokerContainer()) {
+-                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getLoggerIdentifier();
++                brokerIdentifier = ((DefaultMessageStore) TimerMessageStore.this.messageStore).getBrokerConfig().getIdentifier();
+             }
+             return brokerIdentifier + this.getClass().getSimpleName();
+         }

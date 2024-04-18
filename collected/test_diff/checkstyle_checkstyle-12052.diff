@@ -1,0 +1,20 @@
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheckTest.java
+index eb9e37e05..3422b496d 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheckTest.java
+@@ -309,4 +309,15 @@ public class VariableDeclarationUsageDistanceCheckTest extends
+         verifyWithInlineConfigParser(getNonCompilablePath(filename), expected);
+     }
+ 
++    @Test
++    public void testVariableDeclarationUsageDistanceSwitchExpressions2() throws Exception {
++        final int maxDistance = 1;
++        final String[] expected = {
++            "16:9: " + getCheckMessage(MSG_KEY, "i", 2, maxDistance),
++        };
++
++        final String filename = "InputVariableDeclarationUsageDistanceCheckSwitchExpressions2.java";
++        verifyWithInlineConfigParser(getNonCompilablePath(filename), expected);
++    }
++
+ }

@@ -1,0 +1,46 @@
+diff --git a/namesrv/src/test/java/org/apache/rocketmq/namesrv/processor/ClusterTestRequestProcessorTest.java b/namesrv/src/test/java/org/apache/rocketmq/namesrv/processor/ClusterTestRequestProcessorTest.java
+index c8bf05760..0ed452d3a 100644
+--- a/namesrv/src/test/java/org/apache/rocketmq/namesrv/processor/ClusterTestRequestProcessorTest.java
++++ b/namesrv/src/test/java/org/apache/rocketmq/namesrv/processor/ClusterTestRequestProcessorTest.java
+@@ -82,7 +82,7 @@ public class ClusterTestRequestProcessorTest {
+         TopicRouteData topicRouteData = new TopicRouteData();
+         List<BrokerData> brokerDatas = new ArrayList<>();
+         HashMap<Long, String> brokerAddrs = new HashMap<>();
+-        brokerAddrs.put(1234l, "127.0.0.1:10911");
++        brokerAddrs.put(1234L, "127.0.0.1:10911");
+         BrokerData brokerData = new BrokerData();
+         brokerData.setCluster("default-cluster");
+         brokerData.setBrokerName("default-broker");
+diff --git a/namesrv/src/test/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManager_NewTest.java b/namesrv/src/test/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManagerNewTest.java
+similarity index 99%
+rename from namesrv/src/test/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManager_NewTest.java
+rename to namesrv/src/test/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManagerNewTest.java
+index e098f0ef9..b0d4cbac4 100644
+--- a/namesrv/src/test/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManager_NewTest.java
++++ b/namesrv/src/test/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManagerNewTest.java
+@@ -17,7 +17,6 @@
+ 
+ package org.apache.rocketmq.namesrv.routeinfo;
+ 
+-import com.alibaba.fastjson.JSON;
+ import com.google.common.collect.Sets;
+ import io.netty.channel.Channel;
+ import java.time.Duration;
+@@ -49,7 +48,7 @@ import static org.awaitility.Awaitility.await;
+ import static org.mockito.Mockito.mock;
+ import static org.mockito.Mockito.spy;
+ 
+-public class RouteInfoManager_NewTest {
++public class RouteInfoManagerNewTest {
+     private RouteInfoManager routeInfoManager;
+     private static final String DEFAULT_CLUSTER = "Default_Cluster";
+     private static final String DEFAULT_BROKER = "Default_Broker";
+@@ -189,8 +188,6 @@ public class RouteInfoManager_NewTest {
+ 
+         registerBrokerWithNormalTopic(BrokerBasicInfo.defaultBroker(), "TestTopic", "TestTopic1");
+ 
+-        System.out.println(JSON.toJSONString(routeInfoManager.pickupTopicRouteData("TestTopic1")));
+-
+         assertThat(routeInfoManager.pickupTopicRouteData("TestTopic1").getBrokerDatas().get(0).getBrokerAddrs()).containsKeys(0L, 1L);
+         assertThat(routeInfoManager.pickupTopicRouteData("TestTopic1").getBrokerDatas().get(0).getBrokerAddrs())
+             .containsValues(BrokerBasicInfo.defaultBroker().brokerAddr, BrokerBasicInfo.slaveBroker().brokerAddr);

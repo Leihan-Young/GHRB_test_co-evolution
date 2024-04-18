@@ -1,0 +1,7 @@
+{
+  "issue_id": 5484,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5484",
+  "title": "[RIP-56] Replace Logging Module with Shaded Logback",
+  "description": "<p dir=\"auto\">This issue aims to track <a href=\"https://github.com/apache/rocketmq/wiki/RIP-56-Replace-Logging-Module-with-Shaded-Logback\">RIP-56: Replace Logging Module with Shaded Logback</a></p>",
+  "description_text": "This issue aims to track RIP-56: Replace Logging Module with Shaded Logback"
+}

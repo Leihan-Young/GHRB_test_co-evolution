@@ -1,0 +1,848 @@
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/client/ClientActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/client/ClientActivity.java
+index de8fba4a6..a60228eb9 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/client/ClientActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/client/ClientActivity.java
+@@ -287,7 +287,7 @@ public class ClientActivity extends AbstractMessingActivity {
+         // use topic name as producer group
+         ClientChannelInfo clientChannelInfo = new ClientChannelInfo(channel, clientId, languageCode, parseClientVersion(ctx.getClientVersion()));
+         this.messagingProcessor.registerProducer(ctx, topicName, clientChannelInfo);
+-        TopicMessageType topicMessageType = this.messagingProcessor.getMetadataService().getTopicMessageType(topicName);
++        TopicMessageType topicMessageType = this.messagingProcessor.getMetadataService().getTopicMessageType(ctx, topicName);
+         if (TopicMessageType.TRANSACTION.equals(topicMessageType)) {
+             this.messagingProcessor.addTransactionSubscription(ctx, topicName, topicName);
+         }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivity.java
+index fb31a6062..993f069b9 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivity.java
+@@ -98,7 +98,7 @@ public class AckMessageActivity extends AbstractMessingActivity {
+             String handleString = ackMessageEntry.getReceiptHandle();
+ 
+             String group = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());
+-            MessageReceiptHandle messageReceiptHandle = receiptHandleProcessor.removeReceiptHandle(grpcChannelManager.getChannel(ctx.getClientID()), group, ackMessageEntry.getMessageId(), ackMessageEntry.getReceiptHandle());
++            MessageReceiptHandle messageReceiptHandle = receiptHandleProcessor.removeReceiptHandle(ctx, grpcChannelManager.getChannel(ctx.getClientID()), group, ackMessageEntry.getMessageId(), ackMessageEntry.getReceiptHandle());
+             if (messageReceiptHandle != null) {
+                 handleString = messageReceiptHandle.getReceiptHandleStr();
+             }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ChangeInvisibleDurationActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ChangeInvisibleDurationActivity.java
+index 0f33cc7aa..9b7e947e0 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ChangeInvisibleDurationActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ChangeInvisibleDurationActivity.java
+@@ -55,7 +55,7 @@ public class ChangeInvisibleDurationActivity extends AbstractMessingActivity {
+             ReceiptHandle receiptHandle = ReceiptHandle.decode(request.getReceiptHandle());
+             String group = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());
+ 
+-            MessageReceiptHandle messageReceiptHandle = receiptHandleProcessor.removeReceiptHandle(grpcChannelManager.getChannel(ctx.getClientID()), group, request.getMessageId(), receiptHandle.getReceiptHandle());
++            MessageReceiptHandle messageReceiptHandle = receiptHandleProcessor.removeReceiptHandle(ctx, grpcChannelManager.getChannel(ctx.getClientID()), group, request.getMessageId(), receiptHandle.getReceiptHandle());
+             if (messageReceiptHandle != null) {
+                 receiptHandle = ReceiptHandle.decode(messageReceiptHandle.getReceiptHandleStr());
+             }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivity.java
+index 9df4101f7..22a149004 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivity.java
+@@ -144,7 +144,7 @@ public class ReceiveMessageActivity extends AbstractMessingActivity {
+                                     MessageReceiptHandle messageReceiptHandle =
+                                         new MessageReceiptHandle(group, topic, messageExt.getQueueId(), receiptHandle, messageExt.getMsgId(),
+                                             messageExt.getQueueOffset(), messageExt.getReconsumeTimes());
+-                                    receiptHandleProcessor.addReceiptHandle(grpcChannelManager.getChannel(ctx.getClientID()), group, messageExt.getMsgId(), receiptHandle, messageReceiptHandle);
++                                    receiptHandleProcessor.addReceiptHandle(ctx, grpcChannelManager.getChannel(ctx.getClientID()), group, messageExt.getMsgId(), receiptHandle, messageReceiptHandle);
+                                 }
+                             }
+                         }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/ForwardMessageToDLQActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/ForwardMessageToDLQActivity.java
+index 789927d69..6b5c5c7e0 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/ForwardMessageToDLQActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/producer/ForwardMessageToDLQActivity.java
+@@ -48,7 +48,7 @@ public class ForwardMessageToDLQActivity extends AbstractMessingActivity {
+ 
+             String group = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());
+             String handleString = request.getReceiptHandle();
+-            MessageReceiptHandle messageReceiptHandle = receiptHandleProcessor.removeReceiptHandle(grpcChannelManager.getChannel(ctx.getClientID()), group, request.getMessageId(), request.getReceiptHandle());
++            MessageReceiptHandle messageReceiptHandle = receiptHandleProcessor.removeReceiptHandle(ctx, grpcChannelManager.getChannel(ctx.getClientID()), group, request.getMessageId(), request.getReceiptHandle());
+             if (messageReceiptHandle != null) {
+                 handleString = messageReceiptHandle.getReceiptHandleStr();
+             }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/route/RouteActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/route/RouteActivity.java
+index eb7385f87..c5d485691 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/route/RouteActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/route/RouteActivity.java
+@@ -71,7 +71,7 @@ public class RouteActivity extends AbstractMessingActivity {
+             List<MessageQueue> messageQueueList = new ArrayList<>();
+             Map<String, Map<Long, Broker>> brokerMap = buildBrokerMap(proxyTopicRouteData.getBrokerDatas());
+ 
+-            TopicMessageType topicMessageType = messagingProcessor.getMetadataService().getTopicMessageType(topicName);
++            TopicMessageType topicMessageType = messagingProcessor.getMetadataService().getTopicMessageType(ctx, topicName);
+             for (QueueData queueData : proxyTopicRouteData.getQueueDatas()) {
+                 String brokerName = queueData.getBrokerName();
+                 Map<Long, Broker> brokerIdMap = brokerMap.get(brokerName);
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ConsumerProcessor.java b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ConsumerProcessor.java
+index d67f4b855..c860ee8a1 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ConsumerProcessor.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ConsumerProcessor.java
+@@ -87,7 +87,7 @@ public class ConsumerProcessor extends AbstractProcessor {
+     ) {
+         CompletableFuture<PopResult> future = new CompletableFuture<>();
+         try {
+-            AddressableMessageQueue messageQueue = queueSelector.select(ctx, this.serviceManager.getTopicRouteService().getCurrentMessageQueueView(topic));
++            AddressableMessageQueue messageQueue = queueSelector.select(ctx, this.serviceManager.getTopicRouteService().getCurrentMessageQueueView(ctx, topic));
+             if (messageQueue == null) {
+                 throw new ProxyException(ProxyExceptionCode.FORBIDDEN, "no readable queue");
+             }
+@@ -287,7 +287,7 @@ public class ConsumerProcessor extends AbstractProcessor {
+         CompletableFuture<PullResult> future = new CompletableFuture<>();
+         try {
+             AddressableMessageQueue addressableMessageQueue = serviceManager.getTopicRouteService()
+-                .buildAddressableMessageQueue(messageQueue);
++                .buildAddressableMessageQueue(ctx, messageQueue);
+             PullMessageRequestHeader requestHeader = new PullMessageRequestHeader();
+             requestHeader.setConsumerGroup(consumerGroup);
+             requestHeader.setTopic(addressableMessageQueue.getTopic());
+@@ -311,7 +311,7 @@ public class ConsumerProcessor extends AbstractProcessor {
+         CompletableFuture<Void> future = new CompletableFuture<>();
+         try {
+             AddressableMessageQueue addressableMessageQueue = serviceManager.getTopicRouteService()
+-                .buildAddressableMessageQueue(messageQueue);
++                .buildAddressableMessageQueue(ctx, messageQueue);
+             UpdateConsumerOffsetRequestHeader requestHeader = new UpdateConsumerOffsetRequestHeader();
+             requestHeader.setConsumerGroup(consumerGroup);
+             requestHeader.setTopic(addressableMessageQueue.getTopic());
+@@ -329,7 +329,7 @@ public class ConsumerProcessor extends AbstractProcessor {
+         CompletableFuture<Long> future = new CompletableFuture<>();
+         try {
+             AddressableMessageQueue addressableMessageQueue = serviceManager.getTopicRouteService()
+-                .buildAddressableMessageQueue(messageQueue);
++                .buildAddressableMessageQueue(ctx, messageQueue);
+             QueryConsumerOffsetRequestHeader requestHeader = new QueryConsumerOffsetRequestHeader();
+             requestHeader.setConsumerGroup(consumerGroup);
+             requestHeader.setTopic(addressableMessageQueue.getTopic());
+@@ -345,7 +345,7 @@ public class ConsumerProcessor extends AbstractProcessor {
+         String consumerGroup, String clientId, long timeoutMillis) {
+         CompletableFuture<Set<MessageQueue>> future = new CompletableFuture<>();
+         Set<MessageQueue> successSet = new CopyOnWriteArraySet<>();
+-        Set<AddressableMessageQueue> addressableMessageQueueSet = buildAddressableSet(mqSet);
++        Set<AddressableMessageQueue> addressableMessageQueueSet = buildAddressableSet(ctx, mqSet);
+         Map<String, List<AddressableMessageQueue>> messageQueueSetMap = buildAddressableMapByBrokerName(addressableMessageQueueSet);
+         List<CompletableFuture<Void>> futureList = new ArrayList<>();
+         messageQueueSetMap.forEach((k, v) -> {
+@@ -370,7 +370,7 @@ public class ConsumerProcessor extends AbstractProcessor {
+     public CompletableFuture<Void> unlockBatchMQ(ProxyContext ctx, Set<MessageQueue> mqSet,
+         String consumerGroup, String clientId, long timeoutMillis) {
+         CompletableFuture<Void> future = new CompletableFuture<>();
+-        Set<AddressableMessageQueue> addressableMessageQueueSet = buildAddressableSet(mqSet);
++        Set<AddressableMessageQueue> addressableMessageQueueSet = buildAddressableSet(ctx, mqSet);
+         Map<String, List<AddressableMessageQueue>> messageQueueSetMap = buildAddressableMapByBrokerName(addressableMessageQueueSet);
+         List<CompletableFuture<Void>> futureList = new ArrayList<>();
+         messageQueueSetMap.forEach((k, v) -> {
+@@ -394,7 +394,7 @@ public class ConsumerProcessor extends AbstractProcessor {
+         CompletableFuture<Long> future = new CompletableFuture<>();
+         try {
+             AddressableMessageQueue addressableMessageQueue = serviceManager.getTopicRouteService()
+-                .buildAddressableMessageQueue(messageQueue);
++                .buildAddressableMessageQueue(ctx, messageQueue);
+             GetMaxOffsetRequestHeader requestHeader = new GetMaxOffsetRequestHeader();
+             requestHeader.setTopic(addressableMessageQueue.getTopic());
+             requestHeader.setQueueId(addressableMessageQueue.getQueueId());
+@@ -409,7 +409,7 @@ public class ConsumerProcessor extends AbstractProcessor {
+         CompletableFuture<Long> future = new CompletableFuture<>();
+         try {
+             AddressableMessageQueue addressableMessageQueue = serviceManager.getTopicRouteService()
+-                .buildAddressableMessageQueue(messageQueue);
++                .buildAddressableMessageQueue(ctx, messageQueue);
+             GetMinOffsetRequestHeader requestHeader = new GetMinOffsetRequestHeader();
+             requestHeader.setTopic(addressableMessageQueue.getTopic());
+             requestHeader.setQueueId(addressableMessageQueue.getQueueId());
+@@ -420,10 +420,10 @@ public class ConsumerProcessor extends AbstractProcessor {
+         return FutureUtils.addExecutor(future, this.executor);
+     }
+ 
+-    protected Set<AddressableMessageQueue> buildAddressableSet(Set<MessageQueue> mqSet) {
++    protected Set<AddressableMessageQueue> buildAddressableSet(ProxyContext ctx, Set<MessageQueue> mqSet) {
+         return mqSet.stream().map(mq -> {
+             try {
+-                return serviceManager.getTopicRouteService().buildAddressableMessageQueue(mq);
++                return serviceManager.getTopicRouteService().buildAddressableMessageQueue(ctx, mq);
+             } catch (Exception e) {
+                 return null;
+             }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/DefaultMessagingProcessor.java b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/DefaultMessagingProcessor.java
+index bfadc0d3e..81d2b9df3 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/DefaultMessagingProcessor.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/DefaultMessagingProcessor.java
+@@ -127,13 +127,13 @@ public class DefaultMessagingProcessor extends AbstractStartAndShutdown implemen
+ 
+     @Override
+     public SubscriptionGroupConfig getSubscriptionGroupConfig(ProxyContext ctx, String consumerGroupName) {
+-        return this.serviceManager.getMetadataService().getSubscriptionGroupConfig(consumerGroupName);
++        return this.serviceManager.getMetadataService().getSubscriptionGroupConfig(ctx, consumerGroupName);
+     }
+ 
+     @Override
+     public ProxyTopicRouteData getTopicRouteDataForProxy(ProxyContext ctx, List<Address> requestHostAndPortList,
+         String topicName) throws Exception {
+-        return this.serviceManager.getTopicRouteService().getTopicRouteForProxy(requestHostAndPortList, topicName);
++        return this.serviceManager.getTopicRouteService().getTopicRouteForProxy(ctx, requestHostAndPortList, topicName);
+     }
+ 
+     @Override
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ProducerProcessor.java b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ProducerProcessor.java
+index 749f9da2b..0d0c62168 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ProducerProcessor.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ProducerProcessor.java
+@@ -73,14 +73,14 @@ public class ProducerProcessor extends AbstractProcessor {
+                 if (topicMessageTypeValidator != null) {
+                     // Do not check retry or dlq topic
+                     if (!NamespaceUtil.isRetryTopic(topic) && !NamespaceUtil.isDLQTopic(topic)) {
+-                        TopicMessageType topicMessageType = serviceManager.getMetadataService().getTopicMessageType(topic);
++                        TopicMessageType topicMessageType = serviceManager.getMetadataService().getTopicMessageType(ctx, topic);
+                         TopicMessageType messageType = TopicMessageType.parseFromMessageProperty(message.getProperties());
+                         topicMessageTypeValidator.validate(topicMessageType, messageType);
+                     }
+                 }
+             }
+             AddressableMessageQueue messageQueue = queueSelector.select(ctx,
+-                this.serviceManager.getTopicRouteService().getCurrentMessageQueueView(topic));
++                this.serviceManager.getTopicRouteService().getCurrentMessageQueueView(ctx, topic));
+             if (messageQueue == null) {
+                 throw new ProxyException(ProxyExceptionCode.FORBIDDEN, "no writable queue");
+             }
+@@ -102,7 +102,7 @@ public class ProducerProcessor extends AbstractProcessor {
+                         if (SendStatus.SEND_OK.equals(sendResult.getSendStatus()) &&
+                             tranType == MessageSysFlag.TRANSACTION_PREPARED_TYPE &&
+                             StringUtils.isNotBlank(sendResult.getTransactionId())) {
+-                            fillTransactionData(producerGroup, messageQueue, sendResult, messageList);
++                            fillTransactionData(ctx, producerGroup, messageQueue, sendResult, messageList);
+                         }
+                     }
+                     return sendResultList;
+@@ -113,7 +113,7 @@ public class ProducerProcessor extends AbstractProcessor {
+         return FutureUtils.addExecutor(future, this.executor);
+     }
+ 
+-    protected void fillTransactionData(String producerGroup, AddressableMessageQueue messageQueue, SendResult sendResult, List<Message> messageList) {
++    protected void fillTransactionData(ProxyContext ctx, String producerGroup, AddressableMessageQueue messageQueue, SendResult sendResult, List<Message> messageList) {
+         try {
+             MessageId id;
+             if (sendResult.getOffsetMsgId() != null) {
+@@ -122,6 +122,7 @@ public class ProducerProcessor extends AbstractProcessor {
+                 id = MessageDecoder.decodeMessageId(sendResult.getMsgId());
+             }
+             this.serviceManager.getTransactionService().addTransactionDataByBrokerName(
++                ctx,
+                 messageQueue.getBrokerName(),
+                 producerGroup,
+                 sendResult.getQueueOffset(),
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java
+index c903220bb..7fe97db79 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java
+@@ -201,7 +201,7 @@ public class ReceiptHandleProcessor extends AbstractStartAndShutdown {
+                 });
+             } else {
+                 SubscriptionGroupConfig subscriptionGroupConfig =
+-                    messagingProcessor.getMetadataService().getSubscriptionGroupConfig(messageReceiptHandle.getGroup());
++                    messagingProcessor.getMetadataService().getSubscriptionGroupConfig(context, messageReceiptHandle.getGroup());
+                 if (subscriptionGroupConfig == null) {
+                     log.error("group's subscriptionGroupConfig is null when renew. handle: {}", messageReceiptHandle);
+                     return CompletableFuture.completedFuture(null);
+@@ -240,12 +240,12 @@ public class ReceiptHandleProcessor extends AbstractStartAndShutdown {
+         return this.messagingProcessor.findConsumerChannel(createContext("JudgeClientOnline"), groupKey.group, groupKey.channel) == null;
+     }
+ 
+-    public void addReceiptHandle(Channel channel, String group, String msgID, String receiptHandle,
++    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,
+         MessageReceiptHandle messageReceiptHandle) {
+-        this.addReceiptHandle(new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);
++        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);
+     }
+ 
+-    protected void addReceiptHandle(ReceiptHandleGroupKey key, String msgID, String receiptHandle,
++    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,
+         MessageReceiptHandle messageReceiptHandle) {
+         if (key == null) {
+             return;
+@@ -254,11 +254,11 @@ public class ReceiptHandleProcessor extends AbstractStartAndShutdown {
+             k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);
+     }
+ 
+-    public MessageReceiptHandle removeReceiptHandle(Channel channel, String group, String msgID, String receiptHandle) {
+-        return this.removeReceiptHandle(new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle);
++    public MessageReceiptHandle removeReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle) {
++        return this.removeReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle);
+     }
+ 
+-    protected MessageReceiptHandle removeReceiptHandle(ReceiptHandleGroupKey key, String msgID, String receiptHandle) {
++    protected MessageReceiptHandle removeReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle) {
+         if (key == null) {
+             return null;
+         }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/TransactionProcessor.java b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/TransactionProcessor.java
+index 3b284cd05..c0ba255f5 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/processor/TransactionProcessor.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/processor/TransactionProcessor.java
+@@ -36,6 +36,7 @@ public class TransactionProcessor extends AbstractProcessor {
+         CompletableFuture<Void> future = new CompletableFuture<>();
+         try {
+             EndTransactionRequestData headerData = serviceManager.getTransactionService().genEndTransactionRequestHeader(
++                ctx,
+                 producerGroup,
+                 buildCommitOrRollback(transactionStatus),
+                 fromTransactionCheck,
+@@ -70,6 +71,6 @@ public class TransactionProcessor extends AbstractProcessor {
+     }
+ 
+     public void addTransactionSubscription(ProxyContext ctx, String producerGroup, String topic) {
+-        this.serviceManager.getTransactionService().addTransactionSubscription(producerGroup, topic);
++        this.serviceManager.getTransactionService().addTransactionSubscription(ctx, producerGroup, topic);
+     }
+ }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/activity/SendMessageActivity.java b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/activity/SendMessageActivity.java
+index 618d45874..17af0fdcb 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/activity/SendMessageActivity.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/activity/SendMessageActivity.java
+@@ -70,7 +70,7 @@ public class SendMessageActivity extends AbstractRemotingActivity {
+             if (topicMessageTypeValidator != null) {
+                 // Do not check retry or dlq topic
+                 if (!NamespaceUtil.isRetryTopic(topic) && !NamespaceUtil.isDLQTopic(topic)) {
+-                    TopicMessageType topicMessageType = messagingProcessor.getMetadataService().getTopicMessageType(topic);
++                    TopicMessageType topicMessageType = messagingProcessor.getMetadataService().getTopicMessageType(context, topic);
+                     topicMessageTypeValidator.validate(topicMessageType, messageType);
+                 }
+             }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/ClusterServiceManager.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/ClusterServiceManager.java
+index 20beeb566..95cc4d149 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/ClusterServiceManager.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/ClusterServiceManager.java
+@@ -31,6 +31,7 @@ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+ import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
++import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.proxy.service.admin.AdminService;
+@@ -191,7 +192,7 @@ public class ClusterServiceManager extends AbstractStartAndShutdown implements S
+         @Override
+         public void handle(ProducerGroupEvent event, String group, ClientChannelInfo clientChannelInfo) {
+             if (event == ProducerGroupEvent.GROUP_UNREGISTER) {
+-                getTransactionService().unSubscribeAllTransactionTopic(group);
++                getTransactionService().unSubscribeAllTransactionTopic(ProxyContext.createForInner(this.getClass()), group);
+             }
+         }
+     }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/message/ClusterMessageService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/message/ClusterMessageService.java
+index 7150967d4..9f163f1b9 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/message/ClusterMessageService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/message/ClusterMessageService.java
+@@ -80,7 +80,7 @@ public class ClusterMessageService implements MessageService {
+     public CompletableFuture<RemotingCommand> sendMessageBack(ProxyContext ctx, ReceiptHandle handle, String messageId,
+         ConsumerSendMsgBackRequestHeader requestHeader, long timeoutMillis) {
+         return this.mqClientAPIFactory.getClient().sendMessageBackAsync(
+-            this.resolveBrokerAddrInReceiptHandle(handle),
++            this.resolveBrokerAddrInReceiptHandle(ctx, handle),
+             requestHeader,
+             timeoutMillis
+         );
+@@ -93,7 +93,7 @@ public class ClusterMessageService implements MessageService {
+         CompletableFuture<Void> future = new CompletableFuture<>();
+         try {
+             this.mqClientAPIFactory.getClient().endTransactionOneway(
+-                this.resolveBrokerAddr(brokerName),
++                this.resolveBrokerAddr(ctx, brokerName),
+                 requestHeader,
+                 "end transaction from proxy",
+                 timeoutMillis
+@@ -120,7 +120,7 @@ public class ClusterMessageService implements MessageService {
+     public CompletableFuture<AckResult> changeInvisibleTime(ProxyContext ctx, ReceiptHandle handle, String messageId,
+         ChangeInvisibleTimeRequestHeader requestHeader, long timeoutMillis) {
+         return this.mqClientAPIFactory.getClient().changeInvisibleTimeAsync(
+-            this.resolveBrokerAddrInReceiptHandle(handle),
++            this.resolveBrokerAddrInReceiptHandle(ctx, handle),
+             handle.getBrokerName(),
+             requestHeader,
+             timeoutMillis
+@@ -131,7 +131,7 @@ public class ClusterMessageService implements MessageService {
+     public CompletableFuture<AckResult> ackMessage(ProxyContext ctx, ReceiptHandle handle, String messageId,
+         AckMessageRequestHeader requestHeader, long timeoutMillis) {
+         return this.mqClientAPIFactory.getClient().ackMessageAsync(
+-            this.resolveBrokerAddrInReceiptHandle(handle),
++            this.resolveBrokerAddrInReceiptHandle(ctx, handle),
+             requestHeader,
+             timeoutMillis
+         );
+@@ -211,7 +211,7 @@ public class ClusterMessageService implements MessageService {
+     public CompletableFuture<RemotingCommand> request(ProxyContext ctx, String brokerName, RemotingCommand request,
+         long timeoutMillis) {
+         try {
+-            String brokerAddress = topicRouteService.getBrokerAddr(brokerName);
++            String brokerAddress = topicRouteService.getBrokerAddr(ctx, brokerName);
+             return mqClientAPIFactory.getClient().invoke(brokerAddress, request, timeoutMillis);
+         } catch (Throwable t) {
+             return FutureUtils.completeExceptionally(t);
+@@ -222,24 +222,24 @@ public class ClusterMessageService implements MessageService {
+     public CompletableFuture<Void> requestOneway(ProxyContext ctx, String brokerName, RemotingCommand request,
+         long timeoutMillis) {
+         try {
+-            String brokerAddress = topicRouteService.getBrokerAddr(brokerName);
++            String brokerAddress = topicRouteService.getBrokerAddr(ctx, brokerName);
+             return mqClientAPIFactory.getClient().invokeOneway(brokerAddress, request, timeoutMillis);
+         } catch (Throwable t) {
+             return FutureUtils.completeExceptionally(t);
+         }
+     }
+ 
+-    protected String resolveBrokerAddrInReceiptHandle(ReceiptHandle handle) {
++    protected String resolveBrokerAddrInReceiptHandle(ProxyContext ctx, ReceiptHandle handle) {
+         try {
+-            return this.topicRouteService.getBrokerAddr(handle.getBrokerName());
++            return this.topicRouteService.getBrokerAddr(ctx, handle.getBrokerName());
+         } catch (Throwable t) {
+             throw new ProxyException(ProxyExceptionCode.INVALID_RECEIPT_HANDLE, "cannot find broker " + handle.getBrokerName(), t);
+         }
+     }
+ 
+-    protected String resolveBrokerAddr(String brokerName) {
++    protected String resolveBrokerAddr(ProxyContext ctx, String brokerName) {
+         try {
+-            return this.topicRouteService.getBrokerAddr(brokerName);
++            return this.topicRouteService.getBrokerAddr(ctx, brokerName);
+         } catch (Throwable t) {
+             throw new ProxyException(ProxyExceptionCode.INVALID_BROKER_NAME, "cannot find broker " + brokerName, t);
+         }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java
+index 7934d3c86..bc9582ad8 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java
+@@ -29,6 +29,7 @@ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+ import org.apache.rocketmq.proxy.common.AbstractCacheLoader;
+ import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
++import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+@@ -83,7 +84,7 @@ public class ClusterMetadataService extends AbstractStartAndShutdown implements
+     }
+ 
+     @Override
+-    public TopicMessageType getTopicMessageType(String topic) {
++    public TopicMessageType getTopicMessageType(ProxyContext ctx, String topic) {
+         TopicConfigAndQueueMapping topicConfigAndQueueMapping;
+         try {
+             topicConfigAndQueueMapping = topicConfigCache.get(topic);
+@@ -97,7 +98,7 @@ public class ClusterMetadataService extends AbstractStartAndShutdown implements
+     }
+ 
+     @Override
+-    public SubscriptionGroupConfig getSubscriptionGroupConfig(String group) {
++    public SubscriptionGroupConfig getSubscriptionGroupConfig(ProxyContext ctx, String group) {
+         SubscriptionGroupConfig config;
+         try {
+             config = this.subscriptionGroupConfigCache.get(group);
+@@ -158,7 +159,7 @@ public class ClusterMetadataService extends AbstractStartAndShutdown implements
+ 
+     protected Optional<BrokerData> findOneBroker(String topic) throws Exception {
+         try {
+-            return topicRouteService.getAllMessageQueueView(topic).getTopicRouteData().getBrokerDatas().stream().findAny();
++            return topicRouteService.getAllMessageQueueView(ProxyContext.createForInner(this.getClass()), topic).getTopicRouteData().getBrokerDatas().stream().findAny();
+         } catch (Exception e) {
+             if (TopicRouteHelper.isTopicNotExistError(e)) {
+                 return Optional.empty();
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/LocalMetadataService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/LocalMetadataService.java
+index bc1d03e74..7f3c041f2 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/LocalMetadataService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/LocalMetadataService.java
+@@ -20,6 +20,7 @@ package org.apache.rocketmq.proxy.service.metadata;
+ import org.apache.rocketmq.broker.BrokerController;
+ import org.apache.rocketmq.common.TopicConfig;
+ import org.apache.rocketmq.common.attribute.TopicMessageType;
++import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.remoting.protocol.subscription.SubscriptionGroupConfig;
+ 
+ public class LocalMetadataService implements MetadataService {
+@@ -30,7 +31,7 @@ public class LocalMetadataService implements MetadataService {
+     }
+ 
+     @Override
+-    public TopicMessageType getTopicMessageType(String topic) {
++    public TopicMessageType getTopicMessageType(ProxyContext ctx, String topic) {
+         TopicConfig topicConfig = brokerController.getTopicConfigManager().selectTopicConfig(topic);
+         if (topicConfig == null) {
+             return TopicMessageType.UNSPECIFIED;
+@@ -39,7 +40,7 @@ public class LocalMetadataService implements MetadataService {
+     }
+ 
+     @Override
+-    public SubscriptionGroupConfig getSubscriptionGroupConfig(String group) {
++    public SubscriptionGroupConfig getSubscriptionGroupConfig(ProxyContext ctx, String group) {
+         return this.brokerController.getSubscriptionGroupManager().getSubscriptionGroupTable().get(group);
+     }
+ }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/MetadataService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/MetadataService.java
+index d5e38f145..3ee0f3eac 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/MetadataService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/MetadataService.java
+@@ -18,11 +18,12 @@
+ package org.apache.rocketmq.proxy.service.metadata;
+ 
+ import org.apache.rocketmq.common.attribute.TopicMessageType;
++import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.remoting.protocol.subscription.SubscriptionGroupConfig;
+ 
+ public interface MetadataService {
+ 
+-    TopicMessageType getTopicMessageType(String topic);
++    TopicMessageType getTopicMessageType(ProxyContext ctx, String topic);
+ 
+-    SubscriptionGroupConfig getSubscriptionGroupConfig(String group);
++    SubscriptionGroupConfig getSubscriptionGroupConfig(ProxyContext ctx, String group);
+ }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/relay/AbstractProxyRelayService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/relay/AbstractProxyRelayService.java
+index ed68d1d3a..08f00bd83 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/relay/AbstractProxyRelayService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/relay/AbstractProxyRelayService.java
+@@ -43,6 +43,7 @@ public abstract class AbstractProxyRelayService implements ProxyRelayService {
+         CompletableFuture<ProxyRelayResult<Void>> future = new CompletableFuture<>();
+         String group = messageExt.getProperty(MessageConst.PROPERTY_PRODUCER_GROUP);
+         TransactionData transactionData = transactionService.addTransactionDataByBrokerAddr(
++            context,
+             command.getExtFields().get(ProxyUtils.BROKER_ADDR),
+             group,
+             header.getTranStateTableOffset(),
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java
+index 31e1f94c5..fb97002df 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java
+@@ -21,6 +21,7 @@ import org.apache.rocketmq.common.MixAll;
+ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.proxy.common.Address;
+ import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+ import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+ 
+@@ -31,14 +32,14 @@ public class ClusterTopicRouteService extends TopicRouteService {
+     }
+ 
+     @Override
+-    public MessageQueueView getCurrentMessageQueueView(String topicName) throws Exception {
+-        return getAllMessageQueueView(topicName);
++    public MessageQueueView getCurrentMessageQueueView(ProxyContext ctx, String topicName) throws Exception {
++        return getAllMessageQueueView(ctx, topicName);
+     }
+ 
+     @Override
+-    public ProxyTopicRouteData getTopicRouteForProxy(List<Address> requestHostAndPortList,
++    public ProxyTopicRouteData getTopicRouteForProxy(ProxyContext ctx, List<Address> requestHostAndPortList,
+         String topicName) throws Exception {
+-        TopicRouteData topicRouteData = getAllMessageQueueView(topicName).getTopicRouteData();
++        TopicRouteData topicRouteData = getAllMessageQueueView(ctx, topicName).getTopicRouteData();
+ 
+         ProxyTopicRouteData proxyTopicRouteData = new ProxyTopicRouteData();
+         proxyTopicRouteData.setQueueDatas(topicRouteData.getQueueDatas());
+@@ -57,8 +58,8 @@ public class ClusterTopicRouteService extends TopicRouteService {
+     }
+ 
+     @Override
+-    public String getBrokerAddr(String brokerName) throws Exception {
+-        List<BrokerData> brokerDataList = getAllMessageQueueView(brokerName).getTopicRouteData().getBrokerDatas();
++    public String getBrokerAddr(ProxyContext ctx, String brokerName) throws Exception {
++        List<BrokerData> brokerDataList = getAllMessageQueueView(ctx, brokerName).getTopicRouteData().getBrokerDatas();
+         if (brokerDataList.isEmpty()) {
+             return null;
+         }
+@@ -66,8 +67,8 @@ public class ClusterTopicRouteService extends TopicRouteService {
+     }
+ 
+     @Override
+-    public AddressableMessageQueue buildAddressableMessageQueue(MessageQueue messageQueue) throws Exception {
+-        String brokerAddress = getBrokerAddr(messageQueue.getBrokerName());
++    public AddressableMessageQueue buildAddressableMessageQueue(ProxyContext ctx, MessageQueue messageQueue) throws Exception {
++        String brokerAddress = getBrokerAddr(ctx, messageQueue.getBrokerName());
+         return new AddressableMessageQueue(messageQueue, brokerAddress);
+     }
+ }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java
+index 3ac7ae75b..d67b68f38 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java
+@@ -26,6 +26,7 @@ import org.apache.rocketmq.common.MixAll;
+ import org.apache.rocketmq.common.TopicConfig;
+ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.proxy.common.Address;
++import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+@@ -51,15 +52,15 @@ public class LocalTopicRouteService extends TopicRouteService {
+     }
+ 
+     @Override
+-    public MessageQueueView getCurrentMessageQueueView(String topic) throws Exception {
++    public MessageQueueView getCurrentMessageQueueView(ProxyContext ctx, String topic) throws Exception {
+         TopicConfig topicConfig = this.brokerController.getTopicConfigManager().getTopicConfigTable().get(topic);
+         return new MessageQueueView(topic, toTopicRouteData(topicConfig));
+     }
+ 
+     @Override
+-    public ProxyTopicRouteData getTopicRouteForProxy(List<Address> requestHostAndPortList,
++    public ProxyTopicRouteData getTopicRouteForProxy(ProxyContext ctx, List<Address> requestHostAndPortList,
+         String topicName) throws Exception {
+-        MessageQueueView messageQueueView = getAllMessageQueueView(topicName);
++        MessageQueueView messageQueueView = getAllMessageQueueView(ctx, topicName);
+         TopicRouteData topicRouteData = messageQueueView.getTopicRouteData();
+ 
+         ProxyTopicRouteData proxyTopicRouteData = new ProxyTopicRouteData();
+@@ -83,13 +84,13 @@ public class LocalTopicRouteService extends TopicRouteService {
+     }
+ 
+     @Override
+-    public String getBrokerAddr(String brokerName) throws Exception {
++    public String getBrokerAddr(ProxyContext ctx, String brokerName) throws Exception {
+         return this.brokerController.getBrokerAddr();
+     }
+ 
+     @Override
+-    public AddressableMessageQueue buildAddressableMessageQueue(MessageQueue messageQueue) throws Exception {
+-        String brokerAddress = getBrokerAddr(messageQueue.getBrokerName());
++    public AddressableMessageQueue buildAddressableMessageQueue(ProxyContext ctx, MessageQueue messageQueue) throws Exception {
++        String brokerAddress = getBrokerAddr(ctx, messageQueue.getBrokerName());
+         return new AddressableMessageQueue(messageQueue, brokerAddress);
+     }
+ 
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/TopicRouteService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/TopicRouteService.java
+index ba97e183b..3fa6414c3 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/TopicRouteService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/route/TopicRouteService.java
+@@ -35,6 +35,7 @@ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+ import org.apache.rocketmq.proxy.common.AbstractCacheLoader;
+ import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
+ import org.apache.rocketmq.proxy.common.Address;
++import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+@@ -109,18 +110,18 @@ public abstract class TopicRouteService extends AbstractStartAndShutdown {
+         this.appendStartAndShutdown(this.mqClientAPIFactory);
+     }
+ 
+-    public MessageQueueView getAllMessageQueueView(String topicName) throws Exception {
++    public MessageQueueView getAllMessageQueueView(ProxyContext ctx, String topicName) throws Exception {
+         return getCacheMessageQueueWrapper(this.topicCache, topicName);
+     }
+ 
+-    public abstract MessageQueueView getCurrentMessageQueueView(String topicName) throws Exception;
++    public abstract MessageQueueView getCurrentMessageQueueView(ProxyContext ctx, String topicName) throws Exception;
+ 
+-    public abstract ProxyTopicRouteData getTopicRouteForProxy(List<Address> requestHostAndPortList,
++    public abstract ProxyTopicRouteData getTopicRouteForProxy(ProxyContext ctx, List<Address> requestHostAndPortList,
+         String topicName) throws Exception;
+ 
+-    public abstract String getBrokerAddr(String brokerName) throws Exception;
++    public abstract String getBrokerAddr(ProxyContext ctx, String brokerName) throws Exception;
+ 
+-    public abstract AddressableMessageQueue buildAddressableMessageQueue(MessageQueue messageQueue) throws Exception;
++    public abstract AddressableMessageQueue buildAddressableMessageQueue(ProxyContext ctx, MessageQueue messageQueue) throws Exception;
+ 
+     protected static MessageQueueView getCacheMessageQueueWrapper(LoadingCache<String, MessageQueueView> topicCache,
+         String key) throws Exception {
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java
+index cc988db78..2ef849737 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/AbstractSystemMessageSyncer.java
+@@ -32,6 +32,7 @@ import org.apache.rocketmq.common.message.MessageDecoder;
+ import org.apache.rocketmq.common.topic.TopicValidator;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.common.ProxyException;
+ import org.apache.rocketmq.proxy.common.ProxyExceptionCode;
+ import org.apache.rocketmq.common.utils.StartAndShutdown;
+@@ -95,7 +96,7 @@ public abstract class AbstractSystemMessageSyncer implements StartAndShutdown, M
+                 JSON.toJSONString(data).getBytes(StandardCharsets.UTF_8)
+             );
+ 
+-            AddressableMessageQueue messageQueue = this.topicRouteService.getAllMessageQueueView(targetTopic)
++            AddressableMessageQueue messageQueue = this.topicRouteService.getAllMessageQueueView(ProxyContext.createForInner(this.getClass()), targetTopic)
+                 .getWriteSelector().selectOne(true);
+             this.mqClientAPIFactory.getClient().sendMessageAsync(
+                 messageQueue.getBrokerAddr(),
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/AbstractTransactionService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/AbstractTransactionService.java
+index 3254d711d..f0e083ade 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/AbstractTransactionService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/AbstractTransactionService.java
+@@ -29,13 +29,13 @@ public abstract class AbstractTransactionService implements TransactionService,
+     protected TransactionDataManager transactionDataManager = new TransactionDataManager();
+ 
+     @Override
+-    public TransactionData addTransactionDataByBrokerAddr(String brokerAddr, String producerGroup, long tranStateTableOffset, long commitLogOffset, String transactionId,
++    public TransactionData addTransactionDataByBrokerAddr(ProxyContext ctx, String brokerAddr, String producerGroup, long tranStateTableOffset, long commitLogOffset, String transactionId,
+         Message message) {
+-        return this.addTransactionDataByBrokerName(this.getBrokerNameByAddr(brokerAddr), producerGroup, tranStateTableOffset, commitLogOffset, transactionId, message);
++        return this.addTransactionDataByBrokerName(ctx, this.getBrokerNameByAddr(brokerAddr), producerGroup, tranStateTableOffset, commitLogOffset, transactionId, message);
+     }
+ 
+     @Override
+-    public TransactionData addTransactionDataByBrokerName(String brokerName, String producerGroup, long tranStateTableOffset, long commitLogOffset, String transactionId,
++    public TransactionData addTransactionDataByBrokerName(ProxyContext ctx, String brokerName, String producerGroup, long tranStateTableOffset, long commitLogOffset, String transactionId,
+         Message message) {
+         if (StringUtils.isBlank(brokerName)) {
+             return null;
+@@ -55,7 +55,7 @@ public abstract class AbstractTransactionService implements TransactionService,
+     }
+ 
+     @Override
+-    public EndTransactionRequestData genEndTransactionRequestHeader(String producerGroup, Integer commitOrRollback,
++    public EndTransactionRequestData genEndTransactionRequestHeader(ProxyContext ctx, String producerGroup, Integer commitOrRollback,
+         boolean fromTransactionCheck, String msgId, String transactionId) {
+         TransactionData transactionData = this.transactionDataManager.pollNoExpireTransactionData(producerGroup, transactionId);
+         if (transactionData == null) {
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/ClusterTransactionService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/ClusterTransactionService.java
+index eff3ac492..1ec428646 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/ClusterTransactionService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/ClusterTransactionService.java
+@@ -36,6 +36,7 @@ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.config.ConfigurationManager;
+ import org.apache.rocketmq.proxy.config.ProxyConfig;
+ import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+@@ -67,20 +68,20 @@ public class ClusterTransactionService extends AbstractTransactionService {
+     }
+ 
+     @Override
+-    public void addTransactionSubscription(String group, List<String> topicList) {
++    public void addTransactionSubscription(ProxyContext ctx, String group, List<String> topicList) {
+         for (String topic : topicList) {
+-            addTransactionSubscription(group, topic);
++            addTransactionSubscription(ctx, group, topic);
+         }
+     }
+ 
+     @Override
+-    public void addTransactionSubscription(String group, String topic) {
++    public void addTransactionSubscription(ProxyContext ctx, String group, String topic) {
+         try {
+             groupClusterData.compute(group, (groupName, clusterDataSet) -> {
+                 if (clusterDataSet == null) {
+                     clusterDataSet = Sets.newHashSet();
+                 }
+-                clusterDataSet.addAll(getClusterDataFromTopic(topic));
++                clusterDataSet.addAll(getClusterDataFromTopic(ctx, topic));
+                 return clusterDataSet;
+             });
+         } catch (Exception e) {
+@@ -89,17 +90,17 @@ public class ClusterTransactionService extends AbstractTransactionService {
+     }
+ 
+     @Override
+-    public void replaceTransactionSubscription(String group, List<String> topicList) {
++    public void replaceTransactionSubscription(ProxyContext ctx, String group, List<String> topicList) {
+         Set<ClusterData> clusterDataSet = new HashSet<>();
+         for (String topic : topicList) {
+-            clusterDataSet.addAll(getClusterDataFromTopic(topic));
++            clusterDataSet.addAll(getClusterDataFromTopic(ctx, topic));
+         }
+         groupClusterData.put(group, clusterDataSet);
+     }
+ 
+-    private Set<ClusterData> getClusterDataFromTopic(String topic) {
++    private Set<ClusterData> getClusterDataFromTopic(ProxyContext ctx, String topic) {
+         try {
+-            MessageQueueView messageQueue = this.topicRouteService.getAllMessageQueueView(topic);
++            MessageQueueView messageQueue = this.topicRouteService.getAllMessageQueueView(ctx, topic);
+             List<BrokerData> brokerDataList = messageQueue.getTopicRouteData().getBrokerDatas();
+ 
+             if (brokerDataList == null) {
+@@ -117,7 +118,7 @@ public class ClusterTransactionService extends AbstractTransactionService {
+     }
+ 
+     @Override
+-    public void unSubscribeAllTransactionTopic(String group) {
++    public void unSubscribeAllTransactionTopic(ProxyContext ctx, String group) {
+         groupClusterData.remove(group);
+     }
+ 
+@@ -195,7 +196,7 @@ public class ClusterTransactionService extends AbstractTransactionService {
+ 
+     protected void sendHeartBeatToCluster(String clusterName, HeartbeatData heartbeatData, Map<String, String> brokerAddrNameMap) {
+         try {
+-            MessageQueueView messageQueue = this.topicRouteService.getAllMessageQueueView(clusterName);
++            MessageQueueView messageQueue = this.topicRouteService.getAllMessageQueueView(ProxyContext.createForInner(this.getClass()), clusterName);
+             List<BrokerData> brokerDataList = messageQueue.getTopicRouteData().getBrokerDatas();
+             if (brokerDataList == null) {
+                 return;
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/LocalTransactionService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/LocalTransactionService.java
+index 2371b25a2..4a27e4ff2 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/LocalTransactionService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/LocalTransactionService.java
+@@ -18,6 +18,7 @@ package org.apache.rocketmq.proxy.service.transaction;
+ 
+ import java.util.List;
+ import org.apache.rocketmq.common.BrokerConfig;
++import org.apache.rocketmq.proxy.common.ProxyContext;
+ 
+ /**
+  * no need to implements, because the channel of producer will put into the broker's producerManager
+@@ -31,22 +32,22 @@ public class LocalTransactionService extends AbstractTransactionService {
+     }
+ 
+     @Override
+-    public void addTransactionSubscription(String group, List<String> topicList) {
++    public void addTransactionSubscription(ProxyContext ctx, String group, List<String> topicList) {
+ 
+     }
+ 
+     @Override
+-    public void addTransactionSubscription(String group, String topic) {
++    public void addTransactionSubscription(ProxyContext ctx, String group, String topic) {
+ 
+     }
+ 
+     @Override
+-    public void replaceTransactionSubscription(String group, List<String> topicList) {
++    public void replaceTransactionSubscription(ProxyContext ctx, String group, List<String> topicList) {
+ 
+     }
+ 
+     @Override
+-    public void unSubscribeAllTransactionTopic(String group) {
++    public void unSubscribeAllTransactionTopic(ProxyContext ctx, String group) {
+ 
+     }
+ 
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/TransactionService.java b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/TransactionService.java
+index 2a851051e..a7ab35324 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/TransactionService.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/service/transaction/TransactionService.java
+@@ -22,21 +22,21 @@ import org.apache.rocketmq.proxy.common.ProxyContext;
+ 
+ public interface TransactionService {
+ 
+-    void addTransactionSubscription(String group, List<String> topicList);
++    void addTransactionSubscription(ProxyContext ctx, String group, List<String> topicList);
+ 
+-    void addTransactionSubscription(String group, String topic);
++    void addTransactionSubscription(ProxyContext ctx, String group, String topic);
+ 
+-    void replaceTransactionSubscription(String group, List<String> topicList);
++    void replaceTransactionSubscription(ProxyContext ctx, String group, List<String> topicList);
+ 
+-    void unSubscribeAllTransactionTopic(String group);
++    void unSubscribeAllTransactionTopic(ProxyContext ctx, String group);
+ 
+-    TransactionData addTransactionDataByBrokerAddr(String brokerAddr, String producerGroup, long tranStateTableOffset, long commitLogOffset, String transactionId,
++    TransactionData addTransactionDataByBrokerAddr(ProxyContext ctx, String brokerAddr, String producerGroup, long tranStateTableOffset, long commitLogOffset, String transactionId,
+         Message message);
+ 
+-    TransactionData addTransactionDataByBrokerName(String brokerName, String producerGroup, long tranStateTableOffset, long commitLogOffset, String transactionId,
++    TransactionData addTransactionDataByBrokerName(ProxyContext ctx, String brokerName, String producerGroup, long tranStateTableOffset, long commitLogOffset, String transactionId,
+         Message message);
+ 
+-    EndTransactionRequestData genEndTransactionRequestHeader(String producerGroup, Integer commitOrRollback,
++    EndTransactionRequestData genEndTransactionRequestHeader(ProxyContext ctx, String producerGroup, Integer commitOrRollback,
+         boolean fromTransactionCheck, String msgId, String transactionId);
+ 
+     void onSendCheckTransactionStateFailed(ProxyContext context, String producerGroup, TransactionData transactionData);

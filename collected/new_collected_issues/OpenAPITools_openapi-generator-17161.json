@@ -1,0 +1,7 @@
+{
+  "issue_id": 17145,
+  "issue_url": "https://github.com/OpenAPITools/openapi-generator/issues/17145",
+  "title": "[REQ] [Java][Spring] Generate a Controller per operation",
+  "description": "<p dir=\"auto\">Having controllers split by tags is nice, but patterns like Vertical Slicing suggest going a step further and having one Controller per endpoint.</p>\n<p dir=\"auto\">In a similar fashion to <code class=\"notranslate\">useTags</code>, a <code class=\"notranslate\">useOperationIds</code> config option could be added to use the operationId to generate the interface/controller classnames.</p>\n<p dir=\"auto\">An alternative/complementary option could be adding a <code class=\"notranslate\">x-controller-name</code> vendor extension applicable to Operation object.</p>",
+  "description_text": "Having controllers split by tags is nice, but patterns like Vertical Slicing suggest going a step further and having one Controller per endpoint.\nIn a similar fashion to useTags, a useOperationIds config option could be added to use the operationId to generate the interface/controller classnames.\nAn alternative/complementary option could be adding a x-controller-name vendor extension applicable to Operation object."
+}

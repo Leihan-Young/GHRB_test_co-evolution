@@ -1,0 +1,398 @@
+diff --git a/oap-server/server-library/library-client/src/main/java/org/apache/skywalking/oap/server/library/client/elasticsearch/ElasticSearchClient.java b/oap-server/server-library/library-client/src/main/java/org/apache/skywalking/oap/server/library/client/elasticsearch/ElasticSearchClient.java
+index d80f8353dd..ca085e5be2 100644
+--- a/oap-server/server-library/library-client/src/main/java/org/apache/skywalking/oap/server/library/client/elasticsearch/ElasticSearchClient.java
++++ b/oap-server/server-library/library-client/src/main/java/org/apache/skywalking/oap/server/library/client/elasticsearch/ElasticSearchClient.java
+@@ -303,7 +303,6 @@ public class ElasticSearchClient implements Client, HealthCheckable {
+         return es.get().documents().exists(indexName, TYPE, id);
+     }
+ 
+-
+     /**
+      * Provide to get documents from multi indices by IDs.
+      * @param indexIds key: indexName, value: ids list
+@@ -319,7 +318,7 @@ public class ElasticSearchClient implements Client, HealthCheckable {
+     }
+ 
+     /**
+-     * Search by ids with index alias, when can not locate the physical index. 
++     * Search by ids with index alias, when can not locate the physical index.
+      * Otherwise, recommend use method {@link #ids}
+      * @param indexName Index alias name or physical name
+      * @param ids ID list
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/ElasticSearchVersion.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/ElasticSearchVersion.java
+index 4f51773995..6607961f6b 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/ElasticSearchVersion.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/ElasticSearchVersion.java
+@@ -23,10 +23,11 @@ import org.apache.skywalking.library.elasticsearch.requests.factory.Codec;
+ import org.apache.skywalking.library.elasticsearch.requests.factory.RequestFactory;
+ import org.apache.skywalking.library.elasticsearch.requests.factory.v6.V6RequestFactory;
+ import org.apache.skywalking.library.elasticsearch.requests.factory.v6.codec.V6Codec;
+-import org.apache.skywalking.library.elasticsearch.requests.factory.v7.V78RequestFactory;
+-import org.apache.skywalking.library.elasticsearch.requests.factory.v7.V7RequestFactory;
+-import org.apache.skywalking.library.elasticsearch.requests.factory.v7.codec.V78Codec;
+-import org.apache.skywalking.library.elasticsearch.requests.factory.v7.codec.V7Codec;
++import org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.V78RequestFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.V7RequestFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.V81RequestFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.codec.V78Codec;
++import org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.codec.V7Codec;
+ 
+ public final class ElasticSearchVersion {
+     private final String distribution;
+@@ -64,7 +65,7 @@ public final class ElasticSearchVersion {
+                 return;
+             }
+             if (major == 8) {
+-                requestFactory = new V78RequestFactory(this);
++                requestFactory = new V81RequestFactory(this);
+                 codec = V78Codec.INSTANCE;
+                 return;
+             }
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V78RequestFactory.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V78RequestFactory.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V78RequestFactory.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V78RequestFactory.java
+index 375dd2803b..260c4f01b3 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V78RequestFactory.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V78RequestFactory.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus;
+ 
+ import lombok.Getter;
+ import lombok.experimental.Accessors;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V78TemplateFactory.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V78TemplateFactory.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V78TemplateFactory.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V78TemplateFactory.java
+index f57c7251ae..885d30ea1f 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V78TemplateFactory.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V78TemplateFactory.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus;
+ 
+ import com.google.common.collect.ImmutableMap;
+ import com.linecorp.armeria.common.HttpRequest;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7DocumentFactory.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7DocumentFactory.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7DocumentFactory.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7DocumentFactory.java
+index 0c720d2044..1ce486f0b8 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7DocumentFactory.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7DocumentFactory.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus;
+ 
+ import com.google.common.collect.ImmutableMap;
+ import com.linecorp.armeria.common.HttpRequest;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7IndexFactory.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7IndexFactory.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7IndexFactory.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7IndexFactory.java
+index 49d2248504..8c2a38821c 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7IndexFactory.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7IndexFactory.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus;
+ 
+ import com.google.common.base.Strings;
+ import com.google.common.collect.ImmutableMap;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7RequestFactory.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7RequestFactory.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7RequestFactory.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7RequestFactory.java
+index 9fae8d40f6..a202611aab 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7RequestFactory.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7RequestFactory.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus;
+ 
+ import lombok.Getter;
+ import lombok.experimental.Accessors;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7TemplateFactory.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7TemplateFactory.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7TemplateFactory.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7TemplateFactory.java
+index 776be59aa1..9c6ef920cd 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/V7TemplateFactory.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V7TemplateFactory.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus;
+ 
+ import com.google.common.collect.ImmutableMap;
+ import com.linecorp.armeria.common.HttpRequest;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V81DocumentFactory.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V81DocumentFactory.java
+new file mode 100644
+index 0000000000..d7e29898c9
+--- /dev/null
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V81DocumentFactory.java
+@@ -0,0 +1,76 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++ * KIND, either express or implied.  See the License for the
++ * specific language governing permissions and limitations
++ * under the License.
++ */
++
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus;
++
++import static com.google.common.base.Preconditions.checkArgument;
++import static com.google.common.base.Strings.isNullOrEmpty;
++import static com.google.common.collect.Iterables.isEmpty;
++import static java.util.Objects.requireNonNull;
++import java.util.Map;
++import org.apache.skywalking.library.elasticsearch.ElasticSearchVersion;
++import org.apache.skywalking.library.elasticsearch.requests.UpdateRequest;
++import org.apache.skywalking.library.elasticsearch.requests.factory.DocumentFactory;
++import com.google.common.collect.ImmutableMap;
++import com.linecorp.armeria.common.HttpRequest;
++import com.linecorp.armeria.common.HttpRequestBuilder;
++import com.linecorp.armeria.common.MediaType;
++import lombok.SneakyThrows;
++import lombok.experimental.Delegate;
++
++public class V81DocumentFactory implements DocumentFactory {
++    private final ElasticSearchVersion version;
++
++    @Delegate // Delegate all compatible methods to V7DocumentFactory and just override the incompatible ones.
++    private final V7DocumentFactory v7DocumentFactory;
++
++    public V81DocumentFactory(ElasticSearchVersion version) {
++        this.version = version;
++        this.v7DocumentFactory = new V7DocumentFactory(version);
++    }
++
++    @SneakyThrows
++    @Override
++    public HttpRequest update(UpdateRequest request, Map<String, ?> params) {
++        requireNonNull(request, "request");
++
++        final String index = request.getIndex();
++        final String type = request.getType();
++        final String id = request.getId();
++        final Map<String, Object> doc = request.getDoc();
++
++        checkArgument(!isNullOrEmpty(index), "index cannot be null or empty");
++        checkArgument(!isNullOrEmpty(type), "type cannot be null or empty");
++        checkArgument(!isNullOrEmpty(id), "id cannot be null or empty");
++        checkArgument(doc != null && !isEmpty(doc.entrySet()), "doc cannot be null or empty");
++
++        final HttpRequestBuilder builder = HttpRequest.builder();
++        if (params != null) {
++            params.forEach(builder::queryParam);
++        }
++        final byte[] content = version.codec().encode(ImmutableMap.of("doc", doc));
++
++        builder.post("/{index}/_update/{id}")
++               .pathParam("index", index)
++               .pathParam("id", id)
++               .content(MediaType.JSON, content);
++
++        return builder.build();
++    }
++}
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V81RequestFactory.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V81RequestFactory.java
+new file mode 100644
+index 0000000000..fbb18dca6c
+--- /dev/null
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/V81RequestFactory.java
+@@ -0,0 +1,52 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus;
++
++import lombok.Getter;
++import lombok.experimental.Accessors;
++import org.apache.skywalking.library.elasticsearch.ElasticSearchVersion;
++import org.apache.skywalking.library.elasticsearch.requests.factory.AliasFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.BulkFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.DocumentFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.IndexFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.RequestFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.SearchFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.TemplateFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.common.CommonAliasFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.common.CommonBulkFactory;
++import org.apache.skywalking.library.elasticsearch.requests.factory.common.CommonSearchFactory;
++
++@Getter
++@Accessors(fluent = true)
++public final class V81RequestFactory implements RequestFactory {
++    private final TemplateFactory template;
++    private final IndexFactory index;
++    private final AliasFactory alias;
++    private final DocumentFactory document;
++    private final SearchFactory search;
++    private final BulkFactory bulk;
++
++    public V81RequestFactory(final ElasticSearchVersion version) {
++        template = new V78TemplateFactory(version);
++        index = new V7IndexFactory(version);
++        alias = new CommonAliasFactory(version);
++        document = new V81DocumentFactory(version);
++        search = new CommonSearchFactory(version);
++        bulk = new CommonBulkFactory(version);
++    }
++}
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V78Codec.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V78Codec.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V78Codec.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V78Codec.java
+index c4c11e5942..4e0a496f48 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V78Codec.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V78Codec.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7.codec;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.codec;
+ 
+ import com.fasterxml.jackson.annotation.JsonInclude;
+ import com.fasterxml.jackson.core.type.TypeReference;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V78IndexTemplatesDeserializer.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V78IndexTemplatesDeserializer.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V78IndexTemplatesDeserializer.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V78IndexTemplatesDeserializer.java
+index ce601bdc85..40f1d2b1be 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V78IndexTemplatesDeserializer.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V78IndexTemplatesDeserializer.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7.codec;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.codec;
+ 
+ import com.fasterxml.jackson.annotation.JsonProperty;
+ import com.fasterxml.jackson.core.JsonParser;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7Codec.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7Codec.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7Codec.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7Codec.java
+index 97da2a88a8..acb0b49b67 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7Codec.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7Codec.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7.codec;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.codec;
+ 
+ import com.fasterxml.jackson.annotation.JsonInclude;
+ import com.fasterxml.jackson.core.type.TypeReference;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7IndexRequestSerializer.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7IndexRequestSerializer.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7IndexRequestSerializer.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7IndexRequestSerializer.java
+index 8eacf7218e..87e2dfdb2a 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7IndexRequestSerializer.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7IndexRequestSerializer.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7.codec;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.codec;
+ 
+ import com.fasterxml.jackson.core.JsonGenerator;
+ import com.fasterxml.jackson.core.io.SerializedString;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7IndexTemplatesDeserializer.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7IndexTemplatesDeserializer.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7IndexTemplatesDeserializer.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7IndexTemplatesDeserializer.java
+index 23edc4ff9b..59d04bd697 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7IndexTemplatesDeserializer.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7IndexTemplatesDeserializer.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7.codec;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.codec;
+ 
+ import com.fasterxml.jackson.core.JsonParser;
+ import com.fasterxml.jackson.core.type.TypeReference;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7MappingsDeserializer.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7MappingsDeserializer.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7MappingsDeserializer.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7MappingsDeserializer.java
+index e49f31520a..4b1a361e7a 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7MappingsDeserializer.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7MappingsDeserializer.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7.codec;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.codec;
+ 
+ import com.fasterxml.jackson.core.JsonParser;
+ import com.fasterxml.jackson.core.type.TypeReference;
+diff --git a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7UpdateRequestSerializer.java b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7UpdateRequestSerializer.java
+similarity index 99%
+rename from oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7UpdateRequestSerializer.java
+rename to oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7UpdateRequestSerializer.java
+index 017b21be1c..540a5b40e2 100644
+--- a/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7/codec/V7UpdateRequestSerializer.java
++++ b/oap-server/server-library/library-elasticsearch-client/src/main/java/org/apache/skywalking/library/elasticsearch/requests/factory/v7plus/codec/V7UpdateRequestSerializer.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.skywalking.library.elasticsearch.requests.factory.v7.codec;
++package org.apache.skywalking.library.elasticsearch.requests.factory.v7plus.codec;
+ 
+ import com.fasterxml.jackson.core.JsonGenerator;
+ import com.fasterxml.jackson.core.io.SerializedString;

@@ -1,0 +1,72 @@
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTokenTextCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTokenTextCheckTest.java
+index 543968497..220e8d62a 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTokenTextCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTokenTextCheckTest.java
+@@ -143,6 +143,24 @@ public class IllegalTokenTextCheckTest
+                 getPath("InputIllegalTokenTextTokens5.java"), expected);
+     }
+ 
++    @Test
++    public void testStringTemplate()
++            throws Exception {
++
++        final String[] expected = {
++            "29:28: " + getCheckMessage(MSG_KEY, "x"),
++            "29:35: " + getCheckMessage(MSG_KEY, "x"),
++            "59:20: " + getCheckMessage(MSG_KEY, "x"),
++            "59:27: " + getCheckMessage(MSG_KEY, "x"),
++            "73:23: " + getCheckMessage(MSG_KEY, "x"),
++            "73:30: " + getCheckMessage(MSG_KEY, "x"),
++        };
++
++        verifyWithInlineConfigParser(
++                getNonCompilablePath(
++                        "InputIllegalTokenTextStringTemplate.java"), expected);
++    }
++
+     @Test
+     public void testOrderOfProperties() {
+         // pure class must be used as configuration doesn't guarantee order of
+@@ -161,7 +179,7 @@ public class IllegalTokenTextCheckTest
+ 
+     @Test
+     public void testAcceptableTokensMakeSense() {
+-        final int expectedTokenTypesTotalNumber = 188;
++        final int expectedTokenTypesTotalNumber = 194;
+         assertWithMessage("Total number of TokenTypes has changed, acceptable tokens in"
+                 + " IllegalTokenTextCheck need to be reconsidered.")
+             .that(TokenUtil.getTokenTypesTotalNumber())
+@@ -178,7 +196,8 @@ public class IllegalTokenTextCheckTest
+             TokenTypes.COMMENT_CONTENT,
+             TokenTypes.STRING_LITERAL,
+             TokenTypes.CHAR_LITERAL,
+-            TokenTypes.TEXT_BLOCK_CONTENT
++            TokenTypes.TEXT_BLOCK_CONTENT,
++            TokenTypes.STRING_TEMPLATE_CONTENT
+         );
+         for (int tokenType : allowedTokens) {
+             assertWithMessage(TokenUtil.getTokenName(tokenType) + " should not be allowed"
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/internal/AllChecksTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/internal/AllChecksTest.java
+index a46231d6d..196cc35e5 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/internal/AllChecksTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/internal/AllChecksTest.java
+@@ -138,7 +138,8 @@ public class AllChecksTest extends AbstractModuleTestSupport {
+         // we have no need to block specific token text
+         CHECKSTYLE_TOKENS_IN_CONFIG_TO_IGNORE.put("IllegalTokenText",
+                 Stream.of("NUM_DOUBLE", "NUM_FLOAT", "NUM_INT", "NUM_LONG", "IDENT",
+-                    "COMMENT_CONTENT", "STRING_LITERAL", "CHAR_LITERAL", "TEXT_BLOCK_CONTENT")
++                    "COMMENT_CONTENT", "STRING_LITERAL", "CHAR_LITERAL", "TEXT_BLOCK_CONTENT",
++                    "STRING_TEMPLATE_CONTENT")
+                     .collect(Collectors.toUnmodifiableSet()));
+         // we do not use this check as it is deprecated
+         CHECKSTYLE_TOKENS_IN_CONFIG_TO_IGNORE.put("WriteTag",
+@@ -236,7 +237,8 @@ public class AllChecksTest extends AbstractModuleTestSupport {
+         GOOGLE_TOKENS_IN_CONFIG_TO_IGNORE.put("IllegalTokenText", Stream.of(
+                 // all other java tokens and text are allowed
+                 "NUM_DOUBLE", "NUM_FLOAT", "NUM_INT", "NUM_LONG", "IDENT",
+-                "COMMENT_CONTENT", "STRING_LITERAL", "CHAR_LITERAL", "TEXT_BLOCK_CONTENT")
++                "COMMENT_CONTENT", "STRING_LITERAL", "CHAR_LITERAL", "TEXT_BLOCK_CONTENT",
++                "STRING_TEMPLATE_CONTENT")
+                 .collect(Collectors.toUnmodifiableSet()));
+         GOOGLE_TOKENS_IN_CONFIG_TO_IGNORE.put("OperatorWrap", Stream.of(
+                 // specifically allowed via '4.5.1 Where to break' because the following are

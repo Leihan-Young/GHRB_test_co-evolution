@@ -1,0 +1,7 @@
+{
+  "issue_id": 7142,
+  "issue_url": "https://github.com/apache/rocketmq/issues/7142",
+  "title": "[Feature] Add admin tool to inspect RocksDB contents",
+  "description": "<h3 dir=\"auto\">Is Your Feature Request Related to a Problem?</h3>\n<p dir=\"auto\">Now that RocketMQ are about to support Rocksdb storage <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1816973248\" data-permission-text=\"Title is private\" data-url=\"https://github.com/apache/rocketmq/issues/7064\" data-hovercard-type=\"issue\" data-hovercard-url=\"/apache/rocketmq/issues/7064/hovercard\" href=\"https://github.com/apache/rocketmq/issues/7064\">#7064</a>, it would be very convenient to have a tool to inspect its contents</p>\n<h3 dir=\"auto\">Describe the Solution You'd Like</h3>\n<p dir=\"auto\">Add command <code class=\"notranslate\">KvConfigToJson</code>, and specify the rocksdb path and configuration type, and print the corresponding json object</p>\n<h3 dir=\"auto\">Additional Context</h3>\n<p dir=\"auto\"><em>No response</em></p>",
+  "description_text": "Is Your Feature Request Related to a Problem?\nNow that RocketMQ are about to support Rocksdb storage #7064, it would be very convenient to have a tool to inspect its contents\nDescribe the Solution You'd Like\nAdd command KvConfigToJson, and specify the rocksdb path and configuration type, and print the corresponding json object\nAdditional Context\nNo response"
+}

@@ -1,0 +1,16 @@
+diff --git a/src/main/java/com/fasterxml/jackson/databind/deser/std/UntypedObjectDeserializer.java b/src/main/java/com/fasterxml/jackson/databind/deser/std/UntypedObjectDeserializer.java
+index 2597834e7..d3ce5e859 100644
+--- a/src/main/java/com/fasterxml/jackson/databind/deser/std/UntypedObjectDeserializer.java
++++ b/src/main/java/com/fasterxml/jackson/databind/deser/std/UntypedObjectDeserializer.java
+@@ -759,6 +759,11 @@ public class UntypedObjectDeserializer
+             return ctxt.handleUnexpectedToken(Object.class, p);
+         }
+ 
++        @Override
++        public Object getEmptyValue(DeserializationContext ctxt) throws JsonMappingException {
++            return new Object();
++        }
++
+         @Override
+         public Object deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException
+         {

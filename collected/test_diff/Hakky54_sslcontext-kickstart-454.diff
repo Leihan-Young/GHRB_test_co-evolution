@@ -1,0 +1,180 @@
+diff --git a/sslcontext-kickstart/src/test/java/nl/altindag/ssl/provider/FenixProviderShould.java b/sslcontext-kickstart/src/test/java/nl/altindag/ssl/provider/FenixProviderShould.java
+new file mode 100644
+index 0000000..0aeade1
+--- /dev/null
++++ b/sslcontext-kickstart/src/test/java/nl/altindag/ssl/provider/FenixProviderShould.java
+@@ -0,0 +1,90 @@
++/*
++ * Copyright 2019 Thunderberry.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package nl.altindag.ssl.provider;
++
++import nl.altindag.ssl.SSLFactory;
++import nl.altindag.ssl.socket.FenixSSLSocketFactory;
++import org.junit.jupiter.api.Test;
++
++import javax.net.ssl.SSLContext;
++import javax.net.ssl.SSLParameters;
++import javax.net.ssl.SSLSocketFactory;
++import java.security.NoSuchAlgorithmException;
++import java.security.Security;
++import java.util.AbstractMap.SimpleEntry;
++import java.util.Arrays;
++import java.util.Map;
++import java.util.stream.Collectors;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++/**
++ * @author Hakan Altindag
++ */
++class FenixProviderShould {
++
++    @Test
++    void haveDefaultProperties() {
++        FenixProvider provider = new FenixProvider();
++        Map<Object, Object> properties = provider.entrySet().stream()
++                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
++
++        assertThat(properties).containsOnly(
++                new SimpleEntry<>("Alg.Alias.SSLContext.SSL", "TLS"),
++                new SimpleEntry<>("Alg.Alias.SSLContext.SSLv2", "TLS"),
++                new SimpleEntry<>("Alg.Alias.SSLContext.SSLv3", "TLS"),
++                new SimpleEntry<>("Alg.Alias.SSLContext.TLSv1", "TLS"),
++                new SimpleEntry<>("Alg.Alias.SSLContext.TLSv1.1", "TLS"),
++                new SimpleEntry<>("Alg.Alias.SSLContext.TLSv1.2", "TLS"),
++                new SimpleEntry<>("Alg.Alias.SSLContext.TLSv1.3", "TLS"),
++                new SimpleEntry<>("Provider.id className", "nl.altindag.ssl.provider.FenixProvider"),
++                new SimpleEntry<>("Provider.id info", "Fenix Security Provider"),
++                new SimpleEntry<>("Provider.id name", "Fenix"),
++                new SimpleEntry<>("Provider.id version", "1.0"),
++                new SimpleEntry<>("SSLContext.TLS", "nl.altindag.ssl.sslcontext.FenixSSLContextSpi")
++        );
++    }
++
++    @Test
++    void returnSslContextOriginatedFromTheConfiguredSslContextForTheConfiguredProtocols() throws NoSuchAlgorithmException {
++        try {
++            SSLFactory mockedSslFactory = mock(SSLFactory.class);
++            SSLContext mockedSslContext = mock(SSLContext.class);
++            SSLSocketFactory mockedSslSocketFactory = mock(SSLSocketFactory.class);
++            SSLParameters mockedSslParameters = mock(SSLParameters.class);
++
++            when(mockedSslFactory.getSslContext()).thenReturn(mockedSslContext);
++            when(mockedSslFactory.getSslParameters()).thenReturn(mockedSslParameters);
++            when(mockedSslContext.getSocketFactory()).thenReturn(mockedSslSocketFactory);
++
++            SSLFactoryProvider.set(mockedSslFactory);
++            FenixProvider provider = new FenixProvider();
++            Security.insertProviderAt(provider, 1);
++
++            for (String protocol : Arrays.asList("SSL", "SSLv2", "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3", "TLS")) {
++                SSLContext sslContext = SSLContext.getInstance(protocol);
++                assertThat(sslContext.getProvider()).isEqualTo(provider);
++                assertThat(sslContext.getSocketFactory()).isInstanceOf(FenixSSLSocketFactory.class);
++            }
++        } finally {
++            Security.removeProvider("Fenix");
++            SSLFactoryProvider.set(null);
++        }
++    }
++
++}
+diff --git a/sslcontext-kickstart/src/test/java/nl/altindag/ssl/provider/SSLFactoryProviderShould.java b/sslcontext-kickstart/src/test/java/nl/altindag/ssl/provider/SSLFactoryProviderShould.java
+new file mode 100644
+index 0000000..148ba9c
+--- /dev/null
++++ b/sslcontext-kickstart/src/test/java/nl/altindag/ssl/provider/SSLFactoryProviderShould.java
+@@ -0,0 +1,42 @@
++/*
++ * Copyright 2019 Thunderberry.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package nl.altindag.ssl.provider;
++
++import nl.altindag.ssl.SSLFactory;
++import org.junit.jupiter.api.Test;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.mockito.Mockito.mock;
++
++/**
++ * @author Hakan Altindag
++ */
++class SSLFactoryProviderShould {
++
++    @Test
++    void setSslFactory() {
++        try {
++            SSLFactory sslFactory = mock(SSLFactory.class);
++
++            SSLFactoryProvider.set(sslFactory);
++            assertThat(SSLFactoryProvider.get()).isPresent();
++            assertThat(SSLFactoryProvider.get()).contains(sslFactory);
++        } finally {
++            SSLFactoryProvider.set(null);
++        }
++    }
++
++}
+diff --git a/sslcontext-kickstart/src/test/java/nl/altindag/ssl/sslcontext/FenixSSLContextSpiShould.java b/sslcontext-kickstart/src/test/java/nl/altindag/ssl/sslcontext/FenixSSLContextSpiShould.java
+index 2da6803..a93ce44 100644
+--- a/sslcontext-kickstart/src/test/java/nl/altindag/ssl/sslcontext/FenixSSLContextSpiShould.java
++++ b/sslcontext-kickstart/src/test/java/nl/altindag/ssl/sslcontext/FenixSSLContextSpiShould.java
+@@ -16,9 +16,13 @@
+ package nl.altindag.ssl.sslcontext;
+ 
+ import nl.altindag.log.LogCaptor;
++import nl.altindag.ssl.exception.GenericSecurityException;
+ import org.junit.jupiter.api.Test;
+ 
++import java.util.List;
++
+ import static org.assertj.core.api.Assertions.assertThat;
++import static org.assertj.core.api.Assertions.assertThatThrownBy;
+ 
+ /**
+  * @author Hakan Altindag
+@@ -36,4 +40,17 @@ class FenixSSLContextSpiShould {
+                 .containsExactly("The provided parameters are being ignored as the SSLContext has already been initialized");
+     }
+ 
++    @Test
++    void throwExceptionAndDebugLogWhenDefaultConstructorIsCalledWhileSslFactoryProviderIsNotInitialized() {
++        LogCaptor logCaptor = LogCaptor.forClass(FenixSSLContextSpi.class);
++        String expectedMessage = "No valid SSLFactory has been provided. SSLFactory must be present, but was absent.";
++
++        assertThatThrownBy(FenixSSLContextSpi::new)
++                .isInstanceOf(GenericSecurityException.class)
++                .hasMessage(expectedMessage);
++
++        List<String> logs = logCaptor.getDebugLogs();
++        assertThat(logs).contains(expectedMessage);
++    }
++
+ }

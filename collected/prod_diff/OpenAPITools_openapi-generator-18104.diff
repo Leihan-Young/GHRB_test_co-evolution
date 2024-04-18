@@ -1,0 +1,107 @@
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
+index b14adec76fc..eb5886d5fb2 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
+@@ -1036,6 +1036,7 @@ public class OpenAPINormalizer {
+                 as.setMaxItems(schema.getMaxItems());
+                 as.setExtensions(schema.getExtensions());
+                 as.setXml(schema.getXml());
++                as.setUniqueItems(schema.getUniqueItems());
+                 if (schema.getItems() != null) {
+                     // `items` is also a json schema
+                     if (StringUtils.isNotEmpty(schema.getItems().get$ref())) {
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractJavaCodegen.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractJavaCodegen.java
+index b5ff1b07306..34534065da1 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractJavaCodegen.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/languages/AbstractJavaCodegen.java
+@@ -1103,13 +1103,13 @@ public abstract class AbstractJavaCodegen extends DefaultCodegen implements Code
+      */
+     public String toArrayDefaultValue(CodegenProperty cp, Schema schema) {
+         if (schema.getDefault() != null) { // has default value
+-            if (cp.isArray && !cp.getUniqueItems()) { // array
++            if (cp.isArray) {
+                 List<String> _values = new ArrayList<>();
+ 
+                 if (schema.getDefault() instanceof ArrayNode) { // array of default values
+                     ArrayNode _default = (ArrayNode) schema.getDefault();
+                     if (_default.isEmpty()) { // e.g. default: []
+-                        return "new ArrayList<>()";
++                        return getDefaultCollectionType(schema);
+                     }
+ 
+                     List<String> final_values = _values;
+@@ -1155,14 +1155,12 @@ public abstract class AbstractJavaCodegen extends DefaultCodegen implements Code
+                         defaultValue = StringUtils.join(_values, ", ");
+                     }
+                 } else {
+-                    return "new ArrayList<>()";
++                    return getDefaultCollectionType(schema);
+                 }
+ 
+-                return String.format(Locale.ROOT, "new ArrayList<>(Arrays.asList(%s))", defaultValue);
+-            } else if (cp.isArray && cp.getUniqueItems()) { // set
+-                // TODO
+-                return null;
+-            } else if (cp.isMap) { // map
++                return getDefaultCollectionType(schema, defaultValue);
++            }
++            if (cp.isMap) { // map
+                 // TODO
+                 return null;
+             } else {
+@@ -1181,18 +1179,10 @@ public abstract class AbstractJavaCodegen extends DefaultCodegen implements Code
+                 // nullable or containerDefaultToNull set to true
+                 if (cp.isNullable || containerDefaultToNull) {
+                     return null;
+-                } else {
+-                    if (ModelUtils.isSet(schema)) {
+-                        return String.format(Locale.ROOT, "new %s<>()",
+-                                instantiationTypes().getOrDefault("set", "LinkedHashSet"));
+-                    } else {
+-                        return String.format(Locale.ROOT, "new %s<>()",
+-                                instantiationTypes().getOrDefault("array", "ArrayList"));
+-                    }
+                 }
+-            } else { // has default value
+-                return toArrayDefaultValue(cp, schema);
++                return getDefaultCollectionType(schema);
+             }
++            return toArrayDefaultValue(cp, schema);
+         } else if (ModelUtils.isMapSchema(schema) && !(ModelUtils.isComposedSchema(schema))) {
+             if (schema.getProperties() != null && schema.getProperties().size() > 0) {
+                 // object is complex object with free-form additional properties
+@@ -1202,7 +1192,8 @@ public abstract class AbstractJavaCodegen extends DefaultCodegen implements Code
+                 return null;
+             }
+ 
+-            if (cp.isNullable || containerDefaultToNull) { // nullable or containerDefaultToNull set to true
++            // nullable or containerDefaultToNull set to true
++            if (cp.isNullable || containerDefaultToNull) {
+                 return null;
+             }
+ 
+@@ -1290,6 +1281,24 @@ public abstract class AbstractJavaCodegen extends DefaultCodegen implements Code
+         return super.toDefaultValue(schema);
+     }
+ 
++    private String getDefaultCollectionType(Schema schema) {
++        return getDefaultCollectionType(schema, null);
++    }
++
++    private String getDefaultCollectionType(Schema schema, String defaultValues) {
++        String arrayFormat = "new %s<>(Arrays.asList(%s))";
++        if(defaultValues == null || defaultValues.isEmpty()){
++            defaultValues = "";
++            arrayFormat = "new %s<>()";
++        }
++
++        if (ModelUtils.isSet(schema)) {
++            return String.format(Locale.ROOT, arrayFormat,
++                    instantiationTypes().getOrDefault("set", "LinkedHashSet"),defaultValues);
++        }
++        return String.format(Locale.ROOT, arrayFormat, instantiationTypes().getOrDefault("array", "ArrayList"),defaultValues);
++    }
++
+     @Override
+     public String toDefaultParameterValue(final Schema<?> schema) {
+         Object defaultValue = schema.get$ref() != null ? ModelUtils.getReferencedSchema(openAPI, schema).getDefault() : schema.getDefault();

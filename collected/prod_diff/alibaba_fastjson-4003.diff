@@ -1,0 +1,54 @@
+diff --git a/src/main/java/com/alibaba/fastjson/parser/deserializer/Jdk8DateCodec.java b/src/main/java/com/alibaba/fastjson/parser/deserializer/Jdk8DateCodec.java
+index b6644343a..c5a986019 100644
+--- a/src/main/java/com/alibaba/fastjson/parser/deserializer/Jdk8DateCodec.java
++++ b/src/main/java/com/alibaba/fastjson/parser/deserializer/Jdk8DateCodec.java
+@@ -537,8 +537,12 @@ public class Jdk8DateCodec extends ContextObjectDeserializer implements ObjectSe
+             }
+ 
+             if (fieldType == LocalDateTime.class) {
+-                final int mask = SerializerFeature.UseISO8601DateFormat.getMask();
+                 LocalDateTime dateTime = (LocalDateTime) object;
++                if (serializer.isEnabled(SerializerFeature.WriteDateUseTimestamp)) {
++                    out.writeLong(dateTime.atZone(JSON.defaultTimeZone.toZoneId()).toInstant().toEpochMilli());
++                    return;
++                }
++                final int mask = SerializerFeature.UseISO8601DateFormat.getMask();
+                 String format = serializer.getDateFormatPattern();
+ 
+                 if (format == null) {
+diff --git a/src/main/java/com/alibaba/fastjson/serializer/JodaCodec.java b/src/main/java/com/alibaba/fastjson/serializer/JodaCodec.java
+index 4413b78f1..95a3a5b61 100644
+--- a/src/main/java/com/alibaba/fastjson/serializer/JodaCodec.java
++++ b/src/main/java/com/alibaba/fastjson/serializer/JodaCodec.java
+@@ -453,8 +453,12 @@ public class JodaCodec implements ObjectSerializer, ContextObjectSerializer, Obj
+             }
+ 
+             if (fieldType == LocalDateTime.class) {
+-                final int mask = SerializerFeature.UseISO8601DateFormat.getMask();
+                 LocalDateTime dateTime = (LocalDateTime) object;
++                if (serializer.isEnabled(SerializerFeature.WriteDateUseTimestamp)) {
++                    out.writeLong(dateTime.toDate(JSON.defaultTimeZone).getTime());
++                    return;
++                }
++                final int mask = SerializerFeature.UseISO8601DateFormat.getMask();
+                 String format = serializer.getDateFormatPattern();
+ 
+                 if (format == null) {
+diff --git a/src/main/java/com/alibaba/fastjson/serializer/SerializerFeature.java b/src/main/java/com/alibaba/fastjson/serializer/SerializerFeature.java
+index 21a0ee949..419b33415 100644
+--- a/src/main/java/com/alibaba/fastjson/serializer/SerializerFeature.java
++++ b/src/main/java/com/alibaba/fastjson/serializer/SerializerFeature.java
+@@ -152,7 +152,12 @@ public enum SerializerFeature {
+     /**
+      * @since 1.2.27
+      */
+-    MapSortField;
++    MapSortField,
++
++    /**
++     * @since 1.2.30
++     */
++    WriteDateUseTimestamp;
+ 
+     SerializerFeature(){
+         mask = (1 << ordinal());

@@ -1,0 +1,286 @@
+diff --git a/src/main/java/com/fasterxml/jackson/databind/JavaType.java b/src/main/java/com/fasterxml/jackson/databind/JavaType.java
+index 1323b52ac..b708f24e1 100644
+--- a/src/main/java/com/fasterxml/jackson/databind/JavaType.java
++++ b/src/main/java/com/fasterxml/jackson/databind/JavaType.java
+@@ -359,6 +359,18 @@ public abstract class JavaType
+         return ClassUtil.isRecordType(_class);
+     }
+ 
++    /**
++     * Method that returns true if this instance is of type
++     * {@code IterationType}.
++     *
++     * @since 2.16
++     *
++     * @return True if this type is considered "iteration type"
++     */
++    public boolean isIterationType() {
++        return false;
++    }
++
+     @Override
+     public final boolean isInterface() { return _class.isInterface(); }
+ 
+diff --git a/src/main/java/com/fasterxml/jackson/databind/type/IterationType.java b/src/main/java/com/fasterxml/jackson/databind/type/IterationType.java
+index 1892a3953..a2e582351 100644
+--- a/src/main/java/com/fasterxml/jackson/databind/type/IterationType.java
++++ b/src/main/java/com/fasterxml/jackson/databind/type/IterationType.java
+@@ -1,29 +1,181 @@
+ package com.fasterxml.jackson.databind.type;
+ 
++import java.util.Objects;
++
+ import com.fasterxml.jackson.databind.JavaType;
+ 
+ /**
+  * Specialized {@link SimpleType} for types that are allow iteration
+  * over Collection(-like) types: this includes types like
+  * {@link java.util.Iterator}.
+- * Referenced type is accessible using {@link #getContentType()}.
++ * Iterated (content) type is accessible using {@link #getContentType()}.
+  *
+  * @since 2.16
+  */
+-public abstract class IterationType extends SimpleType
++public class IterationType extends SimpleType
+ {
+     private static final long serialVersionUID = 1L;
+ 
+     protected final JavaType _iteratedType;
+ 
++    protected IterationType(Class<?> cls, TypeBindings bindings,
++            JavaType superClass, JavaType[] superInts, JavaType iteratedType,
++            Object valueHandler, Object typeHandler, boolean asStatic)
++    {
++        super(cls, bindings, superClass, superInts, Objects.hashCode(iteratedType),
++                valueHandler, typeHandler, asStatic);
++        _iteratedType = iteratedType;
++    }
++
+     /**
+      * Constructor used when upgrading into this type (via {@link #upgradeFrom},
+      * the usual way for {@link IterationType}s to come into existence.
+-     * Sets up what is considered the "base" reference type
++     * Sets up what is considered the "base" iteration type
+      */
+     protected IterationType(TypeBase base, JavaType iteratedType)
+     {
+         super(base);
+         _iteratedType = iteratedType;
+     }
++
++    /**
++     * Factory method that can be used to "upgrade" a basic type into iteration
++     * type; usually done via {@link TypeModifier}
++     *
++     * @param baseType Resolved non-iteration type (usually {@link SimpleType}) that is being upgraded
++     * @param iteratedType Iterated type; usually the first and only type parameter, but not necessarily
++     */
++    public static IterationType upgradeFrom(JavaType baseType, JavaType iteratedType) {
++        Objects.requireNonNull(iteratedType);
++        // 19-Oct-2015, tatu: Not sure if and how other types could be used as base;
++        //    will cross that bridge if and when need be
++        if (baseType instanceof TypeBase) {
++            return new IterationType((TypeBase) baseType, iteratedType);
++        }
++        throw new IllegalArgumentException("Cannot upgrade from an instance of "+baseType.getClass());
++    }
++
++    public static IterationType construct(Class<?> cls, TypeBindings bindings,
++            JavaType superClass, JavaType[] superInts, JavaType iteratedType)
++    {
++        return new IterationType(cls, bindings, superClass, superInts,
++                iteratedType, null, null, false);
++    }
++
++    @Override
++    public JavaType withContentType(JavaType contentType) {
++        if (_iteratedType == contentType) {
++            return this;
++        }
++        return new IterationType(_class, _bindings, _superClass, _superInterfaces,
++                contentType, _valueHandler, _typeHandler, _asStatic);
++    }
++
++    @Override
++    public IterationType withTypeHandler(Object h)
++    {
++        if (h == _typeHandler) {
++            return this;
++        }
++        return new IterationType(_class, _bindings, _superClass, _superInterfaces,
++                _iteratedType, _valueHandler, h, _asStatic);
++    }
++
++    @Override
++    public IterationType withContentTypeHandler(Object h)
++    {
++        if (h == _iteratedType.<Object>getTypeHandler()) {
++            return this;
++        }
++        return new IterationType(_class, _bindings, _superClass, _superInterfaces,
++                _iteratedType.withTypeHandler(h),
++                _valueHandler, _typeHandler, _asStatic);
++    }
++
++    @Override
++    public IterationType withValueHandler(Object h) {
++        if (h == _valueHandler) {
++            return this;
++        }
++        return new IterationType(_class, _bindings,
++                _superClass, _superInterfaces, _iteratedType,
++                h, _typeHandler,_asStatic);
++    }
++
++    @Override
++    public IterationType withContentValueHandler(Object h) {
++        if (h == _iteratedType.<Object>getValueHandler()) {
++            return this;
++        }
++        return new IterationType(_class, _bindings,
++                _superClass, _superInterfaces, _iteratedType.withValueHandler(h),
++                _valueHandler, _typeHandler, _asStatic);
++    }
++
++    @Override
++    public IterationType withStaticTyping() {
++        if (_asStatic) {
++            return this;
++        }
++        return new IterationType(_class, _bindings, _superClass, _superInterfaces,
++                _iteratedType.withStaticTyping(),
++                 _valueHandler, _typeHandler, true);
++    }
++
++    @Override
++    public JavaType refine(Class<?> rawType, TypeBindings bindings,
++            JavaType superClass, JavaType[] superInterfaces) {
++        return new IterationType(rawType, _bindings,
++                superClass, superInterfaces, _iteratedType,
++                _valueHandler, _typeHandler, _asStatic);
++    }
++
++    @Override
++    protected String buildCanonicalName()
++    {
++        StringBuilder sb = new StringBuilder();
++        sb.append(_class.getName());
++        if ((_iteratedType != null) && _hasNTypeParameters(1)) {
++            sb.append('<');
++            sb.append(_iteratedType.toCanonical());
++            sb.append('>');
++        }
++        return sb.toString();
++    }
++
++    /*
++    /**********************************************************
++    /* Public API overrides
++    /**********************************************************
++     */
++
++    @Override
++    public JavaType getContentType() {
++        return _iteratedType;
++    }
++
++    @Override
++    public boolean hasContentType() {
++        return true;
++    }
++
++    @Override
++    public boolean isIterationType() {
++        return true;
++    }
++
++    @Override
++    public StringBuilder getErasedSignature(StringBuilder sb) {
++        return _classSignature(_class, sb, true);
++    }
++
++    @Override
++    public StringBuilder getGenericSignature(StringBuilder sb)
++    {
++        _classSignature(_class, sb, false);
++        sb.append('<');
++        sb = _iteratedType.getGenericSignature(sb);
++        sb.append(">;");
++        return sb;
++    }
+ }
+diff --git a/src/main/java/com/fasterxml/jackson/databind/type/TypeFactory.java b/src/main/java/com/fasterxml/jackson/databind/type/TypeFactory.java
+index 9a4971e7b..aa273c593 100644
+--- a/src/main/java/com/fasterxml/jackson/databind/type/TypeFactory.java
++++ b/src/main/java/com/fasterxml/jackson/databind/type/TypeFactory.java
+@@ -2,6 +2,11 @@ package com.fasterxml.jackson.databind.type;
+ 
+ import java.util.*;
+ import java.util.concurrent.atomic.AtomicReference;
++import java.util.stream.BaseStream;
++import java.util.stream.DoubleStream;
++import java.util.stream.IntStream;
++import java.util.stream.LongStream;
++import java.util.stream.Stream;
+ import java.lang.reflect.*;
+ 
+ import com.fasterxml.jackson.core.type.TypeReference;
+@@ -1318,6 +1323,30 @@ ClassUtil.nameOf(rawClass), pc, (pc == 1) ? "" : "s", bindings));
+         return ReferenceType.construct(rawClass, bindings, superClass, superInterfaces, ct);
+     }
+ 
++    private JavaType _iterationType(Class<?> rawClass, TypeBindings bindings,
++            JavaType superClass, JavaType[] superInterfaces)
++    {
++        List<JavaType> typeParams = bindings.getTypeParameters();
++        // ok to have no types ("raw")
++        JavaType ct;
++        if (typeParams.isEmpty()) {
++            ct = _unknownType();
++        } else if (typeParams.size() == 1) {
++            ct = typeParams.get(0);
++        } else {
++            throw new IllegalArgumentException("Strange Iteration type "+rawClass.getName()+": cannot determine type parameters");
++        }
++        return _iterationType(rawClass, bindings, superClass, superInterfaces, ct);
++    }
++
++    private JavaType _iterationType(Class<?> rawClass, TypeBindings bindings,
++            JavaType superClass, JavaType[] superInterfaces,
++            JavaType iteratedType)
++    {
++        return IterationType.construct(rawClass, bindings, superClass, superInterfaces,
++                iteratedType);
++    }
++
+     /**
+      * Factory method to call when no special {@link JavaType} is needed,
+      * no generic parameters are passed. Default implementation may check
+@@ -1582,9 +1611,25 @@ ClassUtil.nameOf(rawClass), pc, (pc == 1) ? "" : "s", bindings));
+             return _referenceType(rawType, bindings, superClass, superInterfaces);
+         }
+         // 01-Nov-2015, tatu: As of 2.7, couple of potential `CollectionLikeType`s (like
+-        //    `Iterable`, `Iterator`), and `MapLikeType`s (`Map.Entry`) are not automatically
++        //    `Iterable`), and `MapLikeType`s (`Map.Entry`) are not automatically
+         //    detected, related to difficulties in propagating type upwards (Iterable, for
+         //    example, is a weak, tag-on type). They may be detectable in future.
++        // 23-May-2023, tatu: As of 2.16 we do, however, recognized certain `IterationType`s.
++        if (rawType == Iterator.class || rawType == Stream.class) {
++            return _iterationType(rawType, bindings, superClass, superInterfaces);
++        }
++        if (BaseStream.class.isAssignableFrom(rawType)) {
++            if (DoubleStream.class.isAssignableFrom(rawType)) {
++                return _iterationType(rawType, bindings, superClass, superInterfaces,
++                        constructType(Double.class));
++            } else if (IntStream.class.isAssignableFrom(rawType)) {
++                return _iterationType(rawType, bindings, superClass, superInterfaces,
++                        constructType(Integer.class));
++            } else if (LongStream.class.isAssignableFrom(rawType)) {
++                return _iterationType(rawType, bindings, superClass, superInterfaces,
++                        constructType(Long.class));
++            }
++        }
+         return null;
+     }
+ 

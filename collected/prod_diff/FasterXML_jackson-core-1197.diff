@@ -1,0 +1,186 @@
+diff --git a/src/main/java/com/fasterxml/jackson/core/JsonGenerator.java b/src/main/java/com/fasterxml/jackson/core/JsonGenerator.java
+index 4853960a..d4e18d64 100644
+--- a/src/main/java/com/fasterxml/jackson/core/JsonGenerator.java
++++ b/src/main/java/com/fasterxml/jackson/core/JsonGenerator.java
+@@ -266,7 +266,16 @@ public abstract class JsonGenerator
+          * @deprecated Use {@link com.fasterxml.jackson.core.json.JsonWriteFeature#WRITE_HEX_UPPER_CASE} instead
+          */
+         @Deprecated
+-        WRITE_HEX_UPPER_CASE(true);
++        WRITE_HEX_UPPER_CASE(true),
++
++        /**
++         * Feature that specifies whether {@link JsonGenerator} should escape forward slashes.
++         * <p>
++         * Feature is disabled by default for Jackson 2.x version, and enabled by default in Jackson 3.0.
++         *
++         * @since 2.17
++         */
++        ESCAPE_FORWARD_SLASHES(false);
+ 
+         private final boolean _defaultState;
+         private final int _mask;
+diff --git a/src/main/java/com/fasterxml/jackson/core/io/CharTypes.java b/src/main/java/com/fasterxml/jackson/core/io/CharTypes.java
+index abd2d2ea..2b2305e1 100644
+--- a/src/main/java/com/fasterxml/jackson/core/io/CharTypes.java
++++ b/src/main/java/com/fasterxml/jackson/core/io/CharTypes.java
+@@ -176,6 +176,16 @@ public final class CharTypes
+         sOutputEscapes128 = table;
+     }
+ 
++    /**
++     * Lookup table same as {@link #sOutputEscapes128} except that
++     * forward slash ('/') is also escaped
++     */
++    protected final static int[] sOutputEscapes128WithSlash;
++    static {
++        sOutputEscapes128WithSlash = Arrays.copyOf(sOutputEscapes128, sOutputEscapes128.length);
++        sOutputEscapes128WithSlash['/'] = '/';
++    }
++
+     /**
+      * Lookup table for the first 256 Unicode characters (ASCII / UTF-8)
+      * range. For actual hex digits, contains corresponding value;
+@@ -233,6 +243,28 @@ public final class CharTypes
+         return AltEscapes.instance.escapesFor(quoteChar);
+     }
+ 
++    /**
++     * Alternative to {@link #get7BitOutputEscapes()} when either a non-standard
++     * quote character is used, or forward slash is to be escaped.
++     *
++     * @param quoteChar Character used for quoting textual values and property names;
++     *    usually double-quote but sometimes changed to single-quote (apostrophe)
++     * @param escapeSlash
++     *
++     * @return 128-entry {@code int[]} that contains escape definitions
++     *
++     * @since 2.17
++     */
++    public static int[] get7BitOutputEscapes(int quoteChar, boolean escapeSlash) {
++        if (quoteChar == '"') {
++            if (escapeSlash) {
++                return sOutputEscapes128WithSlash;
++            }
++            return sOutputEscapes128;
++        }
++        return AltEscapes.instance.escapesFor(quoteChar, escapeSlash);
++    }
++
+     public static int charToHex(int ch)
+     {
+         // 08-Nov-2019, tatu: As per [core#540] and [core#578], changed to
+@@ -246,7 +278,6 @@ public final class CharTypes
+         return HC[ch];
+     }
+ 
+-
+     /**
+      * Helper method for appending JSON-escaped version of contents
+      * into specific {@link StringBuilder}, using default JSON specification
+@@ -328,6 +359,9 @@ public final class CharTypes
+ 
+         private int[][] _altEscapes = new int[128][];
+ 
++        // @since 2.17
++        private int[][] _altEscapesWithSlash = new int[128][];
++
+         public int[] escapesFor(int quoteChar) {
+             int[] esc = _altEscapes[quoteChar];
+             if (esc == null) {
+@@ -340,6 +374,20 @@ public final class CharTypes
+             }
+             return esc;
+         }
++
++        // @since 2.17
++        public int[] escapesFor(int quoteChar, boolean escapeSlash)
++        {
++            if (!escapeSlash) {
++                return escapesFor(quoteChar);
++            }
++            int[] esc = _altEscapesWithSlash[quoteChar];
++            if (esc == null) {
++                esc = escapesFor(quoteChar);
++                esc['/'] = '/';
++                _altEscapesWithSlash[quoteChar] = esc;
++            }
++            return esc;
++        }
+     }
+ }
+-
+diff --git a/src/main/java/com/fasterxml/jackson/core/json/JsonWriteFeature.java b/src/main/java/com/fasterxml/jackson/core/json/JsonWriteFeature.java
+index 64f22b03..f310ad95 100644
+--- a/src/main/java/com/fasterxml/jackson/core/json/JsonWriteFeature.java
++++ b/src/main/java/com/fasterxml/jackson/core/json/JsonWriteFeature.java
+@@ -108,6 +108,15 @@ public enum JsonWriteFeature
+      */
+ //    ESCAPE_UTF8_SURROGATES(false, JsonGenerator.Feature.ESCAPE_UTF8_SURROGATES),
+ 
++    /**
++     * Feature that specifies whether {@link JsonGenerator} should escape forward slashes.
++     * <p>
++     * Feature is disabled by default for Jackson 2.x version, and enabled by default in Jackson 3.0.
++     *
++     * @since 2.17
++     */
++    ESCAPE_FORWARD_SLASHES(false, JsonGenerator.Feature.ESCAPE_FORWARD_SLASHES),
++
+     ;
+ 
+     final private boolean _defaultState;
+diff --git a/src/main/java/com/fasterxml/jackson/core/json/UTF8JsonGenerator.java b/src/main/java/com/fasterxml/jackson/core/json/UTF8JsonGenerator.java
+index 553fb7be..201f163f 100644
+--- a/src/main/java/com/fasterxml/jackson/core/json/UTF8JsonGenerator.java
++++ b/src/main/java/com/fasterxml/jackson/core/json/UTF8JsonGenerator.java
+@@ -122,10 +122,11 @@ public class UTF8JsonGenerator
+         super(ctxt, features, codec);
+         _outputStream = out;
+         _quoteChar = (byte) quoteChar;
+-        if (quoteChar != '"') { // since 2.10
+-            _outputEscapes = CharTypes.get7BitOutputEscapes(quoteChar);
+-        }
+ 
++        boolean escapeSlash = isEnabled(JsonWriteFeature.ESCAPE_FORWARD_SLASHES.mappedFeature());
++        if (quoteChar != '"' || escapeSlash) {
++            _outputEscapes = CharTypes.get7BitOutputEscapes(quoteChar, escapeSlash);
++        }
+         _bufferRecyclable = true;
+         _outputBuffer = ctxt.allocWriteEncodingBuffer();
+         _outputEnd = _outputBuffer.length;
+@@ -153,8 +154,9 @@ public class UTF8JsonGenerator
+         super(ctxt, features, codec);
+         _outputStream = out;
+         _quoteChar = (byte) quoteChar;
+-        if (quoteChar != '"') { // since 2.10
+-            _outputEscapes = CharTypes.get7BitOutputEscapes(quoteChar);
++        boolean escapeSlash = isEnabled(JsonWriteFeature.ESCAPE_FORWARD_SLASHES.mappedFeature());
++        if (quoteChar != '"' || escapeSlash) {
++            _outputEscapes = CharTypes.get7BitOutputEscapes(quoteChar, escapeSlash);
+         }
+ 
+         _bufferRecyclable = bufferRecyclable;
+diff --git a/src/main/java/com/fasterxml/jackson/core/json/WriterBasedJsonGenerator.java b/src/main/java/com/fasterxml/jackson/core/json/WriterBasedJsonGenerator.java
+index b1628c92..456c64a9 100644
+--- a/src/main/java/com/fasterxml/jackson/core/json/WriterBasedJsonGenerator.java
++++ b/src/main/java/com/fasterxml/jackson/core/json/WriterBasedJsonGenerator.java
+@@ -105,15 +105,15 @@ public class WriterBasedJsonGenerator
+     public WriterBasedJsonGenerator(IOContext ctxt, int features,
+             ObjectCodec codec, Writer w,
+             char quoteChar)
+-
+     {
+         super(ctxt, features, codec);
+         _writer = w;
+         _outputBuffer = ctxt.allocConcatBuffer();
+         _outputEnd = _outputBuffer.length;
+         _quoteChar = quoteChar;
+-        if (quoteChar != '"') { // since 2.10
+-            _outputEscapes = CharTypes.get7BitOutputEscapes(quoteChar);
++        boolean escapeSlash = isEnabled(JsonWriteFeature.ESCAPE_FORWARD_SLASHES.mappedFeature());
++        if (quoteChar != '"' || escapeSlash) {
++            _outputEscapes = CharTypes.get7BitOutputEscapes(quoteChar, escapeSlash);
+         }
+     }
+ 

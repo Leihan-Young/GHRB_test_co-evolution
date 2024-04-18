@@ -1,0 +1,7 @@
+{
+  "issue_id": 8650,
+  "issue_url": "https://github.com/alibaba/nacos/issues/8650",
+  "title": "[2.1.x] Make cluster/report both receive and send metadata",
+  "description": "<h2 dir=\"auto\">Issue Description</h2>\n<p dir=\"auto\">Nacos deployed on k8s env, using headless service hosts in <code class=\"notranslate\">cluster.conf</code>.<br>\nWhen pod-2 readiness not ready, pod-0 and pod-1 cannot report to pod-2 successfully due to unknown host exception.<br>\nHowever, pod-2 can do report successfully.</p>",
+  "description_text": "Issue Description\nNacos deployed on k8s env, using headless service hosts in cluster.conf.\nWhen pod-2 readiness not ready, pod-0 and pod-1 cannot report to pod-2 successfully due to unknown host exception.\nHowever, pod-2 can do report successfully."
+}

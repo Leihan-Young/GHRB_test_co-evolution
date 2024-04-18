@@ -1,0 +1,123 @@
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/EndTransactionProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/EndTransactionProcessor.java
+index ee7b5d527..d50dae85f 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/EndTransactionProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/EndTransactionProcessor.java
+@@ -17,8 +17,10 @@
+ package org.apache.rocketmq.broker.processor;
+ 
+ import io.netty.channel.ChannelHandlerContext;
++import org.apache.commons.lang3.StringUtils;
+ import org.apache.rocketmq.broker.BrokerController;
+ import org.apache.rocketmq.broker.transaction.OperationResult;
++import org.apache.rocketmq.broker.transaction.queue.TransactionalMessageUtil;
+ import org.apache.rocketmq.common.TopicFilterType;
+ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.common.message.MessageAccessor;
+@@ -125,6 +127,12 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
+         if (MessageSysFlag.TRANSACTION_COMMIT_TYPE == requestHeader.getCommitOrRollback()) {
+             result = this.brokerController.getTransactionalMessageService().commitMessage(requestHeader);
+             if (result.getResponseCode() == ResponseCode.SUCCESS) {
++                if (rejectCommitOrRollback(requestHeader, result.getPrepareMessage())) {
++                    response.setCode(ResponseCode.ILLEGAL_OPERATION);
++                    LOGGER.warn("Message commit fail [producer end]. currentTimeMillis - bornTime > checkImmunityTime, msgId={},commitLogOffset={}, wait check",
++                            requestHeader.getMsgId(), requestHeader.getCommitLogOffset());
++                    return response;
++                }
+                 RemotingCommand res = checkPrepareMessage(result.getPrepareMessage(), requestHeader);
+                 if (res.getCode() == ResponseCode.SUCCESS) {
+                     MessageExtBrokerInner msgInner = endMessageTransaction(result.getPrepareMessage());
+@@ -144,6 +152,12 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
+         } else if (MessageSysFlag.TRANSACTION_ROLLBACK_TYPE == requestHeader.getCommitOrRollback()) {
+             result = this.brokerController.getTransactionalMessageService().rollbackMessage(requestHeader);
+             if (result.getResponseCode() == ResponseCode.SUCCESS) {
++                if (rejectCommitOrRollback(requestHeader, result.getPrepareMessage())) {
++                    response.setCode(ResponseCode.ILLEGAL_OPERATION);
++                    LOGGER.warn("Message rollback fail [producer end]. currentTimeMillis - bornTime > checkImmunityTime, msgId={},commitLogOffset={}, wait check",
++                            requestHeader.getMsgId(), requestHeader.getCommitLogOffset());
++                    return response;
++                }
+                 RemotingCommand res = checkPrepareMessage(result.getPrepareMessage(), requestHeader);
+                 if (res.getCode() == ResponseCode.SUCCESS) {
+                     this.brokerController.getTransactionalMessageService().deletePrepareMessage(result.getPrepareMessage());
+@@ -156,6 +170,30 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
+         return response;
+     }
+ 
++    /**
++     * If you specify a custom first check time CheckImmunityTimeInSeconds,
++     * And the commit/rollback request whose validity period exceeds CheckImmunityTimeInSeconds and is not checked back will be processed and failed
++     * returns ILLEGAL_OPERATION 604 error
++     * @param requestHeader
++     * @param messageExt
++     * @return
++     */
++    public boolean rejectCommitOrRollback(EndTransactionRequestHeader requestHeader, MessageExt messageExt) {
++        if (requestHeader.getFromTransactionCheck()) {
++            return false;
++        }
++        long transactionTimeout = brokerController.getBrokerConfig().getTransactionTimeOut();
++
++        String checkImmunityTimeStr = messageExt.getUserProperty(MessageConst.PROPERTY_CHECK_IMMUNITY_TIME_IN_SECONDS);
++        if (StringUtils.isNotEmpty(checkImmunityTimeStr)) {
++            long valueOfCurrentMinusBorn = System.currentTimeMillis() - messageExt.getBornTimestamp();
++            long checkImmunityTime = TransactionalMessageUtil.getImmunityTime(checkImmunityTimeStr, transactionTimeout);
++            //Non-check requests that exceed the specified custom first check time fail to return
++            return valueOfCurrentMinusBorn > checkImmunityTime;
++        }
++        return false;
++    }
++
+     @Override
+     public boolean rejectRequest() {
+         return false;
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/transaction/queue/TransactionalMessageUtil.java b/broker/src/main/java/org/apache/rocketmq/broker/transaction/queue/TransactionalMessageUtil.java
+index d5c0d9684..555ae4d29 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/transaction/queue/TransactionalMessageUtil.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/transaction/queue/TransactionalMessageUtil.java
+@@ -74,4 +74,20 @@ public class TransactionalMessageUtil {
+ 
+         return msgInner;
+     }
++
++    public static long getImmunityTime(String checkImmunityTimeStr, long transactionTimeout) {
++        long checkImmunityTime = 0;
++
++        try {
++            checkImmunityTime = Long.parseLong(checkImmunityTimeStr) * 1000;
++        } catch (Throwable ignored) {
++        }
++
++        //If a custom first check time is set, the minimum check time;
++        //The default check protection period is transactionTimeout
++        if (checkImmunityTime < transactionTimeout) {
++            checkImmunityTime = transactionTimeout;
++        }
++        return checkImmunityTime;
++    }
+ }
+diff --git a/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java b/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java
+index 13e57c8a0..b3edb34b3 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java
++++ b/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java
+@@ -263,7 +263,7 @@ public class BrokerConfig extends BrokerIdentity {
+      * Transaction message check interval.
+      */
+     @ImportantField
+-    private long transactionCheckInterval = 60 * 1000;
++    private long transactionCheckInterval = 30 * 1000;
+ 
+     /**
+      * transaction batch op message
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/ResponseCode.java b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/ResponseCode.java
+index 6554fe509..e81dadf2e 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/ResponseCode.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/protocol/ResponseCode.java
+@@ -92,6 +92,8 @@ public class ResponseCode extends RemotingSysResponseCode {
+ 
+     public static final int NOT_LEADER_FOR_QUEUE = 501;
+ 
++    public static final int ILLEGAL_OPERATION = 604;
++
+     public static final int RPC_UNKNOWN = -1000;
+     public static final int RPC_ADDR_IS_NULL = -1002;
+     public static final int RPC_SEND_TO_CHANNEL_FAILED = -1004;

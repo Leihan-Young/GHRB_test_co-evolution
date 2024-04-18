@@ -1,0 +1,7 @@
+{
+  "issue_id": 13030,
+  "issue_url": "https://github.com/apache/dubbo/issues/13030",
+  "title": "Support ValidationFilter to display parameter names when validation fails",
+  "description": "\n<ul class=\"contains-task-list\">\n<li class=\"task-list-item\"><input type=\"checkbox\" id=\"\" disabled=\"\" class=\"task-list-item-checkbox\" checked=\"\"> I have searched the <a href=\"https://github.com/apache/dubbo/issues\">issues</a> of this repository and believe that this is not a duplicate.</li>\n<li class=\"task-list-item\"><input type=\"checkbox\" id=\"\" disabled=\"\" class=\"task-list-item-checkbox\" checked=\"\"> I have searched the <a href=\"https://github.com/apache/dubbo/releases\">release notes</a> of this repository and believe that this is not a duplicate.</li>\n</ul>\n<h2 dir=\"auto\">Describe the feature</h2>\n",
+  "description_text": "\n\n I have searched the issues of this repository and believe that this is not a duplicate.\n I have searched the release notes of this repository and believe that this is not a duplicate.\n\nDescribe the feature\n"
+}

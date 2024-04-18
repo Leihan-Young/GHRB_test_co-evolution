@@ -1,0 +1,259 @@
+{
+  "google_gson-2337": {
+    "bug_id": "google_gson-2337",
+    "PR_number": 2337,
+    "PR_createdAt": "2023-03-06T15:40:50Z",
+    "merge_commit": "85ebaf7c3553a5d5c058fd6067824a7c5258d07f",
+    "buggy_commits": [
+      {
+        "oid": "0adcdc80d5ef3a40086a8abd6e2f55164a7c2597",
+        "message": "Fail Maven build on warnings (#2335)\n\n* Fail Maven build on warnings\r\n\r\n* Fix configuration parameter name\r\n\r\nFor the Javadoc plugin it is \"warnings\" (plural) instead of \"warning\""
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/google/gson/issues/2334",
+      "createdAt": "2023-03-04T11:49:51Z",
+      "content": "bug_report_all/google_gson-2337.json"
+    },
+    "changed_tests": [
+      "gson/src/test/java/com/google/gson/stream/JsonReaderTest.java"
+    ],
+    "PR_url": "https://github.com/google/gson/pull/2337",
+    "merge_commit_url": "https://github.com/google/gson/commit/85ebaf7c3553a5d5c058fd6067824a7c5258d07f",
+    "buggy_commit": "0adcdc80d5ef3a40086a8abd6e2f55164a7c2597",
+    "execution_result": {
+      "test_src": [
+        ".com.google.gson.stream.JsonReaderTest#testUnescapingInvalidCharacters"
+      ],
+      "test_tgt": [
+        ".com.google.gson.stream.JsonReaderTest#testUnescapingInvalidCharacters"
+      ]
+    }
+  },
+  "google_gson-2410": {
+    "bug_id": "google_gson-2410",
+    "PR_number": 2410,
+    "PR_createdAt": "2023-06-05T20:16:48Z",
+    "merge_commit": "a80bc24e04d0747314bffcc5779a1412c86f6468",
+    "buggy_commits": [
+      {
+        "oid": "e7f85dff8a17928fd3f0451e59f76ee72764430c",
+        "message": "Bump maven-surefire-plugin from 3.1.0 to 3.1.2 (#2411)\n\nBumps [maven-surefire-plugin](https://github.com/apache/maven-surefire) from 3.1.0 to 3.1.2.\r\n- [Release notes](https://github.com/apache/maven-surefire/releases)\r\n- [Commits](https://github.com/apache/maven-surefire/compare/surefire-3.1.0...surefire-3.1.2)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: org.apache.maven.plugins:maven-surefire-plugin\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/google/gson/issues/2405",
+      "createdAt": "2023-06-01T21:39:33Z",
+      "content": "bug_report_all/google_gson-2410.json"
+    },
+    "changed_tests": [
+      "gson/src/test/java/com/google/gson/functional/DefaultTypeAdaptersTest.java",
+      "gson/src/test/java/com/google/gson/functional/NamingPolicyTest.java",
+      "gson/src/test/java/com/google/gson/functional/ObjectTest.java",
+      "gson/src/test/java/com/google/gson/functional/ReflectionAccessTest.java",
+      "gson/src/test/java/com/google/gson/functional/StreamingTypeAdaptersTest.java",
+      "gson/src/test/java/com/google/gson/reflect/TypeTokenTest.java",
+      "gson/src/test/java/com/google/gson/stream/JsonReaderTest.java",
+      "shrinker-test/src/test/java/com/google/gson/it/ShrinkingIT.java"
+    ],
+    "PR_url": "https://github.com/google/gson/pull/2410",
+    "merge_commit_url": "https://github.com/google/gson/commit/a80bc24e04d0747314bffcc5779a1412c86f6468",
+    "buggy_commit": "e7f85dff8a17928fd3f0451e59f76ee72764430c",
+    "execution_result": {
+      "test_src": [
+        ".com.google.gson.ToNumberPolicyTest#testDouble",
+        ".com.google.gson.ToNumberPolicyTest#testLongOrDouble",
+        ".com.google.gson.ToNumberPolicyTest#testNullsAreNeverExpected",
+        ".com.google.gson.functional.DefaultTypeAdaptersTest#testClassSerialization",
+        ".com.google.gson.functional.DefaultTypeAdaptersTest#testClassDeserialization",
+        ".com.google.gson.functional.NamingPolicyTest#testGsonDuplicateNameUsingSerializedNameFieldNamingPolicySerialization",
+        ".com.google.gson.functional.NamingPolicyTest#testGsonDuplicateNameDueToBadNamingPolicy",
+        ".com.google.gson.functional.ObjectTest#testClassWithDuplicateFields",
+        ".com.google.gson.functional.StreamingTypeAdaptersTest#testNullSafe",
+        ".com.google.gson.reflect.TypeTokenTest#testTypeTokenRaw"
+      ],
+      "test_tgt": [
+        ".com.google.gson.ToNumberPolicyTest#testDouble",
+        ".com.google.gson.ToNumberPolicyTest#testLongOrDouble",
+        ".com.google.gson.ToNumberPolicyTest#testNullsAreNeverExpected",
+        ".com.google.gson.functional.DefaultTypeAdaptersTest#testClassSerialization",
+        ".com.google.gson.functional.DefaultTypeAdaptersTest#testClassDeserialization",
+        ".com.google.gson.functional.NamingPolicyTest#testGsonDuplicateNameUsingSerializedNameFieldNamingPolicySerialization",
+        ".com.google.gson.functional.NamingPolicyTest#testGsonDuplicateNameDueToBadNamingPolicy",
+        ".com.google.gson.functional.ObjectTest#testClassWithDuplicateFields",
+        ".com.google.gson.functional.StreamingTypeAdaptersTest#testNullSafe",
+        ".com.google.gson.reflect.TypeTokenTest#testTypeTokenRaw"
+      ]
+    }
+  },
+  "google_gson-2440": {
+    "bug_id": "google_gson-2440",
+    "PR_number": 2440,
+    "PR_createdAt": "2023-07-20T22:15:08Z",
+    "merge_commit": "e7cf5c458374e5fc69dbdce6de5cb2c881521135",
+    "buggy_commits": [
+      {
+        "oid": "45acc4db428217a890a27ef00165a78232fc55d3",
+        "message": "Suppress serialization warnings. (#2502)\n\nRecent versions of javac emit a warning if a serializable class has\r\na non-transient instance field with a declared type that does not\r\ninherit `Serializable`. In this context, we know that the actual\r\nvalues will always be serializable."
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/google/gson/issues/2438",
+      "createdAt": "2023-07-20T11:09:25Z",
+      "content": "bug_report_all/google_gson-2440.json"
+    },
+    "changed_tests": [
+      "gson/src/test/java/com/google/gson/functional/ObjectTest.java"
+    ],
+    "PR_url": "https://github.com/google/gson/pull/2440",
+    "merge_commit_url": "https://github.com/google/gson/commit/e7cf5c458374e5fc69dbdce6de5cb2c881521135",
+    "buggy_commit": "45acc4db428217a890a27ef00165a78232fc55d3",
+    "execution_result": {
+      "test_src": [
+        ".com.google.gson.functional.ObjectTest#testClassWithDuplicateFields"
+      ],
+      "test_tgt": [
+        ".com.google.gson.functional.ObjectTest#testClassWithDuplicateFields"
+      ]
+    }
+  },
+  "google_gson-2479": {
+    "bug_id": "google_gson-2479",
+    "PR_number": 2479,
+    "PR_createdAt": "2023-08-25T19:28:05Z",
+    "merge_commit": "0109f451299e7780a334d1844548d3a3346a9b39",
+    "buggy_commits": [
+      {
+        "oid": "4dfae77af3d543bea2782f85a154cc070290f086",
+        "message": "Bump com.github.siom79.japicmp:japicmp-maven-plugin (#2504)\n\nBumps [com.github.siom79.japicmp:japicmp-maven-plugin](https://github.com/siom79/japicmp) from 0.18.0 to 0.18.1.\r\n- [Release notes](https://github.com/siom79/japicmp/releases)\r\n- [Changelog](https://github.com/siom79/japicmp/blob/master/release.py)\r\n- [Commits](https://github.com/siom79/japicmp/compare/japicmp-base-0.18.0...japicmp-base-0.18.1)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: com.github.siom79.japicmp:japicmp-maven-plugin\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/google/gson/issues/2436",
+      "createdAt": "2023-07-16T13:37:57Z",
+      "content": "bug_report_all/google_gson-2479.json"
+    },
+    "changed_tests": [
+      "gson/src/test/java/com/google/gson/GsonBuilderTest.java",
+      "gson/src/test/java/com/google/gson/GsonTest.java"
+    ],
+    "PR_url": "https://github.com/google/gson/pull/2479",
+    "merge_commit_url": "https://github.com/google/gson/commit/0109f451299e7780a334d1844548d3a3346a9b39",
+    "buggy_commit": "4dfae77af3d543bea2782f85a154cc070290f086",
+    "execution_result": {
+      "test_src": [
+        ".com.google.gson.GsonTest#testClonedTypeAdapterFactoryListsAreIndependent"
+      ],
+      "test_tgt": [
+        ".com.google.gson.GsonBuilderTest#testRegisterTypeAdapterForObjectAndJsonElements",
+        ".com.google.gson.GsonBuilderTest#testRegisterTypeHierarchyAdapterJsonElements",
+        ".com.google.gson.GsonTest#testClonedTypeAdapterFactoryListsAreIndependent"
+      ]
+    }
+  },
+  "google_gson-2498": {
+    "bug_id": "google_gson-2498",
+    "PR_number": 2498,
+    "PR_createdAt": "2023-09-23T20:14:37Z",
+    "merge_commit": "46ab704221608fb6318d110f1b0c2abca73a9ea2",
+    "buggy_commits": [
+      {
+        "oid": "2032818ecb1a5d0932d4702ff36a8cc5b3bc20aa",
+        "message": "Bump com.diffplug.spotless:spotless-maven-plugin from 2.41.1 to 2.43.0 (#2603)\n\nBumps [com.diffplug.spotless:spotless-maven-plugin](https://github.com/diffplug/spotless) from 2.41.1 to 2.43.0.\r\n- [Changelog](https://github.com/diffplug/spotless/blob/main/CHANGES.md)\r\n- [Commits](https://github.com/diffplug/spotless/compare/maven/2.41.1...lib/2.43.0)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: com.diffplug.spotless:spotless-maven-plugin\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/google/gson/issues/1510",
+      "createdAt": "2019-04-11T05:27:21Z",
+      "content": "bug_report_all/google_gson-2498.json"
+    },
+    "changed_tests": [
+      "gson/src/test/java/com/google/gson/ExposeAnnotationExclusionStrategyTest.java",
+      "gson/src/test/java/com/google/gson/InnerClassExclusionStrategyTest.java",
+      "gson/src/test/java/com/google/gson/VersionExclusionStrategyTest.java",
+      "gson/src/test/java/com/google/gson/functional/EnumTest.java",
+      "gson/src/test/java/com/google/gson/functional/ObjectTest.java"
+    ],
+    "PR_url": "https://github.com/google/gson/pull/2498",
+    "merge_commit_url": "https://github.com/google/gson/commit/46ab704221608fb6318d110f1b0c2abca73a9ea2",
+    "buggy_commit": "2032818ecb1a5d0932d4702ff36a8cc5b3bc20aa",
+    "execution_result": {
+      "test_src": [
+        ".com.google.gson.functional.EnumTest#testEnumSubclass",
+        ".com.google.gson.functional.EnumTest#testEnumSubclassWithRegisteredTypeAdapter",
+        ".com.google.gson.functional.ObjectTest#testAnonymousLocalClassesSerialization",
+        ".com.google.gson.functional.ObjectTest#testAnonymousLocalClassesCustomSerialization"
+      ],
+      "test_tgt": [
+        ".com.google.gson.functional.EnumTest#testEnumSubclass",
+        ".com.google.gson.functional.EnumTest#testEnumSubclassWithRegisteredTypeAdapter",
+        ".com.google.gson.functional.ObjectTest#testAnonymousLocalClassesSerialization",
+        ".com.google.gson.functional.ObjectTest#testAnonymousLocalClassesCustomSerialization",
+        ".com.google.gson.functional.ObjectTest#testAnonymousLocalClassesCustomDeserialization"
+      ]
+    }
+  },
+  "google_gson-2652": {
+    "bug_id": "google_gson-2652",
+    "PR_number": 2652,
+    "PR_createdAt": "2024-03-20T18:11:24Z",
+    "merge_commit": "8bc62cb85b0f876cfe160f77390c18adcd78ec4a",
+    "buggy_commits": [
+      {
+        "oid": "342d60015ffb2738820d4e49423dbb884533bae8",
+        "message": "Support strict mode for `JsonParser` (#2648)\n\n* Support strict mode for `JsonParser`\r\n\r\n* Move comments"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/google/gson/issues/2650",
+      "createdAt": "2024-03-20T03:56:02Z",
+      "content": "bug_report_all/google_gson-2652.json"
+    },
+    "changed_tests": [
+      "gson/src/test/java/com/google/gson/stream/JsonWriterTest.java"
+    ],
+    "PR_url": "https://github.com/google/gson/pull/2652",
+    "merge_commit_url": "https://github.com/google/gson/commit/8bc62cb85b0f876cfe160f77390c18adcd78ec4a",
+    "buggy_commit": "342d60015ffb2738820d4e49423dbb884533bae8",
+    "execution_result": {
+      "test_src": [
+        ".com.google.gson.stream.JsonWriterTest#testWriterCloseIsIdempotent"
+      ],
+      "test_tgt": [
+        ".com.google.gson.stream.JsonWriterTest#testWriterCloseIsIdempotent"
+      ]
+    }
+  },
+  "google_gson-2653": {
+    "bug_id": "google_gson-2653",
+    "PR_number": 2653,
+    "PR_createdAt": "2024-03-20T18:19:09Z",
+    "merge_commit": "04eb52d11c40ce2830f2f38ffe604b32a7b16aff",
+    "buggy_commits": [
+      {
+        "oid": "8bc62cb85b0f876cfe160f77390c18adcd78ec4a",
+        "message": "add value checking for the testWriterCloseIsIdempotent test case (#2652)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/google/gson/issues/2651",
+      "createdAt": "2024-03-20T04:46:16Z",
+      "content": "bug_report_all/google_gson-2653.json"
+    },
+    "changed_tests": [
+      "gson/src/test/java/com/google/gson/MixedStreamTest.java"
+    ],
+    "PR_url": "https://github.com/google/gson/pull/2653",
+    "merge_commit_url": "https://github.com/google/gson/commit/04eb52d11c40ce2830f2f38ffe604b32a7b16aff",
+    "buggy_commit": "8bc62cb85b0f876cfe160f77390c18adcd78ec4a",
+    "execution_result": {
+      "test_src": [
+        ".com.google.gson.MixedStreamTest#testWriteHtmlSafe"
+      ],
+      "test_tgt": [
+        ".com.google.gson.MixedStreamTest#testWriteHtmlSafeWithEscaping",
+        ".com.google.gson.MixedStreamTest#testWriteHtmlSafeWithoutEscaping"
+      ]
+    }
+  }
+}

@@ -1,0 +1,109 @@
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/controller/ReplicasManager.java b/broker/src/main/java/org/apache/rocketmq/broker/controller/ReplicasManager.java
+index a0218f8cc..dd1c4385e 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/controller/ReplicasManager.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/controller/ReplicasManager.java
+@@ -17,7 +17,6 @@
+ 
+ package org.apache.rocketmq.broker.controller;
+ 
+-import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.HashSet;
+ import java.util.List;
+@@ -66,7 +65,7 @@ public class ReplicasManager {
+     private final BrokerConfig brokerConfig;
+     private final String localAddress;
+     private final BrokerOuterAPI brokerOuterAPI;
+-    private final List<String> controllerAddresses;
++    private List<String> controllerAddresses;
+ 
+     private volatile String controllerLeaderAddress = "";
+     private volatile State state = State.INITIAL;
+@@ -87,10 +86,6 @@ public class ReplicasManager {
+         this.executorService = Executors.newFixedThreadPool(3, new ThreadFactoryImpl("ReplicasManager_ExecutorService_", brokerController.getBrokerIdentity()));
+         this.haService = (AutoSwitchHAService) brokerController.getMessageStore().getHaService();
+         this.brokerConfig = brokerController.getBrokerConfig();
+-        final String controllerPaths = this.brokerConfig.getControllerAddr();
+-        final String[] controllers = controllerPaths.split(";");
+-        assert controllers.length > 0;
+-        this.controllerAddresses = new ArrayList<>(Arrays.asList(controllers));
+         this.syncStateSet = new HashSet<>();
+         this.localAddress = brokerController.getBrokerAddr();
+         this.haService.setLocalAddress(this.localAddress);
+@@ -108,6 +103,8 @@ public class ReplicasManager {
+     }
+ 
+     public void start() {
++        updateControllerAddr();
++        this.scheduledService.scheduleAtFixedRate(this::updateControllerAddr, 2 * 60 * 1000, 2 * 60 * 1000, TimeUnit.MILLISECONDS);
+         if (!startBasicService()) {
+             LOGGER.error("Failed to start replicasManager");
+             this.executorService.submit(() -> {
+@@ -448,6 +445,17 @@ public class ReplicasManager {
+         }
+     }
+ 
++    private void updateControllerAddr() {
++        if (brokerConfig.isFetchControllerAddrByDnsLookup()) {
++            this.controllerAddresses = brokerOuterAPI.dnsLookupAddressByDomain(this.brokerConfig.getControllerAddr());
++        } else {
++            final String controllerPaths = this.brokerConfig.getControllerAddr();
++            final String[] controllers = controllerPaths.split(";");
++            assert controllers.length > 0;
++            this.controllerAddresses = Arrays.asList(controllers);
++        }
++    }
++
+     public int getLastEpoch() {
+         return this.haService.getLastEpoch();
+     }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java b/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java
+index 10cd27342..0ae1fe5ab 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java
+@@ -183,7 +183,7 @@ public class BrokerOuterAPI {
+         return nameSrvAddr;
+     }
+ 
+-    private List<String> lookupNameServerAddress(String domain) {
++    public List<String> dnsLookupAddressByDomain(String domain) {
+         List<String> addressList = new ArrayList<>();
+         try {
+             java.security.Security.setProperty("networkaddress.cache.ttl", "10");
+@@ -208,7 +208,7 @@ public class BrokerOuterAPI {
+     }
+ 
+     public void updateNameServerAddressListByDnsLookup(final String domain) {
+-        List<String> lst = this.lookupNameServerAddress(domain);
++        List<String> lst = this.dnsLookupAddressByDomain(domain);
+         this.remotingClient.updateNameServerAddressList(lst);
+     }
+ 
+diff --git a/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java b/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java
+index 8aa0d69b1..23307ab03 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java
++++ b/common/src/main/java/org/apache/rocketmq/common/BrokerConfig.java
+@@ -326,6 +326,8 @@ public class BrokerConfig extends BrokerIdentity {
+ 
+     private String controllerAddr = "";
+ 
++    private boolean fetchControllerAddrByDnsLookup = false;
++
+     private long syncBrokerMetadataPeriod = 5 * 1000;
+ 
+     private long checkSyncStateSetPeriod = 5 * 1000;
+@@ -1413,6 +1415,14 @@ public class BrokerConfig extends BrokerIdentity {
+         this.controllerAddr = controllerAddr;
+     }
+ 
++    public boolean isFetchControllerAddrByDnsLookup() {
++        return fetchControllerAddrByDnsLookup;
++    }
++
++    public void setFetchControllerAddrByDnsLookup(boolean fetchControllerAddrByDnsLookup) {
++        this.fetchControllerAddrByDnsLookup = fetchControllerAddrByDnsLookup;
++    }
++
+     public long getSyncBrokerMetadataPeriod() {
+         return syncBrokerMetadataPeriod;
+     }

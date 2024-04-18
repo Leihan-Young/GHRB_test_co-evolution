@@ -1,0 +1,759 @@
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/avg/AvgFunction.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/avg/AvgFunction.java
+index 03ef71c22a..caba0d7c6d 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/avg/AvgFunction.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/avg/AvgFunction.java
+@@ -30,7 +30,6 @@ import org.apache.skywalking.oap.server.core.analysis.meter.function.AcceptableV
+ import org.apache.skywalking.oap.server.core.analysis.meter.function.MeterFunction;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.LongValueHolder;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
+ import org.apache.skywalking.oap.server.core.storage.StorageID;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+@@ -72,7 +71,7 @@ public abstract class AvgFunction extends Meter implements AcceptableValue<Long>
+     protected long count;
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Avg)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private long value;
+ 
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/latest/LatestFunction.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/latest/LatestFunction.java
+index 307acb725c..7e354fe7ec 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/latest/LatestFunction.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/latest/LatestFunction.java
+@@ -30,7 +30,6 @@ import org.apache.skywalking.oap.server.core.analysis.meter.function.AcceptableV
+ import org.apache.skywalking.oap.server.core.analysis.meter.function.MeterFunction;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.LongValueHolder;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
+ import org.apache.skywalking.oap.server.core.storage.StorageID;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+@@ -60,7 +59,7 @@ public abstract class LatestFunction extends Meter implements AcceptableValue<Lo
+ 
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Latest)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private long value;
+ 
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/max/MaxFunction.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/max/MaxFunction.java
+index b4546e9a3b..03c2163168 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/max/MaxFunction.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/max/MaxFunction.java
+@@ -29,7 +29,6 @@ import org.apache.skywalking.oap.server.core.analysis.meter.function.AcceptableV
+ import org.apache.skywalking.oap.server.core.analysis.meter.function.MeterFunction;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.LongValueHolder;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
+ import org.apache.skywalking.oap.server.core.storage.StorageID;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+@@ -62,7 +61,7 @@ public abstract class MaxFunction extends Meter implements AcceptableValue<Long>
+ 
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.MAX)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private long value;
+ 
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/min/MinFunction.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/min/MinFunction.java
+index 369c397569..3a3651c3c1 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/min/MinFunction.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/min/MinFunction.java
+@@ -29,7 +29,6 @@ import org.apache.skywalking.oap.server.core.analysis.meter.function.AcceptableV
+ import org.apache.skywalking.oap.server.core.analysis.meter.function.MeterFunction;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.LongValueHolder;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
+ import org.apache.skywalking.oap.server.core.storage.StorageID;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+@@ -62,7 +61,7 @@ public abstract class MinFunction extends Meter implements AcceptableValue<Long>
+ 
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.MIN)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private long value = Long.MAX_VALUE;
+ 
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/sum/SumFunction.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/sum/SumFunction.java
+index 59aa4816cc..d42b351506 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/sum/SumFunction.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/sum/SumFunction.java
+@@ -30,7 +30,6 @@ import org.apache.skywalking.oap.server.core.analysis.meter.function.AcceptableV
+ import org.apache.skywalking.oap.server.core.analysis.meter.function.MeterFunction;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.LongValueHolder;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
+ import org.apache.skywalking.oap.server.core.storage.StorageID;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+@@ -57,7 +56,7 @@ public abstract class SumFunction extends Meter implements AcceptableValue<Long>
+ 
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Sum)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private long value;
+ 
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/sumpermin/SumPerMinFunction.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/sumpermin/SumPerMinFunction.java
+index d8e652faf6..733bc8bdf4 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/sumpermin/SumPerMinFunction.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/function/sumpermin/SumPerMinFunction.java
+@@ -30,7 +30,6 @@ import org.apache.skywalking.oap.server.core.analysis.meter.function.AcceptableV
+ import org.apache.skywalking.oap.server.core.analysis.meter.function.MeterFunction;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.LongValueHolder;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
+ import org.apache.skywalking.oap.server.core.storage.StorageID;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+@@ -58,7 +57,7 @@ public abstract class SumPerMinFunction extends Meter implements AcceptableValue
+ 
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Avg)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private long value;
+ 
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/ApdexMetrics.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/ApdexMetrics.java
+index 3618e3eda5..5c667112bd 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/ApdexMetrics.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/ApdexMetrics.java
+@@ -25,7 +25,6 @@ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Arg;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Entrance;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.MetricsFunction;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.SourceFrom;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+ import org.apache.skywalking.oap.server.core.storage.annotation.ElasticSearch;
+@@ -65,7 +64,7 @@ public abstract class ApdexMetrics extends Metrics implements IntValueHolder {
+     private long tNum;
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Avg)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @ElasticSearch.Column(legacyName = "value")
+     @BanyanDB.MeasureField
+     private int value;
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/CPMMetrics.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/CPMMetrics.java
+index 80efa44828..76fdc63f8b 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/CPMMetrics.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/CPMMetrics.java
+@@ -23,7 +23,6 @@ import lombok.Setter;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.ConstOne;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Entrance;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.MetricsFunction;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+ 
+@@ -35,7 +34,7 @@ public abstract class CPMMetrics extends Metrics implements LongValueHolder {
+ 
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Avg)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private long value;
+     @Getter
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/CountMetrics.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/CountMetrics.java
+index f83cb2e1da..17ea24c7ea 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/CountMetrics.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/CountMetrics.java
+@@ -23,7 +23,6 @@ import lombok.Setter;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.ConstOne;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Entrance;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.MetricsFunction;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+ 
+@@ -34,7 +33,7 @@ public abstract class CountMetrics extends Metrics implements LongValueHolder {
+ 
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Sum)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private long value;
+ 
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/DoubleAvgMetrics.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/DoubleAvgMetrics.java
+index 67320fb99f..f4fc82bfa6 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/DoubleAvgMetrics.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/DoubleAvgMetrics.java
+@@ -24,7 +24,6 @@ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.ConstOn
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Entrance;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.MetricsFunction;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.SourceFrom;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+ import org.apache.skywalking.oap.server.core.storage.annotation.ElasticSearch;
+@@ -49,7 +48,7 @@ public abstract class DoubleAvgMetrics extends Metrics implements DoubleValueHol
+     private long count;
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Avg)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @ElasticSearch.Column(legacyName = "value")
+     @BanyanDB.MeasureField
+     private double value;
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/LongAvgMetrics.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/LongAvgMetrics.java
+index 159c870d24..a8680ad942 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/LongAvgMetrics.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/LongAvgMetrics.java
+@@ -24,7 +24,6 @@ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.ConstOn
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Entrance;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.MetricsFunction;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.SourceFrom;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+ 
+@@ -47,7 +46,7 @@ public abstract class LongAvgMetrics extends Metrics implements LongValueHolder
+     protected long count;
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Avg)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private long value;
+ 
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/PercentMetrics.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/PercentMetrics.java
+index beb732d56a..94a5590142 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/PercentMetrics.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/PercentMetrics.java
+@@ -23,7 +23,6 @@ import lombok.Setter;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Entrance;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Expression;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.MetricsFunction;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+ 
+@@ -40,7 +39,7 @@ public abstract class PercentMetrics extends Metrics implements IntValueHolder {
+     private long total;
+     @Getter
+     @Setter
+-    @Column(name = PERCENTAGE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Avg)
++    @Column(name = PERCENTAGE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private int percentage;
+     @Getter
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/RateMetrics.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/RateMetrics.java
+index ff30d3ad1c..ec5ddd65b3 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/RateMetrics.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/RateMetrics.java
+@@ -22,7 +22,6 @@ import lombok.Setter;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Entrance;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Expression;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.MetricsFunction;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+ 
+@@ -39,7 +38,7 @@ public abstract class RateMetrics extends Metrics implements IntValueHolder {
+     private long denominator;
+     @Getter
+     @Setter
+-    @Column(name = PERCENTAGE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Avg)
++    @Column(name = PERCENTAGE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private int percentage;
+     @Getter
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/SumMetrics.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/SumMetrics.java
+index 61e114747b..b4b4ec5da4 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/SumMetrics.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/metrics/SumMetrics.java
+@@ -23,7 +23,6 @@ import lombok.Setter;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Entrance;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.MetricsFunction;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.SourceFrom;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
+ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+ 
+@@ -34,7 +33,7 @@ public abstract class SumMetrics extends Metrics implements LongValueHolder {
+ 
+     @Getter
+     @Setter
+-    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Sum)
++    @Column(name = VALUE, dataType = Column.ValueDataType.COMMON_VALUE)
+     @BanyanDB.MeasureField
+     private long value;
+ 
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/query/MetricsQueryService.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/query/MetricsQueryService.java
+index e84698d88f..8e8f7e951a 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/query/MetricsQueryService.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/query/MetricsQueryService.java
+@@ -20,10 +20,12 @@ package org.apache.skywalking.oap.server.core.query;
+ 
+ import java.io.IOException;
+ import java.util.List;
++import java.util.OptionalDouble;
+ import lombok.extern.slf4j.Slf4j;
+ import org.apache.skywalking.oap.server.core.query.input.Duration;
+ import org.apache.skywalking.oap.server.core.query.input.MetricsCondition;
+ import org.apache.skywalking.oap.server.core.query.type.HeatMap;
++import org.apache.skywalking.oap.server.core.query.type.KVInt;
+ import org.apache.skywalking.oap.server.core.query.type.MetricsValues;
+ import org.apache.skywalking.oap.server.core.query.type.NullableValue;
+ import org.apache.skywalking.oap.server.core.storage.StorageModule;
+@@ -49,11 +51,20 @@ public class MetricsQueryService implements Service {
+     }
+ 
+     /**
+-     * Read metrics single value in the duration of required metrics
++     * Read metrics average value in the duration of required metrics
+      */
+     public NullableValue readMetricsValue(MetricsCondition condition, Duration duration) throws IOException {
+-        return getMetricQueryDAO().readMetricsValue(
+-            condition, ValueColumnMetadata.INSTANCE.getValueCName(condition.getName()), duration);
++        MetricsValues metricsValues = readMetricsValues(condition, duration);
++        long defaultValue = ValueColumnMetadata.INSTANCE.getDefaultValue(condition.getName());
++        if (!metricsValues.getValues().getValues().isEmpty()) {
++           OptionalDouble avgValue = metricsValues.getValues().getValues().stream().filter(v -> !v.isEmptyValue()).mapToLong(
++               KVInt::getValue).average();
++           if (avgValue.isPresent()) {
++               return new NullableValue((long) avgValue.getAsDouble(), false);
++           }
++        }
++
++        return new NullableValue(defaultValue, true);
+     }
+ 
+     /**
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/query/sql/Function.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/query/sql/Function.java
+deleted file mode 100644
+index 419e367a1e..0000000000
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/query/sql/Function.java
++++ /dev/null
+@@ -1,23 +0,0 @@
+-/*
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- *
+- */
+-
+-package org.apache.skywalking.oap.server.core.query.sql;
+-
+-public enum Function {
+-    None, Avg, Sum, Latest, MAX, MIN
+-}
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/annotation/Column.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/annotation/Column.java
+index c69b41b045..43aaae88af 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/annotation/Column.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/annotation/Column.java
+@@ -18,7 +18,6 @@
+ 
+ package org.apache.skywalking.oap.server.core.storage.annotation;
+ 
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.storage.model.ModelManipulator;
+ import java.lang.annotation.ElementType;
+ import java.lang.annotation.Retention;
+@@ -42,11 +41,6 @@ public @interface Column {
+      */
+     String name();
+ 
+-    /**
+-     * The function is used in aggregation query.
+-     */
+-    Function function() default Function.None;
+-
+     /**
+      * The default value of this column, when its {@link #dataType()} != {@link ValueDataType#NOT_VALUE}.
+      */
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/annotation/ValueColumnMetadata.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/annotation/ValueColumnMetadata.java
+index a33bfb53a0..6aa6040125 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/annotation/ValueColumnMetadata.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/annotation/ValueColumnMetadata.java
+@@ -24,7 +24,6 @@ import java.util.Optional;
+ import lombok.Getter;
+ import lombok.RequiredArgsConstructor;
+ import org.apache.skywalking.oap.server.core.query.enumeration.Scope;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ 
+ /**
+  * ValueColumnMetadata holds the metadata for column values of metrics. The metadata of ValueColumn is declared through
+@@ -42,10 +41,9 @@ public enum ValueColumnMetadata {
+     public void putIfAbsent(String modelName,
+                             String valueCName,
+                             Column.ValueDataType dataType,
+-                            Function function,
+                             int defaultValue,
+                             int scopeId) {
+-        mapping.putIfAbsent(modelName, new ValueColumn(valueCName, dataType, function, defaultValue, scopeId));
++        mapping.putIfAbsent(modelName, new ValueColumn(valueCName, dataType, defaultValue, scopeId));
+     }
+ 
+     public void overrideColumnName(String oldName, String newName) {
+@@ -60,13 +58,6 @@ public enum ValueColumnMetadata {
+         return columnNameOverrideRule.getOrDefault(valueCName, valueCName);
+     }
+ 
+-    /**
+-     * Fetch the function for the value column of the given metrics name.
+-     */
+-    public Function getValueFunction(String metricsName) {
+-        return findColumn(metricsName).function;
+-    }
+-
+     public int getDefaultValue(String metricsName) {
+         return findColumn(metricsName).defaultValue;
+     }
+@@ -102,7 +93,6 @@ public enum ValueColumnMetadata {
+     public static class ValueColumn {
+         private final String valueCName;
+         private final Column.ValueDataType dataType;
+-        private final Function function;
+         private final int defaultValue;
+         private final int scopeId;
+     }
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/model/StorageModels.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/model/StorageModels.java
+index 27ad875886..e5e5e9e429 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/model/StorageModels.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/model/StorageModels.java
+@@ -267,7 +267,7 @@ public class StorageModels implements IModelManager, ModelCreator, ModelManipula
+                 if (column.dataType().isValue()) {
+                     ValueColumnMetadata.INSTANCE.putIfAbsent(
+                         modelName, column.name(),
+-                        column.dataType(), column.function(), column.defaultValue(), scopeId
++                        column.dataType(), column.defaultValue(), scopeId
+                     );
+                 }
+             }
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/query/IMetricsQueryDAO.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/query/IMetricsQueryDAO.java
+index cea806e2c5..6f5451312d 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/query/IMetricsQueryDAO.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/storage/query/IMetricsQueryDAO.java
+@@ -33,7 +33,6 @@ import org.apache.skywalking.oap.server.core.query.type.HeatMap;
+ import org.apache.skywalking.oap.server.core.query.type.IntValues;
+ import org.apache.skywalking.oap.server.core.query.type.KVInt;
+ import org.apache.skywalking.oap.server.core.query.type.MetricsValues;
+-import org.apache.skywalking.oap.server.core.query.type.NullableValue;
+ import org.apache.skywalking.oap.server.core.storage.DAO;
+ import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetadata;
+ 
+@@ -45,7 +44,6 @@ import static java.util.stream.Collectors.toList;
+  * @since 8.0.0
+  */
+ public interface IMetricsQueryDAO extends DAO {
+-    NullableValue readMetricsValue(MetricsCondition condition, String valueColumnName, Duration duration) throws IOException;
+ 
+     MetricsValues readMetricsValues(MetricsCondition condition,
+                                     String valueColumnName,
+diff --git a/oap-server/server-storage-plugin/storage-banyandb-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/banyandb/measure/BanyanDBMetricsQueryDAO.java b/oap-server/server-storage-plugin/storage-banyandb-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/banyandb/measure/BanyanDBMetricsQueryDAO.java
+index d37bd1d928..6ca8e2f88b 100644
+--- a/oap-server/server-storage-plugin/storage-banyandb-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/banyandb/measure/BanyanDBMetricsQueryDAO.java
++++ b/oap-server/server-storage-plugin/storage-banyandb-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/banyandb/measure/BanyanDBMetricsQueryDAO.java
+@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableSet;
+ 
+ import java.io.IOException;
+ import java.util.ArrayList;
+-import java.util.Collections;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+@@ -39,12 +38,10 @@ import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
+ import org.apache.skywalking.oap.server.core.query.PointOfTime;
+ import org.apache.skywalking.oap.server.core.query.input.Duration;
+ import org.apache.skywalking.oap.server.core.query.input.MetricsCondition;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.query.type.HeatMap;
+ import org.apache.skywalking.oap.server.core.query.type.IntValues;
+ import org.apache.skywalking.oap.server.core.query.type.KVInt;
+ import org.apache.skywalking.oap.server.core.query.type.MetricsValues;
+-import org.apache.skywalking.oap.server.core.query.type.NullableValue;
+ import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetadata;
+ import org.apache.skywalking.oap.server.core.storage.query.IMetricsQueryDAO;
+ import org.apache.skywalking.oap.server.storage.plugin.banyandb.BanyanDBStorageClient;
+@@ -58,54 +55,6 @@ public class BanyanDBMetricsQueryDAO extends AbstractBanyanDBDAO implements IMet
+         super(client);
+     }
+ 
+-    @Override
+-    public NullableValue readMetricsValue(MetricsCondition condition, String valueColumnName, Duration duration) throws IOException {
+-        String modelName = condition.getName();
+-        MetadataRegistry.Schema schema = MetadataRegistry.INSTANCE.findMetadata(modelName, duration.getStep());
+-        if (schema == null) {
+-            throw new IOException("schema is not registered");
+-        }
+-
+-        int defaultValue = ValueColumnMetadata.INSTANCE.getDefaultValue(condition.getName());
+-        Function function = ValueColumnMetadata.INSTANCE.getValueFunction(condition.getName());
+-        if (function == Function.Latest) {
+-            return readMetricsValues(condition, valueColumnName, duration)
+-                    .getValues().latestValue(defaultValue);
+-        }
+-
+-        TimestampRange timestampRange = new TimestampRange(duration.getStartTimestamp(), duration.getEndTimestamp());
+-        final MeasureQueryResponse resp = query(schema,
+-                ImmutableSet.of(Metrics.ENTITY_ID),
+-                ImmutableSet.of(valueColumnName),
+-                timestampRange,
+-                new QueryBuilder<MeasureQuery>() {
+-                    @Override
+-                    protected void apply(MeasureQuery query) {
+-                        buildAggregationQuery(query, valueColumnName, function);
+-                        if (condition.getEntity().buildId() != null) {
+-                            query.and(eq(Metrics.ENTITY_ID, condition.getEntity().buildId()));
+-                        }
+-                    }
+-                });
+-
+-        for (DataPoint dataPoint : resp.getDataPoints()) {
+-            return new NullableValue(((Number) dataPoint.getFieldValue(valueColumnName)).longValue(), false);
+-        }
+-        return new NullableValue(defaultValue, true);
+-    }
+-
+-    private void buildAggregationQuery(MeasureQuery query, String valueColumnName, Function function) {
+-        switch (function) {
+-            case Sum:
+-                query.sumBy(valueColumnName, Collections.singleton(Metrics.ENTITY_ID));
+-                break;
+-            case Avg:
+-            default:
+-                query.meanBy(valueColumnName, Collections.singleton(Metrics.ENTITY_ID));
+-                break;
+-        }
+-    }
+-
+     @Override
+     public MetricsValues readMetricsValues(MetricsCondition condition, String valueColumnName, Duration duration) throws IOException {
+         String modelName = condition.getName();
+diff --git a/oap-server/server-storage-plugin/storage-elasticsearch-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/elasticsearch/query/MetricsQueryEsDAO.java b/oap-server/server-storage-plugin/storage-elasticsearch-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/elasticsearch/query/MetricsQueryEsDAO.java
+index 274854b1d2..77ba74ac52 100644
+--- a/oap-server/server-storage-plugin/storage-elasticsearch-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/elasticsearch/query/MetricsQueryEsDAO.java
++++ b/oap-server/server-storage-plugin/storage-elasticsearch-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/elasticsearch/query/MetricsQueryEsDAO.java
+@@ -22,37 +22,30 @@ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+-import java.util.Objects;
+ import java.util.Optional;
+ import java.util.stream.Collectors;
+ import org.apache.skywalking.library.elasticsearch.requests.search.Query;
+ import org.apache.skywalking.library.elasticsearch.requests.search.RangeQueryBuilder;
+ import org.apache.skywalking.library.elasticsearch.requests.search.Search;
+ import org.apache.skywalking.library.elasticsearch.requests.search.SearchBuilder;
+-import org.apache.skywalking.library.elasticsearch.requests.search.aggregation.Aggregation;
+-import org.apache.skywalking.library.elasticsearch.requests.search.aggregation.TermsAggregationBuilder;
+ import org.apache.skywalking.library.elasticsearch.response.Document;
+ import org.apache.skywalking.library.elasticsearch.response.Documents;
+ import org.apache.skywalking.library.elasticsearch.response.search.SearchHit;
+ import org.apache.skywalking.library.elasticsearch.response.search.SearchHits;
+-import org.apache.skywalking.library.elasticsearch.response.search.SearchResponse;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.DataTable;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
+ import org.apache.skywalking.oap.server.core.query.PointOfTime;
+ import org.apache.skywalking.oap.server.core.query.input.Duration;
+ import org.apache.skywalking.oap.server.core.query.input.MetricsCondition;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.query.type.HeatMap;
+ import org.apache.skywalking.oap.server.core.query.type.IntValues;
+ import org.apache.skywalking.oap.server.core.query.type.KVInt;
+ import org.apache.skywalking.oap.server.core.query.type.MetricsValues;
+-import org.apache.skywalking.oap.server.core.query.type.NullableValue;
+ import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetadata;
+ import org.apache.skywalking.oap.server.core.storage.query.IMetricsQueryDAO;
+ import org.apache.skywalking.oap.server.library.client.elasticsearch.ElasticSearchClient;
+ import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.EsDAO;
+ import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.IndexController;
+-import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.TimeRangeIndexNameGenerator;
+ import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.TimeSeriesUtils;
+ 
+ public class MetricsQueryEsDAO extends EsDAO implements IMetricsQueryDAO {
+@@ -61,48 +54,6 @@ public class MetricsQueryEsDAO extends EsDAO implements IMetricsQueryDAO {
+         super(client);
+     }
+ 
+-    @Override
+-    public NullableValue readMetricsValue(final MetricsCondition condition,
+-                                          final String valueColumnName,
+-                                          final Duration duration) {
+-        final String realValueColumn = IndexController.LogicIndicesRegister.getPhysicalColumnName(condition.getName(), valueColumnName);
+-        final SearchBuilder sourceBuilder = buildQuery(condition, duration);
+-        int defaultValue = ValueColumnMetadata.INSTANCE.getDefaultValue(condition.getName());
+-        Function function = ValueColumnMetadata.INSTANCE.getValueFunction(condition.getName());
+-        if (function == Function.Latest) {
+-            return readMetricsValues(condition, realValueColumn, duration)
+-                .getValues().latestValue(defaultValue);
+-        }
+-
+-        final TermsAggregationBuilder entityIdAggregation =
+-            Aggregation.terms(Metrics.ENTITY_ID)
+-                       .field(Metrics.ENTITY_ID)
+-                       .executionHint(TermsAggregationBuilder.ExecutionHint.MAP)
+-                       .collectMode(TermsAggregationBuilder.CollectMode.BREADTH_FIRST)
+-                       .size(1);
+-        functionAggregation(function, entityIdAggregation, realValueColumn);
+-
+-        sourceBuilder.aggregation(entityIdAggregation);
+-
+-        final SearchResponse response = getClient().search(new TimeRangeIndexNameGenerator(
+-            IndexController.LogicIndicesRegister.getPhysicalTableName(condition.getName()),
+-            duration.getStartTimeBucketInSec(),
+-            duration.getEndTimeBucketInSec()), sourceBuilder.build());
+-
+-        if (Objects.nonNull(response.getAggregations())) {
+-            final Map<String, Object> idTerms =
+-                (Map<String, Object>) response.getAggregations().get(Metrics.ENTITY_ID);
+-            final List<Map<String, Object>> buckets =
+-                (List<Map<String, Object>>) idTerms.get("buckets");
+-
+-            for (Map<String, Object> idBucket : buckets) {
+-                final Map<String, Object> agg = (Map<String, Object>) idBucket.get(realValueColumn);
+-                return new NullableValue(((Number) agg.get("value")).longValue(), false);
+-            }
+-        }
+-        return new NullableValue(defaultValue, true);
+-    }
+-
+     @Override
+     public MetricsValues readMetricsValues(final MetricsCondition condition,
+                                            final String valueColumnName,
+@@ -243,22 +194,6 @@ public class MetricsQueryEsDAO extends EsDAO implements IMetricsQueryDAO {
+         return heatMap;
+     }
+ 
+-    protected void functionAggregation(Function function,
+-                                       TermsAggregationBuilder parentAggBuilder,
+-                                       String valueCName) {
+-        switch (function) {
+-            case Avg:
+-                parentAggBuilder.subAggregation(Aggregation.avg(valueCName).field(valueCName));
+-                break;
+-            case Sum:
+-                parentAggBuilder.subAggregation(Aggregation.sum(valueCName).field(valueCName));
+-                break;
+-            default:
+-                parentAggBuilder.subAggregation(Aggregation.avg(valueCName).field(valueCName));
+-                break;
+-        }
+-    }
+-
+     protected final SearchBuilder buildQuery(MetricsCondition condition, Duration duration) {
+         final SearchBuilder sourceBuilder = Search.builder();
+ 
+diff --git a/oap-server/server-storage-plugin/storage-jdbc-hikaricp-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/jdbc/common/dao/JDBCMetricsQueryDAO.java b/oap-server/server-storage-plugin/storage-jdbc-hikaricp-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/jdbc/common/dao/JDBCMetricsQueryDAO.java
+index aa9d29878a..943e2a83cf 100644
+--- a/oap-server/server-storage-plugin/storage-jdbc-hikaricp-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/jdbc/common/dao/JDBCMetricsQueryDAO.java
++++ b/oap-server/server-storage-plugin/storage-jdbc-hikaricp-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/jdbc/common/dao/JDBCMetricsQueryDAO.java
+@@ -24,18 +24,14 @@ import org.apache.skywalking.oap.server.core.analysis.metrics.DataTable;
+ import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
+ import org.apache.skywalking.oap.server.core.query.input.Duration;
+ import org.apache.skywalking.oap.server.core.query.input.MetricsCondition;
+-import org.apache.skywalking.oap.server.core.query.sql.Function;
+ import org.apache.skywalking.oap.server.core.query.type.HeatMap;
+ import org.apache.skywalking.oap.server.core.query.type.KVInt;
+ import org.apache.skywalking.oap.server.core.query.type.MetricsValues;
+-import org.apache.skywalking.oap.server.core.query.type.NullableValue;
+ import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetadata;
+ import org.apache.skywalking.oap.server.core.storage.query.IMetricsQueryDAO;
+ import org.apache.skywalking.oap.server.library.client.jdbc.hikaricp.JDBCClient;
+-import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.JDBCTableInstaller;
+ import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.TableHelper;
+ 
+-import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.stream.Collectors;
+@@ -45,74 +41,6 @@ public class JDBCMetricsQueryDAO extends JDBCSQLExecutor implements IMetricsQuer
+     private final JDBCClient jdbcClient;
+     private final TableHelper tableHelper;
+ 
+-    @Override
+-    @SneakyThrows
+-    public NullableValue readMetricsValue(final MetricsCondition condition,
+-                                          String valueColumnName,
+-                                          final Duration duration) {
+-        final var tables = tableHelper.getTablesForRead(
+-            condition.getName(),
+-            duration.getStartTimeBucket(),
+-            duration.getEndTimeBucket()
+-        );
+-
+-        final var pointOfTimes = duration.assembleDurationPoints();
+-        final var entityId = condition.getEntity().buildId();
+-        final var ids =
+-            pointOfTimes
+-                .stream()
+-                .map(pointOfTime -> TableHelper.generateId(condition.getName(), pointOfTime.id(entityId)))
+-                .collect(Collectors.toList());
+-        final var defaultValue = ValueColumnMetadata.INSTANCE.getDefaultValue(condition.getName());
+-        final var function = ValueColumnMetadata.INSTANCE.getValueFunction(condition.getName());
+-        if (function == Function.Latest) {
+-            return readMetricsValues(condition, valueColumnName, duration).getValues().latestValue(defaultValue);
+-        }
+-        String op;
+-        switch (function) {
+-            case Avg:
+-                op = "avg";
+-                break;
+-            default:
+-                op = "sum";
+-        }
+-
+-        final var results = new ArrayList<Long>();
+-        for (String table : tables) {
+-            final var sql = buildMetricsValueSql(op, valueColumnName, table);
+-            final var parameters = new ArrayList<>();
+-            if (entityId != null) {
+-                sql.append(Metrics.ENTITY_ID + " = ? and ");
+-                parameters.add(entityId);
+-            }
+-            sql.append("id in ");
+-            sql.append(ids.stream().map(it -> "?").collect(Collectors.joining(", ", "(", ")")));
+-            parameters.addAll(ids);
+-            sql.append(" and ").append(JDBCTableInstaller.TABLE_COLUMN).append(" = ?");
+-            parameters.add(condition.getName());
+-            sql.append(" group by " + Metrics.ENTITY_ID);
+-
+-            jdbcClient.executeQuery(
+-                sql.toString(),
+-                resultSet -> {
+-                    if (resultSet.next()) {
+-                        results.add(resultSet.getLong("result"));
+-                    }
+-                    return null;
+-                },
+-                parameters.toArray(new Object[0])
+-            );
+-        }
+-
+-        if (results.size() == 0) {
+-            return new NullableValue(defaultValue, true);
+-        }
+-        if (op.equals("avg")) {
+-            return new NullableValue(results.stream().mapToLong(it -> it).sum() / results.size(), false);
+-        }
+-        return new NullableValue(results.stream().mapToLong(it -> it).sum(), false);
+-    }
+-
+     protected StringBuilder buildMetricsValueSql(String op, String valueColumnName, String conditionName) {
+         return new StringBuilder(
+                 "select " + Metrics.ENTITY_ID + " id, " + op + "(" + valueColumnName + ") result from " + conditionName + " where ");

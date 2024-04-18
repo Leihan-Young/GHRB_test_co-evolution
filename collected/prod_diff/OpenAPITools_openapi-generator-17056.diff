@@ -1,0 +1,25 @@
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
+index 0f63601e063..406344aa082 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultCodegen.java
+@@ -4166,6 +4166,9 @@ public class DefaultCodegen implements CodegenConfig {
+             if (original.getExtensions() != null) {
+                 property.getVendorExtensions().putAll(original.getExtensions());
+             }
++            if (original.getDeprecated() != null) {
++                property.deprecated = p.getDeprecated();
++            }
+         }
+ 
+         // set the default value
+@@ -7694,6 +7697,10 @@ public class DefaultCodegen implements CodegenConfig {
+             if (original.getExtensions() != null) {
+                 codegenParameter.vendorExtensions.putAll(original.getExtensions());
+             }
++
++            if (original.getDeprecated() != null) {
++                codegenParameter.isDeprecated = original.getDeprecated();
++            }
+         }
+ 
+         return codegenParameter;

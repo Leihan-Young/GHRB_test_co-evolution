@@ -1,0 +1,7 @@
+{
+  "issue_id": 6203,
+  "issue_url": "https://github.com/apache/rocketmq/issues/6203",
+  "title": "Allow to publish delay message with arbitrary timestamp",
+  "description": "<p dir=\"auto\">switch <code class=\"notranslate\">useDelayLevel</code> in <code class=\"notranslate\">ProxyConfig</code> to false, and allow to publish delay message with arbitrary timestamp</p>",
+  "description_text": "switch useDelayLevel in ProxyConfig to false, and allow to publish delay message with arbitrary timestamp"
+}

@@ -1,0 +1,7 @@
+{
+  "issue_id": 5471,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5471",
+  "title": "AutoSwitchRoleIntegrationTest still experience random failures",
+  "description": "<p dir=\"auto\">AutoSwitchRoleIntegrationTest.testChangeMaster:171->AutoSwitchRoleBase.checkMessage:188 \u00bb ConditionTimeout</p>\n<p dir=\"auto\">See <a href=\"https://github.com/apache/rocketmq/actions/runs/3399844807/jobs/5653863234\">https://github.com/apache/rocketmq/actions/runs/3399844807/jobs/5653863234</a></p>",
+  "description_text": "AutoSwitchRoleIntegrationTest.testChangeMaster:171->AutoSwitchRoleBase.checkMessage:188 \u00bb ConditionTimeout\nSee https://github.com/apache/rocketmq/actions/runs/3399844807/jobs/5653863234"
+}

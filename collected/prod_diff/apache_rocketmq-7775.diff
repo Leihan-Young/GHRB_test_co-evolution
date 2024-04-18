@@ -1,0 +1,246 @@
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/ProxyAndTlsProtocolNegotiator.java b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/ProxyAndTlsProtocolNegotiator.java
+index cdf33165d..7c9286680 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/ProxyAndTlsProtocolNegotiator.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/grpc/ProxyAndTlsProtocolNegotiator.java
+@@ -34,6 +34,7 @@ import io.grpc.netty.shaded.io.netty.handler.codec.ProtocolDetectionState;
+ import io.grpc.netty.shaded.io.netty.handler.codec.haproxy.HAProxyMessage;
+ import io.grpc.netty.shaded.io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+ import io.grpc.netty.shaded.io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
++import io.grpc.netty.shaded.io.netty.handler.codec.haproxy.HAProxyTLV;
+ import io.grpc.netty.shaded.io.netty.handler.ssl.ClientAuth;
+ import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
+ import io.grpc.netty.shaded.io.netty.handler.ssl.SslHandler;
+@@ -41,7 +42,10 @@ import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactor
+ import io.grpc.netty.shaded.io.netty.handler.ssl.util.SelfSignedCertificate;
+ import io.grpc.netty.shaded.io.netty.util.AsciiString;
+ import io.grpc.netty.shaded.io.netty.util.CharsetUtil;
+-import java.nio.charset.StandardCharsets;
++import java.io.InputStream;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++import java.util.List;
+ import org.apache.commons.collections.CollectionUtils;
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.rocketmq.common.constant.HAProxyConstants;
+@@ -55,11 +59,6 @@ import org.apache.rocketmq.proxy.grpc.constant.AttributeKeys;
+ import org.apache.rocketmq.remoting.common.TlsMode;
+ import org.apache.rocketmq.remoting.netty.TlsSystemConfig;
+ 
+-import java.io.InputStream;
+-import java.nio.file.Files;
+-import java.nio.file.Paths;
+-import java.util.List;
+-
+ public class ProxyAndTlsProtocolNegotiator implements InternalProtocolNegotiator.ProtocolNegotiator {
+     protected static final Logger log = LoggerFactory.getLogger(LoggerName.PROXY_LOGGER_NAME);
+ 
+@@ -123,7 +122,7 @@ public class ProxyAndTlsProtocolNegotiator implements InternalProtocolNegotiator
+         }
+     }
+ 
+-    private static class ProxyAndTlsProtocolHandler extends ByteToMessageDecoder {
++    private class ProxyAndTlsProtocolHandler extends ByteToMessageDecoder {
+ 
+         private final GrpcHttp2ConnectionHandler grpcHandler;
+ 
+@@ -156,7 +155,7 @@ public class ProxyAndTlsProtocolNegotiator implements InternalProtocolNegotiator
+         }
+     }
+ 
+-    private static class HAProxyMessageHandler extends ChannelInboundHandlerAdapter {
++    private class HAProxyMessageHandler extends ChannelInboundHandlerAdapter {
+ 
+         private ProtocolNegotiationEvent pne = InternalProtocolNegotiationEvent.getDefault();
+ 
+@@ -193,16 +192,7 @@ public class ProxyAndTlsProtocolNegotiator implements InternalProtocolNegotiator
+                     builder.set(AttributeKeys.PROXY_PROTOCOL_SERVER_PORT, String.valueOf(msg.destinationPort()));
+                 }
+                 if (CollectionUtils.isNotEmpty(msg.tlvs())) {
+-                    msg.tlvs().forEach(tlv -> {
+-                        Attributes.Key<String> key = AttributeKeys.valueOf(
+-                                HAProxyConstants.PROXY_PROTOCOL_TLV_PREFIX + String.format("%02x", tlv.typeByteValue()));
+-                        byte[] valueBytes = ByteBufUtil.getBytes(tlv.content());
+-                        String value = StringUtils.trim(new String(valueBytes, CharsetUtil.UTF_8));
+-                        if (!BinaryUtil.isAscii(value.getBytes(StandardCharsets.UTF_8))) {
+-                            return;
+-                        }
+-                        builder.set(key, value);
+-                    });
++                    msg.tlvs().forEach(tlv -> handleHAProxyTLV(tlv, builder));
+                 }
+                 pne = InternalProtocolNegotiationEvent
+                         .withAttributes(InternalProtocolNegotiationEvent.getDefault(), builder.build());
+@@ -212,7 +202,17 @@ public class ProxyAndTlsProtocolNegotiator implements InternalProtocolNegotiator
+         }
+     }
+ 
+-    private static class TlsModeHandler extends ByteToMessageDecoder {
++    protected void handleHAProxyTLV(HAProxyTLV tlv, Attributes.Builder builder) {
++        byte[] valueBytes = ByteBufUtil.getBytes(tlv.content());
++        if (!BinaryUtil.isAscii(valueBytes)) {
++            return;
++        }
++        Attributes.Key<String> key = AttributeKeys.valueOf(
++            HAProxyConstants.PROXY_PROTOCOL_TLV_PREFIX + String.format("%02x", tlv.typeByteValue()));
++        builder.set(key, new String(valueBytes, CharsetUtil.UTF_8));
++    }
++
++    private class TlsModeHandler extends ByteToMessageDecoder {
+ 
+         private ProtocolNegotiationEvent pne = InternalProtocolNegotiationEvent.getDefault();
+ 
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/MultiProtocolRemotingServer.java b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/MultiProtocolRemotingServer.java
+index 12d728fff..d7c2820b2 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/MultiProtocolRemotingServer.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/MultiProtocolRemotingServer.java
+@@ -46,7 +46,7 @@ public class MultiProtocolRemotingServer extends NettyRemotingServer {
+     private final NettyServerConfig nettyServerConfig;
+ 
+     private final RemotingProtocolHandler remotingProtocolHandler;
+-    private final Http2ProtocolProxyHandler http2ProtocolProxyHandler;
++    protected Http2ProtocolProxyHandler http2ProtocolProxyHandler;
+ 
+     public MultiProtocolRemotingServer(NettyServerConfig nettyServerConfig, ChannelEventListener channelEventListener) {
+         super(nettyServerConfig, channelEventListener);
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/protocol/http2proxy/HAProxyMessageForwarder.java b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/protocol/http2proxy/HAProxyMessageForwarder.java
+index 8f139d3d9..99cb99d53 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/protocol/http2proxy/HAProxyMessageForwarder.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/protocol/http2proxy/HAProxyMessageForwarder.java
+@@ -29,6 +29,7 @@ import io.netty.handler.codec.haproxy.HAProxyProxiedProtocol;
+ import io.netty.handler.codec.haproxy.HAProxyTLV;
+ import io.netty.util.Attribute;
+ import io.netty.util.DefaultAttributeMap;
++import org.apache.commons.codec.DecoderException;
+ import org.apache.commons.codec.binary.Hex;
+ import org.apache.commons.lang3.ArrayUtils;
+ import org.apache.commons.lang3.StringUtils;
+@@ -50,7 +51,7 @@ public class HAProxyMessageForwarder extends ChannelInboundHandlerAdapter {
+     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_REMOTING_NAME);
+ 
+     private static final Field FIELD_ATTRIBUTE =
+-            FieldUtils.getField(DefaultAttributeMap.class, "attributes", true);
++        FieldUtils.getField(DefaultAttributeMap.class, "attributes", true);
+ 
+     private final Channel outboundChannel;
+ 
+@@ -111,19 +112,25 @@ public class HAProxyMessageForwarder extends ChannelInboundHandlerAdapter {
+                 destinationPort = Integer.parseInt(attributeValue);
+             }
+             if (StringUtils.startsWith(attributeKey, HAProxyConstants.PROXY_PROTOCOL_TLV_PREFIX)) {
+-                String typeString = StringUtils.substringAfter(attributeKey, HAProxyConstants.PROXY_PROTOCOL_TLV_PREFIX);
+-                ByteBuf byteBuf = Unpooled.buffer();
+-                byteBuf.writeBytes(attributeValue.getBytes(Charset.defaultCharset()));
+-                HAProxyTLV haProxyTLV = new HAProxyTLV(Hex.decodeHex(typeString)[0], byteBuf);
+-                haProxyTLVs.add(haProxyTLV);
++                HAProxyTLV haProxyTLV = buildHAProxyTLV(attributeKey, attributeValue);
++                if (haProxyTLV != null) {
++                    haProxyTLVs.add(haProxyTLV);
++                }
+             }
+         }
+ 
+         HAProxyProxiedProtocol proxiedProtocol = AclUtils.isColon(sourceAddress) ? HAProxyProxiedProtocol.TCP6 :
+-                HAProxyProxiedProtocol.TCP4;
++            HAProxyProxiedProtocol.TCP4;
+ 
+         HAProxyMessage message = new HAProxyMessage(HAProxyProtocolVersion.V2, HAProxyCommand.PROXY,
+-                proxiedProtocol, sourceAddress, destinationAddress, sourcePort, destinationPort, haProxyTLVs);
++            proxiedProtocol, sourceAddress, destinationAddress, sourcePort, destinationPort, haProxyTLVs);
+         outboundChannel.writeAndFlush(message).sync();
+     }
++
++    protected HAProxyTLV buildHAProxyTLV(String attributeKey, String attributeValue) throws DecoderException {
++        String typeString = StringUtils.substringAfter(attributeKey, HAProxyConstants.PROXY_PROTOCOL_TLV_PREFIX);
++        ByteBuf byteBuf = Unpooled.buffer();
++        byteBuf.writeBytes(attributeValue.getBytes(Charset.defaultCharset()));
++        return new HAProxyTLV(Hex.decodeHex(typeString)[0], byteBuf);
++    }
+ }
+diff --git a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/protocol/http2proxy/Http2ProtocolProxyHandler.java b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/protocol/http2proxy/Http2ProtocolProxyHandler.java
+index c37db92af..7ce563b03 100644
+--- a/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/protocol/http2proxy/Http2ProtocolProxyHandler.java
++++ b/proxy/src/main/java/org/apache/rocketmq/proxy/remoting/protocol/http2proxy/Http2ProtocolProxyHandler.java
+@@ -121,10 +121,7 @@ public class Http2ProtocolProxyHandler implements ProtocolHandler {
+         }
+ 
+         final Channel outboundChannel = f.channel();
+-        if (inboundChannel.hasAttr(AttributeKeys.PROXY_PROTOCOL_ADDR)) {
+-            ctx.pipeline().addLast(new HAProxyMessageForwarder(outboundChannel));
+-            outboundChannel.pipeline().addFirst(HAProxyMessageEncoder.INSTANCE);
+-        }
++        configPipeline(inboundChannel, outboundChannel);
+ 
+         SslHandler sslHandler = null;
+         if (sslContext != null) {
+@@ -132,4 +129,11 @@ public class Http2ProtocolProxyHandler implements ProtocolHandler {
+         }
+         ctx.pipeline().addLast(new Http2ProxyFrontendHandler(outboundChannel, sslHandler));
+     }
++
++    protected void configPipeline(Channel inboundChannel, Channel outboundChannel) {
++        if (inboundChannel.hasAttr(AttributeKeys.PROXY_PROTOCOL_ADDR)) {
++            inboundChannel.pipeline().addLast(new HAProxyMessageForwarder(outboundChannel));
++            outboundChannel.pipeline().addFirst(HAProxyMessageEncoder.INSTANCE);
++        }
++    }
+ }
+diff --git a/remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingServer.java b/remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingServer.java
+index 7213b0c24..51f8b8500 100644
+--- a/remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingServer.java
++++ b/remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingServer.java
+@@ -44,6 +44,7 @@ import io.netty.handler.codec.ProtocolDetectionState;
+ import io.netty.handler.codec.haproxy.HAProxyMessage;
+ import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+ import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
++import io.netty.handler.codec.haproxy.HAProxyTLV;
+ import io.netty.handler.timeout.IdleState;
+ import io.netty.handler.timeout.IdleStateEvent;
+ import io.netty.handler.timeout.IdleStateHandler;
+@@ -55,7 +56,6 @@ import io.netty.util.TimerTask;
+ import io.netty.util.concurrent.DefaultEventExecutorGroup;
+ import java.io.IOException;
+ import java.net.InetSocketAddress;
+-import java.nio.charset.StandardCharsets;
+ import java.security.cert.CertificateException;
+ import java.time.Duration;
+ import java.util.List;
+@@ -761,7 +761,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
+         }
+     }
+ 
+-    public static class HAProxyMessageHandler extends ChannelInboundHandlerAdapter {
++    public class HAProxyMessageHandler extends ChannelInboundHandlerAdapter {
+ 
+         @Override
+         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+@@ -795,14 +795,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
+                 }
+                 if (CollectionUtils.isNotEmpty(msg.tlvs())) {
+                     msg.tlvs().forEach(tlv -> {
+-                        AttributeKey<String> key = AttributeKeys.valueOf(
+-                            HAProxyConstants.PROXY_PROTOCOL_TLV_PREFIX + String.format("%02x", tlv.typeByteValue()));
+-                        byte[] valueBytes = ByteBufUtil.getBytes(tlv.content());
+-                        String value = StringUtils.trim(new String(valueBytes, CharsetUtil.UTF_8));
+-                        if (!BinaryUtil.isAscii(value.getBytes(StandardCharsets.UTF_8))) {
+-                            return;
+-                        }
+-                        channel.attr(key).set(value);
++                        handleHAProxyTLV(tlv, channel);
+                     });
+                 }
+             } finally {
+@@ -810,4 +803,14 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
+             }
+         }
+     }
++
++    protected void handleHAProxyTLV(HAProxyTLV tlv, Channel channel) {
++        byte[] valueBytes = ByteBufUtil.getBytes(tlv.content());
++        if (!BinaryUtil.isAscii(valueBytes)) {
++            return;
++        }
++        AttributeKey<String> key = AttributeKeys.valueOf(
++            HAProxyConstants.PROXY_PROTOCOL_TLV_PREFIX + String.format("%02x", tlv.typeByteValue()));
++        channel.attr(key).set(new String(valueBytes, CharsetUtil.UTF_8));
++    }
+ }

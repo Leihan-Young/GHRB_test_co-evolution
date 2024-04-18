@@ -1,0 +1,15 @@
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
+index 7c4b9b71610..e1665bd938a 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
+@@ -573,6 +573,10 @@ public class OpenAPINormalizer {
+             return;
+         }
+ 
++        if (schema.getAllOf().size() == 1) {
++            return;
++        }
++
+         for (Object item : schema.getAllOf()) {
+             if (!(item instanceof Schema)) {
+                 throw new RuntimeException("Error! allOf schema is not of the type Schema: " + item);

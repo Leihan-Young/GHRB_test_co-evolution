@@ -1,0 +1,7 @@
+{
+  "issue_id": 3341,
+  "issue_url": "https://github.com/assertj/assertj/issues/3341",
+  "title": "`isNotEqualTo(boolean)` fails if `actual` is null",
+  "description": "<p dir=\"auto\"><code class=\"notranslate\">assertThat(Boolean.TRUE).isEqualTo(true)</code> -> success<br>\n<code class=\"notranslate\">assertThat((Boolean)null).isNotEqualTo(Boolean.TRUE)</code> -> success<br>\n<code class=\"notranslate\">assertThat((Boolean)null).isNotEqualTo(true)</code> -> Expecting actual not to be null.</p>",
+  "description_text": "assertThat(Boolean.TRUE).isEqualTo(true) -> success\nassertThat((Boolean)null).isNotEqualTo(Boolean.TRUE) -> success\nassertThat((Boolean)null).isNotEqualTo(true) -> Expecting actual not to be null."
+}

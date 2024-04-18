@@ -1,0 +1,7 @@
+{
+  "issue_id": 5891,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5891",
+  "title": "[RIP-57] Implement MessageStore interface for tiered store",
+  "description": "<p dir=\"auto\">link to <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1506464155\" data-permission-text=\"Title is private\" data-url=\"https://github.com/apache/rocketmq/issues/5754\" data-hovercard-type=\"issue\" data-hovercard-url=\"/apache/rocketmq/issues/5754/hovercard\" href=\"https://github.com/apache/rocketmq/issues/5754\">#5754</a></p>\n<p dir=\"auto\">This issue aims to do these jobs.</p>\n<ul dir=\"auto\">\n<li>Implement MessageStore interface</li>\n<li>Implement metrics</li>\n<li>Add unit tests</li>\n</ul>",
+  "description_text": "link to #5754\nThis issue aims to do these jobs.\n\nImplement MessageStore interface\nImplement metrics\nAdd unit tests\n"
+}

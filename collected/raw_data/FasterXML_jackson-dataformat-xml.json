@@ -1,0 +1,291 @@
+[
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add mechanism for processing invalid XML names (transforming to valid ones)",
+        "url": "https://github.com/FasterXML/jackson-dataformat-xml/pull/531",
+        "resourcePath": "/FasterXML/jackson-dataformat-xml/pull/531",
+        "createdAt": "2022-06-02T07:17:54Z",
+        "number": 531,
+        "mergeCommit": {
+          "oid": "1f7d83dad515f3c782e7d3a0d8eeab91d70884b4",
+          "message": "Add XML tag name proccessing support via XmlTagProcessor (#531)\n\nThis commit adds an extendable `XmlTagProcessor` that is used for\r\nescaping invalid characters in XML tag names.\r\n\r\nfixes #523\r\nfixes #524",
+          "commitUrl": "https://github.com/FasterXML/jackson-dataformat-xml/commit/1f7d83dad515f3c782e7d3a0d8eeab91d70884b4",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "8327cfd63efd2d12d953bd13157f2720065bd24a",
+                "message": "Prepare for 2.14.0-rc1"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/dataformat/xml/XmlFactory.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/dataformat/xml/XmlFactoryBuilder.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/dataformat/xml/XmlMapper.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/main/java/com/fasterxml/jackson/dataformat/xml/XmlTagProcessor.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/main/java/com/fasterxml/jackson/dataformat/xml/XmlTagProcessors.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/dataformat/xml/deser/FromXmlParser.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/dataformat/xml/deser/XmlTokenStream.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/dataformat/xml/ser/ToXmlGenerator.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "src/test/java/com/fasterxml/jackson/dataformat/xml/misc/TagEscapeTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/dataformat/xml/stream/XmlTokenStreamTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOABJ3ss449MTE2gAoODdjYzkwYzE0ZDNjMWZmYmNjYjYzOTcyZjIzMGVmNWI4ODM3ZWRmMQ",
+                "url": "https://github.com/FasterXML/jackson-dataformat-xml/pull/531/commits/87cc90c14d3c1ffbccb63972f230ef5b8837edf1"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 523,
+                "url": "https://github.com/FasterXML/jackson-dataformat-xml/issues/523",
+                "title": "Bad map keys can not be unmarshaled",
+                "bodyHTML": "<p dir=\"auto\">Specifically map keys like <code class=\"notranslate\">000</code> and <code class=\"notranslate\">111</code> will be marshaled as <code class=\"notranslate\">&lt;000&gt;</code> and <code class=\"notranslate\">&lt;111&gt;</code>, which can no longer be unmarshaled. Jackson should make sure to escape those keys correctly.</p>\n<p dir=\"auto\">Example:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"package it;\n\nimport com.fasterxml.jackson.core.JsonProcessingException;\nimport com.fasterxml.jackson.dataformat.xml.XmlMapper;\n\nimport java.util.Map;\n\npublic class BadMap {\n    public static class DTO {\n        public Map&lt;String, String&gt; badMap = Map.of(&quot;000&quot;, &quot;foo&quot;, &quot;111&quot;, &quot;bar&quot;);\n    }\n\n    public static void main(String ... args) throws JsonProcessingException {\n        DTO dto = new DTO();\n\n        XmlMapper mapper = new XmlMapper();\n\n        final String res = mapper.writeValueAsString(dto);\n\n        // &lt;DTO&gt;&lt;badMap&gt;&lt;000&gt;foo&lt;/000&gt;&lt;111&gt;bar&lt;/111&gt;&lt;/badMap&gt;&lt;/DTO&gt;\n        System.out.println(res);\n\n        // ERROR!\n        // com.fasterxml.jackson.core.JsonParseException: Unexpected character '0' (code 48) in content after '&lt;' (malformed start element?).\n        mapper.readValue(res, DTO.class);\n    }\n}\n\"><pre class=\"notranslate\"><span class=\"pl-k\">package</span> <span class=\"pl-s1\">it</span>;\n\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">com</span>.<span class=\"pl-s1\">fasterxml</span>.<span class=\"pl-s1\">jackson</span>.<span class=\"pl-s1\">core</span>.<span class=\"pl-s1\">JsonProcessingException</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">com</span>.<span class=\"pl-s1\">fasterxml</span>.<span class=\"pl-s1\">jackson</span>.<span class=\"pl-s1\">dataformat</span>.<span class=\"pl-s1\">xml</span>.<span class=\"pl-s1\">XmlMapper</span>;\n\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">java</span>.<span class=\"pl-s1\">util</span>.<span class=\"pl-s1\">Map</span>;\n\n<span class=\"pl-k\">public</span> <span class=\"pl-k\">class</span> <span class=\"pl-smi\">BadMap</span> {\n    <span class=\"pl-k\">public</span> <span class=\"pl-k\">static</span> <span class=\"pl-k\">class</span> <span class=\"pl-smi\">DTO</span> {\n        <span class=\"pl-k\">public</span> <span class=\"pl-smi\">Map</span>&lt;<span class=\"pl-smi\">String</span>, <span class=\"pl-smi\">String</span>&gt; <span class=\"pl-s1\">badMap</span> = <span class=\"pl-smi\">Map</span>.<span class=\"pl-en\">of</span>(<span class=\"pl-s\">\"000\"</span>, <span class=\"pl-s\">\"foo\"</span>, <span class=\"pl-s\">\"111\"</span>, <span class=\"pl-s\">\"bar\"</span>);\n    }\n\n    <span class=\"pl-k\">public</span> <span class=\"pl-k\">static</span> <span class=\"pl-smi\">void</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">String</span> ... <span class=\"pl-s1\">args</span>) <span class=\"pl-k\">throws</span> <span class=\"pl-smi\">JsonProcessingException</span> {\n        <span class=\"pl-smi\">DTO</span> <span class=\"pl-s1\">dto</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">DTO</span>();\n\n        <span class=\"pl-smi\">XmlMapper</span> <span class=\"pl-s1\">mapper</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">XmlMapper</span>();\n\n        <span class=\"pl-k\">final</span> <span class=\"pl-smi\">String</span> <span class=\"pl-s1\">res</span> = <span class=\"pl-s1\">mapper</span>.<span class=\"pl-en\">writeValueAsString</span>(<span class=\"pl-s1\">dto</span>);\n\n        <span class=\"pl-c\">// &lt;DTO&gt;&lt;badMap&gt;&lt;000&gt;foo&lt;/000&gt;&lt;111&gt;bar&lt;/111&gt;&lt;/badMap&gt;&lt;/DTO&gt;</span>\n        <span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s1\">res</span>);\n\n        <span class=\"pl-c\">// ERROR!</span>\n        <span class=\"pl-c\">// com.fasterxml.jackson.core.JsonParseException: Unexpected character '0' (code 48) in content after '&lt;' (malformed start element?).</span>\n        <span class=\"pl-s1\">mapper</span>.<span class=\"pl-en\">readValue</span>(<span class=\"pl-s1\">res</span>, <span class=\"pl-smi\">DTO</span>.<span class=\"pl-k\">class</span>);\n    }\n}</pre></div>\n<p dir=\"auto\">jackson version: 2.13.2</p>",
+                "resourcePath": "/FasterXML/jackson-dataformat-xml/issues/523",
+                "createdAt": "2022-05-03T13:28:15Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            },
+            {
+              "node": {
+                "number": 524,
+                "url": "https://github.com/FasterXML/jackson-dataformat-xml/issues/524",
+                "title": "Dollars in POJO property names are not escaped on serialization",
+                "bodyHTML": "<p dir=\"auto\">Example:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"package it;\n\nimport com.fasterxml.jackson.core.JsonProcessingException;\nimport com.fasterxml.jackson.dataformat.xml.XmlMapper;\n\npublic class Dollar {\n\n    public static class DTO {\n        public String thisStringIs$Fancy$ = &quot;Hello World!&quot;;\n    }\n\n    public static void main(String ... args) throws JsonProcessingException {\n        DTO dto = new DTO();\n\n        XmlMapper mapper = new XmlMapper();\n\n        final String res = mapper.writeValueAsString(dto);\n\n        // &lt;DTO&gt;&lt;thisStringIs$Fancy$&gt;Hello World!&lt;/thisStringIs$Fancy$&gt;&lt;/DTO&gt;\n        System.out.println(res);\n\n        // ERROR!\n        // com.fasterxml.jackson.core.JsonParseException: Unexpected character '$' (code 36) excepted space, or '&gt;' or &quot;/&gt;&quot;\n        mapper.readValue(res, DTO.class);\n    }\n\n}\"><pre class=\"notranslate\"><span class=\"pl-k\">package</span> <span class=\"pl-s1\">it</span>;\n\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">com</span>.<span class=\"pl-s1\">fasterxml</span>.<span class=\"pl-s1\">jackson</span>.<span class=\"pl-s1\">core</span>.<span class=\"pl-s1\">JsonProcessingException</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">com</span>.<span class=\"pl-s1\">fasterxml</span>.<span class=\"pl-s1\">jackson</span>.<span class=\"pl-s1\">dataformat</span>.<span class=\"pl-s1\">xml</span>.<span class=\"pl-s1\">XmlMapper</span>;\n\n<span class=\"pl-k\">public</span> <span class=\"pl-k\">class</span> <span class=\"pl-smi\">Dollar</span> {\n\n    <span class=\"pl-k\">public</span> <span class=\"pl-k\">static</span> <span class=\"pl-k\">class</span> <span class=\"pl-smi\">DTO</span> {\n        <span class=\"pl-k\">public</span> <span class=\"pl-smi\">String</span> <span class=\"pl-s1\">thisStringIs$Fancy$</span> = <span class=\"pl-s\">\"Hello World!\"</span>;\n    }\n\n    <span class=\"pl-k\">public</span> <span class=\"pl-k\">static</span> <span class=\"pl-smi\">void</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">String</span> ... <span class=\"pl-s1\">args</span>) <span class=\"pl-k\">throws</span> <span class=\"pl-smi\">JsonProcessingException</span> {\n        <span class=\"pl-smi\">DTO</span> <span class=\"pl-s1\">dto</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">DTO</span>();\n\n        <span class=\"pl-smi\">XmlMapper</span> <span class=\"pl-s1\">mapper</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">XmlMapper</span>();\n\n        <span class=\"pl-k\">final</span> <span class=\"pl-smi\">String</span> <span class=\"pl-s1\">res</span> = <span class=\"pl-s1\">mapper</span>.<span class=\"pl-en\">writeValueAsString</span>(<span class=\"pl-s1\">dto</span>);\n\n        <span class=\"pl-c\">// &lt;DTO&gt;&lt;thisStringIs$Fancy$&gt;Hello World!&lt;/thisStringIs$Fancy$&gt;&lt;/DTO&gt;</span>\n        <span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s1\">res</span>);\n\n        <span class=\"pl-c\">// ERROR!</span>\n        <span class=\"pl-c\">// com.fasterxml.jackson.core.JsonParseException: Unexpected character '$' (code 36) excepted space, or '&gt;' or \"/&gt;\"</span>\n        <span class=\"pl-s1\">mapper</span>.<span class=\"pl-en\">readValue</span>(<span class=\"pl-s1\">res</span>, <span class=\"pl-smi\">DTO</span>.<span class=\"pl-k\">class</span>);\n    }\n\n}</pre></div>\n<p dir=\"auto\">jackson version: 2.13.2</p>",
+                "resourcePath": "/FasterXML/jackson-dataformat-xml/issues/524",
+                "createdAt": "2022-05-03T13:29:48Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Support unwrapping in `@JsonRawValue` serialization",
+        "url": "https://github.com/FasterXML/jackson-dataformat-xml/pull/544",
+        "resourcePath": "/FasterXML/jackson-dataformat-xml/pull/544",
+        "createdAt": "2022-08-29T10:57:38Z",
+        "number": 544,
+        "mergeCommit": {
+          "oid": "06d787505134304e6e9d5154ae223fcfb26a0b52",
+          "message": "Support unwrapping in `@JsonRawValue` serialization (#544)\n\nFixes https://github.com/FasterXML/jackson-databind/issues/3581",
+          "commitUrl": "https://github.com/FasterXML/jackson-dataformat-xml/commit/06d787505134304e6e9d5154ae223fcfb26a0b52",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "6c03760102474a0e38f0f52cdaef2a88e7133598",
+                "message": "Manual pom.xml merge (-> woodstox 6.3.1)"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/dataformat/xml/ser/ToXmlGenerator.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/dataformat/xml/misc/XmlTextTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/dataformat/xml/stream/XmlGeneratorTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOABJ3ss499bZQ2gAoM2M1NWU5ODY4OWFkYWZhZTJkMDk2NGViMmRkNmMwODhlYjllN2U5OA",
+                "url": "https://github.com/FasterXML/jackson-dataformat-xml/pull/544/commits/3c55e98689adafae2d0964eb2dd6c088eb9e7e98"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 545,
+                "url": "https://github.com/FasterXML/jackson-dataformat-xml/issues/545",
+                "title": "`@JacksonXmlText` does not work when paired with `@JsonRawValue`",
+                "bodyHTML": "<p dir=\"auto\">I apologize if there's a similar issue already opened - I didn't find anything when searching.</p>\n<p dir=\"auto\"><strong>Describe the bug</strong><br>\nWhen a field has both the <code class=\"notranslate\">@JsonRawValue</code> and the <code class=\"notranslate\">@JacksonXmlText</code> annotations, the <code class=\"notranslate\">@JacksonXlmText</code> annotation has no effect.</p>\n<p dir=\"auto\"><strong>Version information</strong><br>\ncom.fasterxml.jackson.core:jackson-annotations:2.13.3<br>\ncom.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.3</p>\n<p dir=\"auto\"><strong>To Reproduce</strong></p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"@JacksonXmlRootElement(localName = &quot;test-pojo&quot;)\npublic class TestPojo {\n     @JacksonXmlProperty(isAttribute = true)\n     String id;\n\n     @JacksonXmlText\n     @JsonRawValue\n     String value;\n}\n\n//....\n\nTestPojo sut = new TestPojo();\nsut.id = &quot;123&quot;;\nsut.value = &quot;&lt;a&gt;A&lt;/a&gt;&lt;b someAttribute=\\&quot;B\\&quot;&gt;B&lt;/b&gt;&quot;;\"><pre class=\"notranslate\"><span class=\"pl-c1\">@</span><span class=\"pl-c1\">JacksonXmlRootElement</span>(<span class=\"pl-s1\">localName</span> = <span class=\"pl-s\">\"test-pojo\"</span>)\n<span class=\"pl-k\">public</span> <span class=\"pl-k\">class</span> <span class=\"pl-smi\">TestPojo</span> {\n     <span class=\"pl-c1\">@</span><span class=\"pl-c1\">JacksonXmlProperty</span>(<span class=\"pl-s1\">isAttribute</span> = <span class=\"pl-c1\">true</span>)\n     <span class=\"pl-smi\">String</span> <span class=\"pl-s1\">id</span>;\n\n     <span class=\"pl-c1\">@</span><span class=\"pl-c1\">JacksonXmlText</span>\n     <span class=\"pl-c1\">@</span><span class=\"pl-c1\">JsonRawValue</span>\n     <span class=\"pl-smi\">String</span> <span class=\"pl-s1\">value</span>;\n}\n\n<span class=\"pl-c\">//....</span>\n\n<span class=\"pl-smi\">TestPojo</span> <span class=\"pl-s1\">sut</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">TestPojo</span>();\n<span class=\"pl-s1\">sut</span>.<span class=\"pl-s1\">id</span> = <span class=\"pl-s\">\"123\"</span>;\n<span class=\"pl-s1\">sut</span>.<span class=\"pl-s1\">value</span> = <span class=\"pl-s\">\"&lt;a&gt;A&lt;/a&gt;&lt;b someAttribute=<span class=\"pl-cce\">\\\"</span>B<span class=\"pl-cce\">\\\"</span>&gt;B&lt;/b&gt;\"</span>;</pre></div>\n<p dir=\"auto\">Actual output:</p>\n<div class=\"highlight highlight-text-xml notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"&lt;test-pojo&gt;\n    &lt;id&gt;123&lt;/id&gt;\n     &lt;value&gt;\n         &lt;a&gt;A&lt;/a&gt;\n         &lt;b someAttribute=&quot;B&quot;&gt;B&lt;/b&gt;\n     &lt;/value&gt;\n&lt;/test-pojo&gt;\"><pre class=\"notranslate\">&lt;<span class=\"pl-ent\">test-pojo</span>&gt;\n    &lt;<span class=\"pl-ent\">id</span>&gt;123&lt;/<span class=\"pl-ent\">id</span>&gt;\n     &lt;<span class=\"pl-ent\">value</span>&gt;\n         &lt;<span class=\"pl-ent\">a</span>&gt;A&lt;/<span class=\"pl-ent\">a</span>&gt;\n         &lt;<span class=\"pl-ent\">b</span> <span class=\"pl-e\">someAttribute</span>=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>B<span class=\"pl-pds\">\"</span></span>&gt;B&lt;/<span class=\"pl-ent\">b</span>&gt;\n     &lt;/<span class=\"pl-ent\">value</span>&gt;\n&lt;/<span class=\"pl-ent\">test-pojo</span>&gt;</pre></div>\n<p dir=\"auto\">Expected output:</p>\n<div class=\"highlight highlight-text-xml notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"&lt;test-pojo&gt;\n    &lt;id&gt;123&lt;/id&gt;\n    &lt;a&gt;A&lt;/a&gt;&lt;b someAttribute=&quot;B&quot;&gt;B&lt;/b&gt;\n&lt;/test-pojo&gt;\"><pre class=\"notranslate\">&lt;<span class=\"pl-ent\">test-pojo</span>&gt;\n    &lt;<span class=\"pl-ent\">id</span>&gt;123&lt;/<span class=\"pl-ent\">id</span>&gt;\n    &lt;<span class=\"pl-ent\">a</span>&gt;A&lt;/<span class=\"pl-ent\">a</span>&gt;&lt;<span class=\"pl-ent\">b</span> <span class=\"pl-e\">someAttribute</span>=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>B<span class=\"pl-pds\">\"</span></span>&gt;B&lt;/<span class=\"pl-ent\">b</span>&gt;\n&lt;/<span class=\"pl-ent\">test-pojo</span>&gt;</pre></div>\n<p dir=\"auto\"><strong>Additional context</strong></p>\n<ul dir=\"auto\">\n<li>I tried cheating the system, by included a <code class=\"notranslate\">@JsonProperty(\"\")</code> annotation on the <code class=\"notranslate\">value</code> field, it had no effect.</li>\n</ul>",
+                "resourcePath": "/FasterXML/jackson-dataformat-xml/issues/545",
+                "createdAt": "2022-08-23T15:48:35Z",
+                "labels": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Fix #643: Add `ToXmlGenerator.Feature` or allowing XML Schema/JAXB compatible Infinity representation",
+        "url": "https://github.com/FasterXML/jackson-dataformat-xml/pull/644",
+        "resourcePath": "/FasterXML/jackson-dataformat-xml/pull/644",
+        "createdAt": "2024-03-08T22:47:12Z",
+        "number": 644,
+        "mergeCommit": {
+          "oid": "be5e71983cf1466db35a2efd0ee026420bd0f200",
+          "message": "Fix #643: Add `ToXmlGenerator.Feature` or allowing XML Schema/JAXB compatible Infinity representation (#644)",
+          "commitUrl": "https://github.com/FasterXML/jackson-dataformat-xml/commit/be5e71983cf1466db35a2efd0ee026420bd0f200",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "e80909f3d8ab87a6087399cb4ec0870b8dedd43c",
+                "message": "Merge branch '2.16' into 2.17"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "release-notes/CREDITS-2.x"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "release-notes/VERSION-2.x"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/main/java/com/fasterxml/jackson/dataformat/xml/ser/ToXmlGenerator.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "src/test/java/com/fasterxml/jackson/dataformat/xml/ser/TestSerialization.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOABJ3ss5pIL902gAoYTVhYWRkNjkyYTRlMjI0YTNmYmZjYjdhOTRhNDY3NjE0OGE1MTdkMw",
+                "url": "https://github.com/FasterXML/jackson-dataformat-xml/pull/644/commits/a5aadd692a4e224a3fbfcb7a94a4676148a517d3"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 643,
+                "url": "https://github.com/FasterXML/jackson-dataformat-xml/issues/643",
+                "title": "XML serialization of floating-point infinity is incompatible with JAXB and XML Schema",
+                "bodyHTML": "<p dir=\"auto\">As of version 2.16.1, infinite values of <code class=\"notranslate\">float</code> and <code class=\"notranslate\">double</code> are serialized in a way that is incompatible with <a href=\"https://www.w3.org/TR/xmlschema-2/#double\" rel=\"nofollow\">the XML Schema definition</a> and JAXB. Specifically, jackson-dataformat-xml serializes these values as the strings <code class=\"notranslate\">Infinity</code> or <code class=\"notranslate\">-Infinity</code>. XML Schema, however, says they should be serialized as <code class=\"notranslate\">INF</code> or <code class=\"notranslate\">-INF</code>, and that is what JAXB does.</p>\n<details>\n<summary>Example program (click to show)</summary>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"package org.example;\n\nimport com.fasterxml.jackson.core.JsonProcessingException;\nimport com.fasterxml.jackson.dataformat.xml.XmlMapper;\nimport java.io.IOException;\nimport java.io.StringReader;\nimport java.io.StringWriter;\nimport javax.xml.bind.JAXB;\nimport javax.xml.bind.annotation.XmlElement;\nimport javax.xml.bind.annotation.XmlRootElement;\n\npublic class Main {\n\tpublic static void main(String[] args) throws IOException {\n\t\tExampleObject original, deserialized;\n\t\tString serialized;\n\n\t\toriginal = new ExampleObject();\n\t\toriginal.x = Double.POSITIVE_INFINITY;\n\t\toriginal.y = Double.NEGATIVE_INFINITY;\n\t\toriginal.z = Double.NaN;\n\t\toriginal.fx = Float.POSITIVE_INFINITY;\n\t\toriginal.fy = Float.NEGATIVE_INFINITY;\n\t\toriginal.fz = Float.NaN;\n\n\t\tSystem.out.println(&quot;--- Jackson serialization ---&quot;);\n\t\tserialized = serializeWithJackson(original);\n\t\tSystem.out.println(serialized);\n\n\t\tSystem.out.println(&quot;--- Jackson deserialization ---&quot;);\n\t\tdeserialized = deserializeWithJackson(serialized);\n\t\tSystem.out.println(deserialized);\n\n\t\tSystem.out.println(&quot;--- JAXB serialization ---&quot;);\n\t\tserialized = serializeWithJaxb(original);\n\t\tSystem.out.println(serialized);\n\n\t\tSystem.out.println(&quot;--- JAXB deserialization ---&quot;);\n\t\tdeserialized = deserializeWithJaxb(serialized);\n\t\tSystem.out.println(deserialized);\n\n\t\tSystem.out.println(&quot;--- serialized with JAXB, deserialized with Jackson ---&quot;);\n\t\tdeserialized = deserializeWithJackson(serialized);\n\t\tSystem.out.println(deserialized);\n\n\t\tSystem.out.println(&quot;--- serialized with Jackson, deserialized with JAXB ---&quot;);\n\t\tserialized = serializeWithJackson(original);\n\t\tdeserialized = deserializeWithJaxb(serialized);\n\t\tSystem.out.println(deserialized);\n\t}\n\n\tprivate static String serializeWithJackson(ExampleObject object) throws IOException {\n\t\tvar buf = new StringWriter();\n\t\tnew XmlMapper().writeValue(buf, object);\n\t\treturn buf.toString();\n\t}\n\n\tprivate static ExampleObject deserializeWithJackson(String xml) throws JsonProcessingException {\n\t\treturn new XmlMapper().readValue(xml, ExampleObject.class);\n\t}\n\n\tprivate static String serializeWithJaxb(ExampleObject object) {\n\t\tvar buf = new StringWriter();\n\t\tJAXB.marshal(object, buf);\n\t\treturn buf.toString();\n\t}\n\n\tprivate static ExampleObject deserializeWithJaxb(String xml) {\n\t\treturn JAXB.unmarshal(new StringReader(xml), ExampleObject.class);\n\t}\n}\n\n@XmlRootElement(name = &quot;example&quot;)\nclass ExampleObject {\n\t@XmlElement\n\tpublic double x, y, z;\n\n\t@XmlElement\n\tpublic float fx, fy, fz;\n\n\t@Override\n\tpublic String toString() {\n\t\treturn String.format(&quot;x=%f y=%f z=%f fx=%f fy=%f fz=%f&quot;, x, y, z, fx, fy, fz);\n\t}\n}\"><pre class=\"notranslate\"><span class=\"pl-k\">package</span> <span class=\"pl-s1\">org</span>.<span class=\"pl-s1\">example</span>;\n\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">com</span>.<span class=\"pl-s1\">fasterxml</span>.<span class=\"pl-s1\">jackson</span>.<span class=\"pl-s1\">core</span>.<span class=\"pl-s1\">JsonProcessingException</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">com</span>.<span class=\"pl-s1\">fasterxml</span>.<span class=\"pl-s1\">jackson</span>.<span class=\"pl-s1\">dataformat</span>.<span class=\"pl-s1\">xml</span>.<span class=\"pl-s1\">XmlMapper</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">java</span>.<span class=\"pl-s1\">io</span>.<span class=\"pl-s1\">IOException</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">java</span>.<span class=\"pl-s1\">io</span>.<span class=\"pl-s1\">StringReader</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">java</span>.<span class=\"pl-s1\">io</span>.<span class=\"pl-s1\">StringWriter</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">javax</span>.<span class=\"pl-s1\">xml</span>.<span class=\"pl-s1\">bind</span>.<span class=\"pl-c1\">JAXB</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">javax</span>.<span class=\"pl-s1\">xml</span>.<span class=\"pl-s1\">bind</span>.<span class=\"pl-s1\">annotation</span>.<span class=\"pl-s1\">XmlElement</span>;\n<span class=\"pl-k\">import</span> <span class=\"pl-s1\">javax</span>.<span class=\"pl-s1\">xml</span>.<span class=\"pl-s1\">bind</span>.<span class=\"pl-s1\">annotation</span>.<span class=\"pl-s1\">XmlRootElement</span>;\n\n<span class=\"pl-k\">public</span> <span class=\"pl-k\">class</span> <span class=\"pl-smi\">Main</span> {\n\t<span class=\"pl-k\">public</span> <span class=\"pl-k\">static</span> <span class=\"pl-smi\">void</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">String</span>[] <span class=\"pl-s1\">args</span>) <span class=\"pl-k\">throws</span> <span class=\"pl-smi\">IOException</span> {\n\t\t<span class=\"pl-smi\">ExampleObject</span> <span class=\"pl-s1\">original</span>, <span class=\"pl-s1\">deserialized</span>;\n\t\t<span class=\"pl-smi\">String</span> <span class=\"pl-s1\">serialized</span>;\n\n\t\t<span class=\"pl-s1\">original</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">ExampleObject</span>();\n\t\t<span class=\"pl-s1\">original</span>.<span class=\"pl-s1\">x</span> = <span class=\"pl-smi\">Double</span>.<span class=\"pl-c1\">POSITIVE_INFINITY</span>;\n\t\t<span class=\"pl-s1\">original</span>.<span class=\"pl-s1\">y</span> = <span class=\"pl-smi\">Double</span>.<span class=\"pl-c1\">NEGATIVE_INFINITY</span>;\n\t\t<span class=\"pl-s1\">original</span>.<span class=\"pl-s1\">z</span> = <span class=\"pl-smi\">Double</span>.<span class=\"pl-s1\">NaN</span>;\n\t\t<span class=\"pl-s1\">original</span>.<span class=\"pl-s1\">fx</span> = <span class=\"pl-smi\">Float</span>.<span class=\"pl-c1\">POSITIVE_INFINITY</span>;\n\t\t<span class=\"pl-s1\">original</span>.<span class=\"pl-s1\">fy</span> = <span class=\"pl-smi\">Float</span>.<span class=\"pl-c1\">NEGATIVE_INFINITY</span>;\n\t\t<span class=\"pl-s1\">original</span>.<span class=\"pl-s1\">fz</span> = <span class=\"pl-smi\">Float</span>.<span class=\"pl-s1\">NaN</span>;\n\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s\">\"--- Jackson serialization ---\"</span>);\n\t\t<span class=\"pl-s1\">serialized</span> = <span class=\"pl-en\">serializeWithJackson</span>(<span class=\"pl-s1\">original</span>);\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s1\">serialized</span>);\n\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s\">\"--- Jackson deserialization ---\"</span>);\n\t\t<span class=\"pl-s1\">deserialized</span> = <span class=\"pl-en\">deserializeWithJackson</span>(<span class=\"pl-s1\">serialized</span>);\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s1\">deserialized</span>);\n\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s\">\"--- JAXB serialization ---\"</span>);\n\t\t<span class=\"pl-s1\">serialized</span> = <span class=\"pl-en\">serializeWithJaxb</span>(<span class=\"pl-s1\">original</span>);\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s1\">serialized</span>);\n\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s\">\"--- JAXB deserialization ---\"</span>);\n\t\t<span class=\"pl-s1\">deserialized</span> = <span class=\"pl-en\">deserializeWithJaxb</span>(<span class=\"pl-s1\">serialized</span>);\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s1\">deserialized</span>);\n\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s\">\"--- serialized with JAXB, deserialized with Jackson ---\"</span>);\n\t\t<span class=\"pl-s1\">deserialized</span> = <span class=\"pl-en\">deserializeWithJackson</span>(<span class=\"pl-s1\">serialized</span>);\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s1\">deserialized</span>);\n\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s\">\"--- serialized with Jackson, deserialized with JAXB ---\"</span>);\n\t\t<span class=\"pl-s1\">serialized</span> = <span class=\"pl-en\">serializeWithJackson</span>(<span class=\"pl-s1\">original</span>);\n\t\t<span class=\"pl-s1\">deserialized</span> = <span class=\"pl-en\">deserializeWithJaxb</span>(<span class=\"pl-s1\">serialized</span>);\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-s1\">deserialized</span>);\n\t}\n\n\t<span class=\"pl-k\">private</span> <span class=\"pl-k\">static</span> <span class=\"pl-smi\">String</span> <span class=\"pl-en\">serializeWithJackson</span>(<span class=\"pl-smi\">ExampleObject</span> <span class=\"pl-s1\">object</span>) <span class=\"pl-k\">throws</span> <span class=\"pl-smi\">IOException</span> {\n\t\t<span class=\"pl-smi\">var</span> <span class=\"pl-s1\">buf</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">StringWriter</span>();\n\t\t<span class=\"pl-k\">new</span> <span class=\"pl-smi\">XmlMapper</span>().<span class=\"pl-en\">writeValue</span>(<span class=\"pl-s1\">buf</span>, <span class=\"pl-s1\">object</span>);\n\t\t<span class=\"pl-k\">return</span> <span class=\"pl-s1\">buf</span>.<span class=\"pl-en\">toString</span>();\n\t}\n\n\t<span class=\"pl-k\">private</span> <span class=\"pl-k\">static</span> <span class=\"pl-smi\">ExampleObject</span> <span class=\"pl-en\">deserializeWithJackson</span>(<span class=\"pl-smi\">String</span> <span class=\"pl-s1\">xml</span>) <span class=\"pl-k\">throws</span> <span class=\"pl-smi\">JsonProcessingException</span> {\n\t\t<span class=\"pl-k\">return</span> <span class=\"pl-k\">new</span> <span class=\"pl-smi\">XmlMapper</span>().<span class=\"pl-en\">readValue</span>(<span class=\"pl-s1\">xml</span>, <span class=\"pl-smi\">ExampleObject</span>.<span class=\"pl-k\">class</span>);\n\t}\n\n\t<span class=\"pl-k\">private</span> <span class=\"pl-k\">static</span> <span class=\"pl-smi\">String</span> <span class=\"pl-en\">serializeWithJaxb</span>(<span class=\"pl-smi\">ExampleObject</span> <span class=\"pl-s1\">object</span>) {\n\t\t<span class=\"pl-smi\">var</span> <span class=\"pl-s1\">buf</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">StringWriter</span>();\n\t\t<span class=\"pl-smi\">JAXB</span>.<span class=\"pl-en\">marshal</span>(<span class=\"pl-s1\">object</span>, <span class=\"pl-s1\">buf</span>);\n\t\t<span class=\"pl-k\">return</span> <span class=\"pl-s1\">buf</span>.<span class=\"pl-en\">toString</span>();\n\t}\n\n\t<span class=\"pl-k\">private</span> <span class=\"pl-k\">static</span> <span class=\"pl-smi\">ExampleObject</span> <span class=\"pl-en\">deserializeWithJaxb</span>(<span class=\"pl-smi\">String</span> <span class=\"pl-s1\">xml</span>) {\n\t\t<span class=\"pl-k\">return</span> <span class=\"pl-smi\">JAXB</span>.<span class=\"pl-en\">unmarshal</span>(<span class=\"pl-k\">new</span> <span class=\"pl-smi\">StringReader</span>(<span class=\"pl-s1\">xml</span>), <span class=\"pl-smi\">ExampleObject</span>.<span class=\"pl-k\">class</span>);\n\t}\n}\n\n<span class=\"pl-c1\">@</span><span class=\"pl-c1\">XmlRootElement</span>(<span class=\"pl-s1\">name</span> = <span class=\"pl-s\">\"example\"</span>)\n<span class=\"pl-k\">class</span> <span class=\"pl-smi\">ExampleObject</span> {\n\t<span class=\"pl-c1\">@</span><span class=\"pl-c1\">XmlElement</span>\n\t<span class=\"pl-k\">public</span> <span class=\"pl-smi\">double</span> <span class=\"pl-s1\">x</span>, <span class=\"pl-s1\">y</span>, <span class=\"pl-s1\">z</span>;\n\n\t<span class=\"pl-c1\">@</span><span class=\"pl-c1\">XmlElement</span>\n\t<span class=\"pl-k\">public</span> <span class=\"pl-smi\">float</span> <span class=\"pl-s1\">fx</span>, <span class=\"pl-s1\">fy</span>, <span class=\"pl-s1\">fz</span>;\n\n\t<span class=\"pl-c1\">@</span><span class=\"pl-c1\">Override</span>\n\t<span class=\"pl-k\">public</span> <span class=\"pl-smi\">String</span> <span class=\"pl-en\">toString</span>() {\n\t\t<span class=\"pl-k\">return</span> <span class=\"pl-smi\">String</span>.<span class=\"pl-en\">format</span>(<span class=\"pl-s\">\"x=%f y=%f z=%f fx=%f fy=%f fz=%f\"</span>, <span class=\"pl-s1\">x</span>, <span class=\"pl-s1\">y</span>, <span class=\"pl-s1\">z</span>, <span class=\"pl-s1\">fx</span>, <span class=\"pl-s1\">fy</span>, <span class=\"pl-s1\">fz</span>);\n\t}\n}</pre></div>\n</details>\n<details>\n<summary>Maven POM for example program (click to show)</summary>\n<div class=\"highlight highlight-text-xml notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\n&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot;\n\txmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;\n\txsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;\n\t&lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;\n\n\t&lt;groupId&gt;org.example&lt;/groupId&gt;\n\t&lt;artifactId&gt;jackson-xml-double&lt;/artifactId&gt;\n\t&lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;\n\n\t&lt;properties&gt;\n\t\t&lt;maven.compiler.source&gt;17&lt;/maven.compiler.source&gt;\n\t\t&lt;maven.compiler.target&gt;17&lt;/maven.compiler.target&gt;\n\t\t&lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;\n\t&lt;/properties&gt;\n\n\t&lt;dependencies&gt;\n\t\t&lt;dependency&gt;\n\t\t\t&lt;groupId&gt;com.fasterxml.jackson.core&lt;/groupId&gt;\n\t\t\t&lt;artifactId&gt;jackson-databind&lt;/artifactId&gt;\n\t\t\t&lt;version&gt;2.16.1&lt;/version&gt;\n\t\t&lt;/dependency&gt;\n\n\t\t&lt;dependency&gt;\n\t\t\t&lt;groupId&gt;com.fasterxml.jackson.core&lt;/groupId&gt;\n\t\t\t&lt;artifactId&gt;jackson-annotations&lt;/artifactId&gt;\n\t\t\t&lt;version&gt;2.16.1&lt;/version&gt;\n\t\t&lt;/dependency&gt;\n\n\t\t&lt;dependency&gt;\n\t\t\t&lt;groupId&gt;com.fasterxml.jackson.dataformat&lt;/groupId&gt;\n\t\t\t&lt;artifactId&gt;jackson-dataformat-xml&lt;/artifactId&gt;\n\t\t\t&lt;version&gt;2.16.1&lt;/version&gt;\n\t\t&lt;/dependency&gt;\n\n\t\t&lt;dependency&gt;\n\t\t\t&lt;groupId&gt;javax.xml.bind&lt;/groupId&gt;\n\t\t\t&lt;artifactId&gt;jaxb-api&lt;/artifactId&gt;\n\t\t\t&lt;version&gt;2.3.0&lt;/version&gt;\n\t\t&lt;/dependency&gt;\n\n\t\t&lt;dependency&gt;\n\t\t\t&lt;groupId&gt;org.glassfish.jaxb&lt;/groupId&gt;\n\t\t\t&lt;artifactId&gt;jaxb-runtime&lt;/artifactId&gt;\n\t\t\t&lt;version&gt;2.3.3&lt;/version&gt;\n\t\t&lt;/dependency&gt;\n\t&lt;/dependencies&gt;\n&lt;/project&gt;\"><pre class=\"notranslate\">&lt;?<span class=\"pl-ent\">xml</span><span class=\"pl-e\"> version</span>=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>1.0<span class=\"pl-pds\">\"</span></span><span class=\"pl-e\"> encoding</span>=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>UTF-8<span class=\"pl-pds\">\"</span></span>?&gt;\n&lt;<span class=\"pl-ent\">project</span> <span class=\"pl-e\">xmlns</span>=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>http://maven.apache.org/POM/4.0.0<span class=\"pl-pds\">\"</span></span>\n\txmlns:xsi=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>http://www.w3.org/2001/XMLSchema-instance<span class=\"pl-pds\">\"</span></span>\n\txsi:schemaLocation=<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd<span class=\"pl-pds\">\"</span></span>&gt;\n\t&lt;<span class=\"pl-ent\">modelVersion</span>&gt;4.0.0&lt;/<span class=\"pl-ent\">modelVersion</span>&gt;\n\n\t&lt;<span class=\"pl-ent\">groupId</span>&gt;org.example&lt;/<span class=\"pl-ent\">groupId</span>&gt;\n\t&lt;<span class=\"pl-ent\">artifactId</span>&gt;jackson-xml-double&lt;/<span class=\"pl-ent\">artifactId</span>&gt;\n\t&lt;<span class=\"pl-ent\">version</span>&gt;1.0-SNAPSHOT&lt;/<span class=\"pl-ent\">version</span>&gt;\n\n\t&lt;<span class=\"pl-ent\">properties</span>&gt;\n\t\t&lt;<span class=\"pl-ent\">maven</span>.compiler.source&gt;17&lt;/<span class=\"pl-ent\">maven</span>.compiler.source&gt;\n\t\t&lt;<span class=\"pl-ent\">maven</span>.compiler.target&gt;17&lt;/<span class=\"pl-ent\">maven</span>.compiler.target&gt;\n\t\t&lt;<span class=\"pl-ent\">project</span>.build.sourceEncoding&gt;UTF-8&lt;/<span class=\"pl-ent\">project</span>.build.sourceEncoding&gt;\n\t&lt;/<span class=\"pl-ent\">properties</span>&gt;\n\n\t&lt;<span class=\"pl-ent\">dependencies</span>&gt;\n\t\t&lt;<span class=\"pl-ent\">dependency</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">groupId</span>&gt;com.fasterxml.jackson.core&lt;/<span class=\"pl-ent\">groupId</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">artifactId</span>&gt;jackson-databind&lt;/<span class=\"pl-ent\">artifactId</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">version</span>&gt;2.16.1&lt;/<span class=\"pl-ent\">version</span>&gt;\n\t\t&lt;/<span class=\"pl-ent\">dependency</span>&gt;\n\n\t\t&lt;<span class=\"pl-ent\">dependency</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">groupId</span>&gt;com.fasterxml.jackson.core&lt;/<span class=\"pl-ent\">groupId</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">artifactId</span>&gt;jackson-annotations&lt;/<span class=\"pl-ent\">artifactId</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">version</span>&gt;2.16.1&lt;/<span class=\"pl-ent\">version</span>&gt;\n\t\t&lt;/<span class=\"pl-ent\">dependency</span>&gt;\n\n\t\t&lt;<span class=\"pl-ent\">dependency</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">groupId</span>&gt;com.fasterxml.jackson.dataformat&lt;/<span class=\"pl-ent\">groupId</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">artifactId</span>&gt;jackson-dataformat-xml&lt;/<span class=\"pl-ent\">artifactId</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">version</span>&gt;2.16.1&lt;/<span class=\"pl-ent\">version</span>&gt;\n\t\t&lt;/<span class=\"pl-ent\">dependency</span>&gt;\n\n\t\t&lt;<span class=\"pl-ent\">dependency</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">groupId</span>&gt;javax.xml.bind&lt;/<span class=\"pl-ent\">groupId</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">artifactId</span>&gt;jaxb-api&lt;/<span class=\"pl-ent\">artifactId</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">version</span>&gt;2.3.0&lt;/<span class=\"pl-ent\">version</span>&gt;\n\t\t&lt;/<span class=\"pl-ent\">dependency</span>&gt;\n\n\t\t&lt;<span class=\"pl-ent\">dependency</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">groupId</span>&gt;org.glassfish.jaxb&lt;/<span class=\"pl-ent\">groupId</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">artifactId</span>&gt;jaxb-runtime&lt;/<span class=\"pl-ent\">artifactId</span>&gt;\n\t\t\t&lt;<span class=\"pl-ent\">version</span>&gt;2.3.3&lt;/<span class=\"pl-ent\">version</span>&gt;\n\t\t&lt;/<span class=\"pl-ent\">dependency</span>&gt;\n\t&lt;/<span class=\"pl-ent\">dependencies</span>&gt;\n&lt;/<span class=\"pl-ent\">project</span>&gt;</pre></div>\n</details>\n<details>\n<summary>Output from example program (click to show)</summary>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"--- Jackson serialization ---\n&lt;ExampleObject&gt;&lt;x&gt;Infinity&lt;/x&gt;&lt;y&gt;-Infinity&lt;/y&gt;&lt;z&gt;NaN&lt;/z&gt;&lt;fx&gt;Infinity&lt;/fx&gt;&lt;fy&gt;-Infinity&lt;/fy&gt;&lt;fz&gt;NaN&lt;/fz&gt;&lt;/ExampleObject&gt;\n--- Jackson deserialization ---\nx=Infinity y=-Infinity z=NaN fx=Infinity fy=-Infinity fz=NaN\n--- JAXB serialization ---\n&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot;?&gt;\n&lt;example&gt;\n    &lt;x&gt;INF&lt;/x&gt;\n    &lt;y&gt;-INF&lt;/y&gt;\n    &lt;z&gt;NaN&lt;/z&gt;\n    &lt;fx&gt;INF&lt;/fx&gt;\n    &lt;fy&gt;-INF&lt;/fy&gt;\n    &lt;fz&gt;NaN&lt;/fz&gt;\n&lt;/example&gt;\n\n--- JAXB deserialization ---\nx=Infinity y=-Infinity z=NaN fx=Infinity fy=-Infinity fz=NaN\n--- serialized with JAXB, deserialized with Jackson ---\nx=Infinity y=-Infinity z=NaN fx=Infinity fy=-Infinity fz=NaN\n--- serialized with Jackson, deserialized with JAXB ---\nx=0.000000 y=0.000000 z=NaN fx=0.000000 fy=0.000000 fz=NaN\"><pre class=\"notranslate\"><code class=\"notranslate\">--- Jackson serialization ---\n&lt;ExampleObject&gt;&lt;x&gt;Infinity&lt;/x&gt;&lt;y&gt;-Infinity&lt;/y&gt;&lt;z&gt;NaN&lt;/z&gt;&lt;fx&gt;Infinity&lt;/fx&gt;&lt;fy&gt;-Infinity&lt;/fy&gt;&lt;fz&gt;NaN&lt;/fz&gt;&lt;/ExampleObject&gt;\n--- Jackson deserialization ---\nx=Infinity y=-Infinity z=NaN fx=Infinity fy=-Infinity fz=NaN\n--- JAXB serialization ---\n&lt;?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?&gt;\n&lt;example&gt;\n    &lt;x&gt;INF&lt;/x&gt;\n    &lt;y&gt;-INF&lt;/y&gt;\n    &lt;z&gt;NaN&lt;/z&gt;\n    &lt;fx&gt;INF&lt;/fx&gt;\n    &lt;fy&gt;-INF&lt;/fy&gt;\n    &lt;fz&gt;NaN&lt;/fz&gt;\n&lt;/example&gt;\n\n--- JAXB deserialization ---\nx=Infinity y=-Infinity z=NaN fx=Infinity fy=-Infinity fz=NaN\n--- serialized with JAXB, deserialized with Jackson ---\nx=Infinity y=-Infinity z=NaN fx=Infinity fy=-Infinity fz=NaN\n--- serialized with Jackson, deserialized with JAXB ---\nx=0.000000 y=0.000000 z=NaN fx=0.000000 fy=0.000000 fz=NaN\n</code></pre></div>\n</details>\n<p dir=\"auto\">As the example program's output shows, Jackson understands both its own format and the XML Schema format for floating-point infinity. JAXB, however, understands only the XML Schema format, and fails to parse Jackson's format.</p>\n<p dir=\"auto\">The problem seems to be that jackson-dataformat-xml calls <a href=\"https://github.com/FasterXML/jackson-dataformat-xml/blob/7101dc8bfb2d90290dced0d128d323a013853ace/src/main/java/com/fasterxml/jackson/dataformat/xml/ser/ToXmlGenerator.java#L1158\"><code class=\"notranslate\">TypedXMLStreamWriter</code> methods</a> to serialize floating-point values, which ultimately uses <a href=\"https://github.com/FasterXML/stax2-api/blob/67d598842d99266a43d7ecf839c2b1f0f70f2bdc/src/main/java/org/codehaus/stax2/ri/typed/NumberUtil.java#L322\"><code class=\"notranslate\">NumberUtil.write{Float,Double}</code> from StAX2</a>, which in turn uses <code class=\"notranslate\">java.lang.String.valueOf</code> to serialize the number, without any special handling of infinity.</p>\n<p dir=\"auto\"><strong>De</strong>serialization of XML Schema-formatted numbers seems to work correctly. Only serialization has an issue.</p>\n<p dir=\"auto\">This issue only affects positive and negative infinity. <code class=\"notranslate\">java.lang.String.valueOf</code> differs from XML Schema only in how it represents infinity; it uses the same format as XML Schema for NaN and finite values.</p>",
+                "resourcePath": "/FasterXML/jackson-dataformat-xml/issues/643",
+                "createdAt": "2024-03-08T02:38:34Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "2.17"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+]

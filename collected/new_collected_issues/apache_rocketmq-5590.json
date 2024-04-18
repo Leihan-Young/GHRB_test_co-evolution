@@ -1,0 +1,7 @@
+{
+  "issue_id": 5589,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5589",
+  "title": "[OPTIMIZATION] Record subscriptions from request",
+  "description": "<p dir=\"auto\">Recently, RocketMQ introduced some lite consumption modes such as simple consumer and pop. They reduce the complexity for users to use, but bring new problems: brokers can not get consumer subscriptions from the heartbeat. Moreover, consumers via proxy won't send heartbeat to the broker.</p>\n<p dir=\"auto\">So we need a compensation mechanism to record subscriptions from requests so that existing functionality like lag calculating is not affected.</p>",
+  "description_text": "Recently, RocketMQ introduced some lite consumption modes such as simple consumer and pop. They reduce the complexity for users to use, but bring new problems: brokers can not get consumer subscriptions from the heartbeat. Moreover, consumers via proxy won't send heartbeat to the broker.\nSo we need a compensation mechanism to record subscriptions from requests so that existing functionality like lag calculating is not affected."
+}

@@ -1,0 +1,18 @@
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheckTest.java
+index 91b9cac2a..262664fff 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/whitespace/NoWhitespaceAfterCheckTest.java
+@@ -63,6 +63,13 @@ public class NoWhitespaceAfterCheckTest
+                 getPath("InputNoWhitespaceAfterTestDefault.java"), expected);
+     }
+ 
++    @Test
++    public void testAssignment() throws Exception {
++        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
++        verifyWithInlineConfigParser(
++                getPath("InputNoWhitespaceAfterTestAssignment.java"), expected);
++    }
++
+     @Test
+     public void testDotAllowLineBreaks() throws Exception {
+         final String[] expected = {

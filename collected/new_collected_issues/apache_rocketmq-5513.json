@@ -1,0 +1,7 @@
+{
+  "issue_id": 5512,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5512",
+  "title": "Skip the unnecessary network interface",
+  "description": "<div class=\"highlight highlight-source-shell notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"$ ifconfig -a\nutun7: flags=8051<UP,POINTOPOINT,RUNNING,MULTICAST> mtu 1500\n\tinet 0.0.1.1 --> 0.0.0.0 netmask 0xff000000\"><pre class=\"notranslate\">$ ifconfig -a\nutun7: flags=<span class=\"pl-k\">8051<</span>UP,POINTOPOINT,RUNNING,MULTICAST<span class=\"pl-k\">></span> mtu 1500\n\tinet 0.0.1.1 --<span class=\"pl-k\">></span> 0.0.0.0 netmask 0xff000000</pre></div>\n<p dir=\"auto\">The broker[broker-a, 0.0.1.1:10912] boot success. serializeType=JSON and name server is...</p>\n<p dir=\"auto\">We should skip the virtual network interface with isPointToPoint().</p>",
+  "description_text": "$ ifconfig -a\nutun7: flags=8051<UP,POINTOPOINT,RUNNING,MULTICAST> mtu 1500\n\tinet 0.0.1.1 --> 0.0.0.0 netmask 0xff000000\nThe broker[broker-a, 0.0.1.1:10912] boot success. serializeType=JSON and name server is...\nWe should skip the virtual network interface with isPointToPoint()."
+}

@@ -1,0 +1,373 @@
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/common/constants/QosConstants.java b/dubbo-common/src/main/java/org/apache/dubbo/common/constants/QosConstants.java
+index 3132642a57..3939296ffa 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/common/constants/QosConstants.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/common/constants/QosConstants.java
+@@ -30,6 +30,8 @@ public interface QosConstants {
+ 
+     String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
+ 
++    String ACCEPT_FOREIGN_IP_WHITELIST = "qos.accept.foreign.ip.whitelist";
++
+     String QOS_ENABLE_COMPATIBLE = "qos-enable";
+ 
+     String QOS_HOST_COMPATIBLE = "qos-host";
+@@ -37,4 +39,6 @@ public interface QosConstants {
+     String QOS_PORT_COMPATIBLE = "qos-port";
+ 
+     String ACCEPT_FOREIGN_IP_COMPATIBLE = "qos-accept-foreign-ip";
++
++    String ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE = "qos-accept-foreign-ip-whitelist";
+ }
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java b/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java
+index c9597d2e7e..33852d430a 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java
+@@ -50,6 +50,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.STARTUP_PROBE;
+ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
++import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
++import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+@@ -149,6 +151,11 @@ public class ApplicationConfig extends AbstractConfig {
+      */
+     private Boolean qosAcceptForeignIp;
+ 
++    /**
++     * When we disable accept foreign ip, support specify foreign ip in the whitelist
++     */
++    private String qosAcceptForeignIpWhitelist;
++
+     /**
+      * Customized parameters
+      */
+@@ -400,6 +407,15 @@ public class ApplicationConfig extends AbstractConfig {
+         this.qosAcceptForeignIp = qosAcceptForeignIp;
+     }
+ 
++    @Parameter(key = ACCEPT_FOREIGN_IP_WHITELIST)
++    public String getQosAcceptForeignIpWhitelist() {
++        return qosAcceptForeignIpWhitelist;
++    }
++
++    public void setQosAcceptForeignIpWhitelist(String qosAcceptForeignIpWhitelist) {
++        this.qosAcceptForeignIpWhitelist = qosAcceptForeignIpWhitelist;
++    }
++
+     /**
+      * The format is the same as the springboot, including: getQosEnableCompatible(), getQosPortCompatible(), getQosAcceptForeignIpCompatible().
+      *
+@@ -441,6 +457,15 @@ public class ApplicationConfig extends AbstractConfig {
+         this.setQosAcceptForeignIp(qosAcceptForeignIp);
+     }
+ 
++    @Parameter(key = ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE, excluded = true, attribute = false)
++    public String getQosAcceptForeignIpWhitelistCompatible() {
++        return this.getQosAcceptForeignIpWhitelist();
++    }
++
++    public void setQosAcceptForeignIpWhitelistCompatible(String qosAcceptForeignIpWhitelist) {
++        this.setQosAcceptForeignIpWhitelist(qosAcceptForeignIpWhitelist);
++    }
++
+     public Map<String, String> getParameters() {
+         return parameters;
+     }
+diff --git a/dubbo-common/src/main/java/org/apache/dubbo/config/Constants.java b/dubbo-common/src/main/java/org/apache/dubbo/config/Constants.java
+index 668acc408b..db1a87c8dc 100644
+--- a/dubbo-common/src/main/java/org/apache/dubbo/config/Constants.java
++++ b/dubbo-common/src/main/java/org/apache/dubbo/config/Constants.java
+@@ -18,6 +18,7 @@
+ package org.apache.dubbo.config;
+ 
+ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
++import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST_COMPATIBLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
+@@ -140,7 +141,7 @@ public interface Constants {
+     String MULTI_SERIALIZATION_KEY = "serialize.multiple";
+ 
+     String[] DOT_COMPATIBLE_KEYS = new String[]{QOS_ENABLE_COMPATIBLE, QOS_HOST_COMPATIBLE, QOS_PORT_COMPATIBLE,
+-        ACCEPT_FOREIGN_IP_COMPATIBLE, REGISTRY_TYPE_KEY};
++        ACCEPT_FOREIGN_IP_COMPATIBLE, ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE, REGISTRY_TYPE_KEY};
+ 
+     String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
+ 
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/protocol/QosProtocolWrapper.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/protocol/QosProtocolWrapper.java
+index 18139f0fad..32b32c4cbf 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/protocol/QosProtocolWrapper.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/protocol/QosProtocolWrapper.java
+@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
+ import org.apache.dubbo.common.extension.Activate;
+ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+ import org.apache.dubbo.common.logger.LoggerFactory;
++import org.apache.dubbo.common.utils.StringUtils;
+ import org.apache.dubbo.qos.common.QosConstants;
+ import org.apache.dubbo.qos.pu.QosWireProtocol;
+ import org.apache.dubbo.qos.server.Server;
+@@ -37,6 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
+ 
+ import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_FAILED_START_SERVER;
+ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
++import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+ import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+@@ -113,6 +115,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
+             String host = url.getParameter(QOS_HOST);
+             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
+             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
++            String acceptForeignIpWhitelist = url.getParameter(ACCEPT_FOREIGN_IP_WHITELIST, StringUtils.EMPTY_STRING);
+             Server server = frameworkModel.getBeanFactory().getBean(Server.class);
+ 
+             if (server.isStarted()) {
+@@ -122,6 +125,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
+             server.setHost(host);
+             server.setPort(port);
+             server.setAcceptForeignIp(acceptForeignIp);
++            server.setAcceptForeignIpWhitelist(acceptForeignIpWhitelist);
+             server.start();
+ 
+         } catch (Throwable throwable) {
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/pu/QosWireProtocol.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/pu/QosWireProtocol.java
+index 71e6633eb3..9f9a998d19 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/pu/QosWireProtocol.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/pu/QosWireProtocol.java
+@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.pu;
+ 
+ import org.apache.dubbo.common.URL;
+ import org.apache.dubbo.common.extension.Activate;
++import org.apache.dubbo.common.utils.StringUtils;
+ import org.apache.dubbo.qos.server.DubboLogo;
+ import org.apache.dubbo.qos.server.handler.QosProcessHandler;
+ import org.apache.dubbo.remoting.ChannelHandler;
+@@ -48,7 +49,7 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
+     public void configServerProtocolHandler(URL url, ChannelOperator operator) {
+         // add qosProcess handler
+         QosProcessHandler handler = new QosProcessHandler(url.getOrDefaultFrameworkModel(),
+-            DubboLogo.DUBBO, false);
++            DubboLogo.DUBBO, false, StringUtils.EMPTY_STRING);
+         List<ChannelHandler> handlers = new ArrayList<>();
+         handlers.add(new ChannelHandlerPretender(handler));
+         operator.configChannelHandler(handlers);
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/Server.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/Server.java
+index fa40444e61..2d60b24457 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/Server.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/Server.java
+@@ -52,6 +52,7 @@ public class Server {
+     private int port;
+ 
+     private boolean acceptForeignIp = true;
++    private String acceptForeignIpWhitelist = StringUtils.EMPTY_STRING;
+ 
+     private EventLoopGroup boss;
+ 
+@@ -97,7 +98,7 @@ public class Server {
+ 
+             @Override
+             protected void initChannel(Channel ch) throws Exception {
+-                ch.pipeline().addLast(new QosProcessHandler(frameworkModel, welcome, acceptForeignIp));
++                ch.pipeline().addLast(new QosProcessHandler(frameworkModel, welcome, acceptForeignIp, acceptForeignIpWhitelist));
+             }
+         });
+         try {
+@@ -147,6 +148,10 @@ public class Server {
+         this.acceptForeignIp = acceptForeignIp;
+     }
+ 
++    public void setAcceptForeignIpWhitelist(String acceptForeignIpWhitelist) {
++        this.acceptForeignIpWhitelist = acceptForeignIpWhitelist;
++    }
++
+     public String getWelcome() {
+         return welcome;
+     }
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java
+new file mode 100644
+index 0000000000..c63072a9de
+--- /dev/null
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java
+@@ -0,0 +1,94 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.dubbo.qos.server.handler;
++
++import io.netty.buffer.ByteBuf;
++import io.netty.buffer.Unpooled;
++import io.netty.channel.ChannelFutureListener;
++import io.netty.channel.ChannelHandlerAdapter;
++import io.netty.channel.ChannelHandlerContext;
++import org.apache.dubbo.common.utils.NetUtils;
++import org.apache.dubbo.common.utils.StringUtils;
++import org.apache.dubbo.qos.common.QosConstants;
++
++import java.net.InetAddress;
++import java.net.InetSocketAddress;
++import java.net.UnknownHostException;
++import java.util.Arrays;
++import java.util.function.Predicate;
++
++public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
++
++    // true means to accept foreign IP
++    private  boolean acceptForeignIp;
++
++    // the whitelist of foreign IP when acceptForeignIp = false, the delimiter is colon(,)
++    // support specific ip and an ip range from CIDR specification
++    private String acceptForeignIpWhitelist;
++    private Predicate<String> whitelistPredicate = foreignIp -> false;
++
++    public ForeignHostPermitHandler(boolean acceptForeignIp, String foreignIpWhitelist) {
++        this.acceptForeignIp = acceptForeignIp;
++        this.acceptForeignIpWhitelist = foreignIpWhitelist;
++        if (StringUtils.isNotEmpty(foreignIpWhitelist)) {
++            whitelistPredicate = Arrays.stream(foreignIpWhitelist.split(","))
++                .map(String::trim)
++                .filter(StringUtils::isNotEmpty)
++                .map(foreignIpPattern -> (Predicate<String>) foreignIp -> {
++                    try {
++                        // hard code port to -1
++                        return NetUtils.matchIpExpression(foreignIpPattern, foreignIp, -1);
++                    } catch (UnknownHostException ignore) {
++                        // ignore illegal CIDR specification
++                    }
++                    return false;
++                })
++                .reduce(Predicate::or).orElse(s -> false);
++        }
++    }
++
++    @Override
++    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
++        if (acceptForeignIp) {
++            return;
++        }
++
++        final InetAddress inetAddress = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
++        // loopback address, return
++        if (inetAddress.isLoopbackAddress()) {
++            return;
++        }
++
++        // the ip is in the whitelist, return
++        if (checkForeignIpInWhiteList(inetAddress)) {
++            return;
++        }
++
++        ByteBuf cb = Unpooled.wrappedBuffer((QosConstants.BR_STR + "Foreign Ip Not Permitted, Consider Config It In Whitelist."
++            + QosConstants.BR_STR).getBytes());
++        ctx.writeAndFlush(cb).addListener(ChannelFutureListener.CLOSE);
++    }
++
++    private boolean checkForeignIpInWhiteList(InetAddress inetAddress) {
++        if (StringUtils.isEmpty(acceptForeignIpWhitelist)) {
++            return false;
++        }
++
++        final String foreignIp = inetAddress.getHostAddress();
++        return whitelistPredicate.test(foreignIp);
++    }
++}
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/LocalHostPermitHandler.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/LocalHostPermitHandler.java
+deleted file mode 100644
+index d93284ae7f..0000000000
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/LocalHostPermitHandler.java
++++ /dev/null
+@@ -1,48 +0,0 @@
+-/*
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package org.apache.dubbo.qos.server.handler;
+-
+-import org.apache.dubbo.qos.common.QosConstants;
+-
+-import io.netty.buffer.ByteBuf;
+-import io.netty.buffer.Unpooled;
+-import io.netty.channel.ChannelFutureListener;
+-import io.netty.channel.ChannelHandlerAdapter;
+-import io.netty.channel.ChannelHandlerContext;
+-
+-import java.net.InetSocketAddress;
+-
+-public class LocalHostPermitHandler extends ChannelHandlerAdapter {
+-
+-    // true means to accept foreign IP
+-    private  boolean acceptForeignIp;
+-
+-    public LocalHostPermitHandler(boolean acceptForeignIp) {
+-        this.acceptForeignIp = acceptForeignIp;
+-    }
+-
+-    @Override
+-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+-        if (!acceptForeignIp) {
+-            if (!((InetSocketAddress) ctx.channel().remoteAddress()).getAddress().isLoopbackAddress()) {
+-                ByteBuf cb = Unpooled.wrappedBuffer((QosConstants.BR_STR + "Foreign Ip Not Permitted."
+-                        + QosConstants.BR_STR).getBytes());
+-                ctx.writeAndFlush(cb).addListener(ChannelFutureListener.CLOSE);
+-            }
+-        }
+-    }
+-}
+diff --git a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java
+index 4e5ef439f8..32d89f7278 100644
+--- a/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java
++++ b/dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java
+@@ -44,15 +44,17 @@ public class QosProcessHandler extends ByteToMessageDecoder {
+     private String welcome;
+     // true means to accept foreign IP
+     private boolean acceptForeignIp;
++    private String acceptForeignIpWhitelist;
+ 
+     private FrameworkModel frameworkModel;
+ 
+     public static final String PROMPT = "dubbo>";
+ 
+-    public QosProcessHandler(FrameworkModel frameworkModel, String welcome, boolean acceptForeignIp) {
++    public QosProcessHandler(FrameworkModel frameworkModel, String welcome, boolean acceptForeignIp, String acceptForeignIpWhitelist) {
+         this.frameworkModel = frameworkModel;
+         this.welcome = welcome;
+         this.acceptForeignIp = acceptForeignIp;
++        this.acceptForeignIpWhitelist = acceptForeignIpWhitelist;
+     }
+ 
+     @Override
+@@ -75,7 +77,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
+         final int magic = in.getByte(in.readerIndex());
+ 
+         ChannelPipeline p = ctx.pipeline();
+-        p.addLast(new LocalHostPermitHandler(acceptForeignIp));
++        p.addLast(new ForeignHostPermitHandler(acceptForeignIp, acceptForeignIpWhitelist));
+         if (isHttp(magic)) {
+             // no welcome output for http protocol
+             if (welcomeFuture != null && welcomeFuture.isCancellable()) {

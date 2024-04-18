@@ -1,0 +1,1208 @@
+diff --git a/sslcontext-kickstart-for-apache4/src/main/java/module-info.java b/sslcontext-kickstart-for-apache4/src/main/java/module-info.java
+new file mode 100644
+index 0000000..204ba33
+--- /dev/null
++++ b/sslcontext-kickstart-for-apache4/src/main/java/module-info.java
+@@ -0,0 +1,24 @@
++/*
++ * Copyright 2019 Thunderberry.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++module nl.altindag.ssl.apache4 {
++
++    requires transitive nl.altindag.ssl;
++    requires org.apache.httpcomponents.httpclient;
++    requires org.apache.httpcomponents.httpcore;
++
++    exports nl.altindag.ssl.apache4.util;
++
++}
+\ No newline at end of file
+diff --git a/sslcontext-kickstart-for-apache4/src/main/java/nl/altindag/ssl/util/Apache4SslUtils.java b/sslcontext-kickstart-for-apache4/src/main/java/nl/altindag/ssl/apache4/util/Apache4SslUtils.java
+similarity index 97%
+rename from sslcontext-kickstart-for-apache4/src/main/java/nl/altindag/ssl/util/Apache4SslUtils.java
+rename to sslcontext-kickstart-for-apache4/src/main/java/nl/altindag/ssl/apache4/util/Apache4SslUtils.java
+index c1abd61..6e144f3 100644
+--- a/sslcontext-kickstart-for-apache4/src/main/java/nl/altindag/ssl/util/Apache4SslUtils.java
++++ b/sslcontext-kickstart-for-apache4/src/main/java/nl/altindag/ssl/apache4/util/Apache4SslUtils.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.apache4.util;
+ 
+ import nl.altindag.ssl.SSLFactory;
+ import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+diff --git a/sslcontext-kickstart-for-apache5/src/main/java/module-info.java b/sslcontext-kickstart-for-apache5/src/main/java/module-info.java
+new file mode 100644
+index 0000000..b277dd1
+--- /dev/null
++++ b/sslcontext-kickstart-for-apache5/src/main/java/module-info.java
+@@ -0,0 +1,24 @@
++/*
++ * Copyright 2019 Thunderberry.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++module nl.altindag.ssl.apache5 {
++
++    requires transitive nl.altindag.ssl;
++    requires org.apache.httpcomponents.client5.httpclient5;
++    requires org.apache.httpcomponents.core5.httpcore5;
++
++    exports nl.altindag.ssl.apache5.util;
++
++}
+\ No newline at end of file
+diff --git a/sslcontext-kickstart-for-apache5/src/main/java/nl/altindag/ssl/util/Apache5SslUtils.java b/sslcontext-kickstart-for-apache5/src/main/java/nl/altindag/ssl/apache5/util/Apache5SslUtils.java
+similarity index 97%
+rename from sslcontext-kickstart-for-apache5/src/main/java/nl/altindag/ssl/util/Apache5SslUtils.java
+rename to sslcontext-kickstart-for-apache5/src/main/java/nl/altindag/ssl/apache5/util/Apache5SslUtils.java
+index 8552789..12d5691 100644
+--- a/sslcontext-kickstart-for-apache5/src/main/java/nl/altindag/ssl/util/Apache5SslUtils.java
++++ b/sslcontext-kickstart-for-apache5/src/main/java/nl/altindag/ssl/apache5/util/Apache5SslUtils.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.apache5.util;
+ 
+ import nl.altindag.ssl.SSLFactory;
+ import org.apache.hc.client5.http.socket.LayeredConnectionSocketFactory;
+diff --git a/sslcontext-kickstart-for-jetty/src/main/java/module-info.java b/sslcontext-kickstart-for-jetty/src/main/java/module-info.java
+new file mode 100644
+index 0000000..ec7a286
+--- /dev/null
++++ b/sslcontext-kickstart-for-jetty/src/main/java/module-info.java
+@@ -0,0 +1,23 @@
++/*
++ * Copyright 2019 Thunderberry.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++module nl.altindag.ssl.jetty {
++
++    requires transitive nl.altindag.ssl;
++    requires org.eclipse.jetty.util;
++
++    exports nl.altindag.ssl.jetty.util;
++
++}
+\ No newline at end of file
+diff --git a/sslcontext-kickstart-for-jetty/src/main/java/nl/altindag/ssl/util/JettySslUtils.java b/sslcontext-kickstart-for-jetty/src/main/java/nl/altindag/ssl/jetty/util/JettySslUtils.java
+similarity index 98%
+rename from sslcontext-kickstart-for-jetty/src/main/java/nl/altindag/ssl/util/JettySslUtils.java
+rename to sslcontext-kickstart-for-jetty/src/main/java/nl/altindag/ssl/jetty/util/JettySslUtils.java
+index ab498b2..eae807b 100644
+--- a/sslcontext-kickstart-for-jetty/src/main/java/nl/altindag/ssl/util/JettySslUtils.java
++++ b/sslcontext-kickstart-for-jetty/src/main/java/nl/altindag/ssl/jetty/util/JettySslUtils.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.jetty.util;
+ 
+ import nl.altindag.ssl.SSLFactory;
+ import org.eclipse.jetty.util.ssl.SslContextFactory;
+diff --git a/sslcontext-kickstart-for-netty/src/main/java/module-info.java b/sslcontext-kickstart-for-netty/src/main/java/module-info.java
+new file mode 100644
+index 0000000..eca2923
+--- /dev/null
++++ b/sslcontext-kickstart-for-netty/src/main/java/module-info.java
+@@ -0,0 +1,23 @@
++/*
++ * Copyright 2019 Thunderberry.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++module nl.altindag.ssl.netty {
++
++    requires transitive nl.altindag.ssl;
++    requires io.netty.handler;
++
++    exports nl.altindag.ssl.netty.util;
++
++}
+\ No newline at end of file
+diff --git a/sslcontext-kickstart-for-netty/src/main/java/nl/altindag/ssl/util/NettySslUtils.java b/sslcontext-kickstart-for-netty/src/main/java/nl/altindag/ssl/netty/util/NettySslUtils.java
+similarity index 98%
+rename from sslcontext-kickstart-for-netty/src/main/java/nl/altindag/ssl/util/NettySslUtils.java
+rename to sslcontext-kickstart-for-netty/src/main/java/nl/altindag/ssl/netty/util/NettySslUtils.java
+index 5747932..088d56a 100644
+--- a/sslcontext-kickstart-for-netty/src/main/java/nl/altindag/ssl/util/NettySslUtils.java
++++ b/sslcontext-kickstart-for-netty/src/main/java/nl/altindag/ssl/netty/util/NettySslUtils.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.netty.util;
+ 
+ import io.netty.handler.ssl.ClientAuth;
+ import io.netty.handler.ssl.SslContextBuilder;
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/module-info.java b/sslcontext-kickstart-for-pem/src/main/java/module-info.java
+new file mode 100644
+index 0000000..6992f25
+--- /dev/null
++++ b/sslcontext-kickstart-for-pem/src/main/java/module-info.java
+@@ -0,0 +1,25 @@
++/*
++ * Copyright 2019 Thunderberry.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++module nl.altindag.ssl.pem {
++
++    requires transitive nl.altindag.ssl;
++    requires transitive org.bouncycastle.provider;
++    requires transitive org.bouncycastle.pkix;
++
++    exports nl.altindag.ssl.pem.exception;
++    exports nl.altindag.ssl.pem.util;
++
++}
+\ No newline at end of file
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/decryptor/BouncyFunction.java b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/decryptor/BouncyFunction.java
+similarity index 88%
+rename from sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/decryptor/BouncyFunction.java
+rename to sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/decryptor/BouncyFunction.java
+index abf0640..7e7ee26 100644
+--- a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/decryptor/BouncyFunction.java
++++ b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/decryptor/BouncyFunction.java
+@@ -13,8 +13,9 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.decryptor;
++package nl.altindag.ssl.pem.decryptor;
+ 
++import nl.altindag.ssl.pem.util.PemUtils;
+ import org.bouncycastle.operator.OperatorCreationException;
+ import org.bouncycastle.pkcs.PKCSException;
+ 
+@@ -23,7 +24,7 @@ import java.io.IOException;
+ /**
+  * <strong>NOTE:</strong>
+  * Please don't use this class directly as it is part of the internal API. Class name and methods can be changed any time.
+- * Instead use the {@link nl.altindag.ssl.util.PemUtils PemUtils} which provides the same functionality
++ * Instead use the {@link PemUtils PemUtils} which provides the same functionality
+  * while it has a stable API because it is part of the public API.
+  *
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/decryptor/PemDecryptor.java b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/decryptor/PemDecryptor.java
+similarity index 87%
+rename from sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/decryptor/PemDecryptor.java
+rename to sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/decryptor/PemDecryptor.java
+index a971496..ab39358 100644
+--- a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/decryptor/PemDecryptor.java
++++ b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/decryptor/PemDecryptor.java
+@@ -13,17 +13,18 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.decryptor;
++package nl.altindag.ssl.pem.decryptor;
+ 
++import nl.altindag.ssl.pem.util.PemUtils;
+ import org.bouncycastle.openssl.PEMDecryptorProvider;
+ import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+  * Please don't use this class directly as it is part of the internal API. Class name and methods can be changed any time.
+- * Instead use the {@link nl.altindag.ssl.util.PemUtils PemUtils} which provides the same functionality
++ * Instead use the {@link PemUtils PemUtils} which provides the same functionality
+  * while it has a stable API because it is part of the public API.
+  *
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/decryptor/Pkcs8Decryptor.java b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/decryptor/Pkcs8Decryptor.java
+similarity index 88%
+rename from sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/decryptor/Pkcs8Decryptor.java
+rename to sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/decryptor/Pkcs8Decryptor.java
+index a777ded..3a8e30c 100644
+--- a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/decryptor/Pkcs8Decryptor.java
++++ b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/decryptor/Pkcs8Decryptor.java
+@@ -13,18 +13,19 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.decryptor;
++package nl.altindag.ssl.pem.decryptor;
+ 
++import nl.altindag.ssl.pem.util.PemUtils;
+ import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
+ import org.bouncycastle.operator.InputDecryptorProvider;
+ import org.bouncycastle.operator.OperatorCreationException;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+  * Please don't use this class directly as it is part of the internal API. Class name and methods can be changed any time.
+- * Instead use the {@link nl.altindag.ssl.util.PemUtils PemUtils} which provides the same functionality
++ * Instead use the {@link PemUtils PemUtils} which provides the same functionality
+  * while it has a stable API because it is part of the public API.
+  *
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/CertificateParseException.java b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/CertificateParseException.java
+similarity index 95%
+rename from sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/CertificateParseException.java
+rename to sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/CertificateParseException.java
+index c44d595..9e458b4 100644
+--- a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/CertificateParseException.java
++++ b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/CertificateParseException.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.exception;
++package nl.altindag.ssl.pem.exception;
+ 
+ /**
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/PemParseException.java b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/PemParseException.java
+similarity index 89%
+rename from sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/PemParseException.java
+rename to sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/PemParseException.java
+index 4947758..3b47833 100644
+--- a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/PemParseException.java
++++ b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/PemParseException.java
+@@ -13,7 +13,9 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.exception;
++package nl.altindag.ssl.pem.exception;
++
++import nl.altindag.ssl.exception.GenericSecurityException;
+ 
+ /**
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/PrivateKeyParseException.java b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/PrivateKeyParseException.java
+similarity index 95%
+rename from sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/PrivateKeyParseException.java
+rename to sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/PrivateKeyParseException.java
+index 3ec1c41..d0528d2 100644
+--- a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/PrivateKeyParseException.java
++++ b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/PrivateKeyParseException.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.exception;
++package nl.altindag.ssl.pem.exception;
+ 
+ /**
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/PublicKeyParseException.java b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/PublicKeyParseException.java
+similarity index 95%
+rename from sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/PublicKeyParseException.java
+rename to sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/PublicKeyParseException.java
+index 67874fb..45e24ee 100644
+--- a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/exception/PublicKeyParseException.java
++++ b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/exception/PublicKeyParseException.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.exception;
++package nl.altindag.ssl.pem.exception;
+ 
+ /**
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/util/PemFormatter.java b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/util/PemFormatter.java
+similarity index 97%
+rename from sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/util/PemFormatter.java
+rename to sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/util/PemFormatter.java
+index bcce4a3..e6b79b9 100644
+--- a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/util/PemFormatter.java
++++ b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/util/PemFormatter.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.pem.util;
+ 
+ import java.util.ArrayList;
+ import java.util.Collections;
+@@ -24,7 +24,7 @@ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
+ import java.util.stream.Stream;
+ 
+-import static nl.altindag.ssl.util.CollectorsUtils.toModifiableList;
++import static nl.altindag.ssl.util.internal.CollectorsUtils.toModifiableList;
+ 
+ final class PemFormatter {
+ 
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/util/PemType.java b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/util/PemType.java
+similarity index 95%
+rename from sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/util/PemType.java
+rename to sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/util/PemType.java
+index ecd9a72..a94fa3e 100644
+--- a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/util/PemType.java
++++ b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/util/PemType.java
+@@ -13,9 +13,9 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.pem.util;
+ 
+-import nl.altindag.ssl.exception.PemParseException;
++import nl.altindag.ssl.pem.exception.PemParseException;
+ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+ import org.bouncycastle.cert.X509CertificateHolder;
+ import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+diff --git a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/util/PemUtils.java b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/util/PemUtils.java
+similarity index 95%
+rename from sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/util/PemUtils.java
+rename to sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/util/PemUtils.java
+index 2df8c89..e5b143a 100644
+--- a/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/util/PemUtils.java
++++ b/sslcontext-kickstart-for-pem/src/main/java/nl/altindag/ssl/pem/util/PemUtils.java
+@@ -13,15 +13,19 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.pem.util;
+ 
+ import nl.altindag.ssl.SSLFactory;
+-import nl.altindag.ssl.decryptor.PemDecryptor;
+-import nl.altindag.ssl.decryptor.Pkcs8Decryptor;
+-import nl.altindag.ssl.exception.CertificateParseException;
+ import nl.altindag.ssl.exception.GenericIOException;
+-import nl.altindag.ssl.exception.PemParseException;
+-import nl.altindag.ssl.exception.PrivateKeyParseException;
++import nl.altindag.ssl.pem.decryptor.PemDecryptor;
++import nl.altindag.ssl.pem.decryptor.Pkcs8Decryptor;
++import nl.altindag.ssl.pem.exception.CertificateParseException;
++import nl.altindag.ssl.pem.exception.PemParseException;
++import nl.altindag.ssl.pem.exception.PrivateKeyParseException;
++import nl.altindag.ssl.util.KeyManagerUtils;
++import nl.altindag.ssl.util.TrustManagerUtils;
++import nl.altindag.ssl.util.internal.IOUtils;
++import nl.altindag.ssl.util.internal.ValidationUtils;
+ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+ import org.bouncycastle.cert.X509CertificateHolder;
+ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+@@ -57,12 +61,12 @@ import java.util.function.Function;
+ import java.util.function.Predicate;
+ import java.util.function.UnaryOperator;
+ 
+-import static nl.altindag.ssl.util.CollectorsUtils.toListAndThen;
+-import static nl.altindag.ssl.util.CollectorsUtils.toUnmodifiableList;
+-import static nl.altindag.ssl.util.PemType.CERTIFICATE;
+-import static nl.altindag.ssl.util.PemType.KEY;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotEmpty;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.pem.util.PemType.CERTIFICATE;
++import static nl.altindag.ssl.pem.util.PemType.KEY;
++import static nl.altindag.ssl.util.internal.CollectorsUtils.toListAndThen;
++import static nl.altindag.ssl.util.internal.CollectorsUtils.toUnmodifiableList;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotEmpty;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * Reads PEM formatted private keys and certificates
+@@ -137,7 +141,7 @@ public final class PemUtils {
+     public static List<X509Certificate> loadCertificate(String... certificatePaths) {
+         return loadCertificate(
+                 certificatePaths,
+-                certificatePath -> requireNotNull(
++                certificatePath -> ValidationUtils.requireNotNull(
+                         IOUtils.getResourceAsStream(certificatePath),
+                         CERTIFICATE_NOT_FOUND_EXCEPTION_MESSAGE.apply(certificatePath)
+                 )
+diff --git a/sslcontext-kickstart/src/main/java/module-info.java b/sslcontext-kickstart/src/main/java/module-info.java
+new file mode 100644
+index 0000000..09a1f3c
+--- /dev/null
++++ b/sslcontext-kickstart/src/main/java/module-info.java
+@@ -0,0 +1,28 @@
++/*
++ * Copyright 2019 Thunderberry.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++module nl.altindag.ssl {
++
++    requires transitive org.slf4j;
++
++    exports nl.altindag.ssl;
++    exports nl.altindag.ssl.exception;
++    exports nl.altindag.ssl.model;
++    exports nl.altindag.ssl.trustmanager.validator;
++    exports nl.altindag.ssl.trustmanager.trustoptions;
++    exports nl.altindag.ssl.util;
++    exports nl.altindag.ssl.util.internal to nl.altindag.ssl.pem;
++
++}
+\ No newline at end of file
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/SSLFactory.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/SSLFactory.java
+index a71dfb7..91c6c4d 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/SSLFactory.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/SSLFactory.java
+@@ -18,12 +18,12 @@ package nl.altindag.ssl;
+ import nl.altindag.ssl.exception.GenericKeyStoreException;
+ import nl.altindag.ssl.exception.GenericSecurityException;
+ import nl.altindag.ssl.model.KeyStoreHolder;
+-import nl.altindag.ssl.model.SSLMaterial;
+-import nl.altindag.ssl.trustmanager.ChainAndAuthTypeValidator;
+-import nl.altindag.ssl.trustmanager.ChainAndAuthTypeWithSSLEngineValidator;
+-import nl.altindag.ssl.trustmanager.ChainAndAuthTypeWithSocketValidator;
+-import nl.altindag.ssl.trustmanager.TrustAnchorTrustOptions;
+-import nl.altindag.ssl.trustmanager.TrustStoreTrustOptions;
++import nl.altindag.ssl.model.internal.SSLMaterial;
++import nl.altindag.ssl.trustmanager.trustoptions.TrustAnchorTrustOptions;
++import nl.altindag.ssl.trustmanager.trustoptions.TrustStoreTrustOptions;
++import nl.altindag.ssl.trustmanager.validator.ChainAndAuthTypeValidator;
++import nl.altindag.ssl.trustmanager.validator.ChainAndAuthTypeWithSSLEngineValidator;
++import nl.altindag.ssl.trustmanager.validator.ChainAndAuthTypeWithSocketValidator;
+ import nl.altindag.ssl.util.HostnameVerifierUtils;
+ import nl.altindag.ssl.util.KeyManagerUtils;
+ import nl.altindag.ssl.util.KeyStoreUtils;
+@@ -31,9 +31,9 @@ import nl.altindag.ssl.util.SSLContextUtils;
+ import nl.altindag.ssl.util.SSLParametersUtils;
+ import nl.altindag.ssl.util.SSLSessionUtils;
+ import nl.altindag.ssl.util.SSLSocketUtils;
+-import nl.altindag.ssl.util.StringUtils;
+ import nl.altindag.ssl.util.TrustManagerUtils;
+-import nl.altindag.ssl.util.UriUtils;
++import nl.altindag.ssl.util.internal.StringUtils;
++import nl.altindag.ssl.util.internal.UriUtils;
+ 
+ import javax.net.ssl.CertPathTrustManagerParameters;
+ import javax.net.ssl.HostnameVerifier;
+@@ -73,8 +73,8 @@ import java.util.stream.Collectors;
+ 
+ import static java.util.Objects.isNull;
+ import static java.util.Objects.nonNull;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotBlank;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotEmpty;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotBlank;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotEmpty;
+ 
+ /**
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/hostnameverifier/FenixHostnameVerifier.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/hostnameverifier/FenixHostnameVerifier.java
+index 63e7e39..d737393 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/hostnameverifier/FenixHostnameVerifier.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/hostnameverifier/FenixHostnameVerifier.java
+@@ -16,7 +16,7 @@
+  */
+ package nl.altindag.ssl.hostnameverifier;
+ 
+-import nl.altindag.ssl.util.StringUtils;
++import nl.altindag.ssl.util.internal.StringUtils;
+ 
+ import javax.net.ssl.HostnameVerifier;
+ import javax.net.ssl.SSLPeerUnverifiedException;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/CompositeX509ExtendedKeyManager.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/CompositeX509ExtendedKeyManager.java
+index 424a1af..7156890 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/CompositeX509ExtendedKeyManager.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/CompositeX509ExtendedKeyManager.java
+@@ -15,7 +15,7 @@
+  */
+ package nl.altindag.ssl.keymanager;
+ 
+-import nl.altindag.ssl.util.HostUtils;
++import nl.altindag.ssl.util.internal.HostUtils;
+ 
+ import javax.net.ssl.SSLEngine;
+ import javax.net.ssl.SSLSocket;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/DelegatingKeyManager.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/DelegatingKeyManager.java
+index 31fb3ed..3105872 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/DelegatingKeyManager.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/DelegatingKeyManager.java
+@@ -23,7 +23,7 @@ import java.security.Principal;
+ import java.security.PrivateKey;
+ import java.security.cert.X509Certificate;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/HotSwappableX509ExtendedKeyManager.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/HotSwappableX509ExtendedKeyManager.java
+index 5d873cd..0d24ac2 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/HotSwappableX509ExtendedKeyManager.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/HotSwappableX509ExtendedKeyManager.java
+@@ -17,8 +17,8 @@ package nl.altindag.ssl.keymanager;
+ 
+ import javax.net.ssl.X509ExtendedKeyManager;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/KeyManagerFactorySpiWrapper.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/KeyManagerFactorySpiWrapper.java
+index 7e78251..524a9ff 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/KeyManagerFactorySpiWrapper.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/keymanager/KeyManagerFactorySpiWrapper.java
+@@ -23,7 +23,7 @@ import javax.net.ssl.KeyManagerFactorySpi;
+ import javax.net.ssl.ManagerFactoryParameters;
+ import java.security.KeyStore;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/model/SSLMaterial.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/model/internal/SSLMaterial.java
+similarity index 98%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/model/SSLMaterial.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/model/internal/SSLMaterial.java
+index bdff00f..12d0423 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/model/SSLMaterial.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/model/internal/SSLMaterial.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.model;
++package nl.altindag.ssl.model.internal;
+ 
+ import javax.net.ssl.HostnameVerifier;
+ import javax.net.ssl.SSLContext;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/socket/CompositeSSLServerSocketFactory.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/socket/CompositeSSLServerSocketFactory.java
+index 50bad6a..33aabfe 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/socket/CompositeSSLServerSocketFactory.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/socket/CompositeSSLServerSocketFactory.java
+@@ -22,8 +22,8 @@ import java.io.IOException;
+ import java.net.InetAddress;
+ import java.net.ServerSocket;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/socket/CompositeSSLSocketFactory.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/socket/CompositeSSLSocketFactory.java
+index 2818d98..1e3dbd9 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/socket/CompositeSSLSocketFactory.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/socket/CompositeSSLSocketFactory.java
+@@ -24,8 +24,8 @@ import java.net.InetAddress;
+ import java.net.Socket;
+ import java.net.UnknownHostException;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/DelegatingTrustManager.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/DelegatingTrustManager.java
+index d8c8736..573900b 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/DelegatingTrustManager.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/DelegatingTrustManager.java
+@@ -23,8 +23,8 @@ import java.security.cert.CertificateException;
+ import java.security.cert.X509Certificate;
+ import java.util.Arrays;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/EnhanceableX509ExtendedTrustManager.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/EnhanceableX509ExtendedTrustManager.java
+index c852ee8..0ff6757 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/EnhanceableX509ExtendedTrustManager.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/EnhanceableX509ExtendedTrustManager.java
+@@ -15,6 +15,10 @@
+  */
+ package nl.altindag.ssl.trustmanager;
+ 
++import nl.altindag.ssl.trustmanager.validator.ChainAndAuthTypeValidator;
++import nl.altindag.ssl.trustmanager.validator.ChainAndAuthTypeWithSSLEngineValidator;
++import nl.altindag.ssl.trustmanager.validator.ChainAndAuthTypeWithSocketValidator;
++
+ import javax.net.ssl.SSLEngine;
+ import javax.net.ssl.X509ExtendedTrustManager;
+ import java.net.Socket;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/HotSwappableX509ExtendedTrustManager.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/HotSwappableX509ExtendedTrustManager.java
+index f6850ba..b9c2c90 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/HotSwappableX509ExtendedTrustManager.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/HotSwappableX509ExtendedTrustManager.java
+@@ -17,8 +17,8 @@ package nl.altindag.ssl.trustmanager;
+ 
+ import javax.net.ssl.X509ExtendedTrustManager;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/LoggingX509ExtendedTrustManager.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/LoggingX509ExtendedTrustManager.java
+index 377e670..261c613 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/LoggingX509ExtendedTrustManager.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/LoggingX509ExtendedTrustManager.java
+@@ -15,7 +15,7 @@
+  */
+ package nl.altindag.ssl.trustmanager;
+ 
+-import nl.altindag.ssl.util.HostUtils;
++import nl.altindag.ssl.util.internal.HostUtils;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustManagerFactorySpiWrapper.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustManagerFactorySpiWrapper.java
+index c76e0c4..8ad816e 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustManagerFactorySpiWrapper.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustManagerFactorySpiWrapper.java
+@@ -23,8 +23,8 @@ import javax.net.ssl.TrustManager;
+ import javax.net.ssl.TrustManagerFactorySpi;
+ import java.security.KeyStore;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustAnchorTrustOptions.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/trustoptions/TrustAnchorTrustOptions.java
+similarity index 95%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustAnchorTrustOptions.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/trustoptions/TrustAnchorTrustOptions.java
+index 25feabe..9937063 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustAnchorTrustOptions.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/trustoptions/TrustAnchorTrustOptions.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.trustmanager;
++package nl.altindag.ssl.trustmanager.trustoptions;
+ 
+ import javax.net.ssl.CertPathTrustManagerParameters;
+ import java.security.cert.TrustAnchor;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustOptions.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/trustoptions/TrustOptions.java
+similarity index 94%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustOptions.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/trustoptions/TrustOptions.java
+index 72df751..188d1fb 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustOptions.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/trustoptions/TrustOptions.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.trustmanager;
++package nl.altindag.ssl.trustmanager.trustoptions;
+ 
+ import javax.net.ssl.ManagerFactoryParameters;
+ 
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustStoreTrustOptions.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/trustoptions/TrustStoreTrustOptions.java
+similarity index 94%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustStoreTrustOptions.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/trustoptions/TrustStoreTrustOptions.java
+index 72a02b0..f373eeb 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/TrustStoreTrustOptions.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/trustoptions/TrustStoreTrustOptions.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.trustmanager;
++package nl.altindag.ssl.trustmanager.trustoptions;
+ 
+ import javax.net.ssl.CertPathTrustManagerParameters;
+ import java.security.KeyStore;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/ChainAndAuthTypeValidator.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/validator/ChainAndAuthTypeValidator.java
+similarity index 96%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/ChainAndAuthTypeValidator.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/validator/ChainAndAuthTypeValidator.java
+index 4d98bca..659ee73 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/ChainAndAuthTypeValidator.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/validator/ChainAndAuthTypeValidator.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.trustmanager;
++package nl.altindag.ssl.trustmanager.validator;
+ 
+ import java.security.cert.X509Certificate;
+ import java.util.Objects;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/ChainAndAuthTypeWithSSLEngineValidator.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/validator/ChainAndAuthTypeWithSSLEngineValidator.java
+similarity index 96%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/ChainAndAuthTypeWithSSLEngineValidator.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/validator/ChainAndAuthTypeWithSSLEngineValidator.java
+index 719cf10..4bc2294 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/ChainAndAuthTypeWithSSLEngineValidator.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/validator/ChainAndAuthTypeWithSSLEngineValidator.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.trustmanager;
++package nl.altindag.ssl.trustmanager.validator;
+ 
+ import javax.net.ssl.SSLEngine;
+ import java.security.cert.X509Certificate;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/ChainAndAuthTypeWithSocketValidator.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/validator/ChainAndAuthTypeWithSocketValidator.java
+similarity index 96%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/ChainAndAuthTypeWithSocketValidator.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/validator/ChainAndAuthTypeWithSocketValidator.java
+index b1c2bc0..0b7f45c 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/ChainAndAuthTypeWithSocketValidator.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/trustmanager/validator/ChainAndAuthTypeWithSocketValidator.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.trustmanager;
++package nl.altindag.ssl.trustmanager.validator;
+ 
+ import java.net.Socket;
+ import java.security.cert.X509Certificate;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CertificateExtractorUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CertificateExtractorUtils.java
+index f3ad0b0..80c3b3a 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CertificateExtractorUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CertificateExtractorUtils.java
+@@ -44,7 +44,7 @@ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
+ import java.util.stream.Stream;
+ 
+-import static nl.altindag.ssl.util.CollectorsUtils.toUnmodifiableList;
++import static nl.altindag.ssl.util.internal.CollectorsUtils.toUnmodifiableList;
+ 
+ /**
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CertificateUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CertificateUtils.java
+index 2b12688..b877c92 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CertificateUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CertificateUtils.java
+@@ -17,6 +17,7 @@ package nl.altindag.ssl.util;
+ 
+ import nl.altindag.ssl.exception.GenericCertificateException;
+ import nl.altindag.ssl.exception.GenericIOException;
++import nl.altindag.ssl.util.internal.IOUtils;
+ 
+ import javax.net.ssl.X509TrustManager;
+ import javax.security.auth.x500.X500Principal;
+@@ -52,9 +53,9 @@ import java.util.regex.Pattern;
+ import java.util.stream.Collectors;
+ import java.util.stream.Stream;
+ 
+-import static nl.altindag.ssl.util.CollectorsUtils.toModifiableList;
+-import static nl.altindag.ssl.util.CollectorsUtils.toUnmodifiableList;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.CollectorsUtils.toModifiableList;
++import static nl.altindag.ssl.util.internal.CollectorsUtils.toUnmodifiableList;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/KeyManagerUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/KeyManagerUtils.java
+index 9b38667..71ca8b8 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/KeyManagerUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/KeyManagerUtils.java
+@@ -24,6 +24,7 @@ import nl.altindag.ssl.keymanager.KeyManagerFactoryWrapper;
+ import nl.altindag.ssl.keymanager.LoggingX509ExtendedKeyManager;
+ import nl.altindag.ssl.keymanager.X509KeyManagerWrapper;
+ import nl.altindag.ssl.model.KeyStoreHolder;
++import nl.altindag.ssl.util.internal.UriUtils;
+ 
+ import javax.net.ssl.KeyManager;
+ import javax.net.ssl.KeyManagerFactory;
+@@ -49,11 +50,11 @@ import java.util.Map;
+ import java.util.Map.Entry;
+ import java.util.stream.Collectors;
+ 
+-import static nl.altindag.ssl.util.CollectorsUtils.toListAndThen;
+-import static nl.altindag.ssl.util.CollectorsUtils.toUnmodifiableList;
+-import static nl.altindag.ssl.util.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotEmpty;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.CollectorsUtils.toListAndThen;
++import static nl.altindag.ssl.util.internal.CollectorsUtils.toUnmodifiableList;
++import static nl.altindag.ssl.util.internal.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotEmpty;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/KeyStoreUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/KeyStoreUtils.java
+index 4359908..8abbeb2 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/KeyStoreUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/KeyStoreUtils.java
+@@ -16,14 +16,12 @@
+ package nl.altindag.ssl.util;
+ 
+ import nl.altindag.ssl.exception.GenericKeyStoreException;
++import nl.altindag.ssl.util.internal.IOUtils;
++import nl.altindag.ssl.util.internal.StringUtils;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+ import javax.net.ssl.X509TrustManager;
+-
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotEmpty;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
+-
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.nio.file.Files;
+@@ -43,6 +41,9 @@ import java.util.Enumeration;
+ import java.util.List;
+ import java.util.function.UnaryOperator;
+ 
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotEmpty;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
++
+ /**
+  * @author Hakan Altindag
+  */
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/LinuxCertificateUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/LinuxCertificateUtils.java
+index 9551ab0..ee78b6e 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/LinuxCertificateUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/LinuxCertificateUtils.java
+@@ -51,7 +51,7 @@ final class LinuxCertificateUtils {
+     private LinuxCertificateUtils() {
+     }
+ 
+-    public static List<Certificate> getCertificates() {
++    static List<Certificate> getCertificates() {
+         if (OperatingSystem.get() != LINUX) {
+             return Collections.emptyList();
+         }
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/MacCertificateUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/MacCertificateUtils.java
+index 141353a..d13c629 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/MacCertificateUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/MacCertificateUtils.java
+@@ -16,6 +16,7 @@
+ package nl.altindag.ssl.util;
+ 
+ import nl.altindag.ssl.exception.GenericIOException;
++import nl.altindag.ssl.util.internal.IOUtils;
+ 
+ import java.io.IOException;
+ import java.nio.file.Path;
+@@ -42,7 +43,7 @@ final class MacCertificateUtils {
+     private MacCertificateUtils() {
+     }
+ 
+-    public static List<Certificate> getCertificates() {
++    static List<Certificate> getCertificates() {
+         if (OperatingSystem.get() != MAC) {
+             return Collections.emptyList();
+         }
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/SSLParametersUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/SSLParametersUtils.java
+index 5cd9c78..600ce11 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/SSLParametersUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/SSLParametersUtils.java
+@@ -18,6 +18,9 @@ package nl.altindag.ssl.util;
+ import javax.net.ssl.SSLParameters;
+ import java.util.Optional;
+ 
++/**
++ * @author Hakan Altindag
++ */
+ public final class SSLParametersUtils {
+ 
+     private SSLParametersUtils() {
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/SSLSessionUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/SSLSessionUtils.java
+index b28df2e..3eeb4a8 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/SSLSessionUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/SSLSessionUtils.java
+@@ -29,7 +29,7 @@ import java.util.Objects;
+ import java.util.function.LongFunction;
+ import java.util.function.Predicate;
+ 
+-import static nl.altindag.ssl.util.CollectorsUtils.toUnmodifiableList;
++import static nl.altindag.ssl.util.internal.CollectorsUtils.toUnmodifiableList;
+ 
+ /**
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/TrustManagerUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/TrustManagerUtils.java
+index 182a71c..9b81020 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/TrustManagerUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/TrustManagerUtils.java
+@@ -17,9 +17,6 @@ package nl.altindag.ssl.util;
+ 
+ import nl.altindag.ssl.exception.GenericTrustManagerException;
+ import nl.altindag.ssl.trustmanager.CertificateCapturingX509ExtendedTrustManager;
+-import nl.altindag.ssl.trustmanager.ChainAndAuthTypeValidator;
+-import nl.altindag.ssl.trustmanager.ChainAndAuthTypeWithSSLEngineValidator;
+-import nl.altindag.ssl.trustmanager.ChainAndAuthTypeWithSocketValidator;
+ import nl.altindag.ssl.trustmanager.CompositeX509ExtendedTrustManager;
+ import nl.altindag.ssl.trustmanager.DummyX509ExtendedTrustManager;
+ import nl.altindag.ssl.trustmanager.EnhanceableX509ExtendedTrustManager;
+@@ -28,6 +25,10 @@ import nl.altindag.ssl.trustmanager.LoggingX509ExtendedTrustManager;
+ import nl.altindag.ssl.trustmanager.TrustManagerFactoryWrapper;
+ import nl.altindag.ssl.trustmanager.UnsafeX509ExtendedTrustManager;
+ import nl.altindag.ssl.trustmanager.X509TrustManagerWrapper;
++import nl.altindag.ssl.trustmanager.validator.ChainAndAuthTypeValidator;
++import nl.altindag.ssl.trustmanager.validator.ChainAndAuthTypeWithSSLEngineValidator;
++import nl.altindag.ssl.trustmanager.validator.ChainAndAuthTypeWithSocketValidator;
++import nl.altindag.ssl.util.internal.ValidationUtils;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+@@ -51,8 +52,8 @@ import java.util.List;
+ import java.util.Optional;
+ import java.util.stream.Collectors;
+ 
+-import static nl.altindag.ssl.util.CollectorsUtils.toListAndThen;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotEmpty;
++import static nl.altindag.ssl.util.internal.CollectorsUtils.toListAndThen;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotEmpty;
+ 
+ /**
+  * @author Hakan Altindag
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CollectorsUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/CollectorsUtils.java
+similarity index 97%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CollectorsUtils.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/CollectorsUtils.java
+index a48f3ec..e34a1af 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/CollectorsUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/CollectorsUtils.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.util.internal;
+ 
+ import java.util.ArrayList;
+ import java.util.Collections;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/HostUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/HostUtils.java
+similarity index 97%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/HostUtils.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/HostUtils.java
+index 90e221d..a794fdd 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/HostUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/HostUtils.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.util.internal;
+ 
+ import javax.net.ssl.SSLEngine;
+ import java.net.InetSocketAddress;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/IOUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/IOUtils.java
+similarity index 81%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/IOUtils.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/IOUtils.java
+index 565689a..f9d802c 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/IOUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/IOUtils.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.util.internal;
+ 
+ import nl.altindag.ssl.exception.GenericIOException;
+ 
+@@ -29,8 +29,8 @@ import java.nio.file.Path;
+ import java.nio.file.StandardOpenOption;
+ import java.util.stream.Collectors;
+ 
+-import static nl.altindag.ssl.util.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
+-import static nl.altindag.ssl.util.ValidationUtils.requireNotNull;
++import static nl.altindag.ssl.util.internal.ValidationUtils.GENERIC_EXCEPTION_MESSAGE;
++import static nl.altindag.ssl.util.internal.ValidationUtils.requireNotNull;
+ 
+ /**
+  * <strong>NOTE:</strong>
+@@ -42,7 +42,7 @@ public final class IOUtils {
+ 
+     private IOUtils() {}
+ 
+-    static String getContent(InputStream inputStream) {
++    public static String getContent(InputStream inputStream) {
+         try (InputStreamReader inputStreamReader = new InputStreamReader(requireNotNull(inputStream, GENERIC_EXCEPTION_MESSAGE.apply("InputStream")), StandardCharsets.UTF_8);
+              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+ 
+@@ -53,7 +53,7 @@ public final class IOUtils {
+         }
+     }
+ 
+-    static byte[] copyToByteArray(InputStream inputStream) {
++    public static byte[] copyToByteArray(InputStream inputStream) {
+         try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+             byte[] buffer = new byte[1024];
+             int length;
+@@ -67,7 +67,7 @@ public final class IOUtils {
+         }
+     }
+ 
+-    static void closeSilently(AutoCloseable autoCloseable) {
++    public static void closeSilently(AutoCloseable autoCloseable) {
+         try {
+             autoCloseable.close();
+         } catch (Exception ignored) {
+@@ -75,11 +75,11 @@ public final class IOUtils {
+         }
+     }
+ 
+-    static InputStream getResourceAsStream(String name) {
++    public static InputStream getResourceAsStream(String name) {
+         return IOUtils.class.getClassLoader().getResourceAsStream(name);
+     }
+ 
+-    static InputStream getFileAsStream(Path path) {
++    public static InputStream getFileAsStream(Path path) {
+         try {
+             return Files.newInputStream(path, StandardOpenOption.READ);
+         } catch (IOException e) {
+@@ -87,7 +87,7 @@ public final class IOUtils {
+         }
+     }
+ 
+-    static void write(Path path, byte[] data) {
++    public static void write(Path path, byte[] data) {
+         try {
+             Files.write(path, data, StandardOpenOption.CREATE);
+         } catch (IOException e) {
+@@ -95,7 +95,7 @@ public final class IOUtils {
+         }
+     }
+ 
+-    static void write(Path path, Consumer<OutputStream> consumer) {
++    public static void write(Path path, Consumer<OutputStream> consumer) {
+         try (OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.CREATE)) {
+             consumer.accept(outputStream);
+         } catch (Exception e) {
+@@ -104,7 +104,7 @@ public final class IOUtils {
+     }
+ 
+     @FunctionalInterface
+-    interface Consumer<T> {
++    public interface Consumer<T> {
+         void accept(T t) throws Exception;
+     }
+ 
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/StringUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/StringUtils.java
+similarity index 97%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/StringUtils.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/StringUtils.java
+index 894d0b4..a151c28 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/StringUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/StringUtils.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.util.internal;
+ 
+ import static java.util.Objects.isNull;
+ 
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/UriUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/UriUtils.java
+similarity index 97%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/UriUtils.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/UriUtils.java
+index 5a7f872..653f087 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/UriUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/UriUtils.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.util.internal;
+ 
+ import java.net.URI;
+ import java.net.URISyntaxException;
+diff --git a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/ValidationUtils.java b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/ValidationUtils.java
+similarity index 98%
+rename from sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/ValidationUtils.java
+rename to sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/ValidationUtils.java
+index 8af21e7..f2f71d1 100644
+--- a/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/ValidationUtils.java
++++ b/sslcontext-kickstart/src/main/java/nl/altindag/ssl/util/internal/ValidationUtils.java
+@@ -13,7 +13,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package nl.altindag.ssl.util;
++package nl.altindag.ssl.util.internal;
+ 
+ import java.util.List;
+ import java.util.function.Supplier;

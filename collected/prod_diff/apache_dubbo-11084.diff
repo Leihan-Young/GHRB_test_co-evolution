@@ -1,0 +1,709 @@
+diff --git a/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/Constants.java b/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/Constants.java
+index 2d1e125cbb..d06e0fbd64 100644
+--- a/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/Constants.java
++++ b/dubbo-rpc/dubbo-rpc-api/src/main/java/org/apache/dubbo/rpc/Constants.java
+@@ -105,4 +105,6 @@ public interface Constants {
+     String H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY = "dubbo.rpc.tri.max-header-list-size";
+ 
+     String H2_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
++
++    String TRI_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
+ }
+diff --git a/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/ReflectionPackableMethod.java b/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/ReflectionPackableMethod.java
+index 7ee9e0e66e..1bf19f15e6 100644
+--- a/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/ReflectionPackableMethod.java
++++ b/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/ReflectionPackableMethod.java
+@@ -25,9 +25,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
+ import org.apache.dubbo.config.Constants;
+ import org.apache.dubbo.rpc.model.MethodDescriptor;
+ import org.apache.dubbo.rpc.model.PackableMethod;
+-import org.apache.dubbo.triple.TripleWrapper;
+ 
+-import com.google.protobuf.ByteString;
+ import com.google.protobuf.Message;
+ 
+ import java.io.ByteArrayInputStream;
+@@ -326,10 +324,10 @@ public class ReflectionPackableMethod implements PackableMethod {
+         public byte[] pack(Object obj) throws IOException {
+             ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             multipleSerialization.serialize(url, serialize, null, obj, bos);
+-            return TripleWrapper.TripleResponseWrapper.newBuilder()
++            return TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
+                 .setSerializeType(serialize)
+                 .setType(returnType)
+-                .setData(ByteString.copyFrom(bos.toByteArray()))
++                .setData(bos.toByteArray())
+                 .build()
+                 .toByteArray();
+         }
+@@ -347,10 +345,10 @@ public class ReflectionPackableMethod implements PackableMethod {
+ 
+         @Override
+         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+-            TripleWrapper.TripleResponseWrapper wrapper = TripleWrapper.TripleResponseWrapper.parseFrom(
+-                data);
++            TripleCustomerProtocolWapper.TripleResponseWrapper wrapper = TripleCustomerProtocolWapper.TripleResponseWrapper
++                .parseFrom(data);
+             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
+-            ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData().toByteArray());
++            ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
+             return serialization.deserialize(url, serializeType, wrapper.getType(), bais);
+         }
+     }
+@@ -383,15 +381,15 @@ public class ReflectionPackableMethod implements PackableMethod {
+             } else {
+                 arguments = (Object[]) obj;
+             }
+-            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+-                .setSerializeType(serialize);
++            final TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder = TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
++            builder.setSerializeType(serialize);
+             for (String type : argumentsType) {
+                 builder.addArgTypes(type);
+             }
+             for (Object argument : arguments) {
+                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                 multipleSerialization.serialize(url, serialize, null, argument, bos);
+-                builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
++                builder.addArgs(bos.toByteArray());
+             }
+             return builder.build().toByteArray();
+         }
+@@ -441,15 +439,15 @@ public class ReflectionPackableMethod implements PackableMethod {
+ 
+         @Override
+         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+-            TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(
++            TripleCustomerProtocolWapper.TripleRequestWrapper wrapper = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(
+                 data);
+-            Object[] ret = new Object[wrapper.getArgsCount()];
++            Object[] ret = new Object[wrapper.getArgs().size()];
+             ((WrapResponsePack) responsePack).serialize = wrapper.getSerializeType();
+-            for (int i = 0; i < wrapper.getArgsList().size(); i++) {
++            for (int i = 0; i < wrapper.getArgs().size(); i++) {
+                 ByteArrayInputStream bais = new ByteArrayInputStream(
+-                    wrapper.getArgs(i).toByteArray());
++                    wrapper.getArgs().get(i));
+                 ret[i] = serialization.deserialize(url, wrapper.getSerializeType(),
+-                    wrapper.getArgTypes(i),
++                    wrapper.getArgTypes().get(i),
+                     bais);
+             }
+             return ret;
+diff --git a/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TripleCustomerProtocolWapper.java b/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TripleCustomerProtocolWapper.java
+new file mode 100644
+index 0000000000..78eb166f60
+--- /dev/null
++++ b/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TripleCustomerProtocolWapper.java
+@@ -0,0 +1,390 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.dubbo.rpc.protocol.tri;
++
++import org.apache.dubbo.common.utils.Assert;
++import org.apache.dubbo.common.utils.CollectionUtils;
++
++import java.nio.ByteBuffer;
++import java.nio.charset.StandardCharsets;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Objects;
++
++public class TripleCustomerProtocolWapper {
++
++    static int makeTag(int fieldNumber, int wireType) {
++        return fieldNumber << 3 | wireType;
++    }
++
++    public static byte[] varIntEncode(int val) {
++        byte[] data = new byte[varIntComputeLength(val)];
++        for (int i = 0; i < data.length - 1; i++) {
++            data[i] = (byte) ((val & 0x7F) | 0x80);
++            val = val >>> 7;
++        }
++        data[data.length - 1] = (byte) (val);
++        return data;
++    }
++
++    public static int varIntComputeLength(int val) {
++        if (val == 0) {
++            return 1;
++        }
++        int length = 0;
++        while (val != 0) {
++            val = val >>> 7;
++            length++;
++        }
++        return length;
++    }
++
++
++    public static int readRawVarint32(ByteBuffer byteBuffer) {
++        int val = 0;
++        int currentPosition = byteBuffer.position();
++        int varIntLength = 1;
++        byte currentByte = byteBuffer.get();
++        while ((currentByte & 0XF0) >> 7 == 1) {
++            varIntLength++;
++            currentByte = byteBuffer.get();
++        }
++
++        for (int index = currentPosition + varIntLength - 1; index >= currentPosition; index--) {
++            val = val << 7;
++            val = val | (byteBuffer.get(index) & 0x7F);
++        }
++        byteBuffer.position(currentPosition + varIntLength);
++        return val;
++    }
++
++    public static int extractFieldNumFromTag(int tag) {
++        return tag >> 3;
++    }
++
++    public static int extractWireTypeFromTag(int tag) {
++        return tag & 0X07;
++    }
++
++    public static final class TripleResponseWrapper {
++        private String serializeType;
++
++        private byte[] data;
++
++        private String type;
++
++        public String getSerializeType() {
++            return serializeType;
++        }
++
++        public byte[] getData() {
++            return data;
++        }
++
++        public String getType() {
++            return type;
++        }
++
++        public static TripleResponseWrapper parseFrom(byte[] data) {
++            TripleResponseWrapper tripleResponseWrapper = new TripleResponseWrapper();
++            ByteBuffer byteBuffer = ByteBuffer.wrap(data);
++            while (byteBuffer.position() < byteBuffer.limit()) {
++                int tag = readRawVarint32(byteBuffer);
++                int fieldNum = extractFieldNumFromTag(tag);
++                int wireType = extractWireTypeFromTag(tag);
++                if (wireType != 2) {
++                    throw new RuntimeException(String.format("unexpect wireType, expect %d realType %d", 2, wireType));
++                }
++                if (fieldNum == 1) {
++                    int serializeTypeLength = readRawVarint32(byteBuffer);
++                    byte[] serializeTypeBytes = new byte[serializeTypeLength];
++                    byteBuffer.get(serializeTypeBytes, 0, serializeTypeLength);
++                    tripleResponseWrapper.serializeType = new String(serializeTypeBytes);
++                } else if (fieldNum == 2) {
++                    int dataLength = readRawVarint32(byteBuffer);
++                    byte[] dataBytes = new byte[dataLength];
++                    byteBuffer.get(dataBytes, 0, dataLength);
++                    tripleResponseWrapper.data = dataBytes;
++                } else if (fieldNum == 3) {
++                    int typeLength = readRawVarint32(byteBuffer);
++                    byte[] typeBytes = new byte[typeLength];
++                    byteBuffer.get(typeBytes, 0, typeLength);
++                    tripleResponseWrapper.type = new String(typeBytes);
++                } else {
++                    throw new RuntimeException("fieldNum should in (1,2,3)");
++                }
++            }
++            return tripleResponseWrapper;
++        }
++
++        public byte[] toByteArray() {
++            int totalSize = 0;
++
++            int serializeTypeTag = makeTag(1, 2);
++            byte[] serializeTypeTagBytes = varIntEncode(serializeTypeTag);
++            byte[] serializeTypeBytes = serializeType.getBytes(StandardCharsets.UTF_8);
++            byte[] serializeTypeLengthVarIntEncodeBytes = varIntEncode(serializeTypeBytes.length);
++            totalSize += serializeTypeTagBytes.length
++                + serializeTypeLengthVarIntEncodeBytes.length
++                + serializeTypeBytes.length;
++
++            int dataTag = makeTag(2, 2);
++            if (data != null) {
++                totalSize += varIntComputeLength(dataTag)
++                    + varIntComputeLength(data.length)
++                    + data.length;
++            }
++
++            int typeTag = makeTag(3, 2);
++            byte[] typeTagBytes = varIntEncode(typeTag);
++            byte[] typeBytes = type.getBytes(StandardCharsets.UTF_8);
++            byte[] typeLengthVarIntEncodeBytes = varIntEncode(typeBytes.length);
++            totalSize += typeTagBytes.length
++                + typeLengthVarIntEncodeBytes.length
++                + typeBytes.length;
++
++            ByteBuffer byteBuffer = ByteBuffer.allocate(totalSize);
++            byteBuffer
++                .put(serializeTypeTagBytes)
++                .put(serializeTypeLengthVarIntEncodeBytes)
++                .put(serializeTypeBytes);
++            if (data != null) {
++                byteBuffer
++                    .put(varIntEncode(dataTag))
++                    .put(varIntEncode(data.length))
++                    .put(data);
++            }
++            byteBuffer
++                .put(typeTagBytes)
++                .put(typeLengthVarIntEncodeBytes)
++                .put(typeBytes);
++            return byteBuffer.array();
++        }
++
++        public static final class Builder {
++            private String serializeType;
++
++            private byte[] data;
++
++            private String type;
++
++            public Builder setSerializeType(String serializeType) {
++                this.serializeType = serializeType;
++                return this;
++            }
++
++            public Builder setData(byte[] data) {
++                this.data = data;
++                return this;
++            }
++
++            public Builder setType(String type) {
++                this.type = type;
++                return this;
++            }
++
++            public static Builder newBuilder() {
++                return new Builder();
++            }
++
++            public TripleResponseWrapper build() {
++                Assert.notNull(serializeType, "serializeType can not be null");
++                Assert.notNull(type, "type can not be null");
++                TripleResponseWrapper tripleResponseWrapper = new TripleResponseWrapper();
++                tripleResponseWrapper.data = this.data;
++                tripleResponseWrapper.serializeType = this.serializeType;
++                tripleResponseWrapper.type = this.type;
++                return tripleResponseWrapper;
++            }
++        }
++    }
++
++
++    public static final class TripleRequestWrapper {
++
++        private String serializeType;
++
++        private List<byte[]> args;
++
++        private List<String> argTypes;
++
++        public String getSerializeType() {
++            return serializeType;
++        }
++
++        public List<byte[]> getArgs() {
++            return args;
++        }
++
++        public List<String> getArgTypes() {
++            return argTypes;
++        }
++
++        public TripleRequestWrapper() {
++        }
++
++        public static TripleRequestWrapper parseFrom(byte[] data) {
++            TripleRequestWrapper tripleRequestWrapper = new TripleRequestWrapper();
++            ByteBuffer byteBuffer = ByteBuffer.wrap(data);
++            tripleRequestWrapper.args = new ArrayList<>();
++            tripleRequestWrapper.argTypes = new ArrayList<>();
++            while (byteBuffer.position() < byteBuffer.limit()) {
++                int tag = readRawVarint32(byteBuffer);
++                int fieldNum = extractFieldNumFromTag(tag);
++                int wireType = extractWireTypeFromTag(tag);
++                if (wireType != 2) {
++                    throw new RuntimeException(String.format("unexpect wireType, expect %d realType %d", 2, wireType));
++                }
++                if (fieldNum == 1) {
++                    int serializeTypeLength = readRawVarint32(byteBuffer);
++                    byte[] serializeTypeBytes = new byte[serializeTypeLength];
++                    byteBuffer.get(serializeTypeBytes, 0, serializeTypeLength);
++                    tripleRequestWrapper.serializeType = new String(serializeTypeBytes);
++                } else if (fieldNum == 2) {
++                    int argLength = readRawVarint32(byteBuffer);
++                    byte[] argBytes = new byte[argLength];
++                    byteBuffer.get(argBytes, 0, argLength);
++                    tripleRequestWrapper.args.add(argBytes);
++                } else if (fieldNum == 3) {
++                    int argTypeLength = readRawVarint32(byteBuffer);
++                    byte[] argTypeBytes = new byte[argTypeLength];
++                    byteBuffer.get(argTypeBytes, 0, argTypeLength);
++                    tripleRequestWrapper.argTypes.add(new String(argTypeBytes));
++                } else {
++                    throw new RuntimeException("fieldNum should in (1,2,3)");
++                }
++            }
++            return tripleRequestWrapper;
++        }
++
++        public byte[] toByteArray() {
++
++            int totalSize = 0;
++            int serializeTypeTag = makeTag(1, 2);
++            byte[] serializeTypeTagBytes = varIntEncode(serializeTypeTag);
++            byte[] serializeTypeBytes = serializeType.getBytes(StandardCharsets.UTF_8);
++            byte[] serializeTypeLengthVarIntEncodeBytes = varIntEncode(serializeTypeBytes.length);
++            totalSize += serializeTypeTagBytes.length
++                + serializeTypeLengthVarIntEncodeBytes.length
++                + serializeTypeBytes.length;
++
++            int argTypeTag = makeTag(3, 2);
++            if (CollectionUtils.isNotEmpty(argTypes)) {
++                totalSize += varIntComputeLength(argTypeTag) * argTypes.size();
++                for (String argType : argTypes) {
++                    byte[] argTypeBytes = argType.getBytes(StandardCharsets.UTF_8);
++                    totalSize += argTypeBytes.length + varIntComputeLength(argTypeBytes.length);
++                }
++            }
++
++            int argTag = makeTag(2, 2);
++            if (CollectionUtils.isNotEmpty(args)) {
++                totalSize += varIntComputeLength(argTag) * args.size();
++                for (byte[] arg : args) {
++                    totalSize += arg.length + varIntComputeLength(arg.length);
++                }
++            }
++
++            ByteBuffer byteBuffer = ByteBuffer.allocate(totalSize);
++            byteBuffer
++                .put(serializeTypeTagBytes)
++                .put(serializeTypeLengthVarIntEncodeBytes)
++                .put(serializeTypeBytes);
++
++            if (CollectionUtils.isNotEmpty(args)) {
++                byte[] argTagBytes = varIntEncode(argTag);
++                for (byte[] arg : args) {
++                    byteBuffer
++                        .put(argTagBytes)
++                        .put(varIntEncode(arg.length))
++                        .put(arg);
++                }
++            }
++
++            if (CollectionUtils.isNotEmpty(argTypes)) {
++                byte[] argTypeTagBytes = varIntEncode(argTypeTag);
++                for (String argType : argTypes) {
++                    byte[] argTypeBytes = argType.getBytes(StandardCharsets.UTF_8);
++                    byteBuffer
++                        .put(argTypeTagBytes)
++                        .put(varIntEncode(argTypeBytes.length))
++                        .put(argTypeBytes);
++                }
++            }
++            return byteBuffer.array();
++        }
++
++
++        public static final class Builder {
++
++            private String serializeType;
++
++            private final List<byte[]> args = new ArrayList<>();
++
++            private final List<String> argTypes = new ArrayList<>();
++
++            public Builder setSerializeType(String serializeType) {
++                this.serializeType = serializeType;
++                return this;
++            }
++
++            public Builder addArgTypes(String argsType) {
++                Assert.notEmptyString(argsType, "argsType不能为空");
++                argTypes.add(argsType);
++                return this;
++            }
++
++            public Builder addArgs(byte[] arg) {
++                args.add(arg);
++                return this;
++            }
++
++            public static Builder newBuilder() {
++                return new Builder();
++            }
++
++            public TripleRequestWrapper build() {
++                Assert.notNull(serializeType, "serializeType can not be null");
++                TripleRequestWrapper tripleRequestWrapper = new TripleRequestWrapper();
++                tripleRequestWrapper.args = this.args;
++                tripleRequestWrapper.argTypes = this.argTypes;
++                tripleRequestWrapper.serializeType = this.serializeType;
++                return tripleRequestWrapper;
++            }
++        }
++
++        @Override
++        public boolean equals(Object o) {
++            if (this == o) {
++                return true;
++            }
++            if (!(o instanceof TripleRequestWrapper)) {
++                return false;
++            }
++            TripleRequestWrapper that = (TripleRequestWrapper) o;
++            return Objects.equals(serializeType, that.serializeType)
++                && Objects.equals(args, that.args)
++                && Objects.equals(argTypes, that.argTypes);
++        }
++
++        @Override
++        public int hashCode() {
++            return Objects.hash(serializeType, args, argTypes);
++        }
++    }
++}
+diff --git a/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TripleProtocol.java b/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TripleProtocol.java
+index bbc17c64e1..2c0024d0ec 100644
+--- a/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TripleProtocol.java
++++ b/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TripleProtocol.java
+@@ -31,20 +31,14 @@ import org.apache.dubbo.rpc.PathResolver;
+ import org.apache.dubbo.rpc.RpcException;
+ import org.apache.dubbo.rpc.model.ApplicationModel;
+ import org.apache.dubbo.rpc.model.FrameworkModel;
+-import org.apache.dubbo.rpc.model.ServiceDescriptor;
+-import org.apache.dubbo.rpc.model.StubServiceDescriptor;
+ import org.apache.dubbo.rpc.protocol.AbstractExporter;
+ import org.apache.dubbo.rpc.protocol.AbstractProtocol;
+ import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
+ import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
+-import org.apache.dubbo.triple.TripleWrapper;
+ 
+-import com.google.protobuf.ByteString;
+ import io.grpc.health.v1.HealthCheckResponse;
+ import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
+ 
+-import java.io.ByteArrayOutputStream;
+-import java.io.IOException;
+ import java.util.Objects;
+ import java.util.Set;
+ import java.util.concurrent.ExecutorService;
+@@ -66,8 +60,6 @@ public class TripleProtocol extends AbstractProtocol {
+      */
+     public static boolean CONVERT_NO_LOWER_HEADER = false;
+ 
+-    private boolean versionChecked = false;
+-
+ 
+     public TripleProtocol(FrameworkModel frameworkModel) {
+         this.frameworkModel = frameworkModel;
+@@ -91,7 +83,6 @@ public class TripleProtocol extends AbstractProtocol {
+     @Override
+     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+         URL url = invoker.getUrl();
+-        checkProtobufVersion(url);
+         String key = serviceKey(url);
+         final AbstractExporter<T> exporter = new AbstractExporter<T>(invoker) {
+             @Override
+@@ -99,10 +90,12 @@ public class TripleProtocol extends AbstractProtocol {
+                 pathResolver.remove(url.getServiceKey());
+                 pathResolver.remove(url.getServiceModel().getServiceModel().getInterfaceName());
+                 // set service status
+-                triBuiltinService.getHealthStatusManager()
+-                    .setStatus(url.getServiceKey(), ServingStatus.NOT_SERVING);
+-                triBuiltinService.getHealthStatusManager()
+-                    .setStatus(url.getServiceInterface(), ServingStatus.NOT_SERVING);
++                if (triBuiltinService.enable()) {
++                    triBuiltinService.getHealthStatusManager()
++                        .setStatus(url.getServiceKey(), ServingStatus.NOT_SERVING);
++                    triBuiltinService.getHealthStatusManager()
++                        .setStatus(url.getServiceInterface(), ServingStatus.NOT_SERVING);
++                }
+                 exporterMap.remove(key);
+             }
+         };
+@@ -115,10 +108,12 @@ public class TripleProtocol extends AbstractProtocol {
+         pathResolver.add(url.getServiceModel().getServiceModel().getInterfaceName(), invoker);
+ 
+         // set service status
+-        triBuiltinService.getHealthStatusManager()
+-            .setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
+-        triBuiltinService.getHealthStatusManager()
+-            .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
++        if (triBuiltinService.enable()) {
++            triBuiltinService.getHealthStatusManager()
++                .setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
++            triBuiltinService.getHealthStatusManager()
++                .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
++        }
+         // init
+         url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+             .getDefaultExtension()
+@@ -163,35 +158,4 @@ public class TripleProtocol extends AbstractProtocol {
+         pathResolver.destroy();
+         super.destroy();
+     }
+-
+-    private void checkProtobufVersion(URL url) {
+-        if (versionChecked) {
+-            return;
+-        }
+-        if (url.getServiceModel() == null) {
+-            return;
+-        }
+-        ServiceDescriptor descriptor = url.getServiceModel().getServiceModel();
+-        if (descriptor == null) {
+-            return;
+-        }
+-        if (descriptor instanceof StubServiceDescriptor) {
+-            return;
+-        }
+-
+-        TripleWrapper.TripleResponseWrapper responseWrapper = TripleWrapper.TripleResponseWrapper.newBuilder()
+-            .setData(ByteString.copyFromUtf8("Test"))
+-            .setSerializeType("Test")
+-            .build();
+-
+-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+-        try {
+-            responseWrapper.writeTo(baos);
+-        } catch (IOException e) {
+-            throw new IllegalStateException(
+-                "Bad protobuf-java version detected! Please make sure the version of user's "
+-                    + "classloader is " + "greater than 3.11.0 ", e);
+-        }
+-        this.versionChecked = true;
+-    }
+ }
+diff --git a/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/call/ReflectionAbstractServerCall.java b/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/call/ReflectionAbstractServerCall.java
+index e1b74f881e..200ccf2412 100644
+--- a/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/call/ReflectionAbstractServerCall.java
++++ b/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/call/ReflectionAbstractServerCall.java
+@@ -31,9 +31,9 @@ import org.apache.dubbo.rpc.model.ProviderModel;
+ import org.apache.dubbo.rpc.model.ServiceDescriptor;
+ import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
+ import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
++import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper;
+ import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
+ import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
+-import org.apache.dubbo.triple.TripleWrapper;
+ 
+ import java.io.IOException;
+ import java.util.Arrays;
+@@ -167,11 +167,11 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
+         if (methodDescriptor != null) {
+             return;
+         }
+-        final TripleWrapper.TripleRequestWrapper request;
+-        request = TripleWrapper.TripleRequestWrapper.parseFrom(data);
++        final TripleCustomerProtocolWapper.TripleRequestWrapper request;
++        request = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(data);
+ 
+-        final String[] paramTypes = request.getArgTypesList()
+-            .toArray(new String[request.getArgsCount()]);
++        final String[] paramTypes = request.getArgTypes()
++            .toArray(new String[request.getArgs().size()]);
+         // wrapper mode the method can overload so maybe list
+         for (MethodDescriptor descriptor : methodDescriptors) {
+             // params type is array
+diff --git a/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/service/TriBuiltinService.java b/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/service/TriBuiltinService.java
+index 2bf3ca0ece..8abfd9de40 100644
+--- a/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/service/TriBuiltinService.java
++++ b/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/service/TriBuiltinService.java
+@@ -17,6 +17,8 @@
+ package org.apache.dubbo.rpc.protocol.tri.service;
+ 
+ import org.apache.dubbo.common.URL;
++import org.apache.dubbo.common.config.Configuration;
++import org.apache.dubbo.common.config.ConfigurationUtils;
+ import org.apache.dubbo.common.constants.CommonConstants;
+ import org.apache.dubbo.common.url.component.ServiceConfigURL;
+ import org.apache.dubbo.rpc.Invoker;
+@@ -33,40 +35,53 @@ import java.util.concurrent.atomic.AtomicBoolean;
+ 
+ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+ import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
++import static org.apache.dubbo.rpc.Constants.TRI_BUILTIN_SERVICE_INIT;
+ 
+ /**
+  * tri internal service like grpc internal service
+  **/
+ public class TriBuiltinService {
+ 
+-    private final ProxyFactory proxyFactory;
++    private ProxyFactory proxyFactory;
+ 
+-    private final PathResolver pathResolver;
++    private PathResolver pathResolver;
+ 
+-    private final Health healthService;
++    private Health healthService;
+ 
+-    private final ReflectionV1AlphaService reflectionServiceV1Alpha;
+-    private final HealthStatusManager healthStatusManager;
++    private FrameworkModel frameworkModel;
++
++    private ReflectionV1AlphaService reflectionServiceV1Alpha;
++    private HealthStatusManager healthStatusManager;
++    private Configuration config = ConfigurationUtils.getGlobalConfiguration(
++        ApplicationModel.defaultModel());
+ 
+     private final AtomicBoolean init = new AtomicBoolean();
+ 
+     public TriBuiltinService(FrameworkModel frameworkModel) {
+-        healthStatusManager = new HealthStatusManager(new TriHealthImpl());
+-        healthService = healthStatusManager.getHealthService();
+-        reflectionServiceV1Alpha = new ReflectionV1AlphaService();
+-        proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+-        pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+-        init();
++        this.frameworkModel = frameworkModel;
++        if (enable()) {
++            init();
++        }
+     }
+ 
+     public void init() {
+         if (init.compareAndSet(false, true)) {
++            healthStatusManager = new HealthStatusManager(new TriHealthImpl());
++            healthService = healthStatusManager.getHealthService();
++            reflectionServiceV1Alpha = new ReflectionV1AlphaService();
++            proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
++            pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+             addSingleBuiltinService(DubboHealthTriple.SERVICE_NAME, healthService, Health.class);
+             addSingleBuiltinService(ReflectionV1AlphaService.SERVICE_NAME, reflectionServiceV1Alpha,
+                 ReflectionV1AlphaService.class);
+         }
+     }
+ 
++    public boolean enable(){
++        return config.getBoolean(TRI_BUILTIN_SERVICE_INIT, false);
++    }
++
++
+     private <T> void addSingleBuiltinService(String serviceName, T impl, Class<T> interfaceClass) {
+         ModuleModel internalModule = ApplicationModel.defaultModel().getInternalModule();
+         URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, 0,

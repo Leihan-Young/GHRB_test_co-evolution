@@ -1,0 +1,1566 @@
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/aspect/CapacityManagementAspect.java b/config/src/main/java/com/alibaba/nacos/config/server/aspect/CapacityManagementAspect.java
+index d158fa7440..8159d37378 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/aspect/CapacityManagementAspect.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/aspect/CapacityManagementAspect.java
+@@ -21,7 +21,7 @@ import com.alibaba.nacos.config.server.constant.CounterMode;
+ import com.alibaba.nacos.config.server.model.ConfigInfo;
+ import com.alibaba.nacos.config.server.model.capacity.Capacity;
+ import com.alibaba.nacos.config.server.service.capacity.CapacityService;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
+ import com.alibaba.nacos.config.server.utils.PropertyUtil;
+ import org.aspectj.lang.ProceedingJoinPoint;
+ import org.aspectj.lang.annotation.Around;
+@@ -59,7 +59,7 @@ public class CapacityManagementAspect {
+     private CapacityService capacityService;
+     
+     @Autowired
+-    private PersistService persistService;
++    private ConfigInfoPersistService configInfoPersistService;
+     
+     /**
+      * Need to judge the size of content whether to exceed the limitation.
+@@ -76,7 +76,7 @@ public class CapacityManagementAspect {
+         if (StringUtils.isBlank(betaIps)) {
+             if (StringUtils.isBlank(tag)) {
+                 // do capacity management limitation check for writing or updating config_info table.
+-                if (persistService.findConfigInfo(dataId, group, tenant) == null) {
++                if (configInfoPersistService.findConfigInfo(dataId, group, tenant) == null) {
+                     // Write operation.
+                     return do4Insert(pjp, request, response, group, tenant, content);
+                 }
+@@ -153,7 +153,7 @@ public class CapacityManagementAspect {
+             return pjp.proceed();
+         }
+         LOGGER.info("[capacityManagement] aroundDeleteConfig");
+-        ConfigInfo configInfo = persistService.findConfigInfo(dataId, group, tenant);
++        ConfigInfo configInfo = configInfoPersistService.findConfigInfo(dataId, group, tenant);
+         if (configInfo == null) {
+             return pjp.proceed();
+         }
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigController.java b/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigController.java
+index 2d011584f4..1cbec2c24e 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigController.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigController.java
+@@ -44,7 +44,9 @@ import com.alibaba.nacos.config.server.result.code.ResultCodeEnum;
+ import com.alibaba.nacos.config.server.service.ConfigChangePublisher;
+ import com.alibaba.nacos.config.server.service.ConfigOperationService;
+ import com.alibaba.nacos.config.server.service.ConfigSubService;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.CommonPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
+ import com.alibaba.nacos.config.server.service.trace.ConfigTraceService;
+ import com.alibaba.nacos.config.server.utils.GroupKey;
+ import com.alibaba.nacos.config.server.utils.MD5Util;
+@@ -107,18 +109,25 @@ public class ConfigController {
+     
+     private final ConfigServletInner inner;
+     
+-    private final PersistService persistService;
++    private ConfigInfoPersistService configInfoPersistService;
++    
++    private ConfigInfoBetaPersistService configInfoBetaPersistService;
++    
++    private CommonPersistService commonPersistService;
+     
+     private final ConfigOperationService configOperationService;
+     
+     private final ConfigSubService configSubService;
+     
+-    public ConfigController(ConfigServletInner inner, PersistService persistService, ConfigOperationService configOperationService,
+-            ConfigSubService configSubService) {
++    public ConfigController(ConfigServletInner inner, ConfigOperationService configOperationService,
++            ConfigSubService configSubService, ConfigInfoPersistService configInfoPersistService,
++            CommonPersistService commonPersistService, ConfigInfoBetaPersistService configInfoBetaPersistService) {
+         this.inner = inner;
+-        this.persistService = persistService;
+         this.configOperationService = configOperationService;
+         this.configSubService = configSubService;
++        this.configInfoPersistService = configInfoPersistService;
++        this.commonPersistService = commonPersistService;
++        this.configInfoBetaPersistService = configInfoBetaPersistService;
+     }
+     
+     /**
+@@ -227,7 +236,7 @@ public class ConfigController {
+         ParamUtils.checkTenant(tenant);
+         // check params
+         ParamUtils.checkParam(dataId, group, "datumId", "content");
+-        ConfigAllInfo configAllInfo = persistService.findConfigAllInfo(dataId, group, tenant);
++        ConfigAllInfo configAllInfo = configInfoPersistService.findConfigAllInfo(dataId, group, tenant);
+     
+         // decrypted
+         if (Objects.nonNull(configAllInfo)) {
+@@ -281,7 +290,7 @@ public class ConfigController {
+     public RestResult<Boolean> deleteConfigs(HttpServletRequest request, @RequestParam(value = "ids") List<Long> ids) {
+         String clientIp = RequestUtil.getRemoteIp(request);
+         final Timestamp time = TimeUtils.getCurrentTime();
+-        List<ConfigInfo> configInfoList = persistService.removeConfigInfoByIds(ids, clientIp, null);
++        List<ConfigInfo> configInfoList = configInfoPersistService.removeConfigInfoByIds(ids, clientIp, null);
+         if (CollectionUtils.isEmpty(configInfoList)) {
+             return RestResultUtils.success(true);
+         }
+@@ -302,7 +311,7 @@ public class ConfigController {
+     public RestResult<ConfigAdvanceInfo> getConfigAdvanceInfo(@RequestParam("dataId") String dataId,
+             @RequestParam("group") String group,
+             @RequestParam(value = "tenant", required = false, defaultValue = StringUtils.EMPTY) String tenant) {
+-        ConfigAdvanceInfo configInfo = persistService.findConfigAdvanceInfo(dataId, group, tenant);
++        ConfigAdvanceInfo configInfo = configInfoPersistService.findConfigAdvanceInfo(dataId, group, tenant);
+         return RestResultUtils.success(configInfo);
+     }
+     
+@@ -370,7 +379,7 @@ public class ConfigController {
+             configAdvanceInfo.put("config_tags", configTags);
+         }
+         try {
+-            return persistService.findConfigInfo4Page(pageNo, pageSize, dataId, group, tenant, configAdvanceInfo);
++            return configInfoPersistService.findConfigInfo4Page(pageNo, pageSize, dataId, group, tenant, configAdvanceInfo);
+         } catch (Exception e) {
+             String errorMsg = "serialize page error, dataId=" + dataId + ", group=" + group;
+             LOGGER.error(errorMsg, e);
+@@ -398,7 +407,7 @@ public class ConfigController {
+             configAdvanceInfo.put("config_tags", configTags);
+         }
+         try {
+-            return persistService.findConfigInfoLike4Page(pageNo, pageSize, dataId, group, tenant, configAdvanceInfo);
++            return configInfoPersistService.findConfigInfoLike4Page(pageNo, pageSize, dataId, group, tenant, configAdvanceInfo);
+         } catch (Exception e) {
+             String errorMsg = "serialize page error, dataId=" + dataId + ", group=" + group;
+             LOGGER.error(errorMsg, e);
+@@ -420,7 +429,7 @@ public class ConfigController {
+             @RequestParam(value = "group") String group,
+             @RequestParam(value = "tenant", required = false, defaultValue = StringUtils.EMPTY) String tenant) {
+         try {
+-            persistService.removeConfigInfo4Beta(dataId, group, tenant);
++            configInfoBetaPersistService.removeConfigInfo4Beta(dataId, group, tenant);
+         } catch (Throwable e) {
+             LOGGER.error("remove beta data error", e);
+             return RestResultUtils.failed(500, false, "remove beta data error");
+@@ -444,7 +453,7 @@ public class ConfigController {
+             @RequestParam(value = "group") String group,
+             @RequestParam(value = "tenant", required = false, defaultValue = StringUtils.EMPTY) String tenant) {
+         try {
+-            ConfigInfo4Beta ci = persistService.findConfigInfo4Beta(dataId, group, tenant);
++            ConfigInfo4Beta ci = configInfoBetaPersistService.findConfigInfo4Beta(dataId, group, tenant);
+     
+             if (Objects.nonNull(ci)) {
+                 String encryptedDataKey = ci.getEncryptedDataKey();
+@@ -477,7 +486,7 @@ public class ConfigController {
+             @RequestParam(value = "ids", required = false) List<Long> ids) {
+         ids.removeAll(Collections.singleton(null));
+         tenant = NamespaceUtil.processNamespaceParameter(tenant);
+-        List<ConfigAllInfo> dataList = persistService.findAllConfigInfo4Export(dataId, group, tenant, appName, ids);
++        List<ConfigAllInfo> dataList = configInfoPersistService.findAllConfigInfo4Export(dataId, group, tenant, appName, ids);
+         List<ZipUtils.ZipItem> zipItemList = new ArrayList<>();
+         StringBuilder metaData = null;
+         for (ConfigInfo ci : dataList) {
+@@ -531,7 +540,7 @@ public class ConfigController {
+             @RequestParam(value = "ids", required = false) List<Long> ids) {
+         ids.removeAll(Collections.singleton(null));
+         tenant = NamespaceUtil.processNamespaceParameter(tenant);
+-        List<ConfigAllInfo> dataList = persistService.findAllConfigInfo4Export(dataId, group, tenant, appName, ids);
++        List<ConfigAllInfo> dataList = configInfoPersistService.findAllConfigInfo4Export(dataId, group, tenant, appName, ids);
+         List<ZipUtils.ZipItem> zipItemList = new ArrayList<>();
+         List<ConfigMetadata.ConfigExportItem> configMetadataItems = new ArrayList<>();
+         for (ConfigAllInfo ci : dataList) {
+@@ -584,7 +593,7 @@ public class ConfigController {
+         }
+         
+         namespace = NamespaceUtil.processNamespaceParameter(namespace);
+-        if (StringUtils.isNotBlank(namespace) && persistService.tenantInfoCountByTenantId(namespace) <= 0) {
++        if (StringUtils.isNotBlank(namespace) && commonPersistService.tenantInfoCountByTenantId(namespace) <= 0) {
+             failedData.put("succCount", 0);
+             return RestResultUtils.buildResult(ResultCodeEnum.NAMESPACE_NOT_EXIST, failedData);
+         }
+@@ -616,7 +625,7 @@ public class ConfigController {
+         final String srcIp = RequestUtil.getRemoteIp(request);
+         String requestIpApp = RequestUtil.getAppName(request);
+         final Timestamp time = TimeUtils.getCurrentTime();
+-        Map<String, Object> saveResult = persistService.batchInsertOrUpdate(configInfoList, srcUser, srcIp, null, time,
++        Map<String, Object> saveResult = configInfoPersistService.batchInsertOrUpdate(configInfoList, srcUser, srcIp, null, time,
+                 false, policy);
+         for (ConfigInfo configInfo : configInfoList) {
+             ConfigChangePublisher.notifyConfigChange(
+@@ -818,7 +827,7 @@ public class ConfigController {
+         configBeansList.removeAll(Collections.singleton(null));
+         
+         namespace = NamespaceUtil.processNamespaceParameter(namespace);
+-        if (StringUtils.isNotBlank(namespace) && persistService.tenantInfoCountByTenantId(namespace) <= 0) {
++        if (StringUtils.isNotBlank(namespace) && commonPersistService.tenantInfoCountByTenantId(namespace) <= 0) {
+             failedData.put("succCount", 0);
+             return RestResultUtils.buildResult(ResultCodeEnum.NAMESPACE_NOT_EXIST, failedData);
+         }
+@@ -830,7 +839,7 @@ public class ConfigController {
+                     return cfg;
+                 }, (k1, k2) -> k1));
+         
+-        List<ConfigAllInfo> queryedDataList = persistService.findAllConfigInfo4Export(null, null, null, null, idList);
++        List<ConfigAllInfo> queryedDataList = configInfoPersistService.findAllConfigInfo4Export(null, null, null, null, idList);
+         
+         if (queryedDataList == null || queryedDataList.isEmpty()) {
+             failedData.put("succCount", 0);
+@@ -861,7 +870,7 @@ public class ConfigController {
+         final String srcIp = RequestUtil.getRemoteIp(request);
+         String requestIpApp = RequestUtil.getAppName(request);
+         final Timestamp time = TimeUtils.getCurrentTime();
+-        Map<String, Object> saveResult = persistService.batchInsertOrUpdate(configInfoList4Clone, srcUser, srcIp, null,
++        Map<String, Object> saveResult = configInfoPersistService.batchInsertOrUpdate(configInfoList4Clone, srcUser, srcIp, null,
+                 time, false, policy);
+         for (ConfigInfo configInfo : configInfoList4Clone) {
+             ConfigChangePublisher.notifyConfigChange(
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigOpsController.java b/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigOpsController.java
+index bb68152c47..9ed73805ca 100755
+--- a/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigOpsController.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigOpsController.java
+@@ -26,7 +26,6 @@ import com.alibaba.nacos.config.server.model.event.DerbyImportEvent;
+ import com.alibaba.nacos.config.server.service.datasource.DynamicDataSource;
+ import com.alibaba.nacos.config.server.service.datasource.LocalDataSourceServiceImpl;
+ import com.alibaba.nacos.config.server.service.dump.DumpService;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
+ import com.alibaba.nacos.config.server.service.repository.embedded.DatabaseOperate;
+ import com.alibaba.nacos.config.server.utils.LogUtil;
+ import com.alibaba.nacos.config.server.utils.PropertyUtil;
+@@ -61,12 +60,9 @@ public class ConfigOpsController {
+     
+     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigOpsController.class);
+     
+-    protected final PersistService persistService;
+-    
+     private final DumpService dumpService;
+     
+-    public ConfigOpsController(PersistService persistService, DumpService dumpService) {
+-        this.persistService = persistService;
++    public ConfigOpsController(DumpService dumpService) {
+         this.dumpService = dumpService;
+     }
+     
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigServletInner.java b/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigServletInner.java
+index 7150e208ab..67856f98c3 100755
+--- a/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigServletInner.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/controller/ConfigServletInner.java
+@@ -30,7 +30,9 @@ import com.alibaba.nacos.config.server.model.CacheItem;
+ import com.alibaba.nacos.config.server.model.ConfigInfoBase;
+ import com.alibaba.nacos.config.server.service.ConfigCacheService;
+ import com.alibaba.nacos.config.server.service.LongPollingService;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+ import com.alibaba.nacos.config.server.service.trace.ConfigTraceService;
+ import com.alibaba.nacos.config.server.utils.DiskUtil;
+ import com.alibaba.nacos.config.server.utils.GroupKey2;
+@@ -75,11 +77,19 @@ public class ConfigServletInner {
+     
+     private final LongPollingService longPollingService;
+     
+-    private final PersistService persistService;
++    private  ConfigInfoPersistService configInfoPersistService;
+     
+-    public ConfigServletInner(LongPollingService longPollingService, PersistService persistService) {
++    private  ConfigInfoBetaPersistService configInfoBetaPersistService;
++    
++    private  ConfigInfoTagPersistService configInfoTagPersistService;
++    
++    public ConfigServletInner(LongPollingService longPollingService, ConfigInfoPersistService configInfoPersistService,
++            ConfigInfoBetaPersistService configInfoBetaPersistService,
++            ConfigInfoTagPersistService configInfoTagPersistService) {
+         this.longPollingService = longPollingService;
+-        this.persistService = persistService;
++        this.configInfoPersistService = configInfoPersistService;
++        this.configInfoBetaPersistService = configInfoBetaPersistService;
++        this.configInfoTagPersistService = configInfoTagPersistService;
+     }
+     
+     /**
+@@ -185,7 +195,7 @@ public class ConfigServletInner {
+                     md5 = cacheItem.getMd54Beta();
+                     lastModified = cacheItem.getLastModifiedTs4Beta();
+                     if (PropertyUtil.isDirectRead()) {
+-                        configInfoBase = persistService.findConfigInfo4Beta(dataId, group, tenant);
++                        configInfoBase = configInfoBetaPersistService.findConfigInfo4Beta(dataId, group, tenant);
+                     } else {
+                         file = DiskUtil.targetBetaFile(dataId, group, tenant);
+                     }
+@@ -200,7 +210,7 @@ public class ConfigServletInner {
+                                 lastModified = cacheItem.tagLastModifiedTs.get(autoTag);
+                             }
+                             if (PropertyUtil.isDirectRead()) {
+-                                configInfoBase = persistService.findConfigInfo4Tag(dataId, group, tenant, autoTag);
++                                configInfoBase = configInfoTagPersistService.findConfigInfo4Tag(dataId, group, tenant, autoTag);
+                             } else {
+                                 file = DiskUtil.targetTagFile(dataId, group, tenant, autoTag);
+                             }
+@@ -211,7 +221,7 @@ public class ConfigServletInner {
+                             md5 = cacheItem.getMd5();
+                             lastModified = cacheItem.getLastModifiedTs();
+                             if (PropertyUtil.isDirectRead()) {
+-                                configInfoBase = persistService.findConfigInfo(dataId, group, tenant);
++                                configInfoBase = configInfoPersistService.findConfigInfo(dataId, group, tenant);
+                             } else {
+                                 file = DiskUtil.targetFile(dataId, group, tenant);
+                             }
+@@ -240,7 +250,7 @@ public class ConfigServletInner {
+                             }
+                         }
+                         if (PropertyUtil.isDirectRead()) {
+-                            configInfoBase = persistService.findConfigInfo4Tag(dataId, group, tenant, tag);
++                            configInfoBase = configInfoTagPersistService.findConfigInfo4Tag(dataId, group, tenant, tag);
+                         } else {
+                             file = DiskUtil.targetTagFile(dataId, group, tenant, tag);
+                         }
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigPublishRequestHandler.java b/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigPublishRequestHandler.java
+index 1cd4851c77..085773eb29 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigPublishRequestHandler.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigPublishRequestHandler.java
+@@ -28,7 +28,9 @@ import com.alibaba.nacos.config.server.model.ConfigInfo;
+ import com.alibaba.nacos.config.server.model.event.ConfigDataChangeEvent;
+ import com.alibaba.nacos.config.server.service.AggrWhitelist;
+ import com.alibaba.nacos.config.server.service.ConfigChangePublisher;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+ import com.alibaba.nacos.config.server.service.trace.ConfigTraceService;
+ import com.alibaba.nacos.config.server.utils.ParamUtils;
+ import com.alibaba.nacos.config.server.utils.TimeUtils;
+@@ -53,10 +55,18 @@ import java.util.Map;
+ @Component
+ public class ConfigPublishRequestHandler extends RequestHandler<ConfigPublishRequest, ConfigPublishResponse> {
+     
+-    private final PersistService persistService;
++    private final ConfigInfoPersistService configInfoPersistService;
+     
+-    public ConfigPublishRequestHandler(PersistService persistService) {
+-        this.persistService = persistService;
++    private final ConfigInfoTagPersistService configInfoTagPersistService;
++    
++    private final ConfigInfoBetaPersistService configInfoBetaPersistService;
++    
++    public ConfigPublishRequestHandler(ConfigInfoPersistService configInfoPersistService,
++            ConfigInfoTagPersistService configInfoTagPersistService,
++            ConfigInfoBetaPersistService configInfoBetaPersistService) {
++        this.configInfoPersistService = configInfoPersistService;
++        this.configInfoTagPersistService = configInfoTagPersistService;
++        this.configInfoBetaPersistService = configInfoBetaPersistService;
+     }
+     
+     @Override
+@@ -106,27 +116,27 @@ public class ConfigPublishRequestHandler extends RequestHandler<ConfigPublishReq
+             if (StringUtils.isBlank(betaIps)) {
+                 if (StringUtils.isBlank(tag)) {
+                     if (StringUtils.isNotBlank(request.getCasMd5())) {
+-                        boolean casSuccess = persistService
++                        boolean casSuccess = configInfoPersistService
+                                 .insertOrUpdateCas(srcIp, srcUser, configInfo, time, configAdvanceInfo, false);
+                         if (!casSuccess) {
+                             return ConfigPublishResponse.buildFailResponse(ResponseCode.FAIL.getCode(),
+                                     "Cas publish fail,server md5 may have changed.");
+                         }
+                     } else {
+-                        persistService.insertOrUpdate(srcIp, srcUser, configInfo, time, configAdvanceInfo, false);
++                        configInfoPersistService.insertOrUpdate(srcIp, srcUser, configInfo, time, configAdvanceInfo, false);
+                     }
+                     ConfigChangePublisher.notifyConfigChange(
+                             new ConfigDataChangeEvent(false, dataId, group, tenant, time.getTime()));
+                 } else {
+                     if (StringUtils.isNotBlank(request.getCasMd5())) {
+-                        boolean casSuccess = persistService
++                        boolean casSuccess = configInfoTagPersistService
+                                 .insertOrUpdateTagCas(configInfo, tag, srcIp, srcUser, time, false);
+                         if (!casSuccess) {
+                             return ConfigPublishResponse.buildFailResponse(ResponseCode.FAIL.getCode(),
+                                     "Cas publish tag config fail,server md5 may have changed.");
+                         }
+                     } else {
+-                        persistService.insertOrUpdateTag(configInfo, tag, srcIp, srcUser, time, false);
++                        configInfoTagPersistService.insertOrUpdateTag(configInfo, tag, srcIp, srcUser, time, false);
+                         
+                     }
+                     ConfigChangePublisher.notifyConfigChange(
+@@ -135,14 +145,14 @@ public class ConfigPublishRequestHandler extends RequestHandler<ConfigPublishReq
+             } else {
+                 // beta publish
+                 if (StringUtils.isNotBlank(request.getCasMd5())) {
+-                    boolean casSuccess = persistService
++                    boolean casSuccess = configInfoBetaPersistService
+                             .insertOrUpdateBetaCas(configInfo, betaIps, srcIp, srcUser, time, false);
+                     if (!casSuccess) {
+                         return ConfigPublishResponse.buildFailResponse(ResponseCode.FAIL.getCode(),
+                                 "Cas publish beta config fail,server md5 may have changed.");
+                     }
+                 } else {
+-                    persistService.insertOrUpdateBeta(configInfo, betaIps, srcIp, srcUser, time, false);
++                    configInfoBetaPersistService.insertOrUpdateBeta(configInfo, betaIps, srcIp, srcUser, time, false);
+                     
+                 }
+                 ConfigChangePublisher
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigQueryRequestHandler.java b/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigQueryRequestHandler.java
+index af3480efc9..8b96ca412b 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigQueryRequestHandler.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigQueryRequestHandler.java
+@@ -27,7 +27,9 @@ import com.alibaba.nacos.config.server.constant.Constants;
+ import com.alibaba.nacos.config.server.model.CacheItem;
+ import com.alibaba.nacos.config.server.model.ConfigInfoBase;
+ import com.alibaba.nacos.config.server.service.ConfigCacheService;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+ import com.alibaba.nacos.config.server.service.trace.ConfigTraceService;
+ import com.alibaba.nacos.config.server.utils.DiskUtil;
+ import com.alibaba.nacos.config.server.utils.GroupKey2;
+@@ -62,10 +64,18 @@ public class ConfigQueryRequestHandler extends RequestHandler<ConfigQueryRequest
+     
+     private static final int TRY_GET_LOCK_TIMES = 9;
+     
+-    private final PersistService persistService;
++    private final ConfigInfoPersistService configInfoPersistService;
+     
+-    public ConfigQueryRequestHandler(PersistService persistService) {
+-        this.persistService = persistService;
++    private final ConfigInfoTagPersistService configInfoTagPersistService;
++    
++    private final ConfigInfoBetaPersistService configInfoBetaPersistService;
++    
++    public ConfigQueryRequestHandler(ConfigInfoPersistService configInfoPersistService,
++            ConfigInfoTagPersistService configInfoTagPersistService,
++            ConfigInfoBetaPersistService configInfoBetaPersistService) {
++        this.configInfoPersistService = configInfoPersistService;
++        this.configInfoTagPersistService = configInfoTagPersistService;
++        this.configInfoBetaPersistService = configInfoBetaPersistService;
+     }
+     
+     @Override
+@@ -123,7 +133,7 @@ public class ConfigQueryRequestHandler extends RequestHandler<ConfigQueryRequest
+                     md5 = cacheItem.getMd54Beta();
+                     lastModified = cacheItem.getLastModifiedTs4Beta();
+                     if (PropertyUtil.isDirectRead()) {
+-                        configInfoBase = persistService.findConfigInfo4Beta(dataId, group, tenant);
++                        configInfoBase = configInfoBetaPersistService.findConfigInfo4Beta(dataId, group, tenant);
+                     } else {
+                         file = DiskUtil.targetBetaFile(dataId, group, tenant);
+                     }
+@@ -140,7 +150,7 @@ public class ConfigQueryRequestHandler extends RequestHandler<ConfigQueryRequest
+                                 }
+                             }
+                             if (PropertyUtil.isDirectRead()) {
+-                                configInfoBase = persistService.findConfigInfo4Tag(dataId, group, tenant, autoTag);
++                                configInfoBase = configInfoTagPersistService.findConfigInfo4Tag(dataId, group, tenant, autoTag);
+                             } else {
+                                 file = DiskUtil.targetTagFile(dataId, group, tenant, autoTag);
+                             }
+@@ -150,7 +160,7 @@ public class ConfigQueryRequestHandler extends RequestHandler<ConfigQueryRequest
+                             md5 = cacheItem.getMd5();
+                             lastModified = cacheItem.getLastModifiedTs();
+                             if (PropertyUtil.isDirectRead()) {
+-                                configInfoBase = persistService.findConfigInfo(dataId, group, tenant);
++                                configInfoBase = configInfoPersistService.findConfigInfo(dataId, group, tenant);
+                             } else {
+                                 file = DiskUtil.targetFile(dataId, group, tenant);
+                             }
+@@ -181,7 +191,7 @@ public class ConfigQueryRequestHandler extends RequestHandler<ConfigQueryRequest
+                             }
+                         }
+                         if (PropertyUtil.isDirectRead()) {
+-                            configInfoBase = persistService.findConfigInfo4Tag(dataId, group, tenant, tag);
++                            configInfoBase = configInfoTagPersistService.findConfigInfo4Tag(dataId, group, tenant, tag);
+                         } else {
+                             file = DiskUtil.targetTagFile(dataId, group, tenant, tag);
+                         }
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigRemoveRequestHandler.java b/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigRemoveRequestHandler.java
+index 67dac39d53..8060f5dfad 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigRemoveRequestHandler.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/remote/ConfigRemoveRequestHandler.java
+@@ -24,7 +24,8 @@ import com.alibaba.nacos.auth.annotation.Secured;
+ import com.alibaba.nacos.common.utils.StringUtils;
+ import com.alibaba.nacos.config.server.model.event.ConfigDataChangeEvent;
+ import com.alibaba.nacos.config.server.service.ConfigChangePublisher;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+ import com.alibaba.nacos.config.server.service.trace.ConfigTraceService;
+ import com.alibaba.nacos.config.server.utils.ParamUtils;
+ import com.alibaba.nacos.config.server.utils.TimeUtils;
+@@ -46,10 +47,14 @@ import java.sql.Timestamp;
+ @Component
+ public class ConfigRemoveRequestHandler extends RequestHandler<ConfigRemoveRequest, ConfigRemoveResponse> {
+     
+-    private final PersistService persistService;
++    private final ConfigInfoPersistService configInfoPersistService;
+     
+-    public ConfigRemoveRequestHandler(PersistService persistService) {
+-        this.persistService = persistService;
++    private final ConfigInfoTagPersistService configInfoTagPersistService;
++    
++    public ConfigRemoveRequestHandler(ConfigInfoPersistService configInfoPersistService,
++            ConfigInfoTagPersistService configInfoTagPersistService) {
++        this.configInfoPersistService = configInfoPersistService;
++        this.configInfoTagPersistService = configInfoTagPersistService;
+     }
+     
+     @Override
+@@ -70,9 +75,9 @@ public class ConfigRemoveRequestHandler extends RequestHandler<ConfigRemoveReque
+             
+             String clientIp = meta.getClientIp();
+             if (StringUtils.isBlank(tag)) {
+-                persistService.removeConfigInfo(dataId, group, tenant, clientIp, null);
++                configInfoPersistService.removeConfigInfo(dataId, group, tenant, clientIp, null);
+             } else {
+-                persistService.removeConfigInfoTag(dataId, group, tenant, tag, clientIp, null);
++                configInfoTagPersistService.removeConfigInfoTag(dataId, group, tenant, tag, clientIp, null);
+             }
+             final Timestamp time = TimeUtils.getCurrentTime();
+             ConfigTraceService.logPersistenceEvent(dataId, group, tenant, null, time.getTime(), clientIp,
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/ConfigCacheService.java b/config/src/main/java/com/alibaba/nacos/config/server/service/ConfigCacheService.java
+index ecfe467cf1..dad932f24d 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/ConfigCacheService.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/ConfigCacheService.java
+@@ -22,7 +22,7 @@ import com.alibaba.nacos.config.server.constant.Constants;
+ import com.alibaba.nacos.config.server.model.CacheItem;
+ import com.alibaba.nacos.config.server.model.ConfigInfoBase;
+ import com.alibaba.nacos.config.server.model.event.LocalDataChangeEvent;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
+ import com.alibaba.nacos.config.server.utils.DiskUtil;
+ import com.alibaba.nacos.config.server.utils.GroupKey;
+ import com.alibaba.nacos.config.server.utils.GroupKey2;
+@@ -69,7 +69,7 @@ public class ConfigCacheService {
+     private static final ConcurrentHashMap<String, CacheItem> CACHE = new ConcurrentHashMap<>();
+     
+     @Autowired
+-    private static PersistService persistService;
++    private static ConfigInfoPersistService configInfoPersistService;
+     
+     public static int groupCount() {
+         return CACHE.size();
+@@ -296,7 +296,7 @@ public class ConfigCacheService {
+         String aggreds = null;
+         try {
+             if (PropertyUtil.isEmbeddedStorage()) {
+-                ConfigInfoBase config = persistService
++                ConfigInfoBase config = configInfoPersistService
+                         .findConfigInfoBase(AggrWhitelist.AGGRIDS_METADATA, "DEFAULT_GROUP");
+                 if (config != null) {
+                     aggreds = config.getContent();
+@@ -314,7 +314,7 @@ public class ConfigCacheService {
+         String clientIpWhitelist = null;
+         try {
+             if (PropertyUtil.isEmbeddedStorage()) {
+-                ConfigInfoBase config = persistService
++                ConfigInfoBase config = configInfoPersistService
+                         .findConfigInfoBase(ClientIpWhiteList.CLIENT_IP_WHITELIST_METADATA, "DEFAULT_GROUP");
+                 if (config != null) {
+                     clientIpWhitelist = config.getContent();
+@@ -333,7 +333,7 @@ public class ConfigCacheService {
+         String switchContent = null;
+         try {
+             if (PropertyUtil.isEmbeddedStorage()) {
+-                ConfigInfoBase config = persistService
++                ConfigInfoBase config = configInfoPersistService
+                         .findConfigInfoBase(SwitchService.SWITCH_META_DATAID, "DEFAULT_GROUP");
+                 if (config != null) {
+                     switchContent = config.getContent();
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/ConfigOperationService.java b/config/src/main/java/com/alibaba/nacos/config/server/service/ConfigOperationService.java
+index 246757cc07..45c645e384 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/ConfigOperationService.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/ConfigOperationService.java
+@@ -25,7 +25,9 @@ import com.alibaba.nacos.config.server.model.ConfigInfo;
+ import com.alibaba.nacos.config.server.model.event.ConfigDataChangeEvent;
+ import com.alibaba.nacos.config.server.model.ConfigRequestInfo;
+ import com.alibaba.nacos.config.server.model.form.ConfigForm;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+ import com.alibaba.nacos.config.server.service.trace.ConfigTraceService;
+ import com.alibaba.nacos.config.server.utils.ParamUtils;
+ import com.alibaba.nacos.config.server.utils.TimeUtils;
+@@ -49,12 +51,20 @@ import java.util.Map;
+ @Service
+ public class ConfigOperationService {
+     
+-    private PersistService persistService;
++    private ConfigInfoPersistService configInfoPersistService;
++    
++    private ConfigInfoTagPersistService configInfoTagPersistService;
++    
++    private ConfigInfoBetaPersistService configInfoBetaPersistService;
+     
+     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigOperationService.class);
+     
+-    public ConfigOperationService(PersistService persistService) {
+-        this.persistService = persistService;
++    public ConfigOperationService(ConfigInfoPersistService configInfoPersistService,
++            ConfigInfoTagPersistService configInfoTagPersistService,
++            ConfigInfoBetaPersistService configInfoBetaPersistService) {
++        this.configInfoPersistService = configInfoPersistService;
++        this.configInfoTagPersistService = configInfoTagPersistService;
++        this.configInfoBetaPersistService = configInfoBetaPersistService;
+     }
+     
+     /**
+@@ -84,23 +94,22 @@ public class ConfigOperationService {
+         
+         if (StringUtils.isBlank(configRequestInfo.getBetaIps())) {
+             if (StringUtils.isBlank(configForm.getTag())) {
+-                persistService.insertOrUpdate(configRequestInfo.getSrcIp(), configForm.getSrcUser(), configInfo, time,
+-                        configAdvanceInfo, false);
++                configInfoPersistService.insertOrUpdate(configRequestInfo.getSrcIp(), configForm.getSrcUser(),
++                        configInfo, time, configAdvanceInfo, false);
+                 ConfigChangePublisher.notifyConfigChange(
+                         new ConfigDataChangeEvent(false, configForm.getDataId(), configForm.getGroup(),
+                                 configForm.getNamespaceId(), time.getTime()));
+             } else {
+-                persistService.insertOrUpdateTag(configInfo, configForm.getTag(), configRequestInfo.getSrcIp(),
+-                        configForm.getSrcUser(), time, false);
++                configInfoTagPersistService.insertOrUpdateTag(configInfo, configForm.getTag(),
++                        configRequestInfo.getSrcIp(), configForm.getSrcUser(), time, false);
+                 ConfigChangePublisher.notifyConfigChange(
+                         new ConfigDataChangeEvent(false, configForm.getDataId(), configForm.getGroup(),
+                                 configForm.getNamespaceId(), configForm.getTag(), time.getTime()));
+             }
+         } else {
+             // beta publish
+-            persistService
+-                    .insertOrUpdateBeta(configInfo, configRequestInfo.getBetaIps(), configRequestInfo.getSrcIp(),
+-                            configForm.getSrcUser(), time, false);
++            configInfoBetaPersistService.insertOrUpdateBeta(configInfo, configRequestInfo.getBetaIps(),
++                    configRequestInfo.getSrcIp(), configForm.getSrcUser(), time, false);
+             ConfigChangePublisher.notifyConfigChange(
+                     new ConfigDataChangeEvent(true, configForm.getDataId(), configForm.getGroup(), configForm.getNamespaceId(),
+                             time.getTime()));
+@@ -118,9 +127,9 @@ public class ConfigOperationService {
+     public Boolean deleteConfig(String dataId, String group, String namespaceId, String tag, String clientIp,
+             String srcUser) {
+         if (StringUtils.isBlank(tag)) {
+-            persistService.removeConfigInfo(dataId, group, namespaceId, clientIp, srcUser);
++            configInfoPersistService.removeConfigInfo(dataId, group, namespaceId, clientIp, srcUser);
+         } else {
+-            persistService.removeConfigInfoTag(dataId, group, namespaceId, tag, clientIp, srcUser);
++            configInfoTagPersistService.removeConfigInfoTag(dataId, group, namespaceId, tag, clientIp, srcUser);
+         }
+         final Timestamp time = TimeUtils.getCurrentTime();
+         ConfigTraceService.logPersistenceEvent(dataId, group, namespaceId, null, time.getTime(), clientIp,
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/HistoryService.java b/config/src/main/java/com/alibaba/nacos/config/server/service/HistoryService.java
+index c2de73ea0a..11d700657d 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/HistoryService.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/HistoryService.java
+@@ -20,7 +20,8 @@ import com.alibaba.nacos.common.utils.Pair;
+ import com.alibaba.nacos.config.server.model.ConfigHistoryInfo;
+ import com.alibaba.nacos.config.server.model.ConfigInfoWrapper;
+ import com.alibaba.nacos.config.server.model.Page;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.HistoryConfigInfoPersistService;
+ import com.alibaba.nacos.plugin.auth.exception.AccessException;
+ import com.alibaba.nacos.plugin.encryption.handler.EncryptionHandler;
+ import org.springframework.stereotype.Service;
+@@ -37,10 +38,14 @@ import java.util.Objects;
+ @Service
+ public class HistoryService {
+     
+-    private final PersistService persistService;
++    private final HistoryConfigInfoPersistService historyConfigInfoPersistService;
+     
+-    public HistoryService(PersistService persistService) {
+-        this.persistService = persistService;
++    private final ConfigInfoPersistService configInfoPersistService;
++    
++    public HistoryService(HistoryConfigInfoPersistService historyConfigInfoPersistService,
++            ConfigInfoPersistService configInfoPersistService) {
++        this.historyConfigInfoPersistService = historyConfigInfoPersistService;
++        this.configInfoPersistService = configInfoPersistService;
+     }
+     
+     /**
+@@ -48,7 +53,7 @@ public class HistoryService {
+      */
+     public Page<ConfigHistoryInfo> listConfigHistory(String dataId, String group, String namespaceId, Integer pageNo,
+             Integer pageSize) {
+-        return persistService.findConfigHistory(dataId, group, namespaceId, pageNo, pageSize);
++        return historyConfigInfoPersistService.findConfigHistory(dataId, group, namespaceId, pageNo, pageSize);
+     }
+     
+     /**
+@@ -56,7 +61,7 @@ public class HistoryService {
+      */
+     public ConfigHistoryInfo getConfigHistoryInfo(String dataId, String group, String namespaceId, Long nid)
+             throws AccessException {
+-        ConfigHistoryInfo configHistoryInfo = persistService.detailConfigHistory(nid);
++        ConfigHistoryInfo configHistoryInfo = historyConfigInfoPersistService.detailConfigHistory(nid);
+         if (Objects.isNull(configHistoryInfo)) {
+             return null;
+         }
+@@ -76,7 +81,7 @@ public class HistoryService {
+      */
+     public ConfigHistoryInfo getPreviousConfigHistoryInfo(String dataId, String group, String namespaceId, Long id)
+             throws AccessException {
+-        ConfigHistoryInfo configHistoryInfo = persistService.detailPreviousConfigHistory(id);
++        ConfigHistoryInfo configHistoryInfo = historyConfigInfoPersistService.detailPreviousConfigHistory(id);
+         if (Objects.isNull(configHistoryInfo)) {
+             return null;
+         }
+@@ -89,7 +94,7 @@ public class HistoryService {
+      * Query configs list by namespace.
+      */
+     public List<ConfigInfoWrapper> getConfigListByNamespace(String namespaceId) {
+-        return persistService.queryConfigInfoByNamespace(namespaceId);
++        return configInfoPersistService.queryConfigInfoByNamespace(namespaceId);
+     }
+     
+     /**
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/capacity/CapacityService.java b/config/src/main/java/com/alibaba/nacos/config/server/service/capacity/CapacityService.java
+index 7b433e9723..7905c606b2 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/capacity/CapacityService.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/capacity/CapacityService.java
+@@ -20,7 +20,7 @@ import com.alibaba.nacos.config.server.constant.CounterMode;
+ import com.alibaba.nacos.config.server.model.capacity.Capacity;
+ import com.alibaba.nacos.config.server.model.capacity.GroupCapacity;
+ import com.alibaba.nacos.config.server.model.capacity.TenantCapacity;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
+ import com.alibaba.nacos.config.server.utils.ConfigExecutor;
+ import com.alibaba.nacos.config.server.utils.LogUtil;
+ import com.alibaba.nacos.config.server.utils.PropertyUtil;
+@@ -60,7 +60,7 @@ public class CapacityService {
+     private TenantCapacityPersistService tenantCapacityPersistService;
+     
+     @Autowired
+-    private PersistService persistService;
++    private ConfigInfoPersistService configInfoPersistService;
+     
+     /**
+      * Init.
+@@ -154,9 +154,9 @@ public class CapacityService {
+         while (true) {
+             List<String> list;
+             if (isTenant) {
+-                list = persistService.getTenantIdList(page, INIT_PAGE_SIZE);
++                list = configInfoPersistService.getTenantIdList(page, INIT_PAGE_SIZE);
+             } else {
+-                list = persistService.getGroupIdList(page, INIT_PAGE_SIZE);
++                list = configInfoPersistService.getGroupIdList(page, INIT_PAGE_SIZE);
+             }
+             for (String targetId : list) {
+                 if (isTenant) {
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/DumpService.java b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/DumpService.java
+index e1afda70f6..2c374a6cb5 100755
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/DumpService.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/DumpService.java
+@@ -40,7 +40,12 @@ import com.alibaba.nacos.config.server.service.dump.task.DumpAllTask;
+ import com.alibaba.nacos.config.server.service.dump.task.DumpChangeTask;
+ import com.alibaba.nacos.config.server.service.dump.task.DumpTask;
+ import com.alibaba.nacos.config.server.service.merge.MergeTaskProcessor;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.CommonPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoAggrPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
++import com.alibaba.nacos.config.server.service.repository.HistoryConfigInfoPersistService;
+ import com.alibaba.nacos.config.server.utils.ConfigExecutor;
+ import com.alibaba.nacos.config.server.utils.ContentUtils;
+ import com.alibaba.nacos.config.server.utils.DiskUtil;
+@@ -88,7 +93,17 @@ public abstract class DumpService {
+     
+     protected DumpAllTagProcessor dumpAllTagProcessor;
+     
+-    protected final PersistService persistService;
++    protected ConfigInfoPersistService configInfoPersistService;
++    
++    protected CommonPersistService commonPersistService;
++    
++    protected HistoryConfigInfoPersistService historyConfigInfoPersistService;
++    
++    protected ConfigInfoAggrPersistService configInfoAggrPersistService;
++    
++    protected ConfigInfoBetaPersistService configInfoBetaPersistService;
++    
++    protected ConfigInfoTagPersistService configInfoTagPersistService;
+     
+     protected final ServerMemberManager memberManager;
+     
+@@ -126,11 +141,19 @@ public abstract class DumpService {
+      * Here you inject the dependent objects constructively, ensuring that some of the dependent functionality is
+      * initialized ahead of time.
+      *
+-     * @param persistService {@link PersistService}
+      * @param memberManager  {@link ServerMemberManager}
+      */
+-    public DumpService(PersistService persistService, ServerMemberManager memberManager) {
+-        this.persistService = persistService;
++    public DumpService(ConfigInfoPersistService configInfoPersistService, CommonPersistService commonPersistService,
++            HistoryConfigInfoPersistService historyConfigInfoPersistService,
++            ConfigInfoAggrPersistService configInfoAggrPersistService,
++            ConfigInfoBetaPersistService configInfoBetaPersistService,
++            ConfigInfoTagPersistService configInfoTagPersistService, ServerMemberManager memberManager) {
++        this.configInfoPersistService = configInfoPersistService;
++        this.commonPersistService = commonPersistService;
++        this.historyConfigInfoPersistService = historyConfigInfoPersistService;
++        this.configInfoAggrPersistService = configInfoAggrPersistService;
++        this.configInfoBetaPersistService = configInfoBetaPersistService;
++        this.configInfoTagPersistService = configInfoTagPersistService;
+         this.memberManager = memberManager;
+         this.processor = new DumpProcessor(this);
+         this.dumpAllProcessor = new DumpAllProcessor(this);
+@@ -149,8 +172,20 @@ public abstract class DumpService {
+         DynamicDataSource.getInstance().getDataSource();
+     }
+     
+-    public PersistService getPersistService() {
+-        return persistService;
++    public ConfigInfoPersistService getConfigInfoPersistService() {
++        return configInfoPersistService;
++    }
++    
++    public ConfigInfoBetaPersistService getConfigInfoBetaPersistService() {
++        return configInfoBetaPersistService;
++    }
++    
++    public ConfigInfoTagPersistService getConfigInfoTagPersistService() {
++        return configInfoTagPersistService;
++    }
++    
++    public HistoryConfigInfoPersistService getHistoryConfigInfoPersistService() {
++        return historyConfigInfoPersistService;
+     }
+     
+     public ServerMemberManager getMemberManager() {
+@@ -184,7 +219,7 @@ public abstract class DumpService {
+                         Timestamp startTime = getBeforeStamp(TimeUtils.getCurrentTime(), 24 * getRetentionDays());
+                         int pageSize = 1000;
+                         LOGGER.warn("clearConfigHistory, getBeforeStamp:{}, pageSize:{}", startTime, pageSize);
+-                        persistService.removeConfigHistory(startTime, pageSize);
++                        historyConfigInfoPersistService.removeConfigHistory(startTime, pageSize);
+                     } catch (Throwable e) {
+                         LOGGER.error("clearConfigHistory error : {}", e.toString());
+                     }
+@@ -197,18 +232,18 @@ public abstract class DumpService {
+                 // update Beta cache
+                 LogUtil.DEFAULT_LOG.info("start clear all config-info-beta.");
+                 DiskUtil.clearAllBeta();
+-                if (persistService.isExistTable(BETA_TABLE_NAME)) {
++                if (commonPersistService.isExistTable(BETA_TABLE_NAME)) {
+                     dumpAllBetaProcessor.process(new DumpAllBetaTask());
+                 }
+                 // update Tag cache
+                 LogUtil.DEFAULT_LOG.info("start clear all config-info-tag.");
+                 DiskUtil.clearAllTag();
+-                if (persistService.isExistTable(TAG_TABLE_NAME)) {
++                if (commonPersistService.isExistTable(TAG_TABLE_NAME)) {
+                     dumpAllTagProcessor.process(new DumpAllTagTask());
+                 }
+                 
+                 // add to dump aggr
+-                List<ConfigInfoChanged> configList = persistService.findAllAggrGroup();
++                List<ConfigInfoChanged> configList = configInfoAggrPersistService.findAllAggrGroup();
+                 if (configList != null && !configList.isEmpty()) {
+                     total = configList.size();
+                     List<List<ConfigInfoChanged>> splitList = splitList(configList, INIT_THREAD_COUNT);
+@@ -293,7 +328,7 @@ public abstract class DumpService {
+                         String dataId = dg[0];
+                         String group = dg[1];
+                         String tenant = dg[2];
+-                        ConfigInfoWrapper configInfo = persistService.queryConfigInfo(dataId, group, tenant);
++                        ConfigInfoWrapper configInfo = configInfoPersistService.queryConfigInfo(dataId, group, tenant);
+                         ConfigCacheService.dumpChange(dataId, group, tenant, configInfo.getContent(),
+                                 configInfo.getLastModified(), configInfo.getEncryptedDataKey());
+                     }
+@@ -424,10 +459,10 @@ public abstract class DumpService {
+                 String tenant = configInfo.getTenant();
+                 try {
+                     List<ConfigInfoAggr> datumList = new ArrayList<>();
+-                    int rowCount = persistService.aggrConfigInfoCount(dataId, group, tenant);
++                    int rowCount = configInfoAggrPersistService.aggrConfigInfoCount(dataId, group, tenant);
+                     int pageCount = (int) Math.ceil(rowCount * 1.0 / PAGE_SIZE);
+                     for (int pageNo = 1; pageNo <= pageCount; pageNo++) {
+-                        Page<ConfigInfoAggr> page = persistService
++                        Page<ConfigInfoAggr> page = configInfoAggrPersistService
+                                 .findConfigInfoAggrByPage(dataId, group, tenant, pageNo, PAGE_SIZE);
+                         if (page != null) {
+                             datumList.addAll(page.getPageItems());
+@@ -445,14 +480,14 @@ public abstract class DumpService {
+                         String aggrConetentMD5 = MD5Utils.md5Hex(aggrContent, Constants.ENCODE);
+                         
+                         if (!StringUtils.equals(localContentMD5, aggrConetentMD5)) {
+-                            persistService.insertOrUpdate(null, null, cf, time, null, false);
++                            configInfoPersistService.insertOrUpdate(null, null, cf, time, null, false);
+                             LOGGER.info("[merge-ok] {}, {}, size={}, length={}, md5={}, content={}", dataId, group,
+                                     datumList.size(), cf.getContent().length(), cf.getMd5(),
+                                     ContentUtils.truncateContent(cf.getContent()));
+                         }
+                     } else {
+                         // remove config info
+-                        persistService.removeConfigInfo(dataId, group, tenant, InetUtils.getSelfIP(), null);
++                        configInfoPersistService.removeConfigInfo(dataId, group, tenant, InetUtils.getSelfIP(), null);
+                         LOGGER.warn(
+                                 "[merge-delete] delete config info because no datum. dataId=" + dataId + ", groupId="
+                                         + group);
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/EmbeddedDumpService.java b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/EmbeddedDumpService.java
+index 0205943d0d..5ba0b8c574 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/EmbeddedDumpService.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/EmbeddedDumpService.java
+@@ -22,7 +22,12 @@ import com.alibaba.nacos.common.utils.StringUtils;
+ import com.alibaba.nacos.common.utils.ThreadUtils;
+ import com.alibaba.nacos.config.server.configuration.ConditionOnEmbeddedStorage;
+ import com.alibaba.nacos.config.server.constant.Constants;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.CommonPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoAggrPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
++import com.alibaba.nacos.config.server.service.repository.HistoryConfigInfoPersistService;
+ import com.alibaba.nacos.config.server.service.sql.EmbeddedStorageContextUtils;
+ import com.alibaba.nacos.consistency.ProtocolMetaData;
+ import com.alibaba.nacos.consistency.cp.CPProtocol;
+@@ -64,13 +69,17 @@ public class EmbeddedDumpService extends DumpService {
+      * Here you inject the dependent objects constructively, ensuring that some of the dependent functionality is
+      * initialized ahead of time.
+      *
+-     * @param persistService  {@link PersistService}
+      * @param memberManager   {@link ServerMemberManager}
+      * @param protocolManager {@link ProtocolManager}
+      */
+-    public EmbeddedDumpService(PersistService persistService, ServerMemberManager memberManager,
++    public EmbeddedDumpService(ConfigInfoPersistService configInfoPersistService,
++            CommonPersistService commonPersistService, HistoryConfigInfoPersistService historyConfigInfoPersistService,
++            ConfigInfoAggrPersistService configInfoAggrPersistService,
++            ConfigInfoBetaPersistService configInfoBetaPersistService,
++            ConfigInfoTagPersistService configInfoTagPersistService, ServerMemberManager memberManager,
+             ProtocolManager protocolManager) {
+-        super(persistService, memberManager);
++        super(configInfoPersistService, commonPersistService, historyConfigInfoPersistService,
++                configInfoAggrPersistService, configInfoBetaPersistService, configInfoTagPersistService, memberManager);
+         this.protocolManager = protocolManager;
+     }
+     
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/ExternalDumpService.java b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/ExternalDumpService.java
+index 64b84982fc..2c163f147d 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/ExternalDumpService.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/ExternalDumpService.java
+@@ -17,7 +17,12 @@
+ package com.alibaba.nacos.config.server.service.dump;
+ 
+ import com.alibaba.nacos.config.server.configuration.ConditionOnExternalStorage;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.CommonPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoAggrPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
++import com.alibaba.nacos.config.server.service.repository.HistoryConfigInfoPersistService;
+ import com.alibaba.nacos.core.cluster.ServerMemberManager;
+ import org.springframework.context.annotation.Conditional;
+ import org.springframework.context.annotation.DependsOn;
+@@ -39,11 +44,15 @@ public class ExternalDumpService extends DumpService {
+      * Here you inject the dependent objects constructively, ensuring that some of the dependent functionality is
+      * initialized ahead of time.
+      *
+-     * @param persistService {@link PersistService}
+-     * @param memberManager  {@link ServerMemberManager}
++     * @param memberManager {@link ServerMemberManager}
+      */
+-    public ExternalDumpService(PersistService persistService, ServerMemberManager memberManager) {
+-        super(persistService, memberManager);
++    public ExternalDumpService(ConfigInfoPersistService configInfoPersistService,
++            CommonPersistService commonPersistService, HistoryConfigInfoPersistService historyConfigInfoPersistService,
++            ConfigInfoAggrPersistService configInfoAggrPersistService,
++            ConfigInfoBetaPersistService configInfoBetaPersistService,
++            ConfigInfoTagPersistService configInfoTagPersistService, ServerMemberManager memberManager) {
++        super(configInfoPersistService, commonPersistService, historyConfigInfoPersistService,
++                configInfoAggrPersistService, configInfoBetaPersistService, configInfoTagPersistService, memberManager);
+     }
+     
+     @PostConstruct
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllBetaProcessor.java b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllBetaProcessor.java
+index 86de8dd6e2..c2eadb26bb 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllBetaProcessor.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllBetaProcessor.java
+@@ -22,7 +22,7 @@ import com.alibaba.nacos.config.server.model.ConfigInfoBetaWrapper;
+ import com.alibaba.nacos.config.server.model.Page;
+ import com.alibaba.nacos.config.server.service.ConfigCacheService;
+ import com.alibaba.nacos.config.server.service.dump.DumpService;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
+ import com.alibaba.nacos.config.server.utils.GroupKey2;
+ import com.alibaba.nacos.config.server.utils.LogUtil;
+ 
+@@ -39,17 +39,17 @@ public class DumpAllBetaProcessor implements NacosTaskProcessor {
+     
+     public DumpAllBetaProcessor(DumpService dumpService) {
+         this.dumpService = dumpService;
+-        this.persistService = dumpService.getPersistService();
++        this.configInfoBetaPersistService = dumpService.getConfigInfoBetaPersistService();
+     }
+     
+     @Override
+     public boolean process(NacosTask task) {
+-        int rowCount = persistService.configInfoBetaCount();
++        int rowCount = configInfoBetaPersistService.configInfoBetaCount();
+         int pageCount = (int) Math.ceil(rowCount * 1.0 / PAGE_SIZE);
+         
+         int actualRowCount = 0;
+         for (int pageNo = 1; pageNo <= pageCount; pageNo++) {
+-            Page<ConfigInfoBetaWrapper> page = persistService.findAllConfigInfoBetaForDumpAll(pageNo, PAGE_SIZE);
++            Page<ConfigInfoBetaWrapper> page = configInfoBetaPersistService.findAllConfigInfoBetaForDumpAll(pageNo, PAGE_SIZE);
+             if (page != null) {
+                 for (ConfigInfoBetaWrapper cf : page.getPageItems()) {
+                     boolean result = ConfigCacheService
+@@ -71,5 +71,5 @@ public class DumpAllBetaProcessor implements NacosTaskProcessor {
+     
+     final DumpService dumpService;
+     
+-    final PersistService persistService;
++    final ConfigInfoBetaPersistService configInfoBetaPersistService;
+ }
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllProcessor.java b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllProcessor.java
+index 277a88c87e..86ca2bda70 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllProcessor.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllProcessor.java
+@@ -27,7 +27,7 @@ import com.alibaba.nacos.config.server.service.ClientIpWhiteList;
+ import com.alibaba.nacos.config.server.service.ConfigCacheService;
+ import com.alibaba.nacos.config.server.service.SwitchService;
+ import com.alibaba.nacos.config.server.service.dump.DumpService;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
+ import com.alibaba.nacos.config.server.utils.GroupKey2;
+ import com.alibaba.nacos.config.server.utils.LogUtil;
+ 
+@@ -43,15 +43,15 @@ public class DumpAllProcessor implements NacosTaskProcessor {
+     
+     public DumpAllProcessor(DumpService dumpService) {
+         this.dumpService = dumpService;
+-        this.persistService = dumpService.getPersistService();
++        this.configInfoPersistService = dumpService.getConfigInfoPersistService();
+     }
+     
+     @Override
+     public boolean process(NacosTask task) {
+-        long currentMaxId = persistService.findConfigMaxId();
++        long currentMaxId = configInfoPersistService.findConfigMaxId();
+         long lastMaxId = 0;
+         while (lastMaxId < currentMaxId) {
+-            Page<ConfigInfoWrapper> page = persistService.findAllConfigInfoFragment(lastMaxId, PAGE_SIZE);
++            Page<ConfigInfoWrapper> page = configInfoPersistService.findAllConfigInfoFragment(lastMaxId, PAGE_SIZE);
+             if (page != null && page.getPageItems() != null && !page.getPageItems().isEmpty()) {
+                 for (ConfigInfoWrapper cf : page.getPageItems()) {
+                     long id = cf.getId();
+@@ -89,5 +89,5 @@ public class DumpAllProcessor implements NacosTaskProcessor {
+     
+     final DumpService dumpService;
+     
+-    final PersistService persistService;
++    final ConfigInfoPersistService configInfoPersistService;
+ }
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllTagProcessor.java b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllTagProcessor.java
+index 9768a0637c..e3125180a1 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllTagProcessor.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpAllTagProcessor.java
+@@ -22,7 +22,7 @@ import com.alibaba.nacos.config.server.model.ConfigInfoTagWrapper;
+ import com.alibaba.nacos.config.server.model.Page;
+ import com.alibaba.nacos.config.server.service.ConfigCacheService;
+ import com.alibaba.nacos.config.server.service.dump.DumpService;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+ import com.alibaba.nacos.config.server.utils.GroupKey2;
+ import com.alibaba.nacos.config.server.utils.LogUtil;
+ 
+@@ -38,17 +38,17 @@ public class DumpAllTagProcessor implements NacosTaskProcessor {
+     
+     public DumpAllTagProcessor(DumpService dumpService) {
+         this.dumpService = dumpService;
+-        this.persistService = dumpService.getPersistService();
++        this.configInfoTagPersistService = dumpService.getConfigInfoTagPersistService();
+     }
+     
+     @Override
+     public boolean process(NacosTask task) {
+-        int rowCount = persistService.configInfoTagCount();
++        int rowCount = configInfoTagPersistService.configInfoTagCount();
+         int pageCount = (int) Math.ceil(rowCount * 1.0 / PAGE_SIZE);
+         
+         int actualRowCount = 0;
+         for (int pageNo = 1; pageNo <= pageCount; pageNo++) {
+-            Page<ConfigInfoTagWrapper> page = persistService.findAllConfigInfoTagForDumpAll(pageNo, PAGE_SIZE);
++            Page<ConfigInfoTagWrapper> page = configInfoTagPersistService.findAllConfigInfoTagForDumpAll(pageNo, PAGE_SIZE);
+             if (page != null) {
+                 for (ConfigInfoTagWrapper cf : page.getPageItems()) {
+                     boolean result = ConfigCacheService
+@@ -70,5 +70,5 @@ public class DumpAllTagProcessor implements NacosTaskProcessor {
+     
+     final DumpService dumpService;
+     
+-    final PersistService persistService;
++    final ConfigInfoTagPersistService configInfoTagPersistService;
+ }
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpChangeProcessor.java b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpChangeProcessor.java
+index d0f1f4e2de..0de63f03b9 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpChangeProcessor.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpChangeProcessor.java
+@@ -24,7 +24,8 @@ import com.alibaba.nacos.config.server.model.ConfigInfo;
+ import com.alibaba.nacos.config.server.model.ConfigInfoWrapper;
+ import com.alibaba.nacos.config.server.service.ConfigCacheService;
+ import com.alibaba.nacos.config.server.service.dump.DumpService;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.HistoryConfigInfoPersistService;
+ import com.alibaba.nacos.config.server.utils.GroupKey2;
+ import com.alibaba.nacos.config.server.utils.LogUtil;
+ 
+@@ -41,7 +42,9 @@ public class DumpChangeProcessor implements NacosTaskProcessor {
+     
+     final DumpService dumpService;
+     
+-    final PersistService persistService;
++    final ConfigInfoPersistService configInfoPersistService;
++    
++    final HistoryConfigInfoPersistService historyConfigInfoPersistService;
+     
+     final Timestamp startTime;
+     
+@@ -49,7 +52,8 @@ public class DumpChangeProcessor implements NacosTaskProcessor {
+     
+     public DumpChangeProcessor(DumpService dumpService, Timestamp startTime, Timestamp endTime) {
+         this.dumpService = dumpService;
+-        this.persistService = dumpService.getPersistService();
++        this.configInfoPersistService = dumpService.getConfigInfoPersistService();
++        this.historyConfigInfoPersistService = dumpService.getHistoryConfigInfoPersistService();
+         this.startTime = startTime;
+         this.endTime = endTime;
+     }
+@@ -59,7 +63,7 @@ public class DumpChangeProcessor implements NacosTaskProcessor {
+         LogUtil.DEFAULT_LOG.warn("quick start; startTime:{},endTime:{}", startTime, endTime);
+         LogUtil.DEFAULT_LOG.warn("updateMd5 start");
+         long startUpdateMd5 = System.currentTimeMillis();
+-        List<ConfigInfoWrapper> updateMd5List = persistService.listAllGroupKeyMd5();
++        List<ConfigInfoWrapper> updateMd5List = configInfoPersistService.listAllGroupKeyMd5();
+         LogUtil.DEFAULT_LOG.warn("updateMd5 count:{}", updateMd5List.size());
+         for (ConfigInfoWrapper config : updateMd5List) {
+             final String groupKey = GroupKey2.getKey(config.getDataId(), config.getGroup());
+@@ -71,10 +75,10 @@ public class DumpChangeProcessor implements NacosTaskProcessor {
+         
+         LogUtil.DEFAULT_LOG.warn("deletedConfig start");
+         long startDeletedConfigTime = System.currentTimeMillis();
+-        List<ConfigInfo> configDeleted = persistService.findDeletedConfig(startTime, endTime);
++        List<ConfigInfo> configDeleted = historyConfigInfoPersistService.findDeletedConfig(startTime, endTime);
+         LogUtil.DEFAULT_LOG.warn("deletedConfig count:{}", configDeleted.size());
+         for (ConfigInfo configInfo : configDeleted) {
+-            if (persistService.findConfigInfo(configInfo.getDataId(), configInfo.getGroup(), configInfo.getTenant())
++            if (configInfoPersistService.findConfigInfo(configInfo.getDataId(), configInfo.getGroup(), configInfo.getTenant())
+                     == null) {
+                 ConfigCacheService.remove(configInfo.getDataId(), configInfo.getGroup(), configInfo.getTenant());
+             }
+@@ -84,7 +88,7 @@ public class DumpChangeProcessor implements NacosTaskProcessor {
+         
+         LogUtil.DEFAULT_LOG.warn("changeConfig start");
+         final long startChangeConfigTime = System.currentTimeMillis();
+-        List<ConfigInfoWrapper> changeConfigs = persistService.findChangeConfig(startTime, endTime);
++        List<ConfigInfoWrapper> changeConfigs = configInfoPersistService.findChangeConfig(startTime, endTime);
+         LogUtil.DEFAULT_LOG.warn("changeConfig count:{}", changeConfigs.size());
+         for (ConfigInfoWrapper cf : changeConfigs) {
+           
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpProcessor.java b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpProcessor.java
+index 1f351c5d12..d0640e9274 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpProcessor.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/dump/processor/DumpProcessor.java
+@@ -25,7 +25,9 @@ import com.alibaba.nacos.config.server.model.event.ConfigDumpEvent;
+ import com.alibaba.nacos.config.server.service.dump.DumpConfigHandler;
+ import com.alibaba.nacos.config.server.service.dump.DumpService;
+ import com.alibaba.nacos.config.server.service.dump.task.DumpTask;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoBetaPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+ import com.alibaba.nacos.config.server.utils.GroupKey2;
+ import com.alibaba.nacos.common.utils.StringUtils;
+ 
+@@ -41,13 +43,21 @@ public class DumpProcessor implements NacosTaskProcessor {
+     
+     final DumpService dumpService;
+     
++    final ConfigInfoPersistService configInfoPersistService;
++    
++    final ConfigInfoBetaPersistService configInfoBetaPersistService;
++    
++    final ConfigInfoTagPersistService configInfoTagPersistService;
++    
+     public DumpProcessor(DumpService dumpService) {
+         this.dumpService = dumpService;
++        this.configInfoPersistService = dumpService.getConfigInfoPersistService();
++        this.configInfoBetaPersistService = dumpService.getConfigInfoBetaPersistService();
++        this.configInfoTagPersistService = dumpService.getConfigInfoTagPersistService();
+     }
+     
+     @Override
+     public boolean process(NacosTask task) {
+-        final PersistService persistService = dumpService.getPersistService();
+         DumpTask dumpTask = (DumpTask) task;
+         String[] pair = GroupKey2.parseKey(dumpTask.getGroupKey());
+         String dataId = pair[0];
+@@ -63,7 +73,7 @@ public class DumpProcessor implements NacosTaskProcessor {
+         
+         if (isBeta) {
+             // if publish beta, then dump config, update beta cache
+-            ConfigInfo4Beta cf = persistService.findConfigInfo4Beta(dataId, group, tenant);
++            ConfigInfo4Beta cf = configInfoBetaPersistService.findConfigInfo4Beta(dataId, group, tenant);
+             
+             build.remove(Objects.isNull(cf));
+             build.betaIps(Objects.isNull(cf) ? null : cf.getBetaIps());
+@@ -73,14 +83,14 @@ public class DumpProcessor implements NacosTaskProcessor {
+             return DumpConfigHandler.configDump(build.build());
+         }
+         if (StringUtils.isBlank(tag)) {
+-            ConfigInfo cf = persistService.findConfigInfo(dataId, group, tenant);
++            ConfigInfo cf = configInfoPersistService.findConfigInfo(dataId, group, tenant);
+             
+             build.remove(Objects.isNull(cf));
+             build.content(Objects.isNull(cf) ? null : cf.getContent());
+             build.type(Objects.isNull(cf) ? null : cf.getType());
+             build.encryptedDataKey(Objects.isNull(cf) ? null : cf.getEncryptedDataKey());
+         } else {
+-            ConfigInfo4Tag cf = persistService.findConfigInfo4Tag(dataId, group, tenant, tag);
++            ConfigInfo4Tag cf = configInfoTagPersistService.findConfigInfo4Tag(dataId, group, tenant, tag);
+             
+             build.remove(Objects.isNull(cf));
+             build.content(Objects.isNull(cf) ? null : cf.getContent());
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/merge/MergeDatumService.java b/config/src/main/java/com/alibaba/nacos/config/server/service/merge/MergeDatumService.java
+index c14abb43e3..4731a95b16 100644
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/merge/MergeDatumService.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/merge/MergeDatumService.java
+@@ -22,7 +22,9 @@ import com.alibaba.nacos.config.server.model.ConfigInfo;
+ import com.alibaba.nacos.config.server.model.ConfigInfoAggr;
+ import com.alibaba.nacos.config.server.model.ConfigInfoChanged;
+ import com.alibaba.nacos.config.server.model.Page;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoAggrPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+ import com.alibaba.nacos.config.server.utils.ContentUtils;
+ import com.alibaba.nacos.config.server.utils.PropertyUtil;
+ import com.alibaba.nacos.config.server.utils.TimeUtils;
+@@ -54,19 +56,26 @@ public class MergeDatumService {
+     
+     final TaskManager mergeTasks;
+     
+-    private PersistService persistService;
+-    
+     static final int INIT_THREAD_COUNT = 40;
+     
+     static final AtomicInteger FINISHED = new AtomicInteger();
+     
+     static int total = 0;
+     
++    private ConfigInfoPersistService configInfoPersistService;
++    
++    private ConfigInfoAggrPersistService configInfoAggrPersistService;
++    
+     @Autowired
+-    public MergeDatumService(PersistService persistService) {
+-        this.persistService = persistService;
++    public MergeDatumService(ConfigInfoPersistService configInfoPersistService,
++            ConfigInfoAggrPersistService configInfoAggrPersistService,
++            ConfigInfoTagPersistService configInfoTagPersistService) {
++        this.configInfoPersistService = configInfoPersistService;
++        this.configInfoAggrPersistService = configInfoAggrPersistService;
+         mergeTasks = new TaskManager("com.alibaba.nacos.MergeDatum");
+-        mergeTasks.setDefaultTaskProcessor(new MergeTaskProcessor(persistService, this));
++        mergeTasks.setDefaultTaskProcessor(
++                new MergeTaskProcessor(configInfoPersistService, configInfoAggrPersistService,
++                        configInfoTagPersistService, this));
+     }
+     
+     static List<List<ConfigInfoChanged>> splitList(List<ConfigInfoChanged> list, int count) {
+@@ -110,7 +119,7 @@ public class MergeDatumService {
+         if (!canExecute()) {
+             return;
+         }
+-        for (ConfigInfoChanged item : persistService.findAllAggrGroup()) {
++        for (ConfigInfoChanged item : configInfoAggrPersistService.findAllAggrGroup()) {
+             addMergeTask(item.getDataId(), item.getGroup(), item.getTenant(), InetUtils.getSelfIP());
+         }
+     }
+@@ -145,10 +154,10 @@ public class MergeDatumService {
+                 String tenant = configInfo.getTenant();
+                 try {
+                     List<ConfigInfoAggr> datumList = new ArrayList<>();
+-                    int rowCount = persistService.aggrConfigInfoCount(dataId, group, tenant);
++                    int rowCount = configInfoAggrPersistService.aggrConfigInfoCount(dataId, group, tenant);
+                     int pageCount = (int) Math.ceil(rowCount * 1.0 / PAGE_SIZE);
+                     for (int pageNo = 1; pageNo <= pageCount; pageNo++) {
+-                        Page<ConfigInfoAggr> page = persistService
++                        Page<ConfigInfoAggr> page = configInfoAggrPersistService
+                                 .findConfigInfoAggrByPage(dataId, group, tenant, pageNo, PAGE_SIZE);
+                         if (page != null) {
+                             datumList.addAll(page.getPageItems());
+@@ -162,13 +171,13 @@ public class MergeDatumService {
+                     if (datumList.size() > 0) {
+                         // merge
+                         ConfigInfo cf = MergeTaskProcessor.merge(dataId, group, tenant, datumList);
+-                        persistService.insertOrUpdate(null, null, cf, time, null, false);
++                        configInfoPersistService.insertOrUpdate(null, null, cf, time, null, false);
+                         LOGGER.info("[merge-ok] {}, {}, size={}, length={}, md5={}, content={}", dataId, group,
+                                 datumList.size(), cf.getContent().length(), cf.getMd5(),
+                                 ContentUtils.truncateContent(cf.getContent()));
+                     } else {
+                         // remove
+-                        persistService.removeConfigInfo(dataId, group, tenant, InetUtils.getSelfIP(), null);
++                        configInfoPersistService.removeConfigInfo(dataId, group, tenant, InetUtils.getSelfIP(), null);
+                         LOGGER.warn("[merge-delete] delete config info because no datum. dataId=" + dataId + ", groupId="
+                                 + group);
+                     }
+diff --git a/config/src/main/java/com/alibaba/nacos/config/server/service/merge/MergeTaskProcessor.java b/config/src/main/java/com/alibaba/nacos/config/server/service/merge/MergeTaskProcessor.java
+index 07a00ab0ee..b4e24e6e1d 100755
+--- a/config/src/main/java/com/alibaba/nacos/config/server/service/merge/MergeTaskProcessor.java
++++ b/config/src/main/java/com/alibaba/nacos/config/server/service/merge/MergeTaskProcessor.java
+@@ -24,7 +24,9 @@ import com.alibaba.nacos.config.server.model.ConfigInfo;
+ import com.alibaba.nacos.config.server.model.ConfigInfoAggr;
+ import com.alibaba.nacos.config.server.model.Page;
+ import com.alibaba.nacos.config.server.model.event.ConfigDataChangeEvent;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoAggrPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoTagPersistService;
+ import com.alibaba.nacos.config.server.service.trace.ConfigTraceService;
+ import com.alibaba.nacos.config.server.utils.ContentUtils;
+ import com.alibaba.nacos.config.server.utils.TimeUtils;
+@@ -47,13 +49,21 @@ public class MergeTaskProcessor implements NacosTaskProcessor {
+     private static final Logger LOGGER = LoggerFactory.getLogger(MergeTaskProcessor.class);
+     
+     private static final int PAGE_SIZE = 10000;
+-
+-    private PersistService persistService;
++    
++    private ConfigInfoPersistService configInfoPersistService;
++    
++    private ConfigInfoAggrPersistService configInfoAggrPersistService;
++    
++    private ConfigInfoTagPersistService configInfoTagPersistService;
+ 
+     private MergeDatumService mergeService;
+     
+-    MergeTaskProcessor(PersistService persistService, MergeDatumService mergeService) {
+-        this.persistService = persistService;
++    MergeTaskProcessor(ConfigInfoPersistService configInfoPersistService,
++            ConfigInfoAggrPersistService configInfoAggrPersistService,
++            ConfigInfoTagPersistService configInfoTagPersistService, MergeDatumService mergeService) {
++        this.configInfoPersistService = configInfoPersistService;
++        this.configInfoAggrPersistService = configInfoAggrPersistService;
++        this.configInfoTagPersistService = configInfoTagPersistService;
+         this.mergeService = mergeService;
+     }
+     
+@@ -67,10 +77,10 @@ public class MergeTaskProcessor implements NacosTaskProcessor {
+         final String clientIp = mergeTask.getClientIp();
+         try {
+             List<ConfigInfoAggr> datumList = new ArrayList<>();
+-            int rowCount = persistService.aggrConfigInfoCount(dataId, group, tenant);
++            int rowCount = configInfoAggrPersistService.aggrConfigInfoCount(dataId, group, tenant);
+             int pageCount = (int) Math.ceil(rowCount * 1.0 / PAGE_SIZE);
+             for (int pageNo = 1; pageNo <= pageCount; pageNo++) {
+-                Page<ConfigInfoAggr> page = persistService
++                Page<ConfigInfoAggr> page = configInfoAggrPersistService
+                         .findConfigInfoAggrByPage(dataId, group, tenant, pageNo, PAGE_SIZE);
+                 if (page != null) {
+                     datumList.addAll(page.getPageItems());
+@@ -82,8 +92,8 @@ public class MergeTaskProcessor implements NacosTaskProcessor {
+             if (datumList.size() > 0) {
+                 // merge
+                 ConfigInfo cf = merge(dataId, group, tenant, datumList);
+-                
+-                persistService.insertOrUpdate(null, null, cf, time, null);
++    
++                configInfoPersistService.insertOrUpdate(null, null, cf, time, null);
+                 
+                 LOGGER.info("[merge-ok] {}, {}, size={}, length={}, md5={}, content={}", dataId, group,
+                         datumList.size(), cf.getContent().length(), cf.getMd5(),
+@@ -95,9 +105,9 @@ public class MergeTaskProcessor implements NacosTaskProcessor {
+             } else {
+                 // remove
+                 if (StringUtils.isBlank(tag)) {
+-                    persistService.removeConfigInfo(dataId, group, tenant, clientIp, null);
++                    configInfoPersistService.removeConfigInfo(dataId, group, tenant, clientIp, null);
+                 } else {
+-                    persistService.removeConfigInfoTag(dataId, group, tenant, tag, clientIp, null);
++                    configInfoTagPersistService.removeConfigInfoTag(dataId, group, tenant, tag, clientIp, null);
+                 }
+                 
+                 LOGGER.warn(
+diff --git a/console/src/main/java/com/alibaba/nacos/console/controller/HealthController.java b/console/src/main/java/com/alibaba/nacos/console/controller/HealthController.java
+index f95cba7702..f5b0e98136 100644
+--- a/console/src/main/java/com/alibaba/nacos/console/controller/HealthController.java
++++ b/console/src/main/java/com/alibaba/nacos/console/controller/HealthController.java
+@@ -16,7 +16,7 @@
+ 
+ package com.alibaba.nacos.console.controller;
+ 
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
+ import com.alibaba.nacos.naming.controllers.OperatorController;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+@@ -40,13 +40,13 @@ public class HealthController {
+     
+     private static final Logger LOGGER = LoggerFactory.getLogger(HealthController.class);
+     
+-    private final PersistService persistService;
++    private final ConfigInfoPersistService configInfoPersistService;
+     
+     private final OperatorController apiCommands;
+     
+     @Autowired
+-    public HealthController(PersistService persistService, OperatorController apiCommands) {
+-        this.persistService = persistService;
++    public HealthController(ConfigInfoPersistService configInfoPersistService, OperatorController apiCommands) {
++        this.configInfoPersistService = configInfoPersistService;
+         this.apiCommands = apiCommands;
+     }
+     
+@@ -90,7 +90,7 @@ public class HealthController {
+     private boolean isConfigReadiness() {
+         // check db
+         try {
+-            persistService.configInfoCount("");
++            configInfoPersistService.configInfoCount("");
+             return true;
+         } catch (Exception e) {
+             LOGGER.error("Config health check fail.", e);
+diff --git a/console/src/main/java/com/alibaba/nacos/console/controller/NamespaceController.java b/console/src/main/java/com/alibaba/nacos/console/controller/NamespaceController.java
+index 342a9629dd..ffe1e31de6 100644
+--- a/console/src/main/java/com/alibaba/nacos/console/controller/NamespaceController.java
++++ b/console/src/main/java/com/alibaba/nacos/console/controller/NamespaceController.java
+@@ -21,7 +21,7 @@ import com.alibaba.nacos.auth.annotation.Secured;
+ import com.alibaba.nacos.common.model.RestResult;
+ import com.alibaba.nacos.common.model.RestResultUtils;
+ import com.alibaba.nacos.common.utils.StringUtils;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.CommonPersistService;
+ import com.alibaba.nacos.console.model.Namespace;
+ import com.alibaba.nacos.console.model.NamespaceAllInfo;
+ import com.alibaba.nacos.console.service.NamespaceOperationService;
+@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
+ public class NamespaceController {
+     
+     @Autowired
+-    private PersistService persistService;
++    private CommonPersistService commonPersistService;
+     
+     @Autowired
+     private NamespaceOperationService namespaceOperationService;
+@@ -121,7 +121,7 @@ public class NamespaceController {
+         if (StringUtils.isBlank(namespaceId)) {
+             return false;
+         }
+-        return (persistService.tenantInfoCountByTenantId(namespaceId) > 0);
++        return (commonPersistService.tenantInfoCountByTenantId(namespaceId) > 0);
+     }
+     
+     /**
+diff --git a/console/src/main/java/com/alibaba/nacos/console/service/NamespaceOperationService.java b/console/src/main/java/com/alibaba/nacos/console/service/NamespaceOperationService.java
+index a4c6ba8eeb..f2fd9fdb1c 100644
+--- a/console/src/main/java/com/alibaba/nacos/console/service/NamespaceOperationService.java
++++ b/console/src/main/java/com/alibaba/nacos/console/service/NamespaceOperationService.java
+@@ -21,7 +21,8 @@ import com.alibaba.nacos.api.exception.api.NacosApiException;
+ import com.alibaba.nacos.api.model.v2.ErrorCode;
+ import com.alibaba.nacos.common.utils.StringUtils;
+ import com.alibaba.nacos.config.server.model.TenantInfo;
+-import com.alibaba.nacos.config.server.service.repository.PersistService;
++import com.alibaba.nacos.config.server.service.repository.CommonPersistService;
++import com.alibaba.nacos.config.server.service.repository.ConfigInfoPersistService;
+ import com.alibaba.nacos.console.enums.NamespaceTypeEnum;
+ import com.alibaba.nacos.console.model.Namespace;
+ import com.alibaba.nacos.console.model.NamespaceAllInfo;
+@@ -41,7 +42,9 @@ import java.util.List;
+ @Service
+ public class NamespaceOperationService {
+     
+-    private final PersistService persistService;
++    private final ConfigInfoPersistService configInfoPersistService;
++    
++    private final CommonPersistService commonPersistService;
+     
+     private static final String DEFAULT_NAMESPACE = "public";
+     
+@@ -57,21 +60,23 @@ public class NamespaceOperationService {
+     
+     private static final String DEFAULT_KP = "1";
+     
+-    public NamespaceOperationService(PersistService persistService) {
+-        this.persistService = persistService;
++    public NamespaceOperationService(ConfigInfoPersistService configInfoPersistService,
++            CommonPersistService commonPersistService) {
++        this.configInfoPersistService = configInfoPersistService;
++        this.commonPersistService = commonPersistService;
+     }
+     
+     public List<Namespace> getNamespaceList() {
+         // TODO 获取用kp
+-        List<TenantInfo> tenantInfos = persistService.findTenantByKp(DEFAULT_KP);
++        List<TenantInfo> tenantInfos = commonPersistService.findTenantByKp(DEFAULT_KP);
+         
+         Namespace namespace0 = new Namespace("", DEFAULT_NAMESPACE, DEFAULT_QUOTA,
+-                persistService.configInfoCount(DEFAULT_TENANT), NamespaceTypeEnum.GLOBAL.getType());
++                configInfoPersistService.configInfoCount(DEFAULT_TENANT), NamespaceTypeEnum.GLOBAL.getType());
+         List<Namespace> namespaceList = new ArrayList<>();
+         namespaceList.add(namespace0);
+         
+         for (TenantInfo tenantInfo : tenantInfos) {
+-            int configCount = persistService.configInfoCount(tenantInfo.getTenantId());
++            int configCount = configInfoPersistService.configInfoCount(tenantInfo.getTenantId());
+             Namespace namespaceTmp = new Namespace(tenantInfo.getTenantId(), tenantInfo.getTenantName(),
+                     tenantInfo.getTenantDesc(), DEFAULT_QUOTA, configCount, NamespaceTypeEnum.CUSTOM.getType());
+             namespaceList.add(namespaceTmp);
+@@ -89,15 +94,15 @@ public class NamespaceOperationService {
+         // TODO 获取用kp
+         if (StringUtils.isBlank(namespaceId)) {
+             return new NamespaceAllInfo(namespaceId, DEFAULT_NAMESPACE_SHOW_NAME, DEFAULT_QUOTA,
+-                    persistService.configInfoCount(DEFAULT_TENANT), NamespaceTypeEnum.GLOBAL.getType(),
++                    configInfoPersistService.configInfoCount(DEFAULT_TENANT), NamespaceTypeEnum.GLOBAL.getType(),
+                     DEFAULT_NAMESPACE_DESCRIPTION);
+         } else {
+-            TenantInfo tenantInfo = persistService.findTenantByKp(DEFAULT_KP, namespaceId);
++            TenantInfo tenantInfo = commonPersistService.findTenantByKp(DEFAULT_KP, namespaceId);
+             if (null == tenantInfo) {
+                 throw new NacosApiException(HttpStatus.NOT_FOUND.value(), ErrorCode.NAMESPACE_NOT_EXIST,
+                         "namespaceId [ " + namespaceId + " ] not exist");
+             }
+-            int configCount = persistService.configInfoCount(namespaceId);
++            int configCount = configInfoPersistService.configInfoCount(namespaceId);
+             return new NamespaceAllInfo(namespaceId, tenantInfo.getTenantName(), DEFAULT_QUOTA, configCount,
+                     NamespaceTypeEnum.CUSTOM.getType(), tenantInfo.getTenantDesc());
+         }
+@@ -114,12 +119,12 @@ public class NamespaceOperationService {
+     public Boolean createNamespace(String namespaceId, String namespaceName, String namespaceDesc)
+             throws NacosException {
+         // TODO 获取用kp
+-        if (persistService.tenantInfoCountByTenantId(namespaceId) > 0) {
++        if (commonPersistService.tenantInfoCountByTenantId(namespaceId) > 0) {
+             throw new NacosApiException(HttpStatus.INTERNAL_SERVER_ERROR.value(), ErrorCode.NAMESPACE_ALREADY_EXIST,
+                     "namespaceId [" + namespaceId + "] already exist");
+         }
+-        
+-        persistService
++    
++        commonPersistService
+                 .insertTenantInfoAtomic(DEFAULT_KP, namespaceId, namespaceName, namespaceDesc, DEFAULT_CREATE_SOURCE,
+                         System.currentTimeMillis());
+         return true;
+@@ -130,7 +135,7 @@ public class NamespaceOperationService {
+      */
+     public Boolean editNamespace(String namespaceId, String namespaceName, String namespaceDesc) {
+         // TODO 获取用kp
+-        persistService.updateTenantNameAtomic(DEFAULT_KP, namespaceId, namespaceName, namespaceDesc);
++        commonPersistService.updateTenantNameAtomic(DEFAULT_KP, namespaceId, namespaceName, namespaceDesc);
+         return true;
+     }
+     
+@@ -138,7 +143,7 @@ public class NamespaceOperationService {
+      * remove namespace.
+      */
+     public Boolean removeNamespace(String namespaceId) {
+-        persistService.removeTenantInfoAtomic(DEFAULT_KP, namespaceId);
++        commonPersistService.removeTenantInfoAtomic(DEFAULT_KP, namespaceId);
+         return true;
+     }
+ }

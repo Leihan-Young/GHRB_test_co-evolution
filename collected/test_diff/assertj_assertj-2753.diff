@@ -1,0 +1,120 @@
+diff --git a/assertj-core/src/test/java/org/assertj/core/api/BDDAssertions_then_Test.java b/assertj-core/src/test/java/org/assertj/core/api/BDDAssertions_then_Test.java
+index 19f8988da..b1db13e05 100644
+--- a/assertj-core/src/test/java/org/assertj/core/api/BDDAssertions_then_Test.java
++++ b/assertj-core/src/test/java/org/assertj/core/api/BDDAssertions_then_Test.java
+@@ -34,6 +34,7 @@ import java.io.IOException;
+ import java.math.BigDecimal;
+ import java.math.BigInteger;
+ import java.net.URI;
++import java.sql.SQLException;
+ import java.time.Duration;
+ import java.util.Arrays;
+ import java.util.Date;
+@@ -206,6 +207,11 @@ class BDDAssertions_then_Test {
+     then(new IllegalArgumentException("Foo")).hasMessage("Foo");
+   }
+ 
++  @Test
++  void then_SQLException() {
++    then(new SQLException("Foo")).hasMessage("Foo");
++  }
++
+   @Test
+   void then_BigDecimal() {
+     then(BigDecimal.ONE).isEqualTo(BigDecimal.valueOf(1));
+diff --git a/assertj-core/src/test/java/org/assertj/core/api/assumptions/Assumptions_assumeThat_with_various_types_Test.java b/assertj-core/src/test/java/org/assertj/core/api/assumptions/Assumptions_assumeThat_with_various_types_Test.java
+index fa177d839..9657510ba 100644
+--- a/assertj-core/src/test/java/org/assertj/core/api/assumptions/Assumptions_assumeThat_with_various_types_Test.java
++++ b/assertj-core/src/test/java/org/assertj/core/api/assumptions/Assumptions_assumeThat_with_various_types_Test.java
+@@ -34,6 +34,7 @@ import java.net.MalformedURLException;
+ import java.net.URI;
+ import java.net.URL;
+ import java.nio.file.Path;
++import java.sql.SQLException;
+ import java.util.Date;
+ import java.util.Iterator;
+ import java.util.LinkedList;
+@@ -233,6 +234,17 @@ class Assumptions_assumeThat_with_various_types_Test {
+             assumeThat(actual).isInstanceOf(IllegalArgumentException.class);
+           }
+         },
++      new AssumptionRunner<SQLException>(new SQLException()) {
++        @Override
++        public void runFailingAssumption() {
++          assumeThat(actual).isInstanceOf(NullPointerException.class);
++        }
++
++        @Override
++        public void runPassingAssumption() {
++          assumeThat(actual).isInstanceOf(SQLException.class);
++        }
++      },
+         new AssumptionRunner<ThrowingCallable>(new ThrowingCallable() {
+           @Override
+           public void call() {
+diff --git a/assertj-core/src/test/java/org/assertj/core/api/assumptions/BDDAssumptionsTest.java b/assertj-core/src/test/java/org/assertj/core/api/assumptions/BDDAssumptionsTest.java
+index 02c51b3a5..55c1e0b33 100644
+--- a/assertj-core/src/test/java/org/assertj/core/api/assumptions/BDDAssumptionsTest.java
++++ b/assertj-core/src/test/java/org/assertj/core/api/assumptions/BDDAssumptionsTest.java
+@@ -28,6 +28,7 @@ import java.math.BigInteger;
+ import java.net.URI;
+ import java.net.URL;
+ import java.nio.file.Path;
++import java.sql.SQLException;
+ import java.time.Duration;
+ import java.time.Instant;
+ import java.time.LocalDate;
+@@ -657,6 +658,21 @@ class BDDAssumptionsTest {
+     }
+   }
+ 
++  @Nested
++  class BDDAssumptions_given_SQLException_Test {
++    private final SQLException actual = new SQLException("Yoda time");
++
++    @Test
++    void should_run_test_when_assumption_passes() {
++      thenCode(() -> given(actual).hasMessage("Yoda time")).doesNotThrowAnyException();
++    }
++
++    @Test
++    void should_ignore_test_when_assumption_fails() {
++      expectAssumptionNotMetException(() -> given(actual).hasMessage(""));
++    }
++  }
++
+   @Nested
+   class BDDAssumptions_givenCode_Test {
+     @Nested
+diff --git a/assertj-core/src/test/java/org/assertj/core/api/test/Assertions_assertThat_ambiguous_Test.java b/assertj-core/src/test/java/org/assertj/core/api/test/Assertions_assertThat_ambiguous_Test.java
+index da90af378..6f76f3a3e 100644
+--- a/assertj-core/src/test/java/org/assertj/core/api/test/Assertions_assertThat_ambiguous_Test.java
++++ b/assertj-core/src/test/java/org/assertj/core/api/test/Assertions_assertThat_ambiguous_Test.java
+@@ -16,9 +16,11 @@ import static org.assertj.core.api.Assertions.assertThatIterator;
+ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+ import static org.assertj.core.api.PredicateAssert.assertThatPredicate;
+ 
++import java.sql.SQLException;
+ import java.util.Iterator;
+ import java.util.function.Predicate;
+ 
++import org.assertj.core.api.Assertions;
+ import org.junit.jupiter.api.Test;
+ 
+ // not in org.assertj.core.api package to avoid resolving classes from it
+@@ -36,6 +38,15 @@ class Assertions_solving_assertThat_ambiguous_Test {
+     assertThat(2L).isPositive();
+   }
+ 
++  @Test
++  void should_resolve_ambiguous_assertThat_for_SqlException() {
++    // GIVEN
++    SQLException sqlException = new SQLException("test");
++
++    // WHEN/THEN
++    Assertions.assertThat(sqlException).hasMessage("test");
++  }
++
+   static class IteratorPredicate<T> implements Iterator<T>, Predicate<T> {
+ 
+     @Override

@@ -1,0 +1,163 @@
+diff --git a/src/it/java/org/checkstyle/suppressionxpathfilter/XpathRegressionParameterNumberTest.java b/src/it/java/org/checkstyle/suppressionxpathfilter/XpathRegressionParameterNumberTest.java
+index 365be83b6..b0d15ffc1 100644
+--- a/src/it/java/org/checkstyle/suppressionxpathfilter/XpathRegressionParameterNumberTest.java
++++ b/src/it/java/org/checkstyle/suppressionxpathfilter/XpathRegressionParameterNumberTest.java
+@@ -103,4 +103,30 @@ public class XpathRegressionParameterNumberTest extends AbstractXpathTestSupport
+         runVerifications(moduleConfig, fileToProcess, expectedViolations, expectedXpathQueries);
+     }
+ 
++    @Test
++    public void testIgnoreAnnotatedBy() throws Exception {
++        final String filePath =
++                getPath("SuppressionXpathRegressionParameterNumberIgnoreAnnotatedBy.java");
++        final File fileToProcess = new File(filePath);
++
++        final DefaultConfiguration moduleConfig = createModuleConfig(ParameterNumberCheck.class);
++        moduleConfig.addProperty("ignoreAnnotatedBy", "MyAnno");
++        moduleConfig.addProperty("max", "2");
++
++        final String[] expectedViolations = {
++            "15:34: " + getCheckMessage(ParameterNumberCheck.class, MSG_KEY, 2, 3),
++        };
++
++        final List<String> expectedXpathQueries = Collections.singletonList(
++                "/COMPILATION_UNIT/CLASS_DEF"
++                + "[./IDENT[@text='SuppressionXpathRegressionParameterNumberIgnoreAnnotatedBy']]"
++                + "/OBJBLOCK/CLASS_DEF[./IDENT[@text='InnerClass']]"
++                + "/OBJBLOCK/STATIC_INIT/SLIST/EXPR/LITERAL_NEW[./IDENT[@text='Object']]"
++                + "/OBJBLOCK/METHOD_DEF[./IDENT[@text='method']]"
++                + "/SLIST/LITERAL_IF/SLIST/EXPR/LITERAL_NEW[./IDENT[@text='Object']]"
++                + "/OBJBLOCK/METHOD_DEF/IDENT[@text='checkedMethod']"
++        );
++
++        runVerifications(moduleConfig, fileToProcess, expectedViolations, expectedXpathQueries);
++    }
+ }
+diff --git a/src/it/resources/org/checkstyle/suppressionxpathfilter/parameternumber/SuppressionXpathRegressionParameterNumberIgnoreAnnotatedBy.java b/src/it/resources/org/checkstyle/suppressionxpathfilter/parameternumber/SuppressionXpathRegressionParameterNumberIgnoreAnnotatedBy.java
+new file mode 100644
+index 000000000..984da4cb8
+--- /dev/null
++++ b/src/it/resources/org/checkstyle/suppressionxpathfilter/parameternumber/SuppressionXpathRegressionParameterNumberIgnoreAnnotatedBy.java
+@@ -0,0 +1,26 @@
++package org.checkstyle.suppressionxpathfilter.parameternumber;
++
++public class SuppressionXpathRegressionParameterNumberIgnoreAnnotatedBy {
++    static class InnerClass {
++        static {
++            new Object() {
++                void method() {
++                    if (true) {
++                        new Object() {
++                            @MyAnno
++                            void ignoredMethod(int a, @MyAnno int b, int c) {
++
++                            }
++
++                            void checkedMethod(int a, @MyAnno int b, int c) { // warn
++
++                            }
++                        };
++                    }
++                }
++            };
++        }
++    }
++
++    @interface MyAnno {}
++}
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/sizes/ParameterNumberCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/sizes/ParameterNumberCheck.java
+index c281efdd6..e4a3fe16d 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/sizes/ParameterNumberCheck.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/checks/sizes/ParameterNumberCheck.java
+@@ -19,6 +19,9 @@
+ 
+ package com.puppycrawl.tools.checkstyle.checks.sizes;
+ 
++import java.util.Collections;
++import java.util.Set;
++
+ import com.puppycrawl.tools.checkstyle.StatelessCheck;
+ import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
+ import com.puppycrawl.tools.checkstyle.api.DetailAST;
+@@ -32,6 +35,12 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
+  * </p>
+  * <ul>
+  * <li>
++ * Property {@code ignoreAnnotatedBy} - Ignore methods and constructors
++ * annotated with the specified annotation(s).
++ * Type is {@code java.lang.String[]}.
++ * Default value is {@code ""}.
++ * </li>
++ * <li>
+  * Property {@code ignoreOverriddenMethods} - Ignore number of parameters for
+  * methods with {@code @Override} annotation.
+  * Type is {@code boolean}.
+@@ -86,6 +95,11 @@ public class ParameterNumberCheck
+     /** Ignore number of parameters for methods with {@code @Override} annotation. */
+     private boolean ignoreOverriddenMethods;
+ 
++    /**
++     * Ignore methods and constructors annotated with the specified annotation(s).
++     */
++    private Set<String> ignoreAnnotatedBy = Collections.emptySet();
++
+     /**
+      * Setter to specify the maximum number of parameters allowed.
+      *
+@@ -106,6 +120,16 @@ public class ParameterNumberCheck
+         this.ignoreOverriddenMethods = ignoreOverriddenMethods;
+     }
+ 
++    /**
++     * Setter to ignore methods and constructors annotated with the specified annotation(s).
++     *
++     * @param annotationNames specified annotation(s)
++     * @since 10.15.0
++     */
++    public void setIgnoreAnnotatedBy(String... annotationNames) {
++        ignoreAnnotatedBy = Set.of(annotationNames);
++    }
++
+     @Override
+     public int[] getDefaultTokens() {
+         return getAcceptableTokens();
+@@ -132,16 +156,33 @@ public class ParameterNumberCheck
+     }
+ 
+     /**
+-     * Determine whether to ignore number of parameters for the method.
++     * Determine whether to ignore number of parameters.
+      *
+      * @param ast the token to process
+-     * @return true if this is overridden method and number of parameters should be ignored
+-     *         false otherwise
++     * @return true if number of parameters should be ignored.
+      */
+     private boolean shouldIgnoreNumberOfParameters(DetailAST ast) {
+-        // if you override a method, you have no power over the number of parameters
+-        return ignoreOverriddenMethods
+-                && AnnotationUtil.hasOverrideAnnotation(ast);
++        return isIgnoredOverriddenMethod(ast) || isAnnotatedByIgnoredAnnotations(ast);
++    }
++
++    /**
++     * Checks if method is overridden and should be ignored.
++     *
++     * @param ast method definition to check
++     * @return true if method is overridden and should be ignored.
++     */
++    private boolean isIgnoredOverriddenMethod(DetailAST ast) {
++        return ignoreOverriddenMethods && AnnotationUtil.hasOverrideAnnotation(ast);
++    }
++
++    /**
++     * Checks if method or constructor is annotated by ignored annotation(s).
++     *
++     * @param ast method or constructor definition to check
++     * @return true if annotated by ignored annotation(s).
++     */
++    private boolean isAnnotatedByIgnoredAnnotations(DetailAST ast) {
++        return AnnotationUtil.containsAnnotation(ast, ignoreAnnotatedBy);
+     }
+ 
+ }

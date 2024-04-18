@@ -1,0 +1,121 @@
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/OpenAPINormalizerTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/OpenAPINormalizerTest.java
+index 051e961f093..eb3de1a6a26 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/OpenAPINormalizerTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/OpenAPINormalizerTest.java
+@@ -136,6 +136,15 @@ public class OpenAPINormalizerTest {
+         assertTrue(schema3.getEnum().size() > 0);
+     }
+ 
++    @Test
++    public void isNullTypeSchemaTest() {
++        OpenAPI openAPI = TestUtils.parseSpec("src/test/resources/3_0/simplifyOneOfAnyOf_test.yaml");
++        Map<String, String> options = new HashMap<>();
++        OpenAPINormalizer openAPINormalizer = new OpenAPINormalizer(openAPI, options);
++        Schema schema = openAPI.getComponents().getSchemas().get("AnyOfStringArrayOfString");
++        assertFalse(openAPINormalizer.isNullTypeSchema(schema));
++    }
++
+     @Test
+     public void testOpenAPINormalizerSimplifyOneOfAnyOf() {
+         // to test the rule SIMPLIFY_ONEOF_ANYOF
+@@ -156,6 +165,9 @@ public class OpenAPINormalizerTest {
+         Schema schema7 = openAPI.getComponents().getSchemas().get("Parent");
+         assertEquals(((Schema) schema7.getProperties().get("number")).getAnyOf().size(), 1);
+ 
++        Schema schema9 = openAPI.getComponents().getSchemas().get("AnyOfStringArrayOfString");
++        assertEquals(schema9.getAnyOf().size(), 2);
++
+         Map<String, String> options = new HashMap<>();
+         options.put("SIMPLIFY_ONEOF_ANYOF", "true");
+         OpenAPINormalizer openAPINormalizer = new OpenAPINormalizer(openAPI, options);
+@@ -177,6 +189,9 @@ public class OpenAPINormalizerTest {
+ 
+         Schema schema8 = openAPI.getComponents().getSchemas().get("Parent");
+         assertEquals(((Schema) schema8.getProperties().get("number")).get$ref(), "#/components/schemas/Number");
++
++        Schema schema10 = openAPI.getComponents().getSchemas().get("AnyOfStringArrayOfString");
++        assertEquals(schema10.getAnyOf().size(), 2);
+     }
+ 
+     @Test
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/utils/ModelUtilsTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/utils/ModelUtilsTest.java
+index 749c9af84c0..ac6cc875d93 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/utils/ModelUtilsTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/utils/ModelUtilsTest.java
+@@ -295,10 +295,11 @@ public class ModelUtilsTest {
+         Assert.assertEquals(decoded, "~1 Hallo/Welt");
+     }
+ 
+-    // 3.1 spec test
++
++    // 3.0 spec tests
+     @Test
+-    public void testIsMapSchema() {
+-        final OpenAPI openAPI = TestUtils.parseFlattenSpec("src/test/resources/3_1/schema.yaml");
++    public void test30Schemas() {
++        final OpenAPI openAPI = TestUtils.parseSpec("src/test/resources/3_0/schema.yaml");
+         Schema misc = ModelUtils.getSchema(openAPI, "Misc");
+ 
+         // test map
+@@ -308,5 +309,61 @@ public class ModelUtilsTest {
+         Assert.assertTrue(ModelUtils.isFreeFormObject((Schema) misc.getProperties().get("free_form_object_1")));
+         Assert.assertTrue(ModelUtils.isFreeFormObject((Schema) misc.getProperties().get("free_form_object_2")));
+         Assert.assertTrue(ModelUtils.isFreeFormObject((Schema) misc.getProperties().get("free_form_object_3")));
++
++        // test oneOf
++        Assert.assertTrue(ModelUtils.isOneOf((Schema) misc.getProperties().get("oneof1")));
++
++        // test anyOf model
++        Schema anyof1 = ModelUtils.getSchema(openAPI, "anyof1");
++        Assert.assertNotNull(anyof1);
++        Assert.assertNull(anyof1.getTypes());
++        Assert.assertNull(anyof1.getType());
++        Assert.assertTrue(ModelUtils.hasAnyOf(anyof1));
++        Assert.assertTrue(ModelUtils.isAnyOf(anyof1));
++
++        // test anyOf in properties
++        Schema anyof1Property = (Schema) misc.getProperties().get("anyof1");
++        Assert.assertNotNull(anyof1Property);
++        Assert.assertNull(anyof1Property.getTypes());
++        Assert.assertNull(anyof1Property.getType());
++        Assert.assertTrue(ModelUtils.hasAnyOf(anyof1Property));
++        Assert.assertTrue(ModelUtils.isAnyOf(anyof1Property));
++    }
++
++    // 3.1 spec tests
++    @Test
++    public void test31Schemas() {
++        final OpenAPI openAPI = TestUtils.parseSpec("src/test/resources/3_1/schema.yaml");
++        Schema misc = ModelUtils.getSchema(openAPI, "Misc");
++
++        // test map
++        Assert.assertTrue(ModelUtils.isMapSchema((Schema) misc.getProperties().get("map1")));
++
++        // test free form object
++        Assert.assertTrue(ModelUtils.isFreeFormObject((Schema) misc.getProperties().get("free_form_object_1")));
++        Assert.assertTrue(ModelUtils.isFreeFormObject((Schema) misc.getProperties().get("free_form_object_2")));
++        Assert.assertTrue(ModelUtils.isFreeFormObject((Schema) misc.getProperties().get("free_form_object_3")));
++
++        // test oneOf property
++        Assert.assertTrue(ModelUtils.isOneOf((Schema) misc.getProperties().get("oneof1")));
++
++        // test anyOf property
++        Schema anyof1 = (Schema) misc.getProperties().get("anyof1");
++        Assert.assertNotNull(anyof1);
++        Assert.assertNull(anyof1.getTypes());
++        Assert.assertNull(anyof1.getType());
++        Assert.assertNotNull(anyof1.getAnyOf());
++        Assert.assertFalse(anyof1.getAnyOf().isEmpty());
++        Assert.assertTrue(ModelUtils.hasAnyOf(anyof1));
++        Assert.assertTrue(ModelUtils.isAnyOf(anyof1));
++
++        Schema anyof2 = (Schema) misc.getProperties().get("anyof2");
++        Assert.assertNotNull(anyof2);
++        Assert.assertNull(anyof2.getTypes());
++        Assert.assertNull(anyof2.getType());
++        Assert.assertNotNull(anyof2.getAnyOf());
++        Assert.assertFalse(anyof2.getAnyOf().isEmpty());
++        Assert.assertTrue(ModelUtils.hasAnyOf(anyof2));
++        Assert.assertTrue(ModelUtils.isAnyOf(anyof2));
+     }
+ }

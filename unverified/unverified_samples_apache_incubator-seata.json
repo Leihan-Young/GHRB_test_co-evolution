@@ -1,0 +1,389 @@
+{
+  "apache_incubator-seata-3904": {
+    "bug_id": "apache_incubator-seata-3904",
+    "PR_number": 3904,
+    "PR_createdAt": "2021-07-25T09:36:14Z",
+    "merge_commit": "e95d54c90dda0e784e4ecbdec4ae874eefa15dfb",
+    "buggy_commits": [
+      {
+        "oid": "ad5e933987861ca215645e390aae0ee4be568471",
+        "message": "feature: support kotlin coroutine (#3668)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/incubator-seata/issues/3903",
+      "createdAt": "2021-07-25T09:25:43Z",
+      "content": "bug_report_all/apache_incubator-seata-3904.json"
+    },
+    "changed_tests": [
+      "test/src/test/java/io/seata/core/rpc/netty/TmNettyClientTest.java",
+      "test/src/test/java/io/seata/saga/engine/db/AbstractServerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/incubator-seata/pull/3904",
+    "merge_commit_url": "https://github.com/apache/incubator-seata/commit/e95d54c90dda0e784e4ecbdec4ae874eefa15dfb",
+    "buggy_commit": "ad5e933987861ca215645e390aae0ee4be568471",
+    "execution_result": {
+      "test_src": [
+        ".io.seata.core.rpc.netty.TmNettyClientTest#testDoConnect",
+        ".io.seata.core.rpc.netty.TmNettyClientTest#testReconnect",
+        ".io.seata.core.rpc.netty.TmNettyClientTest#testSendMsgWithResponse"
+      ],
+      "test_tgt": [
+        ".io.seata.core.rpc.netty.TmNettyClientTest#testDoConnect",
+        ".io.seata.core.rpc.netty.TmNettyClientTest#testReconnect",
+        ".io.seata.core.rpc.netty.TmNettyClientTest#testSendMsgWithResponse"
+      ]
+    }
+  },
+  "apache_incubator-seata-4021": {
+    "bug_id": "apache_incubator-seata-4021",
+    "PR_number": 4021,
+    "PR_createdAt": "2021-09-15T10:15:13Z",
+    "merge_commit": "b71ba74a4123f1771d62e5391d4670fec7d6fb87",
+    "buggy_commits": [
+      {
+        "oid": "33edf343958539f26ef910da3de1788dc664bfee",
+        "message": "bugfix:PK constraint name isn't the same as the unique index name which is belong to PK (#4005)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/incubator-seata/issues/4019",
+      "createdAt": "2021-09-14T17:21:27Z",
+      "content": "bug_report_all/apache_incubator-seata-4021.json"
+    },
+    "changed_tests": [
+      "seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/properties/config/test/ApolloPropertiesTest.java",
+      "seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/properties/config/test/ConfigPropertiesTest.java",
+      "seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/properties/config/test/ConsulPropertiesTest.java",
+      "seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/properties/config/test/CustomPropertiesTest.java",
+      "seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/properties/config/test/Etcd3PropertiesTest.java",
+      "seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/properties/config/test/FilePropertiesTest.java",
+      "seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/properties/config/test/NacosPropertiesTest.java",
+      "seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/properties/config/test/ZooKeeperPropertiesTest.java"
+    ],
+    "PR_url": "https://github.com/apache/incubator-seata/pull/4021",
+    "merge_commit_url": "https://github.com/apache/incubator-seata/commit/b71ba74a4123f1771d62e5391d4670fec7d6fb87",
+    "buggy_commit": "33edf343958539f26ef910da3de1788dc664bfee",
+    "execution_result": {
+      "test_src": [
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testConfigConsulProperties",
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testConfigEtcd3Properties",
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testConfigFileProperties",
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testConfigNacosProperties",
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testConfigProperties",
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testConfigZooKeeperProperties",
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testConfigCustomProperties"
+      ],
+      "test_tgt": []
+    }
+  },
+  "apache_incubator-seata-4056": {
+    "bug_id": "apache_incubator-seata-4056",
+    "PR_number": 4056,
+    "PR_createdAt": "2021-10-08T09:10:05Z",
+    "merge_commit": "177502221625e0165147f6bcb3cfc7e7ca89e976",
+    "buggy_commits": [
+      {
+        "oid": "9d5ff402d3b25f7e360cb6ebae40148d23dfdf72",
+        "message": "optimize: NetUtil#getLocalAddress0 (#4055)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/incubator-seata/issues/4048",
+      "createdAt": "2021-09-28T14:48:11Z",
+      "content": "bug_report_all/apache_incubator-seata-4056.json"
+    },
+    "changed_tests": [
+      "common/src/test/java/io/seata/common/util/DurationUtilTest.java"
+    ],
+    "PR_url": "https://github.com/apache/incubator-seata/pull/4056",
+    "merge_commit_url": "https://github.com/apache/incubator-seata/commit/177502221625e0165147f6bcb3cfc7e7ca89e976",
+    "buggy_commit": "9d5ff402d3b25f7e360cb6ebae40148d23dfdf72",
+    "execution_result": {
+      "test_src": [
+        ".io.seata.common.util.DurationUtilTest#testParse",
+        ".io.seata.common.util.DurationUtilTest#testParseThrowException"
+      ],
+      "test_tgt": [
+        ".io.seata.common.util.DurationUtilTest#testParse",
+        ".io.seata.common.util.DurationUtilTest#testParseThrowException"
+      ]
+    }
+  },
+  "apache_incubator-seata-4086": {
+    "bug_id": "apache_incubator-seata-4086",
+    "PR_number": 4086,
+    "PR_createdAt": "2021-10-17T08:32:45Z",
+    "merge_commit": "e4ae6b7020d39cde9057028f12b95b3e489946ad",
+    "buggy_commits": [
+      {
+        "oid": "f1be649562e8cf5edf9b5bf911a528187f7e439a",
+        "message": "optimize: Slimming down for the `seata-all.jar` (#4353)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/incubator-seata/issues/4337",
+      "createdAt": "2022-01-25T08:53:45Z",
+      "content": "bug_report_all/apache_incubator-seata-4086.json"
+    },
+    "changed_tests": [
+      "server/src/test/java/io/seata/server/coordinator/DefaultCoordinatorTest.java",
+      "server/src/test/java/io/seata/server/coordinator/DefaultCoreTest.java"
+    ],
+    "PR_url": "https://github.com/apache/incubator-seata/pull/4086",
+    "merge_commit_url": "https://github.com/apache/incubator-seata/commit/e4ae6b7020d39cde9057028f12b95b3e489946ad",
+    "buggy_commit": "f1be649562e8cf5edf9b5bf911a528187f7e439a",
+    "execution_result": {
+      "test_src": [
+        ".io.seata.server.coordinator.DefaultCoordinatorTest#test_handleRetryRollbacking"
+      ],
+      "test_tgt": [
+        ".io.seata.server.coordinator.DefaultCoordinatorTest#test_handleRetryRollbacking"
+      ]
+    }
+  },
+  "apache_incubator-seata-4276": {
+    "bug_id": "apache_incubator-seata-4276",
+    "PR_number": 4276,
+    "PR_createdAt": "2022-01-09T11:39:53Z",
+    "merge_commit": "80edb05f40b76c70f3bf0d14ef120e6caead547b",
+    "buggy_commits": [
+      {
+        "oid": "08ba36ec03fc976cd1e0b924a31a72cfe18b111e",
+        "message": "bugfix: data remanence problems in lock and branch under specific circumstances. (#4233)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/incubator-seata/issues/4275",
+      "createdAt": "2022-01-09T11:32:26Z",
+      "content": "bug_report_all/apache_incubator-seata-4276.json"
+    },
+    "changed_tests": [
+      "test/src/test/java/io/seata/core/rpc/netty/TmNettyClientTest.java"
+    ],
+    "PR_url": "https://github.com/apache/incubator-seata/pull/4276",
+    "merge_commit_url": "https://github.com/apache/incubator-seata/commit/80edb05f40b76c70f3bf0d14ef120e6caead547b",
+    "buggy_commit": "08ba36ec03fc976cd1e0b924a31a72cfe18b111e",
+    "execution_result": {
+      "test_src": [
+        ".io.seata.core.rpc.netty.TmNettyClientTest#testSendMsgWithResponse"
+      ],
+      "test_tgt": [
+        ".io.seata.core.rpc.netty.TmNettyClientTest#testSendMsgWithResponse"
+      ]
+    }
+  },
+  "apache_incubator-seata-5120": {
+    "bug_id": "apache_incubator-seata-5120",
+    "PR_number": 5120,
+    "PR_createdAt": "2022-12-03T10:01:42Z",
+    "merge_commit": "80001959a6d2702d1c9336fe78e44082e884bc3d",
+    "buggy_commits": [
+      {
+        "oid": "0827ee514d778ec2e6d2d96dfc698ddebe0287c3",
+        "message": "optimize: change the version to 1.6.1-SNAPSHOT (#5166)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/incubator-seata/issues/5117",
+      "createdAt": "2022-12-03T08:33:24Z",
+      "content": "bug_report_all/apache_incubator-seata-5120.json"
+    },
+    "changed_tests": [
+      "seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/test/java/io/seata/spring/boot/autoconfigure/CorePropertiesTest.java",
+      "seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/test/java/io/seata/spring/boot/autoconfigure/ServerPropertiesTest.java"
+    ],
+    "PR_url": "https://github.com/apache/incubator-seata/pull/5120",
+    "merge_commit_url": "https://github.com/apache/incubator-seata/commit/80001959a6d2702d1c9336fe78e44082e884bc3d",
+    "buggy_commit": "0827ee514d778ec2e6d2d96dfc698ddebe0287c3",
+    "execution_result": {
+      "test_src": [
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testRegistryNacosProperties",
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testRegistryRedisProperties",
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testRegistryCustomProperties"
+      ],
+      "test_tgt": [
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testRegistryNacosProperties",
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testRegistryRedisProperties",
+        ".io.seata.spring.boot.autoconfigure.CorePropertiesTest#testRegistryCustomProperties"
+      ]
+    }
+  },
+  "apache_incubator-seata-6002": {
+    "bug_id": "apache_incubator-seata-6002",
+    "PR_number": 6002,
+    "PR_createdAt": "2023-11-06T08:56:18Z",
+    "merge_commit": "bbbbec7d74148fbe87ac7556293e100d35e81c9d",
+    "buggy_commits": [
+      {
+        "oid": "1de3532f075632007157fa6a19315920cec3dea5",
+        "message": "bugfix: fix the white screen after click the \"View Global Lock\" button on the transaction info page in the console (#6024)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/incubator-seata/issues/5999",
+      "createdAt": "2023-11-06T08:13:54Z",
+      "content": "bug_report_all/apache_incubator-seata-6002.json"
+    },
+    "changed_tests": [
+      "rm-datasource/src/test/java/io/seata/rm/datasource/undo/UndoLogParserProviderTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/undo/parser/FstUndoLogParserTest.java",
+      "serializer/seata-serializer-fst/src/test/java/io/seata/serializer/fst/FstSerializerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/incubator-seata/pull/6002",
+    "merge_commit_url": "https://github.com/apache/incubator-seata/commit/bbbbec7d74148fbe87ac7556293e100d35e81c9d",
+    "buggy_commit": "1de3532f075632007157fa6a19315920cec3dea5",
+    "execution_result": {
+      "test_src": [
+        ".io.seata.rm.datasource.undo.UndoLogParserFactoryTest#getInstance",
+        ".io.seata.rm.datasource.undo.UndoLogParserProviderTest#testLoad"
+      ],
+      "test_tgt": [
+        ".io.seata.rm.datasource.undo.UndoLogParserFactoryTest#getInstance",
+        ".io.seata.rm.datasource.undo.UndoLogParserProviderTest#testLoad"
+      ]
+    }
+  },
+  "apache_incubator-seata-6015": {
+    "bug_id": "apache_incubator-seata-6015",
+    "PR_number": 6015,
+    "PR_createdAt": "2023-11-10T10:41:21Z",
+    "merge_commit": "abfafc31e26bef41fc45b8e6dd991f36a43126da",
+    "buggy_commits": [
+      {
+        "oid": "bbbbec7d74148fbe87ac7556293e100d35e81c9d",
+        "message": "optimize: remove fst serialization (#6002)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/incubator-seata/issues/6014",
+      "createdAt": "2023-11-10T10:40:15Z",
+      "content": "bug_report_all/apache_incubator-seata-6015.json"
+    },
+    "changed_tests": [
+      "integration-tx-api/src/test/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParserTest.java",
+      "tcc/src/test/java/io/seata/rm/tcc/interceptor/parser/TccActionInterceptorParserTest.java"
+    ],
+    "PR_url": "https://github.com/apache/incubator-seata/pull/6015",
+    "merge_commit_url": "https://github.com/apache/incubator-seata/commit/abfafc31e26bef41fc45b8e6dd991f36a43126da",
+    "buggy_commit": "bbbbec7d74148fbe87ac7556293e100d35e81c9d",
+    "execution_result": {
+      "test_src": [
+        ".io.seata.integration.tx.api.interceptor.parser.GlobalTransactionalInterceptorParserTest#parserInterfaceToProxy"
+      ],
+      "test_tgt": [
+        ".io.seata.integration.tx.api.interceptor.parser.GlobalTransactionalInterceptorParserTest#parserInterfaceToProxy"
+      ]
+    }
+  },
+  "apache_incubator-seata-6031": {
+    "bug_id": "apache_incubator-seata-6031",
+    "PR_number": 6031,
+    "PR_createdAt": "2023-11-14T08:27:02Z",
+    "merge_commit": "960c298938a783404cb576e25cc7d177eaf6d46a",
+    "buggy_commits": [
+      {
+        "oid": "09097aaa0ac225d4b9221dbada336b4518668ebc",
+        "message": "security: upgrade com.google.guava:guava to 32.0.0-jre (#6069)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/incubator-seata/issues/6022",
+      "createdAt": "2023-11-11T15:41:59Z",
+      "content": "bug_report_all/apache_incubator-seata-6031.json"
+    },
+    "changed_tests": [
+      "rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/DmTableMetaCacheTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/MariadbTableMetaCacheTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/MysqlTableMetaCacheTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/OracleTableMetaCacheTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/PostgresqlTableMetaCacheTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/sql/struct/cache/SqlServerTableMetaCacheTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/undo/BaseH2Test.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/undo/mariadb/MariadbUndoLogManagerTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/undo/mysql/MySQLUndoLogManagerTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/undo/polardbx/PolarDBXUndoLogManagerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/incubator-seata/pull/6031",
+    "merge_commit_url": "https://github.com/apache/incubator-seata/commit/960c298938a783404cb576e25cc7d177eaf6d46a",
+    "buggy_commit": "09097aaa0ac225d4b9221dbada336b4518668ebc",
+    "execution_result": {
+      "test_src": [
+        ".io.seata.rm.datasource.sql.struct.TableRecordsTest#testPkRow",
+        ".io.seata.rm.datasource.sql.struct.TableRecordsTest#testBuildRecords",
+        ".io.seata.rm.datasource.sql.struct.TableRecordsTest#testBuildRecordsNewFeild",
+        ".io.seata.rm.datasource.sql.struct.cache.DmTableMetaCacheTest#getTableMetaTest",
+        ".io.seata.rm.datasource.sql.struct.cache.MariadbTableMetaCacheTest#getTableMetaTest_0",
+        ".io.seata.rm.datasource.sql.struct.cache.MariadbTableMetaCacheTest#refreshTest_0",
+        ".io.seata.rm.datasource.sql.struct.cache.MysqlTableMetaCacheTest#getTableMetaTest_0",
+        ".io.seata.rm.datasource.sql.struct.cache.MysqlTableMetaCacheTest#refreshTest_0",
+        ".io.seata.rm.datasource.sql.struct.cache.OracleTableMetaCacheTest#getTableMetaTest",
+        ".io.seata.rm.datasource.sql.struct.cache.PostgresqlTableMetaCacheTest#getTableMetaTest",
+        ".io.seata.rm.datasource.sql.struct.cache.SqlServerTableMetaCacheTest#getTableMetaTest_0"
+      ],
+      "test_tgt": [
+        ".io.seata.rm.datasource.sql.struct.TableRecordsTest#testPkRow",
+        ".io.seata.rm.datasource.sql.struct.TableRecordsTest#testBuildRecords",
+        ".io.seata.rm.datasource.sql.struct.TableRecordsTest#testBuildRecordsNewFeild",
+        ".io.seata.rm.datasource.sql.struct.cache.DmTableMetaCacheTest#getTableMetaTest",
+        ".io.seata.rm.datasource.sql.struct.cache.MariadbTableMetaCacheTest#getTableMetaTest_0",
+        ".io.seata.rm.datasource.sql.struct.cache.MariadbTableMetaCacheTest#refreshTest_0",
+        ".io.seata.rm.datasource.sql.struct.cache.MysqlTableMetaCacheTest#getTableMetaTest_0",
+        ".io.seata.rm.datasource.sql.struct.cache.MysqlTableMetaCacheTest#refreshTest_0",
+        ".io.seata.rm.datasource.sql.struct.cache.OracleTableMetaCacheTest#getTableMetaTest",
+        ".io.seata.rm.datasource.sql.struct.cache.PostgresqlTableMetaCacheTest#getTableMetaTest",
+        ".io.seata.rm.datasource.sql.struct.cache.SqlServerTableMetaCacheTest#getTableMetaTest_0"
+      ]
+    }
+  },
+  "apache_incubator-seata-6077": {
+    "bug_id": "apache_incubator-seata-6077",
+    "PR_number": 6077,
+    "PR_createdAt": "2023-11-23T13:28:32Z",
+    "merge_commit": "986fc81ba752d0a17cf551b2ca1a9a466710f7bd",
+    "buggy_commits": [
+      {
+        "oid": "f42fb72aa2767bfab533d7540306b51d59f7ca68",
+        "message": "bugfix: The TCC aspect does not handle internal invocation exceptions and directly throws them externally. (#6090)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/incubator-seata/issues/6076",
+      "createdAt": "2023-11-23T13:27:14Z",
+      "content": "bug_report_all/apache_incubator-seata-6077.json"
+    },
+    "changed_tests": [
+      "rm-datasource/src/test/java/io/seata/rm/datasource/exec/DeleteExecutorTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/exec/MariadbInsertExecutorTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/exec/MySQLInsertExecutorTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/exec/PolarDBXInsertExecutorTest.java",
+      "rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateExecutorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/incubator-seata/pull/6077",
+    "merge_commit_url": "https://github.com/apache/incubator-seata/commit/986fc81ba752d0a17cf551b2ca1a9a466710f7bd",
+    "buggy_commit": "f42fb72aa2767bfab533d7540306b51d59f7ca68",
+    "execution_result": {
+      "test_src": [
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeImage",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeImageWithTableAlias",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testKeyword",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testAfterImage"
+      ],
+      "test_tgt": [
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImage",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithTableAlias",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithTableSchema",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithTableSchemaAndTableAlias",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithTableSchemaQuote",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithTableSchemaAndTableNameQuote",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithTableSchemaQuoteAndTableNameQuote",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithColumnQuote",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithUpperColumn",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithTableAliasAndUpperColumn",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithKeywordQuote",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithOnUpdateColumn",
+        ".io.seata.rm.datasource.exec.UpdateExecutorTest#testBeforeAndAfterImageWithOnUpdateUpperColumn"
+      ]
+    }
+  }
+}

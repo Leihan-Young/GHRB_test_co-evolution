@@ -1,0 +1,740 @@
+diff --git a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Category.java b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Category.java
+index f288a0edde9..ef872174203 100644
+--- a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Category.java
++++ b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Category.java
+@@ -8,8 +8,11 @@ import org.openapitools.jackson.nullable.JsonNullable;
+ import java.time.OffsetDateTime;
+ import jakarta.validation.Valid;
+ import jakarta.validation.constraints.*;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+ import io.swagger.v3.oas.annotations.media.Schema;
+ 
++import jakarta.xml.bind.annotation.*;
+ 
+ import java.util.*;
+ import jakarta.annotation.Generated;
+@@ -19,6 +22,10 @@ import jakarta.annotation.Generated;
+  */
+ 
+ @Schema(name = "Category", description = "A category for a pet")
++@JacksonXmlRootElement(localName = "Category")
++@XmlRootElement(name = "Category")
++@XmlAccessorType(XmlAccessType.FIELD)
++
+ @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
+ public class Category {
+ 
+@@ -38,6 +45,7 @@ public class Category {
+   
+   @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("id")
++  @JacksonXmlProperty(localName = "id")
+   public Long getId() {
+     return id;
+   }
+@@ -58,6 +66,7 @@ public class Category {
+   @Pattern(regexp = "^[a-zA-Z0-9]+[a-zA-Z0-9\\.\\-_]*[a-zA-Z0-9]+$") 
+   @Schema(name = "name", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("name")
++  @JacksonXmlProperty(localName = "name")
+   public String getName() {
+     return name;
+   }
+diff --git a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/ModelApiResponse.java b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/ModelApiResponse.java
+index 369df105a62..40a8c0bbeef 100644
+--- a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/ModelApiResponse.java
++++ b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/ModelApiResponse.java
+@@ -9,8 +9,11 @@ import org.openapitools.jackson.nullable.JsonNullable;
+ import java.time.OffsetDateTime;
+ import jakarta.validation.Valid;
+ import jakarta.validation.constraints.*;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+ import io.swagger.v3.oas.annotations.media.Schema;
+ 
++import jakarta.xml.bind.annotation.*;
+ 
+ import java.util.*;
+ import jakarta.annotation.Generated;
+@@ -21,6 +24,10 @@ import jakarta.annotation.Generated;
+ 
+ @Schema(name = "ApiResponse", description = "Describes the result of uploading an image resource")
+ @JsonTypeName("ApiResponse")
++@JacksonXmlRootElement(localName = "ModelApiResponse")
++@XmlRootElement(name = "ModelApiResponse")
++@XmlAccessorType(XmlAccessType.FIELD)
++
+ @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
+ public class ModelApiResponse {
+ 
+@@ -42,6 +49,7 @@ public class ModelApiResponse {
+   
+   @Schema(name = "code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("code")
++  @JacksonXmlProperty(localName = "code")
+   public Integer getCode() {
+     return code;
+   }
+@@ -62,6 +70,7 @@ public class ModelApiResponse {
+   
+   @Schema(name = "type", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("type")
++  @JacksonXmlProperty(localName = "type")
+   public String getType() {
+     return type;
+   }
+@@ -82,6 +91,7 @@ public class ModelApiResponse {
+   
+   @Schema(name = "message", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("message")
++  @JacksonXmlProperty(localName = "message")
+   public String getMessage() {
+     return message;
+   }
+diff --git a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Order.java b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Order.java
+index 906d04ddd72..427dd3db5f1 100644
+--- a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Order.java
++++ b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Order.java
+@@ -11,8 +11,11 @@ import org.openapitools.jackson.nullable.JsonNullable;
+ import java.time.OffsetDateTime;
+ import jakarta.validation.Valid;
+ import jakarta.validation.constraints.*;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+ import io.swagger.v3.oas.annotations.media.Schema;
+ 
++import jakarta.xml.bind.annotation.*;
+ 
+ import java.util.*;
+ import jakarta.annotation.Generated;
+@@ -22,6 +25,10 @@ import jakarta.annotation.Generated;
+  */
+ 
+ @Schema(name = "Order", description = "An order for a pets from the pet store")
++@JacksonXmlRootElement(localName = "Order")
++@XmlRootElement(name = "Order")
++@XmlAccessorType(XmlAccessType.FIELD)
++
+ @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
+ public class Order {
+ 
+@@ -87,6 +94,7 @@ public class Order {
+   
+   @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("id")
++  @JacksonXmlProperty(localName = "id")
+   public Long getId() {
+     return id;
+   }
+@@ -107,6 +115,7 @@ public class Order {
+   
+   @Schema(name = "petId", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("petId")
++  @JacksonXmlProperty(localName = "petId")
+   public Long getPetId() {
+     return petId;
+   }
+@@ -127,6 +136,7 @@ public class Order {
+   
+   @Schema(name = "quantity", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("quantity")
++  @JacksonXmlProperty(localName = "quantity")
+   public Integer getQuantity() {
+     return quantity;
+   }
+@@ -147,6 +157,7 @@ public class Order {
+   @Valid 
+   @Schema(name = "shipDate", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("shipDate")
++  @JacksonXmlProperty(localName = "shipDate")
+   public OffsetDateTime getShipDate() {
+     return shipDate;
+   }
+@@ -167,6 +178,7 @@ public class Order {
+   
+   @Schema(name = "status", description = "Order Status", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("status")
++  @JacksonXmlProperty(localName = "status")
+   public StatusEnum getStatus() {
+     return status;
+   }
+@@ -187,6 +199,7 @@ public class Order {
+   
+   @Schema(name = "complete", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("complete")
++  @JacksonXmlProperty(localName = "complete")
+   public Boolean getComplete() {
+     return complete;
+   }
+diff --git a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Pet.java b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Pet.java
+index 7c6d9a828f2..dcaeffc6c0f 100644
+--- a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Pet.java
++++ b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Pet.java
+@@ -14,8 +14,11 @@ import org.openapitools.jackson.nullable.JsonNullable;
+ import java.time.OffsetDateTime;
+ import jakarta.validation.Valid;
+ import jakarta.validation.constraints.*;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+ import io.swagger.v3.oas.annotations.media.Schema;
+ 
++import jakarta.xml.bind.annotation.*;
+ 
+ import java.util.*;
+ import jakarta.annotation.Generated;
+@@ -25,6 +28,10 @@ import jakarta.annotation.Generated;
+  */
+ 
+ @Schema(name = "Pet", description = "A pet for sale in the pet store")
++@JacksonXmlRootElement(localName = "Pet")
++@XmlRootElement(name = "Pet")
++@XmlAccessorType(XmlAccessType.FIELD)
++
+ @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
+ public class Pet {
+ 
+@@ -104,6 +111,7 @@ public class Pet {
+   
+   @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("id")
++  @JacksonXmlProperty(localName = "id")
+   public Long getId() {
+     return id;
+   }
+@@ -124,6 +132,7 @@ public class Pet {
+   @Valid 
+   @Schema(name = "category", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("category")
++  @JacksonXmlProperty(localName = "Category")
+   public Category getCategory() {
+     return category;
+   }
+@@ -144,6 +153,7 @@ public class Pet {
+   @NotNull 
+   @Schema(name = "name", example = "doggie", requiredMode = Schema.RequiredMode.REQUIRED)
+   @JsonProperty("name")
++  @JacksonXmlProperty(localName = "name")
+   public String getName() {
+     return name;
+   }
+@@ -172,6 +182,7 @@ public class Pet {
+   @NotNull 
+   @Schema(name = "photoUrls", requiredMode = Schema.RequiredMode.REQUIRED)
+   @JsonProperty("photoUrls")
++  @JacksonXmlProperty(localName = "photoUrl")
+   public List<String> getPhotoUrls() {
+     return photoUrls;
+   }
+@@ -200,6 +211,7 @@ public class Pet {
+   @Valid 
+   @Schema(name = "tags", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("tags")
++  @JacksonXmlProperty(localName = "tag")
+   public List<@Valid Tag> getTags() {
+     return tags;
+   }
+@@ -221,6 +233,7 @@ public class Pet {
+   
+   @Schema(name = "status", description = "pet status in the store", deprecated = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("status")
++  @JacksonXmlProperty(localName = "status")
+   @Deprecated
+   public StatusEnum getStatus() {
+     return status;
+diff --git a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Tag.java b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Tag.java
+index 2f0f6cb4760..beab7013baa 100644
+--- a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Tag.java
++++ b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/Tag.java
+@@ -8,8 +8,11 @@ import org.openapitools.jackson.nullable.JsonNullable;
+ import java.time.OffsetDateTime;
+ import jakarta.validation.Valid;
+ import jakarta.validation.constraints.*;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+ import io.swagger.v3.oas.annotations.media.Schema;
+ 
++import jakarta.xml.bind.annotation.*;
+ 
+ import java.util.*;
+ import jakarta.annotation.Generated;
+@@ -19,6 +22,10 @@ import jakarta.annotation.Generated;
+  */
+ 
+ @Schema(name = "Tag", description = "A tag for a pet")
++@JacksonXmlRootElement(localName = "Tag")
++@XmlRootElement(name = "Tag")
++@XmlAccessorType(XmlAccessType.FIELD)
++
+ @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
+ public class Tag {
+ 
+@@ -38,6 +45,7 @@ public class Tag {
+   
+   @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("id")
++  @JacksonXmlProperty(localName = "id")
+   public Long getId() {
+     return id;
+   }
+@@ -58,6 +66,7 @@ public class Tag {
+   
+   @Schema(name = "name", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("name")
++  @JacksonXmlProperty(localName = "name")
+   public String getName() {
+     return name;
+   }
+diff --git a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/User.java b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/User.java
+index 55f1824b941..160ab08de28 100644
+--- a/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/User.java
++++ b/samples/openapi3/server/petstore/springboot-3/src/main/java/org/openapitools/model/User.java
+@@ -8,8 +8,11 @@ import org.openapitools.jackson.nullable.JsonNullable;
+ import java.time.OffsetDateTime;
+ import jakarta.validation.Valid;
+ import jakarta.validation.constraints.*;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
++import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+ import io.swagger.v3.oas.annotations.media.Schema;
+ 
++import jakarta.xml.bind.annotation.*;
+ 
+ import java.util.*;
+ import jakarta.annotation.Generated;
+@@ -19,6 +22,10 @@ import jakarta.annotation.Generated;
+  */
+ 
+ @Schema(name = "User", description = "A User who is purchasing from the pet store")
++@JacksonXmlRootElement(localName = "User")
++@XmlRootElement(name = "User")
++@XmlAccessorType(XmlAccessType.FIELD)
++
+ @Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
+ public class User {
+ 
+@@ -50,6 +57,7 @@ public class User {
+   
+   @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("id")
++  @JacksonXmlProperty(localName = "id")
+   public Long getId() {
+     return id;
+   }
+@@ -70,6 +78,7 @@ public class User {
+   
+   @Schema(name = "username", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("username")
++  @JacksonXmlProperty(localName = "username")
+   public String getUsername() {
+     return username;
+   }
+@@ -90,6 +99,7 @@ public class User {
+   
+   @Schema(name = "firstName", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("firstName")
++  @JacksonXmlProperty(localName = "firstName")
+   public String getFirstName() {
+     return firstName;
+   }
+@@ -110,6 +120,7 @@ public class User {
+   
+   @Schema(name = "lastName", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("lastName")
++  @JacksonXmlProperty(localName = "lastName")
+   public String getLastName() {
+     return lastName;
+   }
+@@ -130,6 +141,7 @@ public class User {
+   
+   @Schema(name = "email", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("email")
++  @JacksonXmlProperty(localName = "email")
+   public String getEmail() {
+     return email;
+   }
+@@ -150,6 +162,7 @@ public class User {
+   
+   @Schema(name = "password", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("password")
++  @JacksonXmlProperty(localName = "password")
+   public String getPassword() {
+     return password;
+   }
+@@ -170,6 +183,7 @@ public class User {
+   
+   @Schema(name = "phone", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("phone")
++  @JacksonXmlProperty(localName = "phone")
+   public String getPhone() {
+     return phone;
+   }
+@@ -190,6 +204,7 @@ public class User {
+   
+   @Schema(name = "userStatus", description = "User Status", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("userStatus")
++  @JacksonXmlProperty(localName = "userStatus")
+   public Integer getUserStatus() {
+     return userStatus;
+   }
+diff --git a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Category.java b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Category.java
+index 5fe001a360f..96728fdbbfa 100644
+--- a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Category.java
++++ b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Category.java
+@@ -30,10 +30,8 @@ import javax.annotation.Generated;
+ @Generated(value = "org.openapitools.codegen.languages.JavaCamelServerCodegen")
+ public class Category {
+ 
+-  @JacksonXmlProperty(localName = "id")
+   private Long id;
+ 
+-  @JacksonXmlProperty(localName = "name")
+   private String name;
+ 
+   public Category id(Long id) {
+@@ -48,6 +46,7 @@ public class Category {
+   
+   @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("id")
++  @JacksonXmlProperty(localName = "id")
+   public Long getId() {
+     return id;
+   }
+@@ -68,6 +67,7 @@ public class Category {
+   @Pattern(regexp = "^[a-zA-Z0-9]+[a-zA-Z0-9\\.\\-_]*[a-zA-Z0-9]+$") 
+   @Schema(name = "name", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("name")
++  @JacksonXmlProperty(localName = "name")
+   public String getName() {
+     return name;
+   }
+diff --git a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/ModelApiResponse.java b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/ModelApiResponse.java
+index 37ee933d127..fbd6b3716d9 100644
+--- a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/ModelApiResponse.java
++++ b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/ModelApiResponse.java
+@@ -32,13 +32,10 @@ import javax.annotation.Generated;
+ @Generated(value = "org.openapitools.codegen.languages.JavaCamelServerCodegen")
+ public class ModelApiResponse {
+ 
+-  @JacksonXmlProperty(localName = "code")
+   private Integer code;
+ 
+-  @JacksonXmlProperty(localName = "type")
+   private String type;
+ 
+-  @JacksonXmlProperty(localName = "message")
+   private String message;
+ 
+   public ModelApiResponse code(Integer code) {
+@@ -53,6 +50,7 @@ public class ModelApiResponse {
+   
+   @Schema(name = "code", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("code")
++  @JacksonXmlProperty(localName = "code")
+   public Integer getCode() {
+     return code;
+   }
+@@ -73,6 +71,7 @@ public class ModelApiResponse {
+   
+   @Schema(name = "type", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("type")
++  @JacksonXmlProperty(localName = "type")
+   public String getType() {
+     return type;
+   }
+@@ -93,6 +92,7 @@ public class ModelApiResponse {
+   
+   @Schema(name = "message", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("message")
++  @JacksonXmlProperty(localName = "message")
+   public String getMessage() {
+     return message;
+   }
+diff --git a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Order.java b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Order.java
+index 19cc6ec9bf5..89df3e0d8cf 100644
+--- a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Order.java
++++ b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Order.java
+@@ -33,16 +33,12 @@ import javax.annotation.Generated;
+ @Generated(value = "org.openapitools.codegen.languages.JavaCamelServerCodegen")
+ public class Order {
+ 
+-  @JacksonXmlProperty(localName = "id")
+   private Long id;
+ 
+-  @JacksonXmlProperty(localName = "petId")
+   private Long petId;
+ 
+-  @JacksonXmlProperty(localName = "quantity")
+   private Integer quantity;
+ 
+-  @JacksonXmlProperty(localName = "shipDate")
+   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+   private Date shipDate;
+ 
+@@ -83,10 +79,8 @@ public class Order {
+     }
+   }
+ 
+-  @JacksonXmlProperty(localName = "status")
+   private StatusEnum status;
+ 
+-  @JacksonXmlProperty(localName = "complete")
+   private Boolean complete = false;
+ 
+   public Order id(Long id) {
+@@ -101,6 +95,7 @@ public class Order {
+   
+   @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("id")
++  @JacksonXmlProperty(localName = "id")
+   public Long getId() {
+     return id;
+   }
+@@ -121,6 +116,7 @@ public class Order {
+   
+   @Schema(name = "petId", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("petId")
++  @JacksonXmlProperty(localName = "petId")
+   public Long getPetId() {
+     return petId;
+   }
+@@ -141,6 +137,7 @@ public class Order {
+   
+   @Schema(name = "quantity", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("quantity")
++  @JacksonXmlProperty(localName = "quantity")
+   public Integer getQuantity() {
+     return quantity;
+   }
+@@ -161,6 +158,7 @@ public class Order {
+   @Valid 
+   @Schema(name = "shipDate", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("shipDate")
++  @JacksonXmlProperty(localName = "shipDate")
+   public Date getShipDate() {
+     return shipDate;
+   }
+@@ -181,6 +179,7 @@ public class Order {
+   
+   @Schema(name = "status", description = "Order Status", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("status")
++  @JacksonXmlProperty(localName = "status")
+   public StatusEnum getStatus() {
+     return status;
+   }
+@@ -201,6 +200,7 @@ public class Order {
+   
+   @Schema(name = "complete", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("complete")
++  @JacksonXmlProperty(localName = "complete")
+   public Boolean getComplete() {
+     return complete;
+   }
+diff --git a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Pet.java b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Pet.java
+index 0f7d2a1f6f6..c7e6fb40e96 100644
+--- a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Pet.java
++++ b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Pet.java
+@@ -36,20 +36,15 @@ import javax.annotation.Generated;
+ @Generated(value = "org.openapitools.codegen.languages.JavaCamelServerCodegen")
+ public class Pet {
+ 
+-  @JacksonXmlProperty(localName = "id")
+   private Long id;
+ 
+-  @JacksonXmlProperty(localName = "Category")
+   private Category category;
+ 
+-  @JacksonXmlProperty(localName = "name")
+   private String name;
+ 
+-  @JacksonXmlProperty(localName = "photoUrl")
+   @Valid
+   private List<String> photoUrls = new ArrayList<>();
+ 
+-  @JacksonXmlProperty(localName = "tag")
+   @Valid
+   private List<@Valid Tag> tags;
+ 
+@@ -90,7 +85,6 @@ public class Pet {
+     }
+   }
+ 
+-  @JacksonXmlProperty(localName = "status")
+   @Deprecated
+   private StatusEnum status;
+ 
+@@ -118,6 +112,7 @@ public class Pet {
+   
+   @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("id")
++  @JacksonXmlProperty(localName = "id")
+   public Long getId() {
+     return id;
+   }
+@@ -138,6 +133,7 @@ public class Pet {
+   @Valid 
+   @Schema(name = "category", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("category")
++  @JacksonXmlProperty(localName = "Category")
+   public Category getCategory() {
+     return category;
+   }
+@@ -158,6 +154,7 @@ public class Pet {
+   @NotNull 
+   @Schema(name = "name", example = "doggie", requiredMode = Schema.RequiredMode.REQUIRED)
+   @JsonProperty("name")
++  @JacksonXmlProperty(localName = "name")
+   public String getName() {
+     return name;
+   }
+@@ -186,6 +183,7 @@ public class Pet {
+   @NotNull 
+   @Schema(name = "photoUrls", requiredMode = Schema.RequiredMode.REQUIRED)
+   @JsonProperty("photoUrls")
++  @JacksonXmlProperty(localName = "photoUrl")
+   public List<String> getPhotoUrls() {
+     return photoUrls;
+   }
+@@ -214,6 +212,7 @@ public class Pet {
+   @Valid 
+   @Schema(name = "tags", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("tags")
++  @JacksonXmlProperty(localName = "tag")
+   public List<@Valid Tag> getTags() {
+     return tags;
+   }
+@@ -235,6 +234,7 @@ public class Pet {
+   
+   @Schema(name = "status", description = "pet status in the store", deprecated = true, requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("status")
++  @JacksonXmlProperty(localName = "status")
+   @Deprecated
+   public StatusEnum getStatus() {
+     return status;
+diff --git a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Tag.java b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Tag.java
+index f2c6219aeb8..f5cbd87233e 100644
+--- a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Tag.java
++++ b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/Tag.java
+@@ -30,10 +30,8 @@ import javax.annotation.Generated;
+ @Generated(value = "org.openapitools.codegen.languages.JavaCamelServerCodegen")
+ public class Tag {
+ 
+-  @JacksonXmlProperty(localName = "id")
+   private Long id;
+ 
+-  @JacksonXmlProperty(localName = "name")
+   private String name;
+ 
+   public Tag id(Long id) {
+@@ -48,6 +46,7 @@ public class Tag {
+   
+   @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("id")
++  @JacksonXmlProperty(localName = "id")
+   public Long getId() {
+     return id;
+   }
+@@ -68,6 +67,7 @@ public class Tag {
+   
+   @Schema(name = "name", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("name")
++  @JacksonXmlProperty(localName = "name")
+   public String getName() {
+     return name;
+   }
+diff --git a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/User.java b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/User.java
+index 94ac8583434..23821e2e4fc 100644
+--- a/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/User.java
++++ b/samples/server/petstore/java-camel/src/main/java/org/openapitools/model/User.java
+@@ -30,28 +30,20 @@ import javax.annotation.Generated;
+ @Generated(value = "org.openapitools.codegen.languages.JavaCamelServerCodegen")
+ public class User {
+ 
+-  @JacksonXmlProperty(localName = "id")
+   private Long id;
+ 
+-  @JacksonXmlProperty(localName = "username")
+   private String username;
+ 
+-  @JacksonXmlProperty(localName = "firstName")
+   private String firstName;
+ 
+-  @JacksonXmlProperty(localName = "lastName")
+   private String lastName;
+ 
+-  @JacksonXmlProperty(localName = "email")
+   private String email;
+ 
+-  @JacksonXmlProperty(localName = "password")
+   private String password;
+ 
+-  @JacksonXmlProperty(localName = "phone")
+   private String phone;
+ 
+-  @JacksonXmlProperty(localName = "userStatus")
+   private Integer userStatus;
+ 
+   public User id(Long id) {
+@@ -66,6 +58,7 @@ public class User {
+   
+   @Schema(name = "id", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("id")
++  @JacksonXmlProperty(localName = "id")
+   public Long getId() {
+     return id;
+   }
+@@ -86,6 +79,7 @@ public class User {
+   
+   @Schema(name = "username", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("username")
++  @JacksonXmlProperty(localName = "username")
+   public String getUsername() {
+     return username;
+   }
+@@ -106,6 +100,7 @@ public class User {
+   
+   @Schema(name = "firstName", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("firstName")
++  @JacksonXmlProperty(localName = "firstName")
+   public String getFirstName() {
+     return firstName;
+   }
+@@ -126,6 +121,7 @@ public class User {
+   
+   @Schema(name = "lastName", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("lastName")
++  @JacksonXmlProperty(localName = "lastName")
+   public String getLastName() {
+     return lastName;
+   }
+@@ -146,6 +142,7 @@ public class User {
+   
+   @Schema(name = "email", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("email")
++  @JacksonXmlProperty(localName = "email")
+   public String getEmail() {
+     return email;
+   }
+@@ -166,6 +163,7 @@ public class User {
+   
+   @Schema(name = "password", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("password")
++  @JacksonXmlProperty(localName = "password")
+   public String getPassword() {
+     return password;
+   }
+@@ -186,6 +184,7 @@ public class User {
+   
+   @Schema(name = "phone", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("phone")
++  @JacksonXmlProperty(localName = "phone")
+   public String getPhone() {
+     return phone;
+   }
+@@ -206,6 +205,7 @@ public class User {
+   
+   @Schema(name = "userStatus", description = "User Status", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+   @JsonProperty("userStatus")
++  @JacksonXmlProperty(localName = "userStatus")
+   public Integer getUserStatus() {
+     return userStatus;
+   }

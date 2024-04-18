@@ -1,0 +1,7 @@
+{
+  "issue_id": 5365,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5365",
+  "title": "[RIP 51] Task2: Add notification mechanism for pop orderly.",
+  "description": "<p dir=\"auto\">RIP Link: <a href=\"https://github.com/apache/rocketmq/wiki/RIP-51-Pop-orderly-improvement#add-notification-mechanism-for-pop-orderly\">https://github.com/apache/rocketmq/wiki/RIP-51-Pop-orderly-improvement#add-notification-mechanism-for-pop-orderly</a></p>",
+  "description_text": "RIP Link: https://github.com/apache/rocketmq/wiki/RIP-51-Pop-orderly-improvement#add-notification-mechanism-for-pop-orderly"
+}

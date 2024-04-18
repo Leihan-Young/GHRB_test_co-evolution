@@ -1,0 +1,39 @@
+{
+  "FasterXML_jackson-core-1064": {
+    "bug_id": "FasterXML_jackson-core-1064",
+    "PR_number": 1064,
+    "PR_createdAt": "2023-07-20T07:59:53Z",
+    "merge_commit": "a4ca94f4cfe2030d1313a0038f0b8de6fd6b811e",
+    "buggy_commits": [
+      {
+        "oid": "0beb6fdb604a426356c5b9d51dd65a367592c6d3",
+        "message": "Minor test cleanup"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/FasterXML/jackson-core/issues/1089",
+      "createdAt": "2023-08-26T03:10:21Z",
+      "content": "bug_report_all/FasterXML_jackson-core-1064.json"
+    },
+    "changed_tests": [
+      "src/test/java/com/fasterxml/jackson/core/TestJDKSerializability.java",
+      "src/test/java/com/fasterxml/jackson/core/io/BufferRecyclerPoolTest.java",
+      "src/test/java/com/fasterxml/jackson/core/io/TestIOContext.java",
+      "src/test/java/com/fasterxml/jackson/core/io/TestMergedStream.java",
+      "src/test/java/com/fasterxml/jackson/core/util/ReadConstrainedTextBufferTest.java"
+    ],
+    "PR_url": "https://github.com/FasterXML/jackson-core/pull/1064",
+    "merge_commit_url": "https://github.com/FasterXML/jackson-core/commit/a4ca94f4cfe2030d1313a0038f0b8de6fd6b811e",
+    "buggy_commit": "0beb6fdb604a426356c5b9d51dd65a367592c6d3",
+    "execution_result": {
+      "test_src": [
+        ".com.fasterxml.jackson.core.io.TestIOContext#testAllocations",
+        ".com.fasterxml.jackson.core.io.TestMergedStream#testSimple"
+      ],
+      "test_tgt": [
+        ".com.fasterxml.jackson.core.io.TestIOContext#testAllocations",
+        ".com.fasterxml.jackson.core.io.TestMergedStream#testSimple"
+      ]
+    }
+  }
+}

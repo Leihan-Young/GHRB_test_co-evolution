@@ -1,0 +1,124 @@
+diff --git a/config/seata-config-nacos/src/main/java/io/seata/config/nacos/NacosConfiguration.java b/config/seata-config-nacos/src/main/java/io/seata/config/nacos/NacosConfiguration.java
+index 09b421a81..8536c837e 100644
+--- a/config/seata-config-nacos/src/main/java/io/seata/config/nacos/NacosConfiguration.java
++++ b/config/seata-config-nacos/src/main/java/io/seata/config/nacos/NacosConfiguration.java
+@@ -239,28 +239,28 @@ public class NacosConfiguration extends AbstractConfiguration {
+         return properties;
+     }
+ 
+-    private static String getNacosNameSpaceFileKey() {
++    public static String getNacosNameSpaceFileKey() {
+         return String.join(ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR, ConfigurationKeys.FILE_ROOT_CONFIG, CONFIG_TYPE, PRO_NAMESPACE_KEY);
+     }
+ 
+-    private static String getNacosAddrFileKey() {
++    public static String getNacosAddrFileKey() {
+         return String.join(ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR, ConfigurationKeys.FILE_ROOT_CONFIG, CONFIG_TYPE, PRO_SERVER_ADDR_KEY);
+     }
+ 
+-    private static String getNacosGroupKey() {
++    public static String getNacosGroupKey() {
+         return String.join(ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR, ConfigurationKeys.FILE_ROOT_CONFIG, CONFIG_TYPE, GROUP_KEY);
+     }
+ 
+-    private static String getNacosDataIdKey() {
++    public static String getNacosDataIdKey() {
+         return String.join(ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR, ConfigurationKeys.FILE_ROOT_CONFIG, CONFIG_TYPE, NACOS_DATA_ID_KEY);
+     }
+ 
+-    private static String getNacosUserName() {
++    public static String getNacosUserName() {
+         return String.join(ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR, ConfigurationKeys.FILE_ROOT_CONFIG, CONFIG_TYPE,
+                 USER_NAME);
+     }
+ 
+-    private static String getNacosPassword() {
++    public static String getNacosPassword() {
+         return String.join(ConfigurationKeys.FILE_CONFIG_SPLIT_CHAR, ConfigurationKeys.FILE_ROOT_CONFIG, CONFIG_TYPE,
+                 PASSWORD);
+     }
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigApolloProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigApolloProperties.java
+index c9220c96b..e1a569cac 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigApolloProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigApolloProperties.java
+@@ -27,7 +27,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_APOLLO_
+ @ConfigurationProperties(prefix = CONFIG_APOLLO_PREFIX)
+ public class ConfigApolloProperties {
+     private String appId = "seata-server";
+-    private String apolloMeta = "";
++    private String apolloMeta;
+     private String namespace = "application";
+     private String apolloAccessKeySecret = "";
+     private String apolloConfigService;
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigConsulProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigConsulProperties.java
+index 594f258b2..effd8db19 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigConsulProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigConsulProperties.java
+@@ -26,7 +26,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_CONSUL_
+ @Component
+ @ConfigurationProperties(prefix = CONFIG_CONSUL_PREFIX)
+ public class ConfigConsulProperties {
+-    private String serverAddr = "127.0.0.1:8500";
++    private String serverAddr;
+     private String key = "seata.properties";
+     private String aclToken = "";
+ 
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigEtcd3Properties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigEtcd3Properties.java
+index b82672f77..5caf700f2 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigEtcd3Properties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigEtcd3Properties.java
+@@ -27,7 +27,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_ETCD3_P
+ @Component
+ @ConfigurationProperties(prefix = CONFIG_ETCD3_PREFIX)
+ public class ConfigEtcd3Properties {
+-    private String serverAddr = "http://localhost:2379";
++    private String serverAddr;
+     private String key = "seata.properties";
+ 
+     public String getServerAddr() {
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigNacosProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigNacosProperties.java
+index 67677c6da..0a1d7111d 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigNacosProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigNacosProperties.java
+@@ -26,7 +26,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_NACOS_P
+ @Component
+ @ConfigurationProperties(prefix = CONFIG_NACOS_PREFIX)
+ public class ConfigNacosProperties {
+-    private String serverAddr = "localhost:8848";
++    private String serverAddr;
+     private String namespace = "";
+     private String group = "SEATA_GROUP";
+     private String username = "";
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigZooKeeperProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigZooKeeperProperties.java
+index 299f4f4ee..12a70c0c9 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigZooKeeperProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-core/src/main/java/io/seata/spring/boot/autoconfigure/properties/config/ConfigZooKeeperProperties.java
+@@ -26,7 +26,7 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_ZK_PREF
+ @Component
+ @ConfigurationProperties(prefix = CONFIG_ZK_PREFIX)
+ public class ConfigZooKeeperProperties {
+-    private String serverAddr = "127.0.0.1:2181";
++    private String serverAddr;
+     private long sessionTimeout = 6000L;
+     private long connectTimeout = 2000L;
+     private String username = "";
+diff --git a/server/src/main/java/io/seata/server/storage/redis/store/RedisTransactionStoreManager.java b/server/src/main/java/io/seata/server/storage/redis/store/RedisTransactionStoreManager.java
+index 1ca269117..3e106d036 100644
+--- a/server/src/main/java/io/seata/server/storage/redis/store/RedisTransactionStoreManager.java
++++ b/server/src/main/java/io/seata/server/storage/redis/store/RedisTransactionStoreManager.java
+@@ -119,7 +119,6 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+     /**
+      * init globalMap
+      *
+-     * @param
+      * @return void
+      */
+     public void initGlobalMap() {
+@@ -135,7 +134,6 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+     /**
+      * init branchMap
+      *
+-     * @param
+      * @return void
+      */
+     public void initBranchMap() {

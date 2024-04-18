@@ -1,0 +1,37 @@
+diff --git a/common/src/main/java/org/apache/rocketmq/common/MixAll.java b/common/src/main/java/org/apache/rocketmq/common/MixAll.java
+index cdcc54cd9..47b4aac34 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/MixAll.java
++++ b/common/src/main/java/org/apache/rocketmq/common/MixAll.java
+@@ -463,7 +463,9 @@ public class MixAll {
+         if (!candidatesHost.isEmpty()) {
+             return candidatesHost.get(0);
+         }
+-        return null;
++
++        // Fallback to loopback 
++        return localhost();
+     }
+ 
+     public static boolean compareAndIncreaseOnly(final AtomicLong target, final long value) {
+diff --git a/common/src/main/java/org/apache/rocketmq/common/utils/ConcurrentHashMapUtils.java b/common/src/main/java/org/apache/rocketmq/common/utils/ConcurrentHashMapUtils.java
+index 6fd9c21c9..3ab1ceceb 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/utils/ConcurrentHashMapUtils.java
++++ b/common/src/main/java/org/apache/rocketmq/common/utils/ConcurrentHashMapUtils.java
+@@ -37,6 +37,8 @@ public abstract class ConcurrentHashMapUtils {
+     /**
+      * A temporary workaround for Java 8 specific performance issue JDK-8161372 .<br> Use implementation of
+      * ConcurrentMap.computeIfAbsent instead.
++     * 
++     * Requirement: <strong>The mapping function should not modify this map during computation.</strong>
+      *
+      * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8161372">https://bugs.openjdk.java.net/browse/JDK-8161372</a>
+      */
+@@ -45,8 +47,6 @@ public abstract class ConcurrentHashMapUtils {
+         if (isJdk8) {
+             V v = map.get(key);
+             if (null == v) {
+-//                v = map.computeIfAbsent(key, func);
+-
+                 // this bug fix methods maybe cause `func.apply` multiple calls.
+                 v = func.apply(key);
+                 if (null == v) {

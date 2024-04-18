@@ -1,0 +1,1409 @@
+diff --git a/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ClusterModuleConsulConfig.java b/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ClusterModuleConsulConfig.java
+index 6f2cd9a72e..69612650cd 100644
+--- a/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ClusterModuleConsulConfig.java
++++ b/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ClusterModuleConsulConfig.java
+@@ -22,7 +22,7 @@ import lombok.Getter;
+ import lombok.Setter;
+ import org.apache.skywalking.oap.server.library.module.ModuleConfig;
+ 
+-class ClusterModuleConsulConfig extends ModuleConfig {
++public class ClusterModuleConsulConfig extends ModuleConfig {
+     @Setter
+     @Getter
+     private String serviceName;
+diff --git a/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ClusterModuleConsulProvider.java b/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ClusterModuleConsulProvider.java
+index b596daf197..50a4e6c730 100644
+--- a/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ClusterModuleConsulProvider.java
++++ b/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ClusterModuleConsulProvider.java
+@@ -25,6 +25,7 @@ import java.util.ArrayList;
+ import java.util.List;
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.skywalking.oap.server.core.CoreModule;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterModule;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+@@ -97,6 +98,7 @@ public class ClusterModuleConsulProvider extends ModuleProvider {
+         ConsulCoordinator coordinator = new ConsulCoordinator(getManager(), config, client);
+         this.registerServiceImplementation(ClusterRegister.class, coordinator);
+         this.registerServiceImplementation(ClusterNodesQuery.class, coordinator);
++        this.registerServiceImplementation(ClusterCoordinator.class, coordinator);
+     }
+ 
+     @Override
+diff --git a/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ConsulCoordinator.java b/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ConsulCoordinator.java
+index 777441a6b1..8ba79589e3 100644
+--- a/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ConsulCoordinator.java
++++ b/oap-server/server-cluster-plugin/cluster-consul-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/consul/ConsulCoordinator.java
+@@ -22,15 +22,19 @@ import com.google.common.base.Strings;
+ import com.orbitz.consul.AgentClient;
+ import com.orbitz.consul.Consul;
+ import com.orbitz.consul.HealthClient;
++import com.orbitz.consul.cache.ConsulCache;
++import com.orbitz.consul.cache.ServiceHealthCache;
++import com.orbitz.consul.cache.ServiceHealthKey;
+ import com.orbitz.consul.model.agent.ImmutableRegistration;
+ import com.orbitz.consul.model.agent.Registration;
+ import com.orbitz.consul.model.health.ServiceHealth;
++import com.orbitz.consul.option.QueryOptions;
+ import java.util.ArrayList;
+ import java.util.List;
+-
++import java.util.Map;
++import lombok.extern.slf4j.Slf4j;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterHealthStatus;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+ import org.apache.skywalking.oap.server.core.cluster.OAPNodeChecker;
+ import org.apache.skywalking.oap.server.core.cluster.RemoteInstance;
+ import org.apache.skywalking.oap.server.core.cluster.ServiceQueryException;
+@@ -38,12 +42,14 @@ import org.apache.skywalking.oap.server.core.cluster.ServiceRegisterException;
+ import org.apache.skywalking.oap.server.core.remote.client.Address;
+ import org.apache.skywalking.oap.server.library.module.ModuleDefineHolder;
+ import org.apache.skywalking.oap.server.library.util.CollectionUtils;
++import org.apache.skywalking.oap.server.library.util.StringUtil;
+ import org.apache.skywalking.oap.server.telemetry.TelemetryModule;
+ import org.apache.skywalking.oap.server.telemetry.api.HealthCheckMetrics;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsCreator;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsTag;
+ 
+-public class ConsulCoordinator implements ClusterRegister, ClusterNodesQuery {
++@Slf4j
++public class ConsulCoordinator extends ClusterCoordinator {
+ 
+     private final ModuleDefineHolder manager;
+     private final Consul client;
+@@ -52,7 +58,9 @@ public class ConsulCoordinator implements ClusterRegister, ClusterNodesQuery {
+     private volatile Address selfAddress;
+     private HealthCheckMetrics healthChecker;
+ 
+-    public ConsulCoordinator(final ModuleDefineHolder manager, final ClusterModuleConsulConfig config, final Consul client) {
++    public ConsulCoordinator(final ModuleDefineHolder manager,
++                             final ClusterModuleConsulConfig config,
++                             final Consul client) {
+         this.manager = manager;
+         this.config = config;
+         this.client = client;
+@@ -63,7 +71,6 @@ public class ConsulCoordinator implements ClusterRegister, ClusterNodesQuery {
+     public List<RemoteInstance> queryRemoteNodes() {
+         List<RemoteInstance> remoteInstances = new ArrayList<>();
+         try {
+-            initHealthChecker();
+             HealthClient healthClient = client.healthClient();
+             // Discover only "passing" nodes
+             List<ServiceHealth> nodes = healthClient.getHealthyServiceInstances(serviceName).getResponse();
+@@ -88,33 +95,38 @@ public class ConsulCoordinator implements ClusterRegister, ClusterNodesQuery {
+             healthChecker.unHealth(e);
+             throw new ServiceQueryException(e.getMessage());
+         }
++        if (log.isDebugEnabled()) {
++            remoteInstances.forEach(instance -> log.debug("Cosule cluster instance: {}", instance));
++        }
+         return remoteInstances;
+     }
+ 
+     @Override
+     public void registerRemote(RemoteInstance remoteInstance) throws ServiceRegisterException {
+         if (needUsingInternalAddr()) {
+-            remoteInstance = new RemoteInstance(new Address(config.getInternalComHost(), config.getInternalComPort(), true));
++            remoteInstance = new RemoteInstance(
++                new Address(config.getInternalComHost(), config.getInternalComPort(), true));
+         }
++        this.selfAddress = remoteInstance.getAddress();
+         try {
+-            initHealthChecker();
+             AgentClient agentClient = client.agentClient();
+-
+-            this.selfAddress = remoteInstance.getAddress();
+-
+             Registration registration = ImmutableRegistration.builder()
+-                    .id(remoteInstance.getAddress().toString())
+-                    .name(serviceName)
+-                    .address(remoteInstance.getAddress().getHost())
+-                    .port(remoteInstance.getAddress().getPort())
+-                    .check(Registration.RegCheck.grpc(remoteInstance.getAddress()
+-                            .getHost() + ":" + remoteInstance
+-                            .getAddress()
+-                            .getPort(), 5)) // registers with a TTL of 5 seconds
+-                    .build();
++                                                             .id(remoteInstance.getAddress().toString())
++                                                             .name(serviceName)
++                                                             .address(remoteInstance.getAddress().getHost())
++                                                             .port(remoteInstance.getAddress().getPort())
++                                                             .check(Registration.RegCheck.grpc(
++                                                                 remoteInstance.getAddress()
++                                                                               .getHost() + ":" + remoteInstance
++                                                                     .getAddress()
++                                                                     .getPort(),
++                                                                 5
++                                                             )) // registers with a TTL of 5 seconds
++                                                             .build();
+ 
+             agentClient.register(registration);
+             healthChecker.health();
++
+         } catch (Throwable e) {
+             healthChecker.unHealth(e);
+             throw new ServiceRegisterException(e.getMessage());
+@@ -123,12 +135,69 @@ public class ConsulCoordinator implements ClusterRegister, ClusterNodesQuery {
+ 
+     private void initHealthChecker() {
+         if (healthChecker == null) {
+-            MetricsCreator metricCreator = manager.find(TelemetryModule.NAME).provider().getService(MetricsCreator.class);
+-            healthChecker = metricCreator.createHealthCheckerGauge("cluster_consul", MetricsTag.EMPTY_KEY, MetricsTag.EMPTY_VALUE);
++            MetricsCreator metricCreator = manager.find(TelemetryModule.NAME)
++                                                  .provider()
++                                                  .getService(MetricsCreator.class);
++            healthChecker = metricCreator.createHealthCheckerGauge(
++                "cluster_consul", MetricsTag.EMPTY_KEY, MetricsTag.EMPTY_VALUE);
+         }
+     }
+ 
+     private boolean needUsingInternalAddr() {
+         return !Strings.isNullOrEmpty(config.getInternalComHost()) && config.getInternalComPort() > 0;
+     }
++
++    private RemoteInstance buildRemoteInstance(String host, int port) {
++        Address address = new Address(host, port, false);
++        if (address.equals(selfAddress)) {
++            address.setSelf(true);
++        }
++        return new RemoteInstance(address);
++    }
++
++    private void checkHealth(List<RemoteInstance> remoteInstances) {
++        ClusterHealthStatus healthStatus = OAPNodeChecker.isHealth(remoteInstances);
++        if (healthStatus.isHealth()) {
++            this.healthChecker.health();
++        } else {
++            this.healthChecker.unHealth(healthStatus.getReason());
++        }
++    }
++
++    @Override
++    public void start() {
++        initHealthChecker();
++        ServiceHealthCache svHealth = ServiceHealthCache.newCache(client.healthClient(), serviceName, true,
++                                                                  QueryOptions.BLANK, 5);
++        svHealth.addListener(new ConsulEventListener());
++        svHealth.start();
++    }
++
++    /**
++     * Notice: If the consul version > v1.10.0, the `consul-client ConsulCache` will throw error response:
++     * "com.orbitz.consul.ConsulException: Consul cluster has no elected leader" and fails to retrieve data.
++     * This is a known issue but doesn't release yet, can refer to: https://github.com/rickfast/consul-client/pull/456
++     */
++    class ConsulEventListener implements ConsulCache.Listener<ServiceHealthKey, ServiceHealth> {
++        @Override
++        public void notify(final Map<ServiceHealthKey, ServiceHealth> newValues) {
++            try {
++                if (newValues.size() > 0) {
++                    List<RemoteInstance> remoteInstances = new ArrayList<>(newValues.size());
++                    newValues.values().forEach(serviceHealth -> {
++                        if (StringUtil.isNotBlank(serviceHealth.getService().getAddress())) {
++                            RemoteInstance remoteInstance = buildRemoteInstance(
++                                serviceHealth.getService().getAddress(), serviceHealth.getService().getPort());
++                            remoteInstances.add(remoteInstance);
++                        }
++                    });
++                    checkHealth(remoteInstances);
++                    notifyWatchers(remoteInstances);
++                }
++            } catch (Throwable e) {
++                healthChecker.unHealth(e);
++                log.error("Failed to notify and update remote instances.", e);
++            }
++        }
++    }
+ }
+diff --git a/oap-server/server-cluster-plugin/cluster-etcd-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/etcd/ClusterModuleEtcdProvider.java b/oap-server/server-cluster-plugin/cluster-etcd-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/etcd/ClusterModuleEtcdProvider.java
+index c7510a69db..7deab5a25a 100644
+--- a/oap-server/server-cluster-plugin/cluster-etcd-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/etcd/ClusterModuleEtcdProvider.java
++++ b/oap-server/server-cluster-plugin/cluster-etcd-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/etcd/ClusterModuleEtcdProvider.java
+@@ -19,6 +19,7 @@
+ package org.apache.skywalking.oap.server.cluster.plugin.etcd;
+ 
+ import org.apache.skywalking.oap.server.core.CoreModule;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterModule;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+@@ -65,6 +66,7 @@ public class ClusterModuleEtcdProvider extends ModuleProvider {
+             EtcdCoordinator coordinator = new EtcdCoordinator(getManager(), config);
+             this.registerServiceImplementation(ClusterRegister.class, coordinator);
+             this.registerServiceImplementation(ClusterNodesQuery.class, coordinator);
++            this.registerServiceImplementation(ClusterCoordinator.class, coordinator);
+         } catch (Exception e) {
+             throw new ModuleStartException("Failed to start ETCD coordinator.", e);
+         }
+diff --git a/oap-server/server-cluster-plugin/cluster-etcd-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/etcd/EtcdCoordinator.java b/oap-server/server-cluster-plugin/cluster-etcd-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/etcd/EtcdCoordinator.java
+index cee466a079..382e3e93d9 100644
+--- a/oap-server/server-cluster-plugin/cluster-etcd-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/etcd/EtcdCoordinator.java
++++ b/oap-server/server-cluster-plugin/cluster-etcd-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/etcd/EtcdCoordinator.java
+@@ -25,19 +25,21 @@ import io.etcd.jetcd.Client;
+ import io.etcd.jetcd.ClientBuilder;
+ import io.etcd.jetcd.KV;
+ import io.etcd.jetcd.Lease;
++import io.etcd.jetcd.Watch;
+ import io.etcd.jetcd.kv.GetResponse;
+ import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
+ import io.etcd.jetcd.options.GetOption;
+ import io.etcd.jetcd.options.PutOption;
++import io.etcd.jetcd.options.WatchOption;
++import io.etcd.jetcd.watch.WatchResponse;
+ import io.grpc.stub.StreamObserver;
+ import java.nio.charset.Charset;
+ import java.util.ArrayList;
+ import java.util.List;
+ import lombok.extern.slf4j.Slf4j;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.library.util.StringUtil;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterHealthStatus;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+ import org.apache.skywalking.oap.server.core.cluster.OAPNodeChecker;
+ import org.apache.skywalking.oap.server.core.cluster.RemoteInstance;
+ import org.apache.skywalking.oap.server.core.cluster.ServiceRegisterException;
+@@ -50,7 +52,7 @@ import org.apache.skywalking.oap.server.telemetry.api.MetricsCreator;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsTag;
+ 
+ @Slf4j
+-public class EtcdCoordinator implements ClusterRegister, ClusterNodesQuery {
++public class EtcdCoordinator extends ClusterCoordinator {
+     private static final Gson GSON = new Gson().newBuilder().create();
+     private final ModuleDefineHolder manager;
+     private final ClusterModuleEtcdConfig config;
+@@ -91,8 +93,6 @@ public class EtcdCoordinator implements ClusterRegister, ClusterNodesQuery {
+     public List<RemoteInstance> queryRemoteNodes() {
+         List<RemoteInstance> remoteInstances = new ArrayList<>();
+         try {
+-            initHealthChecker();
+-
+             final KV kvClient = client.getKVClient();
+             final GetResponse response = kvClient.get(
+                 serviceNameBS,
+@@ -121,6 +121,9 @@ public class EtcdCoordinator implements ClusterRegister, ClusterNodesQuery {
+             healthChecker.unHealth(e);
+             throw new RuntimeException(e);
+         }
++        if (log.isDebugEnabled()) {
++            remoteInstances.forEach(instance -> log.debug("Etcd cluster instance: {}", instance));
++        }
+         return remoteInstances;
+     }
+ 
+@@ -137,8 +140,6 @@ public class EtcdCoordinator implements ClusterRegister, ClusterNodesQuery {
+                                                                 .port(selfAddress.getPort())
+                                                                 .build();
+         try {
+-            initHealthChecker();
+-
+             final Lease leaseClient = client.getLeaseClient();
+             final long leaseID = leaseClient.grant(30L).get().getID();
+ 
+@@ -198,4 +199,41 @@ public class EtcdCoordinator implements ClusterRegister, ClusterNodesQuery {
+                 "cluster_etcd", MetricsTag.EMPTY_KEY, MetricsTag.EMPTY_VALUE);
+         }
+     }
++
++    @Override
++    public void start() {
++        initHealthChecker();
++        this.client.getWatchClient().watch(
++            serviceNameBS, WatchOption.newBuilder().withPrefix(serviceNameBS).build(), new EtcdEventListener());
++    }
++
++    class EtcdEventListener implements Watch.Listener {
++        @Override
++        public void onNext(final WatchResponse response) {
++            response.getEvents().forEach(event -> {
++                switch (event.getEventType()) {
++                    case DELETE:
++                    case PUT:
++                        if (log.isDebugEnabled()) {
++                            String key = event.getKeyValue().getKey().toString(Charset.defaultCharset());
++                            log.debug("{}: key = {}}", event.getEventType().name(), key);
++                        }
++                        notifyWatchers(queryRemoteNodes());
++                        break;
++                    default:
++                        break;
++                }
++            });
++        }
++
++        @Override
++        public void onError(final Throwable throwable) {
++            log.error("Failed to notify RemoteInstances update.", throwable);
++            healthChecker.unHealth(throwable);
++        }
++
++        @Override
++        public void onCompleted() {
++        }
++    }
+ }
+diff --git a/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/ClusterModuleKubernetesProvider.java b/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/ClusterModuleKubernetesProvider.java
+index 5b33c78270..0169ccd282 100644
+--- a/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/ClusterModuleKubernetesProvider.java
++++ b/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/ClusterModuleKubernetesProvider.java
+@@ -19,6 +19,7 @@
+ package org.apache.skywalking.oap.server.cluster.plugin.kubernetes;
+ 
+ import org.apache.skywalking.oap.server.core.CoreModule;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterModule;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+@@ -64,11 +65,11 @@ public class ClusterModuleKubernetesProvider extends ModuleProvider {
+         coordinator = new KubernetesCoordinator(getManager(), config);
+         this.registerServiceImplementation(ClusterRegister.class, coordinator);
+         this.registerServiceImplementation(ClusterNodesQuery.class, coordinator);
++        this.registerServiceImplementation(ClusterCoordinator.class, coordinator);
+     }
+ 
+     @Override
+     public void start() {
+-        NamespacedPodListInformer.INFORMER.init(config);
+     }
+ 
+     @Override
+diff --git a/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/KubernetesCoordinator.java b/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/KubernetesCoordinator.java
+index 60ee79b6f7..46ec16811e 100644
+--- a/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/KubernetesCoordinator.java
++++ b/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/KubernetesCoordinator.java
+@@ -18,19 +18,25 @@
+ 
+ package org.apache.skywalking.oap.server.cluster.plugin.kubernetes;
+ 
++import io.kubernetes.client.informer.EventType;
++import io.kubernetes.client.informer.ResourceEventHandler;
+ import io.kubernetes.client.openapi.models.V1ObjectMeta;
+ import io.kubernetes.client.openapi.models.V1Pod;
+ import io.kubernetes.client.openapi.models.V1PodStatus;
++import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.List;
++import java.util.Map;
++import java.util.concurrent.ConcurrentHashMap;
+ import java.util.stream.Collectors;
+ import lombok.extern.slf4j.Slf4j;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
++import org.apache.skywalking.oap.server.core.cluster.ClusterHealthStatus;
++import org.apache.skywalking.oap.server.core.cluster.OAPNodeChecker;
++import org.apache.skywalking.oap.server.core.cluster.ServiceQueryException;
+ import org.apache.skywalking.oap.server.library.util.StringUtil;
+ import org.apache.skywalking.oap.server.core.CoreModule;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+ import org.apache.skywalking.oap.server.core.cluster.RemoteInstance;
+-import org.apache.skywalking.oap.server.core.cluster.ServiceQueryException;
+ import org.apache.skywalking.oap.server.core.cluster.ServiceRegisterException;
+ import org.apache.skywalking.oap.server.core.config.ConfigService;
+ import org.apache.skywalking.oap.server.core.remote.client.Address;
+@@ -40,35 +46,44 @@ import org.apache.skywalking.oap.server.telemetry.api.HealthCheckMetrics;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsCreator;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsTag;
+ 
++import static io.kubernetes.client.informer.EventType.ADDED;
++import static io.kubernetes.client.informer.EventType.DELETED;
++import static io.kubernetes.client.informer.EventType.MODIFIED;
++
+ /**
+  * Read collector pod info from api-server of kubernetes, then using all containerIp list to construct the list of
+  * {@link RemoteInstance}.
+  */
+ @Slf4j
+-public class KubernetesCoordinator implements ClusterRegister, ClusterNodesQuery {
++public class KubernetesCoordinator extends ClusterCoordinator {
+ 
+     private final ModuleDefineHolder manager;
+     private final String uid;
+     private volatile int port = -1;
+     private HealthCheckMetrics healthChecker;
++    private ClusterModuleKubernetesConfig config;
++    private final Map<String, RemoteInstance> remoteInstanceMap;
++    private volatile List<String> latestInstances;
+ 
+     public KubernetesCoordinator(final ModuleDefineHolder manager,
+                                  final ClusterModuleKubernetesConfig config) {
+         this.uid = new UidEnvSupplier(config.getUidEnvName()).get();
+         this.manager = manager;
++        this.config = config;
++        this.remoteInstanceMap = new ConcurrentHashMap<>(20);
++        this.latestInstances = new ArrayList<>(20);
+     }
+ 
+     @Override
+     public List<RemoteInstance> queryRemoteNodes() {
+         try {
+-            initHealthChecker();
+             List<V1Pod> pods = NamespacedPodListInformer.INFORMER.listPods().orElseGet(this::selfPod);
+             if (log.isDebugEnabled()) {
+                 List<String> uidList = pods
+                     .stream()
+                     .map(item -> item.getMetadata().getUid())
+                     .collect(Collectors.toList());
+-                log.debug("[kubernetes cluster pods uid list]:{}", uidList.toString());
++                log.debug("[kubernetes cluster pods uid list]:{}", uidList);
+             }
+             if (port == -1) {
+                 port = manager.find(CoreModule.NAME).provider().getService(ConfigService.class).getGRPCPort();
+@@ -80,6 +95,10 @@ public class KubernetesCoordinator implements ClusterRegister, ClusterNodesQuery
+                         new Address(pod.getStatus().getPodIP(), port, pod.getMetadata().getUid().equals(uid))))
+                     .collect(Collectors.toList());
+             healthChecker.health();
++            this.latestInstances = remoteInstances.stream().map(it -> it.getAddress().toString()).collect(Collectors.toList());
++            if (log.isDebugEnabled()) {
++                remoteInstances.forEach(instance -> log.debug("kubernetes cluster instance: {}", instance));
++            }
+             return remoteInstances;
+         } catch (Throwable e) {
+             healthChecker.unHealth(e);
+@@ -90,7 +109,6 @@ public class KubernetesCoordinator implements ClusterRegister, ClusterNodesQuery
+     @Override
+     public void registerRemote(final RemoteInstance remoteInstance) throws ServiceRegisterException {
+         try {
+-            initHealthChecker();
+             this.port = remoteInstance.getAddress().getPort();
+             healthChecker.health();
+         } catch (Throwable e) {
+@@ -117,4 +135,83 @@ public class KubernetesCoordinator implements ClusterRegister, ClusterNodesQuery
+         v1Pod.getStatus().setPodIP("127.0.0.1");
+         return Collections.singletonList(v1Pod);
+     }
++
++    @Override
++    public void start() {
++        initHealthChecker();
++        NamespacedPodListInformer.INFORMER.init(config, new K8sResourceEventHandler());
++    }
++
++    class K8sResourceEventHandler implements ResourceEventHandler<V1Pod> {
++
++        @Override
++        public void onAdd(final V1Pod obj) {
++            updateRemoteInstances(obj, ADDED);
++        }
++
++        @Override
++        public void onUpdate(final V1Pod oldObj, final V1Pod newObj) {
++            updateRemoteInstances(newObj, MODIFIED);
++        }
++
++        @Override
++        public void onDelete(final V1Pod obj, final boolean deletedFinalStateUnknown) {
++            updateRemoteInstances(obj, DELETED);
++        }
++    }
++
++    /**
++     * When a remote instance up/off line, will receive multi event according to the pod status.
++     * To avoid notify the watchers too frequency, here use a `remoteInstanceMap` to cache them.
++     * Only notify watchers once when the instances changed.
++     */
++    private void updateRemoteInstances(V1Pod pod, EventType event) {
++        try {
++            initHealthChecker();
++            if (StringUtil.isNotBlank(pod.getStatus().getPodIP())) {
++                if (port == -1) {
++                    port = manager.find(CoreModule.NAME).provider().getService(ConfigService.class).getGRPCPort();
++                }
++
++                RemoteInstance remoteInstance = new RemoteInstance(
++                    new Address(pod.getStatus().getPodIP(), this.port, pod.getMetadata().getUid().equals(uid)));
++                switch (event) {
++                    case ADDED:
++                    case MODIFIED:
++                        if ("Running".equalsIgnoreCase(pod.getStatus().getPhase())) {
++                            this.remoteInstanceMap.put(remoteInstance.getAddress().toString(), remoteInstance);
++                        }
++                        break;
++                    case DELETED:
++                        this.remoteInstanceMap.remove(remoteInstance.getAddress().toString());
++                        break;
++                    default:
++                        return;
++                }
++                updateRemoteInstances();
++            }
++        } catch (Throwable e) {
++            healthChecker.unHealth(e);
++            log.error("Failed to notify RemoteInstances update.", e);
++        }
++    }
++
++    private void updateRemoteInstances() {
++        List<String> updatedInstances = new ArrayList<>(this.remoteInstanceMap.keySet());
++        if (this.latestInstances.size() != updatedInstances.size() || !this.latestInstances.containsAll(updatedInstances)) {
++            List<RemoteInstance> remoteInstances = new ArrayList<>(this.remoteInstanceMap.values());
++            this.latestInstances = updatedInstances;
++            checkHealth(remoteInstances);
++            notifyWatchers(remoteInstances);
++        }
++    }
++
++    private void checkHealth(List<RemoteInstance> remoteInstances) {
++        ClusterHealthStatus healthStatus = OAPNodeChecker.isHealth(remoteInstances);
++        if (healthStatus.isHealth()) {
++            this.healthChecker.health();
++        } else {
++            this.healthChecker.unHealth(healthStatus.getReason());
++        }
++    }
+ }
+diff --git a/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/NamespacedPodListInformer.java b/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/NamespacedPodListInformer.java
+index 9c3d2edc9a..265a18f219 100644
+--- a/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/NamespacedPodListInformer.java
++++ b/oap-server/server-cluster-plugin/cluster-kubernetes-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/kubernetes/NamespacedPodListInformer.java
+@@ -18,25 +18,22 @@
+ 
+ package org.apache.skywalking.oap.server.cluster.plugin.kubernetes;
+ 
++import io.kubernetes.client.informer.ResourceEventHandler;
+ import io.kubernetes.client.informer.SharedIndexInformer;
+ import io.kubernetes.client.informer.SharedInformerFactory;
+ import io.kubernetes.client.informer.cache.Lister;
+-import io.kubernetes.client.openapi.ApiClient;
+-import io.kubernetes.client.openapi.Configuration;
+ import io.kubernetes.client.openapi.apis.CoreV1Api;
+ import io.kubernetes.client.openapi.models.V1Pod;
+ import io.kubernetes.client.openapi.models.V1PodList;
+-import io.kubernetes.client.util.Config;
+ import java.io.IOException;
+ import java.util.List;
+ import java.util.Objects;
+ import java.util.Optional;
+ import java.util.concurrent.ExecutorService;
+ import java.util.concurrent.Executors;
+-import java.util.concurrent.TimeUnit;
+ import java.util.stream.Collectors;
+ import lombok.extern.slf4j.Slf4j;
+-
++import org.apache.skywalking.library.kubernetes.KubernetesClient;
+ import static java.util.Objects.isNull;
+ 
+ @Slf4j
+@@ -65,21 +62,18 @@ public enum NamespacedPodListInformer {
+         }));
+     }
+ 
+-    public synchronized void init(ClusterModuleKubernetesConfig podConfig) {
++    public synchronized void init(ClusterModuleKubernetesConfig podConfig, ResourceEventHandler<V1Pod> eventHandler) {
+ 
+         try {
+-            doStartPodInformer(podConfig);
++            doStartPodInformer(podConfig, eventHandler);
+         } catch (IOException e) {
+             log.error("cannot connect with api server in kubernetes", e);
+         }
+     }
+ 
+-    private void doStartPodInformer(ClusterModuleKubernetesConfig podConfig) throws IOException {
+-
+-        ApiClient apiClient = Config.defaultClient();
+-        apiClient.setHttpClient(apiClient.getHttpClient().newBuilder().readTimeout(0, TimeUnit.SECONDS).build());
+-        Configuration.setDefaultApiClient(apiClient);
+-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
++    private void doStartPodInformer(ClusterModuleKubernetesConfig podConfig, ResourceEventHandler<V1Pod> eventHandler) throws IOException {
++        KubernetesClient.setDefault();
++        CoreV1Api coreV1Api = new CoreV1Api();
+         factory = new SharedInformerFactory(executorService);
+ 
+         SharedIndexInformer<V1Pod> podSharedIndexInformer = factory.sharedIndexInformerFor(
+@@ -91,6 +85,8 @@ public enum NamespacedPodListInformer {
+             V1Pod.class, V1PodList.class
+         );
+ 
++        podSharedIndexInformer.addEventHandler(eventHandler);
++
+         factory.startAllRegisteredInformers();
+         podLister = new Lister<>(podSharedIndexInformer.getIndexer());
+     }
+diff --git a/oap-server/server-cluster-plugin/cluster-nacos-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/nacos/ClusterModuleNacosProvider.java b/oap-server/server-cluster-plugin/cluster-nacos-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/nacos/ClusterModuleNacosProvider.java
+index 5b685d7925..47019f4f92 100644
+--- a/oap-server/server-cluster-plugin/cluster-nacos-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/nacos/ClusterModuleNacosProvider.java
++++ b/oap-server/server-cluster-plugin/cluster-nacos-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/nacos/ClusterModuleNacosProvider.java
+@@ -23,6 +23,7 @@ import com.alibaba.nacos.api.naming.NamingFactory;
+ import com.alibaba.nacos.api.naming.NamingService;
+ import java.util.Properties;
+ import org.apache.skywalking.oap.server.core.CoreModule;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterModule;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+@@ -83,12 +84,13 @@ public class ClusterModuleNacosProvider extends ModuleProvider {
+                 properties.put(PropertyKeyConst.SECRET_KEY, config.getSecretKey());
+             }
+             namingService = NamingFactory.createNamingService(properties);
++            NacosCoordinator coordinator = new NacosCoordinator(getManager(), namingService, config);
++            this.registerServiceImplementation(ClusterRegister.class, coordinator);
++            this.registerServiceImplementation(ClusterNodesQuery.class, coordinator);
++            this.registerServiceImplementation(ClusterCoordinator.class, coordinator);
+         } catch (Exception e) {
+             throw new ModuleStartException(e.getMessage(), e);
+         }
+-        NacosCoordinator coordinator = new NacosCoordinator(getManager(), namingService, config);
+-        this.registerServiceImplementation(ClusterRegister.class, coordinator);
+-        this.registerServiceImplementation(ClusterNodesQuery.class, coordinator);
+     }
+ 
+     @Override
+diff --git a/oap-server/server-cluster-plugin/cluster-nacos-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/nacos/NacosCoordinator.java b/oap-server/server-cluster-plugin/cluster-nacos-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/nacos/NacosCoordinator.java
+index b5fa3daf46..f6f9a44eb5 100644
+--- a/oap-server/server-cluster-plugin/cluster-nacos-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/nacos/NacosCoordinator.java
++++ b/oap-server/server-cluster-plugin/cluster-nacos-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/nacos/NacosCoordinator.java
+@@ -18,28 +18,34 @@
+ 
+ package org.apache.skywalking.oap.server.cluster.plugin.nacos;
+ 
++import com.alibaba.nacos.api.exception.NacosException;
+ import com.alibaba.nacos.api.naming.NamingService;
++import com.alibaba.nacos.api.naming.listener.Event;
++import com.alibaba.nacos.api.naming.listener.EventListener;
++import com.alibaba.nacos.api.naming.listener.NamingEvent;
+ import com.alibaba.nacos.api.naming.pojo.Instance;
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+ import com.google.common.base.Strings;
++import lombok.extern.slf4j.Slf4j;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterHealthStatus;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+ import org.apache.skywalking.oap.server.core.cluster.OAPNodeChecker;
+ import org.apache.skywalking.oap.server.core.cluster.RemoteInstance;
+ import org.apache.skywalking.oap.server.core.cluster.ServiceQueryException;
+ import org.apache.skywalking.oap.server.core.cluster.ServiceRegisterException;
+ import org.apache.skywalking.oap.server.core.remote.client.Address;
+ import org.apache.skywalking.oap.server.library.module.ModuleDefineHolder;
++import org.apache.skywalking.oap.server.library.module.ModuleStartException;
+ import org.apache.skywalking.oap.server.library.util.CollectionUtils;
+ import org.apache.skywalking.oap.server.telemetry.TelemetryModule;
+ import org.apache.skywalking.oap.server.telemetry.api.HealthCheckMetrics;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsCreator;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsTag;
+ 
+-public class NacosCoordinator implements ClusterRegister, ClusterNodesQuery {
++@Slf4j
++public class NacosCoordinator extends ClusterCoordinator {
+ 
+     private final ModuleDefineHolder manager;
+     private final NamingService namingService;
+@@ -57,7 +63,6 @@ public class NacosCoordinator implements ClusterRegister, ClusterNodesQuery {
+     public List<RemoteInstance> queryRemoteNodes() {
+         List<RemoteInstance> remoteInstances = new ArrayList<>();
+         try {
+-            initHealthChecker();
+             List<Instance> instances = namingService.selectInstances(config.getServiceName(), true);
+             if (CollectionUtils.isNotEmpty(instances)) {
+                 instances.forEach(instance -> {
+@@ -78,6 +83,11 @@ public class NacosCoordinator implements ClusterRegister, ClusterNodesQuery {
+             healthChecker.unHealth(e);
+             throw new ServiceQueryException(e.getMessage());
+         }
++
++        if (log.isDebugEnabled()) {
++            log.debug("Nacos cluster instances:{}", remoteInstances);
++        }
++
+         return remoteInstances;
+     }
+ 
+@@ -86,17 +96,16 @@ public class NacosCoordinator implements ClusterRegister, ClusterNodesQuery {
+         if (needUsingInternalAddr()) {
+             remoteInstance = new RemoteInstance(new Address(config.getInternalComHost(), config.getInternalComPort(), true));
+         }
++        this.selfAddress = remoteInstance.getAddress();
+         String host = remoteInstance.getAddress().getHost();
+         int port = remoteInstance.getAddress().getPort();
+         try {
+-            initHealthChecker();
+             namingService.registerInstance(config.getServiceName(), host, port);
+             healthChecker.health();
+         } catch (Throwable e) {
+             healthChecker.unHealth(e);
+             throw new ServiceRegisterException(e.getMessage());
+         }
+-        this.selfAddress = remoteInstance.getAddress();
+     }
+ 
+     private boolean needUsingInternalAddr() {
+@@ -109,4 +118,52 @@ public class NacosCoordinator implements ClusterRegister, ClusterNodesQuery {
+             healthChecker = metricCreator.createHealthCheckerGauge("cluster_nacos", MetricsTag.EMPTY_KEY, MetricsTag.EMPTY_VALUE);
+         }
+     }
++
++    private RemoteInstance buildRemoteInstance(Instance instance) {
++        Address address = new Address(instance.getIp(), instance.getPort(), false);
++        if (address.equals(selfAddress)) {
++            address.setSelf(true);
++        }
++        return new RemoteInstance(address);
++    }
++
++    private void checkHealth(List<RemoteInstance> remoteInstances) {
++        ClusterHealthStatus healthStatus = OAPNodeChecker.isHealth(remoteInstances);
++        if (healthStatus.isHealth()) {
++            this.healthChecker.health();
++        } else {
++            this.healthChecker.unHealth(healthStatus.getReason());
++        }
++    }
++
++    @Override
++    public void start() throws ModuleStartException {
++        initHealthChecker();
++        try {
++            namingService.subscribe(config.getServiceName(), new NacosEventListener());
++        } catch (NacosException e) {
++            throw new ModuleStartException("Failed to start cluster coordinator.", e);
++        }
++    }
++
++    class NacosEventListener implements EventListener {
++        @Override
++        public void onEvent(final Event event) {
++            try {
++                List<Instance> instances = ((NamingEvent) event).getInstances();
++                List<RemoteInstance> remoteInstances = new ArrayList<>(instances.size());
++                instances.forEach(instance -> {
++                    RemoteInstance remoteInstance = buildRemoteInstance(instance);
++                    if (instance.isHealthy() && instance.isEnabled()) {
++                        remoteInstances.add(remoteInstance);
++                    }
++                });
++                checkHealth(remoteInstances);
++                notifyWatchers(remoteInstances);
++            } catch (Throwable e) {
++                healthChecker.unHealth(e);
++                log.error("Failed to notify and update remote instances.", e);
++            }
++        }
++    }
+ }
+diff --git a/oap-server/server-cluster-plugin/cluster-standalone-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/standalone/ClusterModuleStandaloneProvider.java b/oap-server/server-cluster-plugin/cluster-standalone-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/standalone/ClusterModuleStandaloneProvider.java
+index 7c4b91c3a9..d0d4b57afc 100644
+--- a/oap-server/server-cluster-plugin/cluster-standalone-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/standalone/ClusterModuleStandaloneProvider.java
++++ b/oap-server/server-cluster-plugin/cluster-standalone-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/standalone/ClusterModuleStandaloneProvider.java
+@@ -18,6 +18,7 @@
+ 
+ package org.apache.skywalking.oap.server.cluster.plugin.standalone;
+ 
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterModule;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+@@ -26,6 +27,8 @@ import org.apache.skywalking.oap.server.library.module.ModuleStartException;
+ import org.apache.skywalking.oap.server.library.module.ServiceNotProvidedException;
+ 
+ public class ClusterModuleStandaloneProvider extends ModuleProvider {
++    private StandaloneManager standaloneManager;
++
+     public ClusterModuleStandaloneProvider() {
+         super();
+     }
+@@ -47,9 +50,10 @@ public class ClusterModuleStandaloneProvider extends ModuleProvider {
+ 
+     @Override
+     public void prepare() throws ServiceNotProvidedException {
+-        StandaloneManager standaloneManager = new StandaloneManager();
++        standaloneManager = new StandaloneManager();
+         this.registerServiceImplementation(ClusterRegister.class, standaloneManager);
+         this.registerServiceImplementation(ClusterNodesQuery.class, standaloneManager);
++        this.registerServiceImplementation(ClusterCoordinator.class, standaloneManager);
+     }
+ 
+     @Override
+@@ -58,6 +62,7 @@ public class ClusterModuleStandaloneProvider extends ModuleProvider {
+ 
+     @Override
+     public void notifyAfterCompleted() {
++        standaloneManager.notifyWatchers();
+     }
+ 
+     @Override
+diff --git a/oap-server/server-cluster-plugin/cluster-standalone-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/standalone/StandaloneManager.java b/oap-server/server-cluster-plugin/cluster-standalone-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/standalone/StandaloneManager.java
+index 8b160a740e..99c09e0e21 100644
+--- a/oap-server/server-cluster-plugin/cluster-standalone-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/standalone/StandaloneManager.java
++++ b/oap-server/server-cluster-plugin/cluster-standalone-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/standalone/StandaloneManager.java
+@@ -19,15 +19,15 @@
+ package org.apache.skywalking.oap.server.cluster.plugin.standalone;
+ 
+ import java.util.ArrayList;
++import java.util.Collections;
+ import java.util.List;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.RemoteInstance;
+ 
+ /**
+  * A cluster manager simulator. Work in memory only. Also return the current instance.
+  */
+-public class StandaloneManager implements ClusterNodesQuery, ClusterRegister {
++public class StandaloneManager extends ClusterCoordinator {
+ 
+     private volatile RemoteInstance remoteInstance;
+ 
+@@ -46,4 +46,12 @@ public class StandaloneManager implements ClusterNodesQuery, ClusterRegister {
+         remoteList.add(remoteInstance);
+         return remoteList;
+     }
++
++    public void notifyWatchers() {
++        notifyWatchers(Collections.singletonList(remoteInstance));
++    }
++
++    @Override
++    public void start() {
++    }
+ }
+diff --git a/oap-server/server-cluster-plugin/cluster-zookeeper-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/zookeeper/ClusterModuleZookeeperProvider.java b/oap-server/server-cluster-plugin/cluster-zookeeper-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/zookeeper/ClusterModuleZookeeperProvider.java
+index 4acb88c5b1..8e2c5f4471 100644
+--- a/oap-server/server-cluster-plugin/cluster-zookeeper-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/zookeeper/ClusterModuleZookeeperProvider.java
++++ b/oap-server/server-cluster-plugin/cluster-zookeeper-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/zookeeper/ClusterModuleZookeeperProvider.java
+@@ -30,6 +30,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
+ import org.apache.curator.x.discovery.ServiceDiscovery;
+ import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
+ import org.apache.skywalking.oap.server.core.CoreModule;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterModule;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+@@ -147,6 +148,7 @@ public class ClusterModuleZookeeperProvider extends ModuleProvider {
+ 
+         this.registerServiceImplementation(ClusterRegister.class, coordinator);
+         this.registerServiceImplementation(ClusterNodesQuery.class, coordinator);
++        this.registerServiceImplementation(ClusterCoordinator.class, coordinator);
+     }
+ 
+     @Override
+diff --git a/oap-server/server-cluster-plugin/cluster-zookeeper-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/zookeeper/ZookeeperCoordinator.java b/oap-server/server-cluster-plugin/cluster-zookeeper-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/zookeeper/ZookeeperCoordinator.java
+index c33da237dd..6bb2161ef6 100644
+--- a/oap-server/server-cluster-plugin/cluster-zookeeper-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/zookeeper/ZookeeperCoordinator.java
++++ b/oap-server/server-cluster-plugin/cluster-zookeeper-plugin/src/main/java/org/apache/skywalking/oap/server/cluster/plugin/zookeeper/ZookeeperCoordinator.java
+@@ -23,24 +23,29 @@ import java.util.ArrayList;
+ import java.util.List;
+ import java.util.UUID;
+ 
++import lombok.extern.slf4j.Slf4j;
++import org.apache.curator.framework.CuratorFramework;
++import org.apache.curator.framework.state.ConnectionState;
+ import org.apache.curator.x.discovery.ServiceCache;
+ import org.apache.curator.x.discovery.ServiceDiscovery;
+ import org.apache.curator.x.discovery.ServiceInstance;
++import org.apache.curator.x.discovery.details.ServiceCacheListener;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterHealthStatus;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+ import org.apache.skywalking.oap.server.core.cluster.OAPNodeChecker;
+ import org.apache.skywalking.oap.server.core.cluster.RemoteInstance;
+ import org.apache.skywalking.oap.server.core.cluster.ServiceQueryException;
+ import org.apache.skywalking.oap.server.core.cluster.ServiceRegisterException;
+ import org.apache.skywalking.oap.server.core.remote.client.Address;
+ import org.apache.skywalking.oap.server.library.module.ModuleDefineHolder;
++import org.apache.skywalking.oap.server.library.module.ModuleStartException;
+ import org.apache.skywalking.oap.server.telemetry.TelemetryModule;
+ import org.apache.skywalking.oap.server.telemetry.api.HealthCheckMetrics;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsCreator;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsTag;
+ 
+-public class ZookeeperCoordinator implements ClusterRegister, ClusterNodesQuery {
++@Slf4j
++public class ZookeeperCoordinator extends ClusterCoordinator {
+ 
+     private static final String REMOTE_NAME_PATH = "remote";
+ 
+@@ -52,22 +57,20 @@ public class ZookeeperCoordinator implements ClusterRegister, ClusterNodesQuery
+     private HealthCheckMetrics healthChecker;
+ 
+     ZookeeperCoordinator(final ModuleDefineHolder manager, final ClusterModuleZookeeperConfig config,
+-                         final ServiceDiscovery<RemoteInstance> serviceDiscovery) throws Exception {
++                         final ServiceDiscovery<RemoteInstance> serviceDiscovery) {
+         this.manager = manager;
+         this.config = config;
+         this.serviceDiscovery = serviceDiscovery;
+         this.serviceCache = serviceDiscovery.serviceCacheBuilder().name(REMOTE_NAME_PATH).build();
+-        this.serviceCache.start();
+     }
+ 
+     @Override
+-    public synchronized void registerRemote(RemoteInstance remoteInstance) throws ServiceRegisterException {
++    public void registerRemote(RemoteInstance remoteInstance) throws ServiceRegisterException {
+         try {
+-            initHealthChecker();
+             if (needUsingInternalAddr()) {
+                 remoteInstance = new RemoteInstance(new Address(config.getInternalComHost(), config.getInternalComPort(), true));
+             }
+-
++            this.selfAddress = remoteInstance.getAddress();
+             ServiceInstance<RemoteInstance> thisInstance = ServiceInstance.<RemoteInstance>builder().name(REMOTE_NAME_PATH)
+                                                                                                     .id(UUID.randomUUID()
+                                                                                                             .toString())
+@@ -81,8 +84,6 @@ public class ZookeeperCoordinator implements ClusterRegister, ClusterNodesQuery
+                                                                                                     .build();
+ 
+             serviceDiscovery.registerService(thisInstance);
+-
+-            this.selfAddress = remoteInstance.getAddress();
+             this.healthChecker.health();
+         } catch (Throwable e) {
+             this.healthChecker.unHealth(e);
+@@ -94,7 +95,6 @@ public class ZookeeperCoordinator implements ClusterRegister, ClusterNodesQuery
+     public List<RemoteInstance> queryRemoteNodes() {
+         List<RemoteInstance> remoteInstances = new ArrayList<>(20);
+         try {
+-            initHealthChecker();
+             List<ServiceInstance<RemoteInstance>> serviceInstances = serviceCache.getInstances();
+             serviceInstances.forEach(serviceInstance -> {
+                 RemoteInstance instance = serviceInstance.getPayload();
+@@ -115,6 +115,10 @@ public class ZookeeperCoordinator implements ClusterRegister, ClusterNodesQuery
+             this.healthChecker.unHealth(e);
+             throw new ServiceQueryException(e.getMessage());
+         }
++
++        if (log.isDebugEnabled()) {
++            remoteInstances.forEach(instance -> log.debug("Zookeeper cluster instance: {}", instance));
++        }
+         return remoteInstances;
+     }
+ 
+@@ -128,4 +132,35 @@ public class ZookeeperCoordinator implements ClusterRegister, ClusterNodesQuery
+             healthChecker = metricCreator.createHealthCheckerGauge("cluster_zookeeper", MetricsTag.EMPTY_KEY, MetricsTag.EMPTY_VALUE);
+         }
+     }
++
++    @Override
++    public void start() throws ModuleStartException {
++        try {
++            initHealthChecker();
++            this.serviceCache.start();
++            serviceCache.addListener(new ZookeeperEventListener());
++        } catch (Exception e) {
++            throw new ModuleStartException("Failed to start cluster coordinator.", e);
++        }
++    }
++
++    class ZookeeperEventListener implements ServiceCacheListener {
++        @Override
++        public void cacheChanged() {
++            try {
++                List<RemoteInstance> remoteInstances = queryRemoteNodes();
++                notifyWatchers(remoteInstances);
++            } catch (Throwable e) {
++                healthChecker.unHealth(e);
++                log.error("Failed to notify and update remote instances", e);
++            }
++        }
++
++        @Override
++        public void stateChanged(final CuratorFramework client, final ConnectionState newState) {
++            if (log.isDebugEnabled()) {
++                log.debug("Zookeeper ConnectionState changed, state: {}", newState.name());
++            }
++        }
++    }
+ }
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/CoreModuleProvider.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/CoreModuleProvider.java
+index b32c9489ab..91f411927e 100755
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/CoreModuleProvider.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/CoreModuleProvider.java
+@@ -34,8 +34,8 @@ import org.apache.skywalking.oap.server.core.annotation.AnnotationScan;
+ import org.apache.skywalking.oap.server.core.cache.CacheUpdateTimer;
+ import org.apache.skywalking.oap.server.core.cache.NetworkAddressAliasCache;
+ import org.apache.skywalking.oap.server.core.cache.ProfileTaskCache;
++import org.apache.skywalking.oap.server.core.cluster.ClusterCoordinator;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterModule;
+-import org.apache.skywalking.oap.server.core.cluster.ClusterRegister;
+ import org.apache.skywalking.oap.server.core.cluster.OAPNodeChecker;
+ import org.apache.skywalking.oap.server.core.cluster.RemoteInstance;
+ import org.apache.skywalking.oap.server.core.command.CommandService;
+@@ -341,7 +341,6 @@ public class CoreModuleProvider extends ModuleProvider {
+     public void start() throws ModuleStartException {
+         grpcServer.addHandler(new RemoteServiceHandler(getManager()));
+         grpcServer.addHandler(new HealthCheckServiceHandler());
+-        remoteClientManager.start();
+ 
+         // Disable OAL script has higher priority
+         oalEngineLoaderService.load(DisableOALDefine.INSTANCE);
+@@ -355,6 +354,12 @@ public class CoreModuleProvider extends ModuleProvider {
+ 
+         Address gRPCServerInstanceAddress = new Address(moduleConfig.getGRPCHost(), moduleConfig.getGRPCPort(), true);
+         TelemetryRelatedContext.INSTANCE.setId(gRPCServerInstanceAddress.toString());
++        ClusterCoordinator coordinator = this.getManager()
++                                             .find(ClusterModule.NAME)
++                                             .provider()
++                                             .getService(ClusterCoordinator.class);
++        coordinator.registerWatcher(remoteClientManager);
++        coordinator.start();
+         if (CoreModuleConfig.Role.Mixed.name()
+                                        .equalsIgnoreCase(
+                                            moduleConfig.getRole())
+@@ -362,11 +367,7 @@ public class CoreModuleProvider extends ModuleProvider {
+                                                .equalsIgnoreCase(
+                                                    moduleConfig.getRole())) {
+             RemoteInstance gRPCServerInstance = new RemoteInstance(gRPCServerInstanceAddress);
+-            this.getManager()
+-                .find(ClusterModule.NAME)
+-                .provider()
+-                .getService(ClusterRegister.class)
+-                .registerRemote(gRPCServerInstance);
++            coordinator.registerRemote(gRPCServerInstance);
+         }
+ 
+         OAPNodeChecker.setROLE(CoreModuleConfig.Role.fromName(moduleConfig.getRole()));
+@@ -391,7 +392,7 @@ public class CoreModuleProvider extends ModuleProvider {
+         } catch (ServerException e) {
+             throw new ModuleStartException(e.getMessage(), e);
+         }
+-
++        remoteClientManager.start();
+         PersistenceTimer.INSTANCE.start(getManager(), moduleConfig);
+ 
+         if (moduleConfig.isEnableDataKeeperExecutor()) {
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterCoordinator.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterCoordinator.java
+new file mode 100644
+index 0000000000..a78205da38
+--- /dev/null
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterCoordinator.java
+@@ -0,0 +1,47 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ */
++
++package org.apache.skywalking.oap.server.core.cluster;
++
++import java.util.ArrayList;
++import java.util.List;
++import lombok.extern.slf4j.Slf4j;
++import org.apache.skywalking.oap.server.library.module.ModuleStartException;
++
++@Slf4j
++public abstract class ClusterCoordinator implements ClusterRegister, ClusterNodesQuery, ClusterWatcherRegister {
++    private final List<ClusterWatcher> clusterWatchers = new ArrayList<>();
++
++    /**
++     * Initialize the required resources, such as healthy checker and listener.
++     */
++    public abstract void start() throws ModuleStartException;
++
++    @Override
++    public void registerWatcher(final ClusterWatcher watcher) {
++        this.clusterWatchers.add(watcher);
++    }
++
++    protected void notifyWatchers(List<RemoteInstance> remoteInstances) {
++        if (log.isDebugEnabled()) {
++            log.debug("Notify watchers and update cluster instances:{}", remoteInstances.toString());
++        }
++        this.clusterWatchers.forEach(
++            clusterWatcher -> clusterWatcher.onClusterNodesChanged(remoteInstances));
++    }
++}
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterModule.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterModule.java
+index 9e65fcc5b6..feaf4d5c83 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterModule.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterModule.java
+@@ -32,7 +32,8 @@ public class ClusterModule extends ModuleDefine {
+     public Class[] services() {
+         return new Class[] {
+             ClusterRegister.class,
+-            ClusterNodesQuery.class
++            ClusterNodesQuery.class,
++            ClusterCoordinator.class
+         };
+     }
+ }
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterWatcher.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterWatcher.java
+new file mode 100644
+index 0000000000..dce88afb41
+--- /dev/null
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterWatcher.java
+@@ -0,0 +1,25 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ */
++
++package org.apache.skywalking.oap.server.core.cluster;
++
++import java.util.List;
++
++public interface ClusterWatcher {
++    void onClusterNodesChanged(List<RemoteInstance> remoteInstances);
++}
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterWatcherRegister.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterWatcherRegister.java
+new file mode 100644
+index 0000000000..e595a6a421
+--- /dev/null
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/cluster/ClusterWatcherRegister.java
+@@ -0,0 +1,25 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ */
++
++package org.apache.skywalking.oap.server.core.cluster;
++
++import org.apache.skywalking.oap.server.library.module.Service;
++
++public interface ClusterWatcherRegister extends Service {
++    void registerWatcher(ClusterWatcher watcher);
++}
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/remote/client/RemoteClientManager.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/remote/client/RemoteClientManager.java
+index c7ee1129b6..08c64cf33e 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/remote/client/RemoteClientManager.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/remote/client/RemoteClientManager.java
+@@ -35,27 +35,28 @@ import java.util.stream.Collectors;
+ import lombok.AllArgsConstructor;
+ import lombok.Getter;
+ import lombok.Setter;
++import lombok.extern.slf4j.Slf4j;
++import org.apache.skywalking.oap.server.core.CoreModule;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterModule;
+ import org.apache.skywalking.oap.server.core.cluster.ClusterNodesQuery;
++import org.apache.skywalking.oap.server.core.cluster.ClusterWatcher;
+ import org.apache.skywalking.oap.server.core.cluster.RemoteInstance;
++import org.apache.skywalking.oap.server.core.status.ServerStatusService;
+ import org.apache.skywalking.oap.server.library.module.ModuleDefineHolder;
+ import org.apache.skywalking.oap.server.library.module.Service;
+ import org.apache.skywalking.oap.server.library.server.grpc.ssl.DynamicSslContext;
++import org.apache.skywalking.oap.server.library.util.RunnableWithExceptionProtection;
+ import org.apache.skywalking.oap.server.telemetry.TelemetryModule;
+ import org.apache.skywalking.oap.server.telemetry.api.GaugeMetrics;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsCreator;
+ import org.apache.skywalking.oap.server.telemetry.api.MetricsTag;
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+ 
+ /**
+  * This class manages the connections between OAP servers. There is a task schedule that will automatically query a
+  * server list from the cluster module. Such as Zookeeper cluster module or Kubernetes cluster module.
+  */
+-public class RemoteClientManager implements Service {
+-
+-    private static final Logger LOGGER = LoggerFactory.getLogger(RemoteClientManager.class);
+-
++@Slf4j
++public class RemoteClientManager implements Service, ClusterWatcher {
+     private final ModuleDefineHolder moduleDefineHolder;
+     private DynamicSslContext sslContext;
+     private ClusterNodesQuery clusterNodesQuery;
+@@ -93,14 +94,28 @@ public class RemoteClientManager implements Service {
+ 
+     public void start() {
+         Optional.ofNullable(sslContext).ifPresent(DynamicSslContext::start);
+-        Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay(this::refresh, 1, 5, TimeUnit.SECONDS);
++        Executors.newSingleThreadScheduledExecutor()
++                 .scheduleWithFixedDelay(new RunnableWithExceptionProtection(this::refresh, t -> log.error(
++                     "Scheduled refresh Remote Clients failure.", t)), 1, 10, TimeUnit.SECONDS);
+     }
+ 
+     /**
+-     * Query OAP server list from the cluster module and create a new connection for the new node. Make the OAP server
+-     * orderly because of each of the server will send stream data to each other by hash code.
++     * Refresh the remote clients by query OAP server list from the cluster module.
+      */
+     void refresh() {
++        if (Objects.isNull(clusterNodesQuery)) {
++            this.clusterNodesQuery = moduleDefineHolder.find(ClusterModule.NAME)
++                                                       .provider()
++                                                       .getService(ClusterNodesQuery.class);
++        }
++
++        this.refresh(clusterNodesQuery.queryRemoteNodes());
++    }
++
++    /**
++     * Refresh the remote clients according to OAP server list. Make the OAP server orderly because of each of the server will send stream data to each other by hash code.
++     */
++    synchronized void refresh(List<RemoteInstance> instanceList) {
+         if (gauge == null) {
+             gauge = moduleDefineHolder.find(TelemetryModule.NAME)
+                                       .provider()
+@@ -111,40 +126,33 @@ public class RemoteClientManager implements Service {
+                                       );
+         }
+         try {
+-            if (Objects.isNull(clusterNodesQuery)) {
+-                synchronized (RemoteClientManager.class) {
+-                    if (Objects.isNull(clusterNodesQuery)) {
+-                        this.clusterNodesQuery = moduleDefineHolder.find(ClusterModule.NAME)
+-                                                                   .provider()
+-                                                                   .getService(ClusterNodesQuery.class);
+-                    }
+-                }
++            if (log.isDebugEnabled()) {
++                log.debug("Refresh remote nodes collection.");
+             }
+ 
+-            if (LOGGER.isDebugEnabled()) {
+-                LOGGER.debug("Refresh remote nodes collection.");
+-            }
+-
+-            List<RemoteInstance> instanceList = clusterNodesQuery.queryRemoteNodes();
+             instanceList = distinct(instanceList);
+             Collections.sort(instanceList);
+ 
+             gauge.setValue(instanceList.size());
+ 
+-            if (LOGGER.isDebugEnabled()) {
+-                instanceList.forEach(instance -> LOGGER.debug("Cluster instance: {}", instance.toString()));
++            if (log.isDebugEnabled()) {
++                instanceList.forEach(instance -> log.debug("Cluster instance: {}", instance.toString()));
+             }
+ 
+             if (!compare(instanceList)) {
+-                if (LOGGER.isDebugEnabled()) {
+-                    LOGGER.debug("ReBuilding remote clients.");
++                if (log.isDebugEnabled()) {
++                    log.debug("ReBuilding remote clients.");
+                 }
+                 reBuildRemoteClients(instanceList);
++                moduleDefineHolder.find(CoreModule.NAME)
++                       .provider()
++                       .getService(ServerStatusService.class)
++                       .reBalancedCluster(System.currentTimeMillis());
+             }
+ 
+             printRemoteClientList();
+         } catch (Throwable t) {
+-            LOGGER.error(t.getMessage(), t);
++            log.error(t.getMessage(), t);
+         }
+     }
+ 
+@@ -152,10 +160,10 @@ public class RemoteClientManager implements Service {
+      * Print the client list into log for confirm how many clients built.
+      */
+     private void printRemoteClientList() {
+-        if (LOGGER.isDebugEnabled()) {
++        if (log.isDebugEnabled()) {
+             StringBuilder addresses = new StringBuilder();
+             this.usingClients.forEach(client -> addresses.append(client.getAddress().toString()).append(","));
+-            LOGGER.debug("Remote client list: {}", addresses);
++            log.debug("Remote client list: {}", addresses);
+         }
+     }
+ 
+@@ -266,6 +274,11 @@ public class RemoteClientManager implements Service {
+         }
+     }
+ 
++    @Override
++    public void onClusterNodesChanged(List<RemoteInstance> remoteInstances) {
++        refresh(remoteInstances);
++    }
++
+     enum Action {
+         Close, Unchanged, Create
+     }
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/status/ClusterStatus.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/status/ClusterStatus.java
+new file mode 100644
+index 0000000000..49203abb4e
+--- /dev/null
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/status/ClusterStatus.java
+@@ -0,0 +1,32 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ */
++
++package org.apache.skywalking.oap.server.core.status;
++
++import lombok.AccessLevel;
++import lombok.Getter;
++import lombok.Setter;
++
++/**
++ * Booting status indicate whether the current server starts successfully.
++ */
++@Getter
++@Setter(AccessLevel.PACKAGE)
++public class ClusterStatus {
++    private long reBalanceTime = 0;
++}
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/status/ServerStatusService.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/status/ServerStatusService.java
+index fac17a1b5d..100cecee21 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/status/ServerStatusService.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/status/ServerStatusService.java
+@@ -38,6 +38,8 @@ public class ServerStatusService implements Service {
+     private final ModuleManager manager;
+     @Getter
+     private BootingStatus bootingStatus = new BootingStatus();
++    @Getter
++    private ClusterStatus clusterStatus = new ClusterStatus();
+ 
+     public void bootedNow(long uptime) {
+         bootingStatus.setBooted(true);
+@@ -50,4 +52,12 @@ public class ServerStatusService implements Service {
+                .setValue(uptime / 1000d);
+     }
+ 
++    public void reBalancedCluster(long uptime) {
++        clusterStatus.setReBalanceTime(uptime);
++        manager.find(TelemetryModule.NAME)
++               .provider()
++               .getService(MetricsCreator.class)
++               .createGauge("cluster_rebalance_time", "oap cluster rebalance time after scale", MetricsTag.EMPTY_KEY, MetricsTag.EMPTY_VALUE)
++               .setValue(uptime / 1000d);
++    }
+ }

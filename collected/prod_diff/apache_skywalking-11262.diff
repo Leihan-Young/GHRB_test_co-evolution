@@ -1,0 +1,1804 @@
+diff --git a/oap-server/mqe-rt/src/main/java/org/apache/skywalking/mqe/rt/MQEVisitorBase.java b/oap-server/mqe-rt/src/main/java/org/apache/skywalking/mqe/rt/MQEVisitorBase.java
+index 817d29d757..2f272dc6c0 100644
+--- a/oap-server/mqe-rt/src/main/java/org/apache/skywalking/mqe/rt/MQEVisitorBase.java
++++ b/oap-server/mqe-rt/src/main/java/org/apache/skywalking/mqe/rt/MQEVisitorBase.java
+@@ -40,6 +40,8 @@ import org.apache.skywalking.oap.server.library.util.StringUtil;
+ 
+ @Slf4j
+ public abstract class MQEVisitorBase extends MQEParserBaseVisitor<ExpressionResult> {
++    public final static String GENERAL_LABEL_NAME = "_";
++
+     @Override
+     public ExpressionResult visitParensOp(MQEParser.ParensOpContext ctx) {
+         return visit(ctx.expression());
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmCore.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmCore.java
+index 5c5bc3da81..5bd2661aba 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmCore.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmCore.java
+@@ -18,6 +18,8 @@
+ 
+ package org.apache.skywalking.oap.server.core.alarm.provider;
+ 
++import java.util.Map;
++import java.util.Set;
+ import org.apache.skywalking.oap.server.core.alarm.AlarmCallback;
+ import org.apache.skywalking.oap.server.core.alarm.AlarmMessage;
+ import org.joda.time.LocalDateTime;
+@@ -29,7 +31,6 @@ import java.util.ArrayList;
+ import java.util.List;
+ import java.util.concurrent.Executors;
+ import java.util.concurrent.TimeUnit;
+-import java.util.stream.Collectors;
+ 
+ /**
+  * Alarm core includes metrics values in certain time windows based on alarm settings. By using its internal timer
+@@ -45,8 +46,23 @@ public class AlarmCore {
+         this.alarmRulesWatcher = alarmRulesWatcher;
+     }
+ 
++    /**
++     * Find the running rules by the metrics name.
++     *
++     * @param metricsName to be found
++     * @return the matched running rule list, or null if not found.
++     */
+     public List<RunningRule> findRunningRule(String metricsName) {
+-        return alarmRulesWatcher.getRunningContext().get(metricsName);
++        List<RunningRule> runningRules = new ArrayList<>();
++        for (Map.Entry<String, Set<String>> entry : alarmRulesWatcher.getExprMetricsMap().entrySet()) {
++            if (entry.getValue().contains(metricsName)) {
++                List<RunningRule> found = alarmRulesWatcher.getRunningContext().get(entry.getKey());
++                if (found != null) {
++                    runningRules.addAll(found);
++                }
++            }
++        }
++        return runningRules.size() > 0 ? runningRules : null;
+     }
+ 
+     public void start(List<AlarmCallback> allCallbacks) {
+@@ -76,15 +92,8 @@ public class AlarmCore {
+                 }
+ 
+                 if (!alarmMessageList.isEmpty()) {
+-                    if (!alarmRulesWatcher.getCompositeRules().isEmpty()) {
+-                        List<AlarmMessage> messages = alarmRulesWatcher.getCompositeRuleEvaluator().evaluate(alarmRulesWatcher.getCompositeRules(), alarmMessageList);
+-                        alarmMessageList.addAll(messages);
+-                    }
+-                    List<AlarmMessage> filteredMessages = alarmMessageList.stream().filter(msg -> !msg.isOnlyAsCondition()).collect(Collectors.toList());
+-                    if (!filteredMessages.isEmpty()) {
+-                        for (AlarmCallback callback : allCallbacks) {
+-                            callback.doAlarm(filteredMessages);
+-                        }
++                    for (AlarmCallback callback : allCallbacks) {
++                        callback.doAlarm(alarmMessageList);
+                     }
+                 }
+             } catch (Exception e) {
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/MetricsValueType.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmEntity.java
+similarity index 72%
+rename from oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/MetricsValueType.java
+rename to oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmEntity.java
+index 23ad11528f..71276829b9 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/MetricsValueType.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmEntity.java
+@@ -18,6 +18,17 @@
+ 
+ package org.apache.skywalking.oap.server.core.alarm.provider;
+ 
+-public enum MetricsValueType {
+-    LONG, INT, DOUBLE, LABELED_LONG, MULTI_INTS
++import lombok.EqualsAndHashCode;
++import lombok.Getter;
++import lombok.RequiredArgsConstructor;
++
++@Getter
++@EqualsAndHashCode
++@RequiredArgsConstructor
++public class AlarmEntity {
++    private final String scope;
++    private final int scopeId;
++    private final String name;
++    private final String id0;
++    private final String id1;
+ }
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmMessageFormatter.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmMessageFormatter.java
+index 1c64549347..87e5dc5fa3 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmMessageFormatter.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmMessageFormatter.java
+@@ -20,7 +20,6 @@ package org.apache.skywalking.oap.server.core.alarm.provider;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+-import org.apache.skywalking.oap.server.core.alarm.MetaInAlarm;
+ 
+ /**
+  * This is a formatter especially for alarm message.
+@@ -72,17 +71,17 @@ public class AlarmMessageFormatter {
+         while (match);
+     }
+ 
+-    public String format(MetaInAlarm meta) {
++    public String format(AlarmEntity alarmEntity) {
+         StringBuilder message = new StringBuilder();
+         for (int i = 0; i < formatSegments.size(); i++) {
+             message.append(formatSegments.get(i));
+             if (i != formatSegments.size() - 1) {
+                 switch (valueFroms.get(i)) {
+                     case ID:
+-                        message.append(meta.getId0());
++                        message.append(alarmEntity.getId0());
+                         break;
+                     case NAME:
+-                        message.append(meta.getName());
++                        message.append(alarmEntity.getName());
+                 }
+             }
+         }
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmModuleProvider.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmModuleProvider.java
+index 580cf7c2b5..dd83ec26e3 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmModuleProvider.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmModuleProvider.java
+@@ -54,19 +54,8 @@ public class AlarmModuleProvider extends ModuleProvider {
+ 
+     @Override
+     public void prepare() throws ServiceNotProvidedException, ModuleStartException {
+-        Reader applicationReader;
+-        try {
+-            applicationReader = ResourceUtils.read("alarm-settings.yml");
+-        } catch (FileNotFoundException e) {
+-            throw new ModuleStartException("can't load alarm-settings.yml", e);
+-        }
+-        RulesReader reader = new RulesReader(applicationReader);
+-        Rules rules = reader.readRules();
+-
+-        alarmRulesWatcher = new AlarmRulesWatcher(rules, this);
+-
++        alarmRulesWatcher = new AlarmRulesWatcher(new Rules(), this);
+         notifyHandler = new NotifyHandler(alarmRulesWatcher, getManager());
+-        notifyHandler.init(new AlarmStandardPersistence(getManager()));
+         this.registerServiceImplementation(MetricsNotify.class, notifyHandler);
+     }
+ 
+@@ -81,6 +70,16 @@ public class AlarmModuleProvider extends ModuleProvider {
+ 
+     @Override
+     public void notifyAfterCompleted() throws ServiceNotProvidedException, ModuleStartException {
++        Reader applicationReader;
++        try {
++            applicationReader = ResourceUtils.read("alarm-settings.yml");
++        } catch (FileNotFoundException e) {
++            throw new ModuleStartException("can't load alarm-settings.yml", e);
++        }
++        RulesReader reader = new RulesReader(applicationReader);
++        Rules rules = reader.readRules();
++        alarmRulesWatcher.notify(rules);
++        notifyHandler.init(new AlarmStandardPersistence(getManager()));
+     }
+ 
+     @Override
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRule.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRule.java
+index 0da0698ea3..02c8c78e49 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRule.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRule.java
+@@ -20,40 +20,92 @@ package org.apache.skywalking.oap.server.core.alarm.provider;
+ 
+ import java.util.ArrayList;
+ import java.util.Map;
++import java.util.Optional;
+ import java.util.Set;
+-import lombok.AllArgsConstructor;
+-import lombok.Builder;
++import lombok.AccessLevel;
++import lombok.Data;
+ import lombok.EqualsAndHashCode;
+-import lombok.Getter;
+-import lombok.NoArgsConstructor;
+ import lombok.Setter;
+ import lombok.ToString;
++import org.antlr.v4.runtime.CharStreams;
++import org.antlr.v4.runtime.CommonTokenStream;
++import org.antlr.v4.runtime.misc.ParseCancellationException;
++import org.antlr.v4.runtime.tree.ParseTree;
++import org.apache.skywalking.mqe.rt.exception.ParseErrorListener;
++import org.apache.skywalking.mqe.rt.grammar.MQELexer;
++import org.apache.skywalking.mqe.rt.grammar.MQEParser;
++import org.apache.skywalking.mqe.rt.type.ExpressionResult;
++import org.apache.skywalking.mqe.rt.type.ExpressionResultType;
++import org.apache.skywalking.oap.server.core.alarm.provider.expr.rt.AlarmMQEVerifyVisitor;
++import org.apache.skywalking.oap.server.core.storage.annotation.Column;
++import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetadata;
++import org.apache.skywalking.oap.server.library.util.StringUtil;
+ 
+-@Builder
+-@NoArgsConstructor
+-@AllArgsConstructor
+-@Setter
+-@Getter
++@Data
+ @ToString
+ @EqualsAndHashCode
+ public class AlarmRule {
+     private String alarmRuleName;
+-    private String metricsName;
++    private String expression;
++    @Setter(AccessLevel.NONE)
++    private Set<String> includeMetrics;
+     private ArrayList<String> includeNames;
+     private String includeNamesRegex;
+     private ArrayList<String> excludeNames;
+     private String excludeNamesRegex;
+-    private ArrayList<String> includeLabels;
+-    private String includeLabelsRegex;
+-    private ArrayList<String> excludeLabels;
+-    private String excludeLabelsRegex;
+-    private String threshold;
+-    private String op;
+     private int period;
+-    private int count;
+     private int silencePeriod;
+     private String message;
+-    private boolean onlyAsCondition;
+     private Map<String, String> tags;
+     private Set<String> hooks;
++
++    /**
++     * Init includeMetrics and verify the expression.
++     * ValueColumnMetadata need init metrics info, don't invoke before the module finishes start.
++     */
++    public void setExpression(final String expression) {
++        MQELexer lexer = new MQELexer(CharStreams.fromString(expression));
++        lexer.addErrorListener(new ParseErrorListener());
++        MQEParser parser = new MQEParser(new CommonTokenStream(lexer));
++        ParseTree tree;
++        try {
++            tree = parser.expression();
++        } catch (ParseCancellationException e) {
++            throw new IllegalArgumentException("expression:" + expression + " error: " + e.getMessage());
++        }
++        AlarmMQEVerifyVisitor visitor = new AlarmMQEVerifyVisitor();
++        ExpressionResult parseResult = visitor.visit(tree);
++        if (StringUtil.isNotBlank(parseResult.getError())) {
++            throw new IllegalArgumentException("expression:" + expression + " error: " + parseResult.getError());
++        }
++        if (!parseResult.isBoolResult()) {
++            throw new IllegalArgumentException("expression:" + expression + " root operation is not a Compare Operation.");
++        }
++        if (ExpressionResultType.SINGLE_VALUE != parseResult.getType()) {
++            throw new IllegalArgumentException("expression:" + expression + " is not a SINGLE_VALUE result expression.");
++        }
++
++        verifyIncludeMetrics(visitor.getIncludeMetrics());
++        this.expression = expression;
++        this.includeMetrics = visitor.getIncludeMetrics();
++    }
++
++    private void verifyIncludeMetrics(Set<String> includeMetrics) {
++        includeMetrics.forEach(metricName -> {
++            Optional<ValueColumnMetadata.ValueColumn> valueColumn = ValueColumnMetadata.INSTANCE.readValueColumnDefinition(
++                metricName);
++            if (valueColumn.isEmpty()) {
++                throw new IllegalArgumentException("Metric: [" + metricName + "] dose not exist.");
++            }
++            Column.ValueDataType dataType = valueColumn.get().getDataType();
++            switch (dataType) {
++                case COMMON_VALUE:
++                case LABELED_VALUE:
++                    return;
++                default:
++                    throw new IllegalArgumentException(
++                        "Metric dose not supported in alarm, metric: [" + metricName + "] is not a common or labeled metric.");
++            }
++        });
++    }
+ }
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRulesWatcher.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRulesWatcher.java
+index f27ea3f475..96eed396c1 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRulesWatcher.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/AlarmRulesWatcher.java
+@@ -23,14 +23,13 @@ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
++import java.util.Set;
+ import lombok.Getter;
+ import lombok.extern.slf4j.Slf4j;
+ import org.apache.skywalking.oap.server.configuration.api.ConfigChangeWatcher;
+ import org.apache.skywalking.oap.server.core.alarm.AlarmModule;
+ import org.apache.skywalking.oap.server.core.alarm.provider.dingtalk.DingtalkSettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.discord.DiscordSettings;
+-import org.apache.skywalking.oap.server.core.alarm.provider.expression.Expression;
+-import org.apache.skywalking.oap.server.core.alarm.provider.expression.ExpressionContext;
+ import org.apache.skywalking.oap.server.core.alarm.provider.feishu.FeishuSettings;
+ import org.apache.skywalking.oap.server.core.alarm.provider.grpc.GRPCAlarmSetting;
+ import org.apache.skywalking.oap.server.core.alarm.provider.pagerduty.PagerDutySettings;
+@@ -51,18 +50,17 @@ public class AlarmRulesWatcher extends ConfigChangeWatcher {
+     @Getter
+     private volatile Map<String, List<RunningRule>> runningContext;
+     private volatile Map<AlarmRule, RunningRule> alarmRuleRunningRuleMap;
++    @Getter
++    private volatile Map<String, Set<String>> exprMetricsMap;
+     private volatile Rules rules;
+     private volatile String settingsString;
+-    @Getter
+-    private final CompositeRuleEvaluator compositeRuleEvaluator;
+ 
+     public AlarmRulesWatcher(Rules defaultRules, ModuleProvider provider) {
+         super(AlarmModule.NAME, provider, "alarm-settings");
+         this.runningContext = new HashMap<>();
+         this.alarmRuleRunningRuleMap = new HashMap<>();
++        this.exprMetricsMap = new HashMap<>();
+         this.settingsString = null;
+-        Expression expression = new Expression(new ExpressionContext());
+-        this.compositeRuleEvaluator = new CompositeRuleEvaluator(expression);
+         notify(defaultRules);
+     }
+ 
+@@ -79,9 +77,13 @@ public class AlarmRulesWatcher extends ConfigChangeWatcher {
+         }
+     }
+ 
+-    void notify(Rules newRules) {
++    /**
++     * Don't invoke before the module finishes start
++     */
++    public void notify(Rules newRules) {
+         Map<AlarmRule, RunningRule> newAlarmRuleRunningRuleMap = new HashMap<>();
+         Map<String, List<RunningRule>> newRunningContext = new HashMap<>();
++        Map<String, Set<String>> newExprMetricsMap = new HashMap<>();
+ 
+         newRules.getRules().forEach(rule -> {
+             /*
+@@ -92,9 +94,10 @@ public class AlarmRulesWatcher extends ConfigChangeWatcher {
+ 
+             newAlarmRuleRunningRuleMap.put(rule, runningRule);
+ 
+-            String metricsName = rule.getMetricsName();
++            String expression = rule.getExpression();
++            newExprMetricsMap.put(expression, rule.getIncludeMetrics());
+ 
+-            List<RunningRule> runningRules = newRunningContext.computeIfAbsent(metricsName, key -> new ArrayList<>());
++            List<RunningRule> runningRules = newRunningContext.computeIfAbsent(expression, key -> new ArrayList<>());
+ 
+             runningRules.add(runningRule);
+         });
+@@ -102,6 +105,7 @@ public class AlarmRulesWatcher extends ConfigChangeWatcher {
+         this.rules = newRules;
+         this.runningContext = newRunningContext;
+         this.alarmRuleRunningRuleMap = newAlarmRuleRunningRuleMap;
++        this.exprMetricsMap = newExprMetricsMap;
+         log.info("Update alarm rules to {}", rules);
+     }
+ 
+@@ -114,10 +118,6 @@ public class AlarmRulesWatcher extends ConfigChangeWatcher {
+         return this.rules.getRules();
+     }
+ 
+-    public List<CompositeAlarmRule> getCompositeRules() {
+-        return this.rules.getCompositeRules();
+-    }
+-
+     public Map<String, WebhookSettings> getWebHooks() {
+         return this.rules.getWebhookSettingsMap();
+     }
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/CompositeAlarmRule.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/CompositeAlarmRule.java
+deleted file mode 100644
+index 3a8c1050b5..0000000000
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/CompositeAlarmRule.java
++++ /dev/null
+@@ -1,43 +0,0 @@
+-/*
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- *
+- */
+-
+-package org.apache.skywalking.oap.server.core.alarm.provider;
+-
+-import java.util.Set;
+-import lombok.AllArgsConstructor;
+-import lombok.Builder;
+-import lombok.Getter;
+-import lombok.NoArgsConstructor;
+-import lombok.Setter;
+-import lombok.ToString;
+-
+-import java.util.Map;
+-
+-@Builder
+-@NoArgsConstructor
+-@AllArgsConstructor
+-@Setter
+-@Getter
+-@ToString
+-public class CompositeAlarmRule {
+-    private String alarmRuleName;
+-    private String expression;
+-    private String message;
+-    private Map<String, String> tags;
+-    private Set<String> hooks;
+-}
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/CompositeRuleEvaluator.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/CompositeRuleEvaluator.java
+deleted file mode 100644
+index f0d0440b8e..0000000000
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/CompositeRuleEvaluator.java
++++ /dev/null
+@@ -1,135 +0,0 @@
+-/*
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- *
+- */
+-
+-package org.apache.skywalking.oap.server.core.alarm.provider;
+-
+-import com.google.common.base.Joiner;
+-import com.google.common.collect.ImmutableListMultimap;
+-import com.google.common.collect.Multimaps;
+-import org.apache.skywalking.oap.server.core.Const;
+-import org.apache.skywalking.oap.server.core.alarm.AlarmMessage;
+-import org.apache.skywalking.oap.server.core.alarm.MetaInAlarm;
+-import org.apache.skywalking.oap.server.core.alarm.provider.expression.Expression;
+-import org.apache.skywalking.oap.server.core.analysis.manual.searchtag.Tag;
+-
+-import java.util.ArrayList;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Set;
+-import java.util.concurrent.ConcurrentHashMap;
+-import java.util.stream.Collectors;
+-
+-/**
+- * Evaluate composite rule using expression eval
+- *
+- * @since 8.2.0
+- */
+-public class CompositeRuleEvaluator {
+-
+-    private Expression expression;
+-    private Map<String, AlarmMessageFormatter> messageFormatterCache;
+-
+-    public CompositeRuleEvaluator(Expression expression) {
+-        this.expression = expression;
+-        this.messageFormatterCache = new ConcurrentHashMap<>();
+-    }
+-
+-    /**
+-     * Evaluate composite rule
+-     *
+-     * @param compositeAlarmRules compositeRules
+-     * @param alarmMessages       triggered alarm messages
+-     * @return
+-     */
+-    public List<AlarmMessage> evaluate(List<CompositeAlarmRule> compositeAlarmRules, List<AlarmMessage> alarmMessages) {
+-        final List<AlarmMessage> compositeRuleMessages = new ArrayList<>();
+-        ImmutableListMultimap<String, AlarmMessage> messageMap = Multimaps.index(alarmMessages, alarmMessage ->
+-                Joiner.on(Const.ID_CONNECTOR).useForNull(Const.EMPTY_STRING).join(alarmMessage.getId0(), alarmMessage.getId1()));
+-        for (CompositeAlarmRule compositeAlarmRule : compositeAlarmRules) {
+-            String expr = compositeAlarmRule.getExpression();
+-            Set<String> dependencyRules = expression.analysisInputs(expr);
+-            Map<String, Object> dataContext = new HashMap<>();
+-            messageMap.asMap().forEach((key, alarmMessageList) -> {
+-                dependencyRules.forEach(ruleName -> dataContext.put(ruleName, false));
+-                alarmMessageList.forEach(alarmMessage -> {
+-                    if (dependencyRules.contains(alarmMessage.getRuleName())) {
+-                        dataContext.put(alarmMessage.getRuleName(), true);
+-                    }
+-                });
+-                Object matched = expression.eval(expr, dataContext);
+-                if (matched instanceof Boolean && (Boolean) matched) {
+-                    AlarmMessage headMsg = alarmMessageList.iterator().next();
+-                    AlarmMessage message = new AlarmMessage();
+-                    message.setOnlyAsCondition(false);
+-                    message.setScopeId(headMsg.getScopeId());
+-                    message.setScope(headMsg.getScope());
+-                    message.setName(headMsg.getName());
+-                    message.setId0(headMsg.getId0());
+-                    message.setId1(headMsg.getId1());
+-                    message.setStartTime(System.currentTimeMillis());
+-                    message.setRuleName(compositeAlarmRule.getAlarmRuleName());
+-                    String alarmMessage = formatMessage(message, compositeAlarmRule.getMessage(), compositeAlarmRule.getExpression());
+-                    message.setAlarmMessage(alarmMessage);
+-                    message.setPeriod(headMsg.getPeriod());
+-                    message.setTags(compositeAlarmRule.getTags().entrySet().stream().map(e -> new Tag(e.getKey(), e.getValue())).collect(Collectors.toList()));
+-                    message.getHooks().addAll(compositeAlarmRule.getHooks());
+-                    compositeRuleMessages.add(message);
+-                }
+-            });
+-        }
+-        return compositeRuleMessages;
+-    }
+-
+-    /**
+-     * Format alarm message using {@link AlarmMessageFormatter}, only support name and id0 meta
+-     */
+-    private String formatMessage(AlarmMessage alarmMessage, String message, String metricName) {
+-        return messageFormatterCache.computeIfAbsent(message, AlarmMessageFormatter::new).format(new MetaInAlarm() {
+-            @Override
+-            public String getScope() {
+-                return alarmMessage.getScope();
+-            }
+-
+-            @Override
+-            public int getScopeId() {
+-                return alarmMessage.getScopeId();
+-            }
+-
+-            @Override
+-            public String getName() {
+-                return alarmMessage.getName();
+-            }
+-
+-            @Override
+-            public String getMetricsName() {
+-                return metricName;
+-            }
+-
+-            @Override
+-            public String getId0() {
+-                return alarmMessage.getId0();
+-            }
+-
+-            @Override
+-            public String getId1() {
+-                return alarmMessage.getId1();
+-            }
+-        });
+-    }
+-}
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/OP.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/OP.java
+deleted file mode 100644
+index 7ae660972b..0000000000
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/OP.java
++++ /dev/null
+@@ -1,88 +0,0 @@
+-/*
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- *
+- */
+-
+-package org.apache.skywalking.oap.server.core.alarm.provider;
+-
+-import static java.util.Objects.requireNonNull;
+-
+-public enum OP {
+-    GT {
+-        @Override
+-        public boolean test(final Number expected, final Number actual) {
+-            return requireNonNull(actual, "actual").doubleValue() > requireNonNull(expected, "expected").doubleValue();
+-        }
+-    },
+-
+-    GTE {
+-        @Override
+-        public boolean test(final Number expected, final Number actual) {
+-            return requireNonNull(actual, "actual").doubleValue() >= requireNonNull(expected, "expected").doubleValue();
+-        }
+-    },
+-
+-    LT {
+-        @Override
+-        public boolean test(final Number expected, final Number actual) {
+-            return requireNonNull(actual, "actual").doubleValue() < requireNonNull(expected, "expected").doubleValue();
+-        }
+-    },
+-
+-    LTE {
+-        @Override
+-        public boolean test(final Number expected, final Number actual) {
+-            return requireNonNull(actual, "actual").doubleValue() <= requireNonNull(expected, "expected").doubleValue();
+-        }
+-    },
+-
+-    // NOTICE: double equal is not reliable in Java,
+-    // match result is not predictable
+-    EQ {
+-        @Override
+-        public boolean test(final Number expected, final Number actual) {
+-            return requireNonNull(actual, "actual").doubleValue() == requireNonNull(expected, "expected").doubleValue();
+-        }
+-    },
+-
+-    NEQ {
+-        @Override
+-        public boolean test(final Number expected, final Number actual) {
+-            return requireNonNull(actual, "actual").doubleValue() != requireNonNull(expected, "expected").doubleValue();
+-        }
+-    };
+-
+-    public static OP get(String op) {
+-        switch (op) {
+-            case ">":
+-                return GT;
+-            case ">=":
+-                return GTE;
+-            case "<":
+-                return LT;
+-            case "<=":
+-                return LTE;
+-            case "==":
+-                return EQ;
+-            case "!=":
+-                return NEQ;
+-            default:
+-                throw new IllegalArgumentException("unknown op, " + op);
+-        }
+-    }
+-
+-    public abstract boolean test(final Number expected, final Number actual);
+-}
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Rules.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Rules.java
+index 9179d9ea26..0ef71df794 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Rules.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Rules.java
+@@ -44,7 +44,6 @@ public class Rules {
+     private Map<String, GRPCAlarmSetting> grpcAlarmSettingMap;
+     private Map<String, SlackSettings> slackSettingsMap;
+     private Map<String, WechatSettings> wechatSettingsMap;
+-    private List<CompositeAlarmRule> compositeRules;
+     private Map<String, DingtalkSettings> dingtalkSettingsMap;
+     private Map<String, FeishuSettings> feishuSettingsMap;
+     private Map<String, WeLinkSettings> weLinkSettingsMap;
+@@ -54,7 +53,6 @@ public class Rules {
+     public Rules() {
+         this.rules = new ArrayList<>();
+         this.webhookSettingsMap = new HashMap<>();
+-        this.compositeRules = new ArrayList<>();
+         this.grpcAlarmSettingMap = new HashMap<>();
+         this.slackSettingsMap = new HashMap<>();
+         this.wechatSettingsMap = new HashMap<>();
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RulesReader.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RulesReader.java
+index 4c18623951..df288c6cf1 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RulesReader.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RulesReader.java
+@@ -72,7 +72,6 @@ public class RulesReader {
+             // Should read hooks config first.
+             readHooksConfig(rules);
+             readRulesConfig(rules);
+-            readCompositeRuleConfig(rules);
+         }
+         return rules;
+     }
+@@ -91,29 +90,18 @@ public class RulesReader {
+                 AlarmRule alarmRule = new AlarmRule();
+                 alarmRule.setAlarmRuleName((String) k);
+                 Map settings = (Map) v;
+-                Object metricsName = settings.get("metrics-name");
+-                if (metricsName == null) {
+-                    throw new IllegalArgumentException("metrics-name can't be null");
++                Object expression = settings.get("expression");
++                if (StringUtil.isEmpty((String) expression)) {
++                    throw new IllegalArgumentException("expression can't be empty");
+                 }
+-
+-                alarmRule.setMetricsName((String) metricsName);
++                alarmRule.setExpression(expression.toString());
+                 alarmRule.setIncludeNames((ArrayList) settings.getOrDefault("include-names", new ArrayList(0)));
+                 alarmRule.setExcludeNames((ArrayList) settings.getOrDefault("exclude-names", new ArrayList(0)));
+                 alarmRule.setIncludeNamesRegex((String) settings.getOrDefault("include-names-regex", ""));
+                 alarmRule.setExcludeNamesRegex((String) settings.getOrDefault("exclude-names-regex", ""));
+-                alarmRule.setIncludeLabels(
+-                        (ArrayList) settings.getOrDefault("include-labels", new ArrayList(0)));
+-                alarmRule.setExcludeLabels(
+-                        (ArrayList) settings.getOrDefault("exclude-labels", new ArrayList(0)));
+-                alarmRule.setIncludeLabelsRegex((String) settings.getOrDefault("include-labels-regex", ""));
+-                alarmRule.setExcludeLabelsRegex((String) settings.getOrDefault("exclude-labels-regex", ""));
+-                alarmRule.setThreshold(settings.get("threshold").toString());
+-                alarmRule.setOp((String) settings.get("op"));
+                 alarmRule.setPeriod((Integer) settings.getOrDefault("period", 1));
+-                alarmRule.setCount((Integer) settings.getOrDefault("count", 1));
+                 // How many times of checks, the alarm keeps silence after alarm triggered, default as same as period.
+                 alarmRule.setSilencePeriod((Integer) settings.getOrDefault("silence-period", alarmRule.getPeriod()));
+-                alarmRule.setOnlyAsCondition((Boolean) settings.getOrDefault("only-as-condition", false));
+                 alarmRule.setMessage(
+                         (String) settings.getOrDefault("message", "Alarm caused by Rule " + alarmRule
+                                 .getAlarmRuleName()));
+@@ -264,42 +252,6 @@ public class RulesReader {
+         });
+     }
+ 
+-    /**
+-     * Read composite rule config into {@link CompositeAlarmRule}
+-     */
+-    @SuppressWarnings("unchecked")
+-    private void readCompositeRuleConfig(Rules rules) {
+-        Map compositeRulesData = (Map) yamlData.get("composite-rules");
+-        if (compositeRulesData == null) {
+-            return;
+-        }
+-        compositeRulesData.forEach((k, v) -> {
+-            String ruleName = (String) k;
+-            if (ruleName.endsWith("_rule")) {
+-                Map settings = (Map) v;
+-                CompositeAlarmRule compositeAlarmRule = new CompositeAlarmRule();
+-                compositeAlarmRule.setAlarmRuleName(ruleName);
+-                String expression = (String) settings.get("expression");
+-                if (expression == null) {
+-                    throw new IllegalArgumentException("expression can't be null");
+-                }
+-                compositeAlarmRule.setExpression(expression);
+-                compositeAlarmRule.setMessage(
+-                        (String) settings.getOrDefault("message", "Alarm caused by Rule " + ruleName));
+-                compositeAlarmRule.setTags((Map) settings.getOrDefault("tags", new HashMap<String, String>(0)));
+-
+-                Set<String> specificHooks = new HashSet<>((ArrayList) settings.getOrDefault("hooks", new ArrayList<>()));
+-                checkSpecificHooks(compositeAlarmRule.getAlarmRuleName(), specificHooks);
+-                compositeAlarmRule.setHooks(specificHooks);
+-                // If no specific hooks, use global hooks.
+-                if (compositeAlarmRule.getHooks().isEmpty()) {
+-                    compositeAlarmRule.getHooks().addAll(defaultHooks);
+-                }
+-                rules.getCompositeRules().add(compositeAlarmRule);
+-            }
+-        });
+-    }
+-
+     /**
+      * Read dingtalk hook config into {@link DingtalkSettings}
+      */
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RunningRule.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RunningRule.java
+index a9bbdaabe1..62cedae9ff 100644
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RunningRule.java
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/RunningRule.java
+@@ -21,6 +21,7 @@ package org.apache.skywalking.oap.server.core.alarm.provider;
+ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.Comparator;
++import java.util.HashMap;
+ import java.util.LinkedList;
+ import java.util.List;
+ import java.util.Map;
+@@ -33,6 +34,16 @@ import java.util.stream.Collectors;
+ import lombok.RequiredArgsConstructor;
+ import lombok.ToString;
+ import lombok.extern.slf4j.Slf4j;
++import org.antlr.v4.runtime.CharStreams;
++import org.antlr.v4.runtime.CommonTokenStream;
++import org.antlr.v4.runtime.tree.ParseTree;
++import org.apache.skywalking.mqe.rt.exception.ParseErrorListener;
++import org.apache.skywalking.mqe.rt.grammar.MQELexer;
++import org.apache.skywalking.mqe.rt.grammar.MQEParser;
++import org.apache.skywalking.mqe.rt.type.ExpressionResult;
++import org.apache.skywalking.mqe.rt.type.ExpressionResultType;
++import org.apache.skywalking.mqe.rt.type.MQEValues;
++import org.apache.skywalking.oap.server.core.alarm.provider.expr.rt.AlarmMQEVisitor;
+ import org.apache.skywalking.oap.server.library.util.StringUtil;
+ import org.apache.skywalking.oap.server.core.alarm.AlarmMessage;
+ import org.apache.skywalking.oap.server.core.alarm.MetaInAlarm;
+@@ -59,61 +70,44 @@ public class RunningRule {
+ 
+     private final String ruleName;
+     private final int period;
+-    private final String metricsName;
+-    private final Threshold threshold;
+-    private final OP op;
+-    private final int countThreshold;
++    private final String expression;
+     private final int silencePeriod;
+-    private final Map<MetaInAlarm, Window> windows;
+-    private volatile MetricsValueType valueType;
++    private final Map<AlarmEntity, Window> windows;
+     private final List<String> includeNames;
+     private final List<String> excludeNames;
+     private final Pattern includeNamesRegex;
+     private final Pattern excludeNamesRegex;
+-    private final List<String> includeLabels;
+-    private final List<String> excludeLabels;
+-    private final Pattern includeLabelsRegex;
+-    private final Pattern excludeLabelsRegex;
+     private final AlarmMessageFormatter formatter;
+-    private final boolean onlyAsCondition;
+     private final List<Tag> tags;
+     private final Set<String> hooks;
++    private final Set<String> includeMetrics;
++    private final ParseTree exprTree;
+ 
+     public RunningRule(AlarmRule alarmRule) {
+-        metricsName = alarmRule.getMetricsName();
++        expression = alarmRule.getExpression();
+         this.ruleName = alarmRule.getAlarmRuleName();
+-
++        this.includeMetrics = alarmRule.getIncludeMetrics();
+         // Init the empty window for alarming rule.
+         windows = new ConcurrentHashMap<>();
+-
+         period = alarmRule.getPeriod();
+-
+-        threshold = new Threshold(alarmRule.getAlarmRuleName(), alarmRule.getThreshold());
+-        op = OP.get(alarmRule.getOp());
+-
+-        this.countThreshold = alarmRule.getCount();
+         this.silencePeriod = alarmRule.getSilencePeriod();
+-
+         this.includeNames = alarmRule.getIncludeNames();
+         this.excludeNames = alarmRule.getExcludeNames();
+         this.includeNamesRegex = StringUtil.isNotEmpty(alarmRule.getIncludeNamesRegex()) ?
+             Pattern.compile(alarmRule.getIncludeNamesRegex()) : null;
+         this.excludeNamesRegex = StringUtil.isNotEmpty(alarmRule.getExcludeNamesRegex()) ?
+             Pattern.compile(alarmRule.getExcludeNamesRegex()) : null;
+-        this.includeLabels = alarmRule.getIncludeLabels();
+-        this.excludeLabels = alarmRule.getExcludeLabels();
+-        this.includeLabelsRegex = StringUtil.isNotEmpty(alarmRule.getIncludeLabelsRegex()) ?
+-            Pattern.compile(alarmRule.getIncludeLabelsRegex()) : null;
+-        this.excludeLabelsRegex = StringUtil.isNotEmpty(alarmRule.getExcludeLabelsRegex()) ?
+-            Pattern.compile(alarmRule.getExcludeLabelsRegex()) : null;
+         this.formatter = new AlarmMessageFormatter(alarmRule.getMessage());
+-        this.onlyAsCondition = alarmRule.isOnlyAsCondition();
+         this.tags = alarmRule.getTags()
+                              .entrySet()
+                              .stream()
+                              .map(e -> new Tag(e.getKey(), e.getValue()))
+                              .collect(Collectors.toList());
+         this.hooks = alarmRule.getHooks();
++        MQELexer lexer = new MQELexer(CharStreams.fromString(alarmRule.getExpression()));
++        MQEParser parser = new MQEParser(new CommonTokenStream(lexer));
++        parser.addErrorListener(new ParseErrorListener());
++        this.exprTree = parser.expression();
+     }
+ 
+     /**
+@@ -124,10 +118,10 @@ public class RunningRule {
+      * @param metrics includes the values.
+      */
+     public void in(MetaInAlarm meta, Metrics metrics) {
+-        if (!meta.getMetricsName().equals(metricsName)) {
++        if (!includeMetrics.contains(meta.getMetricsName())) {
+             //Don't match rule, exit.
+             if (log.isTraceEnabled()) {
+-                log.trace("Metric names are inconsistent, {}-{}", meta.getMetricsName(), metricsName);
++                log.trace("Metric name not in the expression, {}-{}", expression, meta.getMetricsName());
+             }
+             return;
+         }
+@@ -137,42 +131,11 @@ public class RunningRule {
+             return;
+         }
+ 
+-        if (valueType == null) {
+-            if (metrics instanceof LongValueHolder) {
+-                valueType = MetricsValueType.LONG;
+-                threshold.setType(MetricsValueType.LONG);
+-            } else if (metrics instanceof IntValueHolder) {
+-                valueType = MetricsValueType.INT;
+-                threshold.setType(MetricsValueType.INT);
+-            } else if (metrics instanceof DoubleValueHolder) {
+-                valueType = MetricsValueType.DOUBLE;
+-                threshold.setType(MetricsValueType.DOUBLE);
+-            } else if (metrics instanceof MultiIntValuesHolder) {
+-                valueType = MetricsValueType.MULTI_INTS;
+-                threshold.setType(MetricsValueType.MULTI_INTS);
+-            } else if (metrics instanceof LabeledValueHolder) {
+-                if (((LabeledValueHolder) metrics).getValue().keys().stream()
+-                                                  .noneMatch(label -> validate(
+-                                                      label,
+-                                                      includeLabels,
+-                                                      excludeLabels,
+-                                                      includeLabelsRegex,
+-                                                      excludeLabelsRegex
+-                                                  ))) {
+-                    return;
+-                }
+-                valueType = MetricsValueType.LABELED_LONG;
+-                threshold.setType(MetricsValueType.LONG);
+-            } else {
+-                log.warn("Unsupported value type {}", valueType);
+-                return;
+-            }
+-        }
++        AlarmEntity entity = new AlarmEntity(
++            meta.getScope(), meta.getScopeId(), meta.getName(), meta.getId0(), meta.getId1());
+ 
+-        if (valueType != null) {
+-            Window window = windows.computeIfAbsent(meta, ignored -> new Window(period));
+-            window.add(metrics);
+-        }
++        Window window = windows.computeIfAbsent(entity, ignored -> new Window(period));
++        window.add(meta.getMetricsName(), metrics);
+     }
+ 
+     /**
+@@ -236,18 +199,17 @@ public class RunningRule {
+     public List<AlarmMessage> check() {
+         List<AlarmMessage> alarmMessageList = new ArrayList<>(30);
+ 
+-        windows.forEach((meta, window) -> {
++        windows.forEach((alarmEntity, window) -> {
+             Optional<AlarmMessage> alarmMessageOptional = window.checkAlarm();
+             if (alarmMessageOptional.isPresent()) {
+                 AlarmMessage alarmMessage = alarmMessageOptional.get();
+-                alarmMessage.setScopeId(meta.getScopeId());
+-                alarmMessage.setScope(meta.getScope());
+-                alarmMessage.setName(meta.getName());
+-                alarmMessage.setId0(meta.getId0());
+-                alarmMessage.setId1(meta.getId1());
++                alarmMessage.setScopeId(alarmEntity.getScopeId());
++                alarmMessage.setScope(alarmEntity.getScope());
++                alarmMessage.setName(alarmEntity.getName());
++                alarmMessage.setId0(alarmEntity.getId0());
++                alarmMessage.setId1(alarmEntity.getId1());
+                 alarmMessage.setRuleName(this.ruleName);
+-                alarmMessage.setAlarmMessage(formatter.format(meta));
+-                alarmMessage.setOnlyAsCondition(this.onlyAsCondition);
++                alarmMessage.setAlarmMessage(formatter.format(alarmEntity));
+                 alarmMessage.setStartTime(System.currentTimeMillis());
+                 alarmMessage.setPeriod(this.period);
+                 alarmMessage.setTags(this.tags);
+@@ -265,10 +227,9 @@ public class RunningRule {
+      */
+     public class Window {
+         private LocalDateTime endTime;
+-        private int period;
++        private final int period;
+         private int silenceCountdown;
+-
+-        private LinkedList<Metrics> values;
++        private LinkedList<Map<String, Metrics>> values;
+         private ReentrantLock lock = new ReentrantLock();
+ 
+         public Window(int period) {
+@@ -307,7 +268,7 @@ public class RunningRule {
+             }
+         }
+ 
+-        public void add(Metrics metrics) {
++        public void add(String metricsName, Metrics metrics) {
+             long bucket = metrics.getTimeBucket();
+ 
+             LocalDateTime timeBucket = TIME_BUCKET_FORMATTER.parseLocalDateTime(bucket + "");
+@@ -319,6 +280,7 @@ public class RunningRule {
+                     this.endTime = timeBucket;
+                 }
+                 int minutes = Minutes.minutesBetween(timeBucket, this.endTime).getMinutes();
++                //timeBucket > endTime
+                 if (minutes < 0) {
+                     this.moveTo(timeBucket);
+                     minutes = 0;
+@@ -335,8 +297,15 @@ public class RunningRule {
+                     }
+                     return;
+                 }
+-
+-                this.values.set(values.size() - minutes - 1, metrics);
++                int index = values.size() - minutes - 1;
++                Map<String, Metrics> metricsMap = values.get(index);
++                if (metricsMap == null) {
++                    metricsMap = new HashMap<>();
++                    metricsMap.put(metricsName, metrics);
++                    values.set(index, metricsMap);
++                } else {
++                    metricsMap.put(metricsName, metrics);
++                }
+             } finally {
+                 this.lock.unlock();
+             }
+@@ -365,81 +334,53 @@ public class RunningRule {
+         }
+ 
+         private boolean isMatch() {
+-            int matchCount = 0;
+-            for (Metrics metrics : values) {
+-                if (metrics == null) {
+-                    continue;
++            int isMatch = 0;
++            AlarmMQEVisitor visitor = new AlarmMQEVisitor(this.values, this.endTime);
++            ExpressionResult parseResult = visitor.visit(exprTree);
++            if (StringUtil.isNotBlank(parseResult.getError())) {
++                log.error("expression:" + expression + " error: " + parseResult.getError());
++                return false;
++            }
++            if (!parseResult.isBoolResult() ||
++                ExpressionResultType.SINGLE_VALUE != parseResult.getType() ||
++                CollectionUtils.isEmpty(parseResult.getResults())) {
++                return false;
++            }
++            if (!parseResult.isLabeledResult()) {
++                MQEValues mqeValues = parseResult.getResults().get(0);
++                if (mqeValues != null &&
++                    CollectionUtils.isNotEmpty(mqeValues.getValues()) &&
++                    mqeValues.getValues().get(0) != null) {
++                    isMatch = (int) mqeValues.getValues().get(0).getDoubleValue();
+                 }
+-
+-                switch (valueType) {
+-                    case LONG:
+-                        long lvalue = ((LongValueHolder) metrics).getValue();
+-                        long lexpected = RunningRule.this.threshold.getLongThreshold();
+-                        if (op.test(lexpected, lvalue)) {
+-                            matchCount++;
+-                        }
+-                        break;
+-                    case INT:
+-                        int ivalue = ((IntValueHolder) metrics).getValue();
+-                        int iexpected = RunningRule.this.threshold.getIntThreshold();
+-                        if (op.test(iexpected, ivalue)) {
+-                            matchCount++;
+-                        }
+-                        break;
+-                    case DOUBLE:
+-                        double dvalue = ((DoubleValueHolder) metrics).getValue();
+-                        double dexpected = RunningRule.this.threshold.getDoubleThreshold();
+-                        if (op.test(dexpected, dvalue)) {
+-                            matchCount++;
+-                        }
+-                        break;
+-                    case MULTI_INTS:
+-                        int[] ivalueArray = ((MultiIntValuesHolder) metrics).getValues();
+-                        Integer[] iaexpected = RunningRule.this.threshold.getIntValuesThreshold();
+-                        if (log.isTraceEnabled()) {
+-                            log.trace("Value array is {}, expected array is {}", ivalueArray, iaexpected);
+-                        }
+-                        for (int i = 0; i < ivalueArray.length; i++) {
+-                            ivalue = ivalueArray[i];
+-                            Integer iNullableExpected = 0;
+-                            if (iaexpected.length > i) {
+-                                iNullableExpected = iaexpected[i];
+-                                if (iNullableExpected == null) {
+-                                    continue;
+-                                }
+-                            }
+-                            if (op.test(iNullableExpected, ivalue)) {
+-                                if (log.isTraceEnabled()) {
+-                                    log.trace("Matched, expected {}, value {}", iNullableExpected, ivalue);
+-                                }
+-                                matchCount++;
+-                                break;
+-                            }
+-                        }
+-                        break;
+-                    case LABELED_LONG:
+-                        DataTable values = ((LabeledValueHolder) metrics).getValue();
+-                        lexpected = RunningRule.this.threshold.getLongThreshold();
+-                        if (values.keys().stream().anyMatch(label ->
+-                                                                validate(
+-                                                                    label,
+-                                                                    RunningRule.this.includeLabels,
+-                                                                    RunningRule.this.excludeLabels,
+-                                                                    RunningRule.this.includeLabelsRegex,
+-                                                                    RunningRule.this.excludeLabelsRegex
+-                                                                )
+-                                                                    && op.test(lexpected, values.get(label)))) {
+-                            matchCount++;
++            } else {
++                // if the result has multiple labels, when there is one label match, then the result is match
++                // for example in 5 minutes, the sum(percentile{_='P50,P75'} > 1000) >= 3
++                // percentile{_='P50,P75'} result is:
++                // P50(1000,1100,1200,1000,500), > 1000 2 times
++                // P75(2000,1500,1200,1000,500), > 1000 3 times
++                // percentile{_='P50,P75'} > 1000 result is:
++                // P50(0,1,1,0,0)
++                // P75(1,1,1,0,0)
++                // sum(percentile{_='P50,P75'} > 1000) >= 3 result is:
++                // P50(0)
++                // P75(1)
++                // then the isMatch is 1
++                for (MQEValues mqeValues : parseResult.getResults()) {
++                    if (mqeValues != null &&
++                        CollectionUtils.isNotEmpty(mqeValues.getValues()) &&
++                        mqeValues.getValues().get(0) != null) {
++                        isMatch = (int) mqeValues.getValues().get(0).getDoubleValue();
++                        if (isMatch == 1) {
++                            break;
+                         }
+-                        break;
++                    }
+                 }
+             }
+-
+             if (log.isTraceEnabled()) {
+-                log.trace("Match count is {}, threshold is {}", matchCount, countThreshold);
++                log.trace("Match expression is {}", expression);
+             }
+-            // Reach the threshold in current bucket.
+-            return matchCount >= countThreshold;
++            return isMatch == 1;
+         }
+ 
+         private void init() {
+@@ -450,37 +391,38 @@ public class RunningRule {
+         }
+     }
+ 
+-    private LinkedList<TraceLogMetric> transformValues(final LinkedList<Metrics> values) {
+-        LinkedList<TraceLogMetric> r = new LinkedList<>();
+-        values.forEach(m -> {
+-            if (m == null) {
+-                r.add(null);
+-                return;
++    private LinkedList<Map<String, TraceLogMetric>> transformValues(LinkedList<Map<String, Metrics>> values) {
++        LinkedList<Map<String, TraceLogMetric>> result = new LinkedList<>();
++        for (Map<String, Metrics> value : values) {
++            if (value == null) {
++                result.add(null);
++                continue;
+             }
+-            switch (valueType) {
+-                case LONG:
+-                    r.add(new TraceLogMetric(m.getTimeBucket(), new Number[] {((LongValueHolder) m).getValue()}));
+-                    break;
+-                case INT:
+-                    r.add(new TraceLogMetric(m.getTimeBucket(), new Number[] {((IntValueHolder) m).getValue()}));
+-                    break;
+-                case DOUBLE:
+-                    r.add(new TraceLogMetric(m.getTimeBucket(), new Number[] {((DoubleValueHolder) m).getValue()}));
+-                    break;
+-                case MULTI_INTS:
++            value.forEach((name, m) -> {
++                Map<String, TraceLogMetric> r = new HashMap<>();
++                result.add(r);
++                if (m instanceof LongValueHolder) {
++                    r.put(name, new TraceLogMetric(m.getTimeBucket(), new Number[] {((LongValueHolder) m).getValue()}));
++                } else if (m instanceof IntValueHolder) {
++                    r.put(name, new TraceLogMetric(m.getTimeBucket(), new Number[] {((IntValueHolder) m).getValue()}));
++                } else if (m instanceof DoubleValueHolder) {
++                    r.put(name, new TraceLogMetric(m.getTimeBucket(), new Number[] {((DoubleValueHolder) m).getValue()}));
++                } else if (m instanceof MultiIntValuesHolder) {
+                     int[] iArr = ((MultiIntValuesHolder) m).getValues();
+-                    r.add(new TraceLogMetric(m.getTimeBucket(), Arrays.stream(iArr).boxed().toArray(Number[]::new)));
+-                    break;
+-                case LABELED_LONG:
++                    r.put(name, new TraceLogMetric(m.getTimeBucket(), Arrays.stream(iArr).boxed().toArray(Number[]::new)));
++                } else if (m instanceof LabeledValueHolder) {
+                     DataTable dt = ((LabeledValueHolder) m).getValue();
+                     TraceLogMetric l = new TraceLogMetric(
+                         m.getTimeBucket(), dt.sortedValues(Comparator.naturalOrder())
+                                              .toArray(new Number[0]));
+                     l.labels = dt.sortedKeys(Comparator.naturalOrder()).toArray(new String[0]);
+-                    r.add(l);
+-            }
+-        });
+-        return r;
++                    r.put(name, l);
++                } else {
++                    log.warn("Unsupported metrics {}", m);
++                }
++            });
++        }
++        return result;
+     }
+ 
+     @RequiredArgsConstructor
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Threshold.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Threshold.java
+deleted file mode 100644
+index ba3299ce47..0000000000
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/Threshold.java
++++ /dev/null
+@@ -1,84 +0,0 @@
+-/*
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- *
+- */
+-
+-package org.apache.skywalking.oap.server.core.alarm.provider;
+-
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+-
+-public class Threshold {
+-    private static final Logger LOGGER = LoggerFactory.getLogger(Threshold.class);
+-    private static final String NONE_THRESHOLD = "-";
+-
+-    private String alarmRuleName;
+-    private final String threshold;
+-    private int intThreshold;
+-    private double doubleThreshold;
+-    private long longThreshold;
+-    private Integer[] intValuesThreshold;
+-
+-    public Threshold(String alarmRuleName, String threshold) {
+-        this.alarmRuleName = alarmRuleName;
+-        this.threshold = threshold;
+-    }
+-
+-    public int getIntThreshold() {
+-        return intThreshold;
+-    }
+-
+-    public double getDoubleThreshold() {
+-        return doubleThreshold;
+-    }
+-
+-    public long getLongThreshold() {
+-        return longThreshold;
+-    }
+-
+-    public Integer[] getIntValuesThreshold() {
+-        return intValuesThreshold;
+-    }
+-
+-    public void setType(MetricsValueType type) {
+-        try {
+-            switch (type) {
+-                case INT:
+-                    intThreshold = Integer.parseInt(threshold);
+-                    break;
+-                case LONG:
+-                    longThreshold = Long.parseLong(threshold);
+-                    break;
+-                case DOUBLE:
+-                    doubleThreshold = Double.parseDouble(threshold);
+-                    break;
+-                case MULTI_INTS:
+-                    String[] strings = threshold.split(",");
+-                    intValuesThreshold = new Integer[strings.length];
+-                    for (int i = 0; i < strings.length; i++) {
+-                        String thresholdItem = strings[i].trim();
+-                        if (NONE_THRESHOLD.equals(thresholdItem)) {
+-                            intValuesThreshold[i] = null;
+-                        } else {
+-                            intValuesThreshold[i] = Integer.parseInt(thresholdItem);
+-                        }
+-                    }
+-            }
+-        } catch (NumberFormatException e) {
+-            LOGGER.warn("Alarm rule {} threshold doesn't match the metrics type, expected type: {}", alarmRuleName, type);
+-        }
+-    }
+-}
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expr/rt/AlarmMQEVerifyVisitor.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expr/rt/AlarmMQEVerifyVisitor.java
+new file mode 100644
+index 0000000000..78c93afdd7
+--- /dev/null
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expr/rt/AlarmMQEVerifyVisitor.java
+@@ -0,0 +1,60 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ */
++
++package org.apache.skywalking.oap.server.core.alarm.provider.expr.rt;
++
++import java.util.HashSet;
++import java.util.Set;
++import lombok.Getter;
++import lombok.extern.slf4j.Slf4j;
++import org.apache.skywalking.mqe.rt.MQEVisitorBase;
++import org.apache.skywalking.mqe.rt.grammar.MQEParser;
++import org.apache.skywalking.mqe.rt.type.ExpressionResult;
++import org.apache.skywalking.mqe.rt.type.ExpressionResultType;
++import org.apache.skywalking.mqe.rt.type.MQEValue;
++import org.apache.skywalking.mqe.rt.type.MQEValues;
++
++/**
++ * Used for verify the alarm expression and get the metrics name when read the alarm rules.
++ */
++@Getter
++@Slf4j
++public class AlarmMQEVerifyVisitor extends MQEVisitorBase {
++    private final Set<String> includeMetrics = new HashSet<>();
++
++    @Override
++    public ExpressionResult visitMetric(MQEParser.MetricContext ctx) {
++        ExpressionResult result = new ExpressionResult();
++        String metricName = ctx.metricName().getText();
++        this.includeMetrics.add(metricName);
++
++        if (ctx.parent instanceof MQEParser.TopNOPContext) {
++            result.setType(ExpressionResultType.UNKNOWN);
++            result.setError("Unsupported operation: [top_n] in alarm expression.");
++            return result;
++        }
++
++        MQEValues mqeValues = new MQEValues();
++        MQEValue mqeValue = new MQEValue();
++        mqeValue.setEmptyValue(true);
++        mqeValues.getValues().add(mqeValue);
++        result.getResults().add(mqeValues);
++        result.setType(ExpressionResultType.TIME_SERIES_VALUES);
++        return result;
++    }
++}
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expr/rt/AlarmMQEVisitor.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expr/rt/AlarmMQEVisitor.java
+new file mode 100644
+index 0000000000..98a32d791b
+--- /dev/null
++++ b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expr/rt/AlarmMQEVisitor.java
+@@ -0,0 +1,271 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ */
++
++package org.apache.skywalking.oap.server.core.alarm.provider.expr.rt;
++
++import com.google.common.base.Strings;
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.Collections;
++import java.util.HashMap;
++import java.util.LinkedList;
++import java.util.List;
++import java.util.Map;
++import java.util.Optional;
++import java.util.stream.Collectors;
++import lombok.extern.slf4j.Slf4j;
++import org.apache.skywalking.mqe.rt.grammar.MQEParser;
++import org.apache.skywalking.mqe.rt.type.ExpressionResult;
++import org.apache.skywalking.mqe.rt.type.ExpressionResultType;
++import org.apache.skywalking.mqe.rt.type.MQEValue;
++import org.apache.skywalking.mqe.rt.type.MQEValues;
++import org.apache.skywalking.mqe.rt.type.Metadata;
++import org.apache.skywalking.oap.server.core.Const;
++import org.apache.skywalking.oap.server.core.analysis.metrics.DataTable;
++import org.apache.skywalking.oap.server.core.analysis.metrics.DoubleValueHolder;
++import org.apache.skywalking.oap.server.core.analysis.metrics.IntValueHolder;
++import org.apache.skywalking.oap.server.core.analysis.metrics.LabeledValueHolder;
++import org.apache.skywalking.oap.server.core.analysis.metrics.LongValueHolder;
++import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
++import org.apache.skywalking.mqe.rt.MQEVisitorBase;
++import org.apache.skywalking.oap.server.core.analysis.metrics.MultiIntValuesHolder;
++import org.apache.skywalking.oap.server.core.query.type.KeyValue;
++import org.apache.skywalking.oap.server.core.storage.annotation.Column;
++import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetadata;
++import org.apache.skywalking.oap.server.library.util.CollectionUtils;
++import org.apache.skywalking.oap.server.library.util.StringUtil;
++import org.joda.time.LocalDateTime;
++
++@Slf4j
++public class AlarmMQEVisitor extends MQEVisitorBase {
++    private final LinkedList<Map<String, Metrics>> metricsValues;
++    private final Map<String, Map<String, Double>> commonValuesMap;
++    private final Map<String, Map<String, DataTable>> labeledValuesMap;
++    private final int windowSize;
++    private final LocalDateTime endTime;
++    private final ArrayList<String> windowTimes;
++
++    public AlarmMQEVisitor(final LinkedList<Map<String, Metrics>> metricsValues,
++                           final LocalDateTime endTime) {
++        this.metricsValues = metricsValues;
++        this.commonValuesMap = new HashMap<>();
++        this.labeledValuesMap = new HashMap<>();
++        this.endTime = endTime;
++        this.windowSize = metricsValues.size();
++        this.windowTimes = initWindowTimes();
++        this.initMetricsValues();
++    }
++
++    @Override
++    public ExpressionResult visitMetric(MQEParser.MetricContext ctx) {
++        ExpressionResult result = new ExpressionResult();
++        String metricName = ctx.metricName().getText();
++        Optional<ValueColumnMetadata.ValueColumn> valueColumn = ValueColumnMetadata.INSTANCE.readValueColumnDefinition(
++            metricName);
++        if (valueColumn.isEmpty()) {
++            result.setType(ExpressionResultType.UNKNOWN);
++            result.setError("Metric: [" + metricName + "] dose not exist.");
++            return result;
++        }
++        Column.ValueDataType dataType = valueColumn.get().getDataType();
++
++        //if no data, build empty value MQEValuesList for calculation
++        List<MQEValues> mqeValuesList;
++        if (dataType == Column.ValueDataType.COMMON_VALUE) {
++            Map<String, Double> timeValues = commonValuesMap.get(metricName);
++            if (CollectionUtils.isEmpty(timeValues)) {
++                mqeValuesList = buildEmptyMQEValuesList();
++            } else {
++                mqeValuesList = buildMqeValuesList(timeValues);
++            }
++        } else if (dataType == Column.ValueDataType.LABELED_VALUE) {
++            List<String> labelValues = Collections.emptyList();
++            if (ctx.label() != null) {
++                String labelValue = ctx.label().labelValue().getText();
++                String labelValueTrim = labelValue.substring(1, labelValue.length() - 1);
++                if (StringUtil.isNotBlank(labelValueTrim)) {
++                    labelValues = Arrays.asList(labelValueTrim.split(Const.COMMA));
++                }
++            }
++            Map<String, DataTable> timeValues = labeledValuesMap.get(metricName);
++            if (CollectionUtils.isEmpty(timeValues)) {
++                mqeValuesList = buildEmptyLabeledMQEValuesList(labelValues);
++            } else {
++                mqeValuesList = buildLabledMqeValuesList(timeValues, labelValues);
++            }
++            result.setLabeledResult(true);
++        } else {
++            result.setType(ExpressionResultType.UNKNOWN);
++            result.setError("Unsupported value type: " + dataType);
++            return result;
++        }
++
++        result.setResults(mqeValuesList);
++        result.setType(ExpressionResultType.TIME_SERIES_VALUES);
++        return result;
++    }
++
++    private ArrayList<String> initWindowTimes() {
++        ArrayList<String> windowTimes = new ArrayList<>();
++        for (int i = this.windowSize - 1; i >= 0; i--) {
++            windowTimes.add(endTime.minusMinutes(i).toString("yyyyMMddHHmm"));
++        }
++        return windowTimes;
++    }
++
++    private void initMetricsValues() {
++        for (Map<String, Metrics> metricsMap : metricsValues) {
++            if (metricsMap == null) {
++                continue;
++            }
++            for (Map.Entry<String, Metrics> entry : metricsMap.entrySet()) {
++                String metricName = entry.getKey();
++                Metrics metrics = entry.getValue();
++                if (metrics instanceof LongValueHolder) {
++                    initCommonMetricValues(metricName, ((LongValueHolder) metrics).getValue(), metrics.getTimeBucket());
++                } else if (metrics instanceof IntValueHolder) {
++                    initCommonMetricValues(metricName, ((IntValueHolder) metrics).getValue(), metrics.getTimeBucket());
++                } else if (metrics instanceof DoubleValueHolder) {
++                    initCommonMetricValues(metricName, ((DoubleValueHolder) metrics).getValue(), metrics.getTimeBucket());
++                } else if (metrics instanceof MultiIntValuesHolder) {
++                    int[] ivalueArray = ((MultiIntValuesHolder) metrics).getValues();
++                    DataTable values = new DataTable();
++                    for (int i = 0; i < ivalueArray.length; i++) {
++                        values.put(String.valueOf(i), (long) ivalueArray[i]);
++                    }
++                    initLabeledMetricValues(metricName, values, metrics.getTimeBucket());
++                } else if (metrics instanceof LabeledValueHolder) {
++                    DataTable values = ((LabeledValueHolder) metrics).getValue();
++                    initLabeledMetricValues(metricName, values, metrics.getTimeBucket());
++                } else {
++                    log.warn("Unsupported metrics {}", metricName);
++                    return;
++                }
++            }
++        }
++    }
++
++    private void initCommonMetricValues(String metricName, double value, long timeBucket) {
++        Map<String, Double> timeValues = commonValuesMap.computeIfAbsent(
++            metricName, v -> new HashMap<>());
++        timeValues.put(String.valueOf(timeBucket), value);
++    }
++
++    private void initLabeledMetricValues(String metricName,
++                                         DataTable values, long timeBucket) {
++        Map<String, DataTable> timeValues = labeledValuesMap.computeIfAbsent(
++            metricName, v -> new HashMap<>());
++        timeValues.put(String.valueOf(timeBucket), values);
++    }
++
++    private List<MQEValues> buildMqeValuesList(Map<String, Double> timeValues) {
++        List<MQEValues> mqeValuesList = new ArrayList<>();
++            MQEValues mqeValues = new MQEValues();
++            for (String time : windowTimes) {
++                Metadata metadata = new Metadata();
++                Double metricValue = timeValues.get(time);
++                MQEValue mqeValue = new MQEValue();
++                //use timeBucket as id here
++                mqeValue.setId(time);
++                if (metricValue != null) {
++                    mqeValue.setDoubleValue(metricValue);
++                } else {
++                    mqeValue.setEmptyValue(true);
++                }
++                mqeValues.setMetric(metadata);
++                mqeValues.getValues().add(mqeValue);
++            }
++            mqeValuesList.add(mqeValues);
++
++        return mqeValuesList;
++    }
++
++    private List<MQEValues> buildLabledMqeValuesList(Map<String, DataTable> timeValues, List<String> labelValues) {
++        List<MQEValues> mqeValuesList = new ArrayList<>();
++        List<String> allLabelValues;
++        if (CollectionUtils.isEmpty(labelValues) || labelValues.stream().allMatch(Strings::isNullOrEmpty)) {
++            allLabelValues = timeValues.values().stream()
++                             .flatMap(dataTable -> dataTable.keys().stream())
++                             .distinct().collect(Collectors.toList());
++        } else {
++            allLabelValues = labelValues;
++        }
++        for (String label : allLabelValues) {
++            MQEValues mqeValues = new MQEValues();
++            for (String time : windowTimes) {
++                Metadata metadata = new Metadata();
++                DataTable dataTable = timeValues.getOrDefault(time, new DataTable());
++                Long metricValue = dataTable.get(label);
++                MQEValue mqeValue = new MQEValue();
++                //use timeBucket as id here
++                mqeValue.setId(time);
++                if (metricValue != null) {
++                    mqeValue.setDoubleValue(metricValue);
++                } else {
++                    mqeValue.setEmptyValue(true);
++                }
++                KeyValue labelValue = new KeyValue(GENERAL_LABEL_NAME, label);
++                metadata.getLabels().add(labelValue);
++                mqeValues.setMetric(metadata);
++                mqeValues.getValues().add(mqeValue);
++            }
++            mqeValuesList.add(mqeValues);
++        }
++        return mqeValuesList;
++    }
++
++    //init MQEValues with empty value according to window size and end time
++    private MQEValues initMQEValues() {
++        MQEValues mqeValues = new MQEValues();
++        for (String times : windowTimes) {
++            MQEValue mqeValue = new MQEValue();
++            mqeValue.setEmptyValue(true);
++            mqeValue.setId(times);
++            mqeValues.getValues().add(mqeValue);
++        }
++        return mqeValues;
++    }
++
++    private ArrayList<MQEValues> buildEmptyMQEValuesList() {
++        ArrayList<MQEValues> mqeValuesList = new ArrayList<>();
++        mqeValuesList.add(initMQEValues());
++        return mqeValuesList;
++    }
++
++    private ArrayList<MQEValues> buildEmptyLabeledMQEValuesList(List<String> labelValues) {
++        ArrayList<MQEValues> mqeValuesList = new ArrayList<>();
++        if (CollectionUtils.isEmpty(labelValues)) {
++            MQEValues mqeValues = initMQEValues();
++            KeyValue label = new KeyValue(GENERAL_LABEL_NAME, GENERAL_LABEL_NAME);
++            Metadata metadata = new Metadata();
++            metadata.getLabels().add(label);
++            mqeValues.setMetric(metadata);
++            mqeValuesList.add(mqeValues);
++        } else {
++            for (String labelValue : labelValues) {
++                MQEValues mqeValues = initMQEValues();
++                Metadata metadata = new Metadata();
++                KeyValue label = new KeyValue(GENERAL_LABEL_NAME, labelValue);
++                metadata.getLabels().add(label);
++                mqeValues.setMetric(metadata);
++                mqeValuesList.add(mqeValues);
++            }
++        }
++        return mqeValuesList;
++    }
++}
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expression/Expression.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expression/Expression.java
+deleted file mode 100644
+index 956f3e3d76..0000000000
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expression/Expression.java
++++ /dev/null
+@@ -1,80 +0,0 @@
+-/*
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- *
+- */
+-
+-package org.apache.skywalking.oap.server.core.alarm.provider.expression;
+-
+-import lombok.extern.slf4j.Slf4j;
+-import org.mvel2.MVEL;
+-import org.mvel2.ParserContext;
+-
+-import java.util.Map;
+-import java.util.Set;
+-import java.util.concurrent.ConcurrentHashMap;
+-
+-/**
+- * Expression support eval java basic expressions, just like groovy script
+- * The internal detail is it first compile the expression to a parseTree then execute the parseTree with data
+- * It caches the compiled expression for sake of performance
+- */
+-@Slf4j
+-public class Expression {
+-    private final Map<String, Object> expressionCache;
+-    private final ExpressionContext context;
+-
+-    public Expression(ExpressionContext context) {
+-        this.context = context;
+-        this.expressionCache = new ConcurrentHashMap<>();
+-    }
+-
+-    /**
+-     * Eval the given expression using empty data context
+-     */
+-    public Object eval(String expression) {
+-        return eval(expression, null);
+-    }
+-
+-    /**
+-     * Eval the given expression with data context
+-     */
+-    public Object eval(String expression, Map<String, Object> vars) {
+-        try {
+-            Object obj = compile(expression, context);
+-            return MVEL.executeExpression(obj, vars);
+-        } catch (Throwable e) {
+-            log.error("eval expression {} error", expression, e);
+-            return null;
+-        }
+-    }
+-
+-    /**
+-     * Compile the given expression to a parseTree
+-     */
+-    public Object compile(String expression, ExpressionContext pctx) {
+-        return expressionCache.computeIfAbsent(expression, s -> MVEL.compileExpression(expression, pctx.getContext()));
+-    }
+-
+-    /**
+-     * Analysis expression dependencies
+-     */
+-    public Set<String> analysisInputs(String expression) {
+-        ParserContext pCtx = ParserContext.create();
+-        MVEL.analysisCompile(expression, pCtx);
+-        Map<String, Class> inputsMap = pCtx.getInputs();
+-        return inputsMap.keySet();
+-    }
+-}
+diff --git a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expression/ExpressionContext.java b/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expression/ExpressionContext.java
+deleted file mode 100644
+index 049853726a..0000000000
+--- a/oap-server/server-alarm-plugin/src/main/java/org/apache/skywalking/oap/server/core/alarm/provider/expression/ExpressionContext.java
++++ /dev/null
+@@ -1,58 +0,0 @@
+-/*
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- *
+- */
+-
+-package org.apache.skywalking.oap.server.core.alarm.provider.expression;
+-
+-import lombok.Getter;
+-import org.mvel2.ParserContext;
+-import java.lang.reflect.Method;
+-import java.lang.reflect.Modifier;
+-
+-/***
+- * Expression context can support custom function in expression,
+- * for example `md5(a) == '111111'`, the md5 function add register in the context
+- */
+-public class ExpressionContext {
+-
+-    @Getter
+-    private ParserContext context;
+-
+-    public ExpressionContext() {
+-        context = new ParserContext();
+-    }
+-
+-    /**
+-     * Register a single method in the context
+-     */
+-    public void registerFunc(String func, Method method) {
+-        context.addImport(func, method);
+-    }
+-
+-    /**
+-     * Register hole class public static methods in the context
+-     */
+-    public void registerFunc(Class<?> clz) {
+-        Method[] methods = clz.getDeclaredMethods();
+-        for (Method method : methods) {
+-            int mod = method.getModifiers();
+-            if (Modifier.isStatic(mod) && Modifier.isPublic(mod)) {
+-                registerFunc(method.getName(), method);
+-            }
+-        }
+-    }
+-}
+diff --git a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/alarm/AlarmMessage.java b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/alarm/AlarmMessage.java
+index d3f629878f..a2e25e2e42 100644
+--- a/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/alarm/AlarmMessage.java
++++ b/oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/alarm/AlarmMessage.java
+@@ -42,6 +42,5 @@ public class AlarmMessage {
+     private List<Tag> tags;
+     private long startTime;
+     private transient int period;
+-    private transient boolean onlyAsCondition;
+     private Set<String> hooks = new HashSet<>();
+ }
+diff --git a/oap-server/server-query-plugin/query-graphql-plugin/src/main/java/org/apache/skywalking/oap/query/graphql/mqe/rt/MQEVisitor.java b/oap-server/server-query-plugin/query-graphql-plugin/src/main/java/org/apache/skywalking/oap/query/graphql/mqe/rt/MQEVisitor.java
+index 0dd33bdc59..9f112429f6 100644
+--- a/oap-server/server-query-plugin/query-graphql-plugin/src/main/java/org/apache/skywalking/oap/query/graphql/mqe/rt/MQEVisitor.java
++++ b/oap-server/server-query-plugin/query-graphql-plugin/src/main/java/org/apache/skywalking/oap/query/graphql/mqe/rt/MQEVisitor.java
+@@ -60,8 +60,6 @@ public class MQEVisitor extends MQEVisitorBase {
+     private final Entity entity;
+     private final Duration duration;
+ 
+-    private final static String GENERAL_LABEL_NAME = "_";
+-
+     public MQEVisitor(final MetricsQuery metricsQuery,
+                       final RecordsQuery recordsQuery,
+                       final Entity entity,

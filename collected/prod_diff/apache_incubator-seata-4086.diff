@@ -1,0 +1,1337 @@
+diff --git a/common/src/main/java/io/seata/common/ConfigurationKeys.java b/common/src/main/java/io/seata/common/ConfigurationKeys.java
+index f05643c8d..b5398ae60 100644
+--- a/common/src/main/java/io/seata/common/ConfigurationKeys.java
++++ b/common/src/main/java/io/seata/common/ConfigurationKeys.java
+@@ -362,25 +362,11 @@ public interface ConfigurationKeys {
+      * The constant RECOVERY_PREFIX.
+      */
+     String RECOVERY_PREFIX = SERVER_PREFIX + "recovery.";
+-    /**
+-     * The constant COMMITING_RETRY_PERIOD.
+-     */
+-    String COMMITING_RETRY_PERIOD = RECOVERY_PREFIX + "committingRetryPeriod";
+-
+-    /**
+-     * The constant ASYN_COMMITING_RETRY_PERIOD.
+-     */
+-    String ASYN_COMMITING_RETRY_PERIOD = RECOVERY_PREFIX + "asynCommittingRetryPeriod";
+-
+-    /**
+-     * The constant ROLLBACKING_RETRY_PERIOD.
+-     */
+-    String ROLLBACKING_RETRY_PERIOD = RECOVERY_PREFIX + "rollbackingRetryPeriod";
+ 
+     /**
+-     * The constant TIMEOUT_RETRY_PERIOD.
++     * The constant HANDLE_ALL_SESSION_PERIOD.
+      */
+-    String TIMEOUT_RETRY_PERIOD = RECOVERY_PREFIX + "timeoutRetryPeriod";
++    String HANDLE_ALL_SESSION_PERIOD = RECOVERY_PREFIX + "handleAllSessionPeriod";
+ 
+     /**
+      * The constant CLIENT_UNDO_PREFIX.
+diff --git a/common/src/main/java/io/seata/common/Constants.java b/common/src/main/java/io/seata/common/Constants.java
+index e935a4f74..2591ba8f4 100644
+--- a/common/src/main/java/io/seata/common/Constants.java
++++ b/common/src/main/java/io/seata/common/Constants.java
+@@ -127,6 +127,11 @@ public interface Constants {
+      */
+     String RETRY_ROLLBACKING = "RetryRollbacking";
+ 
++    /**
++     * The constant HANDLE_ALL_SESSION
++     */
++    String HANDLE_ALL_SESSION = "HandleAllSession";
++
+     /**
+      * The constant RETRY_COMMITTING
+      */
+diff --git a/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/ServerRecoveryProperties.java b/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/ServerRecoveryProperties.java
+index af4d4155d..e7968e6bc 100644
+--- a/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/ServerRecoveryProperties.java
++++ b/seata-spring-autoconfigure/seata-spring-autoconfigure-server/src/main/java/io/seata/spring/boot/autoconfigure/properties/server/ServerRecoveryProperties.java
+@@ -26,44 +26,16 @@ import static io.seata.spring.boot.autoconfigure.StarterConstants.SERVER_RECOVER
+ @Component
+ @ConfigurationProperties(prefix = SERVER_RECOVERY_PREFIX)
+ public class ServerRecoveryProperties {
+-    private Integer committingRetryPeriod = 1000;
+-    private Integer asynCommittingRetryPeriod = 1000;
+-    private Integer rollbackingRetryPeriod = 1000;
+-    private Integer timeoutRetryPeriod = 1000;
+ 
+-    public Integer getCommittingRetryPeriod() {
+-        return committingRetryPeriod;
+-    }
+-
+-    public ServerRecoveryProperties setCommittingRetryPeriod(Integer committingRetryPeriod) {
+-        this.committingRetryPeriod = committingRetryPeriod;
+-        return this;
+-    }
++    private Integer handleAllSessionPeriod = 1000;
+ 
+-    public Integer getAsynCommittingRetryPeriod() {
+-        return asynCommittingRetryPeriod;
++    public Integer getHandleAllSessionPeriod() {
++        return handleAllSessionPeriod;
+     }
+ 
+-    public ServerRecoveryProperties setAsynCommittingRetryPeriod(Integer asynCommittingRetryPeriod) {
+-        this.asynCommittingRetryPeriod = asynCommittingRetryPeriod;
++    public ServerRecoveryProperties setHandleAllSessionPeriod(Integer handleAllSessionPeriod) {
++        this.handleAllSessionPeriod = handleAllSessionPeriod;
+         return this;
+     }
+ 
+-    public Integer getRollbackingRetryPeriod() {
+-        return rollbackingRetryPeriod;
+-    }
+-
+-    public ServerRecoveryProperties setRollbackingRetryPeriod(Integer rollbackingRetryPeriod) {
+-        this.rollbackingRetryPeriod = rollbackingRetryPeriod;
+-        return this;
+-    }
+-
+-    public Integer getTimeoutRetryPeriod() {
+-        return timeoutRetryPeriod;
+-    }
+-
+-    public ServerRecoveryProperties setTimeoutRetryPeriod(Integer timeoutRetryPeriod) {
+-        this.timeoutRetryPeriod = timeoutRetryPeriod;
+-        return this;
+-    }
+ }
+diff --git a/server/src/main/java/io/seata/server/console/controller/BranchSessionController.java b/server/src/main/java/io/seata/server/console/controller/BranchSessionController.java
+index dc4259f20..b6980f422 100644
+--- a/server/src/main/java/io/seata/server/console/controller/BranchSessionController.java
++++ b/server/src/main/java/io/seata/server/console/controller/BranchSessionController.java
+@@ -15,12 +15,11 @@
+  */
+ package io.seata.server.console.controller;
+ 
++import javax.annotation.Resource;
+ import io.seata.server.console.service.BranchSessionService;
+ import org.springframework.web.bind.annotation.RequestMapping;
+ import org.springframework.web.bind.annotation.RestController;
+ 
+-import javax.annotation.Resource;
+-
+ /**
+  * Branch Session Controller
+  * @author: zhongxiang.wang
+diff --git a/server/src/main/java/io/seata/server/console/impl/file/GlobalSessionFileServiceImpl.java b/server/src/main/java/io/seata/server/console/impl/file/GlobalSessionFileServiceImpl.java
+index 11c8b74f9..940366418 100644
+--- a/server/src/main/java/io/seata/server/console/impl/file/GlobalSessionFileServiceImpl.java
++++ b/server/src/main/java/io/seata/server/console/impl/file/GlobalSessionFileServiceImpl.java
+@@ -61,7 +61,7 @@ public class GlobalSessionFileServiceImpl implements GlobalSessionService {
+                 .filter(obtainPredicate(param))
+                 .collect(Collectors.toList());
+ 
+-        return PageResult.build(SessionConverter.convert(filteredSessions), param.getPageNum(), param.getPageSize());
++        return PageResult.build(SessionConverter.convertGlobalSession(filteredSessions), param.getPageNum(), param.getPageSize());
+     }
+ 
+ 
+diff --git a/server/src/main/java/io/seata/server/coordinator/DefaultCoordinator.java b/server/src/main/java/io/seata/server/coordinator/DefaultCoordinator.java
+index 5929e1de4..cc4c4c2d2 100644
+--- a/server/src/main/java/io/seata/server/coordinator/DefaultCoordinator.java
++++ b/server/src/main/java/io/seata/server/coordinator/DefaultCoordinator.java
+@@ -16,13 +16,20 @@
+ package io.seata.server.coordinator;
+ 
+ import java.time.Duration;
++import java.util.ArrayList;
++import java.util.Arrays;
+ import java.util.Collection;
++import java.util.Collections;
++import java.util.List;
+ import java.util.Map;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.ExecutionException;
++import java.util.concurrent.ExecutorService;
++import java.util.concurrent.LinkedBlockingQueue;
+ import java.util.concurrent.ArrayBlockingQueue;
+ import java.util.concurrent.ScheduledThreadPoolExecutor;
+ import java.util.concurrent.ThreadPoolExecutor;
+ import java.util.concurrent.TimeUnit;
+-
+ import io.netty.channel.Channel;
+ import io.seata.common.thread.NamedThreadFactory;
+ import io.seata.common.util.CollectionUtils;
+@@ -65,16 +72,15 @@ import io.seata.server.AbstractTCInboundHandler;
+ import io.seata.server.event.EventBusManager;
+ import io.seata.server.session.BranchSession;
+ import io.seata.server.session.GlobalSession;
++import io.seata.server.session.SessionCondition;
+ import io.seata.server.session.SessionHelper;
+ import io.seata.server.session.SessionHolder;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ import org.slf4j.MDC;
+ 
+-import static io.seata.common.Constants.ASYNC_COMMITTING;
+-import static io.seata.common.Constants.RETRY_COMMITTING;
+-import static io.seata.common.Constants.RETRY_ROLLBACKING;
+-import static io.seata.common.Constants.TX_TIMEOUT_CHECK;
++
++import static io.seata.common.Constants.HANDLE_ALL_SESSION;
+ import static io.seata.common.Constants.UNDOLOG_DELETE;
+ 
+ /**
+@@ -87,28 +93,11 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+     private static final int TIMED_TASK_SHUTDOWN_MAX_WAIT_MILLS = 5000;
+ 
+     /**
+-     * The constant COMMITTING_RETRY_PERIOD.
+-     */
+-    protected static final long COMMITTING_RETRY_PERIOD = CONFIG.getLong(ConfigurationKeys.COMMITING_RETRY_PERIOD,
+-            1000L);
+-
+-    /**
+-     * The constant ASYNC_COMMITTING_RETRY_PERIOD.
+-     */
+-    protected static final long ASYNC_COMMITTING_RETRY_PERIOD = CONFIG.getLong(
+-            ConfigurationKeys.ASYN_COMMITING_RETRY_PERIOD, 1000L);
+-
+-    /**
+-     * The constant ROLLBACKING_RETRY_PERIOD.
++     * The constant HANDLE_ALL_SESSION_PERIOD.
+      */
+-    protected static final long ROLLBACKING_RETRY_PERIOD = CONFIG.getLong(ConfigurationKeys.ROLLBACKING_RETRY_PERIOD,
++    protected static final long HANDLE_ALL_SESSION_PERIOD = CONFIG.getLong(ConfigurationKeys.HANDLE_ALL_SESSION_PERIOD,
+             1000L);
+ 
+-    /**
+-     * The constant TIMEOUT_RETRY_PERIOD.
+-     */
+-    protected static final long TIMEOUT_RETRY_PERIOD = CONFIG.getLong(ConfigurationKeys.TIMEOUT_RETRY_PERIOD, 1000L);
+-
+     /**
+      * The Transaction undo log delete period.
+      */
+@@ -141,21 +130,31 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+     private static final boolean ROLLBACK_RETRY_TIMEOUT_UNLOCK_ENABLE = ConfigurationFactory.getInstance().getBoolean(
+             ConfigurationKeys.ROLLBACK_RETRY_TIMEOUT_UNLOCK_ENABLE, false);
+ 
+-    private final ScheduledThreadPoolExecutor retryRollbacking = new ScheduledThreadPoolExecutor(1,
+-            new NamedThreadFactory("RetryRollbacking", 1));
++    private final ExecutorService retryRollbacking = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
++        new LinkedBlockingQueue<>(), new NamedThreadFactory("RetryRollbacking", 1));
+ 
+-    private final ScheduledThreadPoolExecutor retryCommitting = new ScheduledThreadPoolExecutor(1,
+-            new NamedThreadFactory("RetryCommitting", 1));
++    private final ExecutorService retryCommitting = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
++        new LinkedBlockingQueue<>(), new NamedThreadFactory("RetryCommitting", 1));
+ 
+-    private final ScheduledThreadPoolExecutor asyncCommitting = new ScheduledThreadPoolExecutor(1,
+-            new NamedThreadFactory("AsyncCommitting", 1));
++    private final ExecutorService asyncCommitting = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
++        new LinkedBlockingQueue<>(), new NamedThreadFactory("AsyncCommitting", 1));
+ 
+-    private final ScheduledThreadPoolExecutor timeoutCheck = new ScheduledThreadPoolExecutor(1,
+-            new NamedThreadFactory("TxTimeoutCheck", 1));
++    private final ExecutorService timeoutCheck = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
++        new LinkedBlockingQueue<>(), new NamedThreadFactory("TxTimeoutCheck", 1));
+ 
+     private final ScheduledThreadPoolExecutor undoLogDelete = new ScheduledThreadPoolExecutor(1,
+             new NamedThreadFactory("UndoLogDelete", 1));
+ 
++    private final ScheduledThreadPoolExecutor handleAllSession = new ScheduledThreadPoolExecutor(1,
++            new NamedThreadFactory("HandleAllSession", 1));
++
++    private final List<GlobalStatus> rollbackingStatuses =
++        Collections.unmodifiableList(Arrays.asList(GlobalStatus.TimeoutRollbacking,
++            GlobalStatus.TimeoutRollbackRetrying, GlobalStatus.RollbackRetrying, GlobalStatus.Rollbacking));
++
++    private final List<GlobalStatus> retryCommittingStatuses = Collections.unmodifiableList(
++        Arrays.asList(GlobalStatus.Committing, GlobalStatus.CommitRetrying));
++
+     private final ThreadPoolExecutor branchRemoveExecutor = new ThreadPoolExecutor(BRANCH_ASYNC_POOL_SIZE, BRANCH_ASYNC_POOL_SIZE,
+             Integer.MAX_VALUE, TimeUnit.MILLISECONDS,
+             new ArrayBlockingQueue<>(
+@@ -163,7 +162,6 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+             ), new NamedThreadFactory("branchSessionRemove", BRANCH_ASYNC_POOL_SIZE),
+             new ThreadPoolExecutor.CallerRunsPolicy());
+ 
+-
+     private RemotingServer remotingServer;
+ 
+     private final DefaultCore core;
+@@ -293,18 +291,85 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+                 core.lockQuery(request.getBranchType(), request.getResourceId(), request.getXid(), request.getLockKey()));
+     }
+ 
++    /**
++     * Handle all session.
++     */
++    protected void handleAllSession() {
++        SessionCondition sessionCondition = new SessionCondition(GlobalStatus.values());
++        sessionCondition.setLazyLoadBranch(true);
++        Collection<GlobalSession> allSessions =
++            SessionHolder.getRootSessionManager().findGlobalSessions(sessionCondition);
++        if (CollectionUtils.isEmpty(allSessions)) {
++            return;
++        }
++        List<GlobalSession> retryRollbackingSessions = new ArrayList<>();
++        List<GlobalSession> beginGlobalSessions = new ArrayList<>();
++        List<GlobalSession> retryCommittingSessions = new ArrayList<>();
++        List<GlobalSession> asyncCommittingSessions = new ArrayList<>();
++        for (GlobalSession session : allSessions) {
++            if (rollbackingStatuses.contains(session.getStatus())) {
++                retryRollbackingSessions.add(session);
++            } else if (retryCommittingStatuses.contains(session.getStatus())) {
++                retryCommittingSessions.add(session);
++            } else if (GlobalStatus.AsyncCommitting.equals(session.getStatus())) {
++                asyncCommittingSessions.add(session);
++            } else if (GlobalStatus.Begin.equals(session.getStatus())) {
++                beginGlobalSessions.add(session);
++            }
++        }
++        List<CompletableFuture<Void>> futures = new ArrayList<>(4);
++        if (!retryRollbackingSessions.isEmpty()) {
++            futures.add(
++                CompletableFuture.runAsync(() -> handleRetryRollbacking(retryRollbackingSessions), retryRollbacking));
++        }
++        if (!beginGlobalSessions.isEmpty()) {
++            futures.add(CompletableFuture.runAsync(() -> timeoutCheck(beginGlobalSessions), timeoutCheck));
++        }
++        if (!retryCommittingSessions.isEmpty()) {
++            futures.add(
++                CompletableFuture.runAsync(() -> handleRetryCommitting(retryCommittingSessions), retryCommitting));
++        }
++        if (!asyncCommittingSessions.isEmpty()) {
++            futures.add(
++                CompletableFuture.runAsync(() -> handleAsyncCommitting(asyncCommittingSessions), asyncCommitting));
++        }
++        if (CollectionUtils.isNotEmpty(futures)) {
++            try {
++                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get();
++            } catch (InterruptedException e) {
++                LOGGER.error("transaction task thread ran abnormally: {}", e.getMessage(), e);
++            } catch (ExecutionException e) {
++                Throwable throwable = e.getCause() != null ? e.getCause() : e;
++                LOGGER.error("task execution exception: {}", throwable.getMessage(), throwable);
++            }
++        }
++    }
++
+     /**
+      * Timeout check.
+      */
++    @Deprecated
+     protected void timeoutCheck() {
+-        Collection<GlobalSession> allSessions = SessionHolder.getRootSessionManager().allSessions();
+-        if (CollectionUtils.isEmpty(allSessions)) {
++        SessionCondition sessionCondition = new SessionCondition(new GlobalStatus[] {GlobalStatus.Begin});
++        sessionCondition.setLazyLoadBranch(true);
++        Collection<GlobalSession> allSessions =
++            SessionHolder.getRootSessionManager().findGlobalSessions(sessionCondition);
++        timeoutCheck(allSessions);
++    }
++
++    /**
++     * Timeout check.
++     *
++     * @param beginGlobalsessions
++     */
++    protected void timeoutCheck(Collection<GlobalSession> beginGlobalsessions) {
++        if (CollectionUtils.isEmpty(beginGlobalsessions)) {
+             return;
+         }
+-        if (!allSessions.isEmpty() && LOGGER.isDebugEnabled()) {
+-            LOGGER.debug("Global transaction timeout check begin, size: {}", allSessions.size());
++        if (!beginGlobalsessions.isEmpty() && LOGGER.isDebugEnabled()) {
++            LOGGER.debug("Global transaction timeout check begin, size: {}", beginGlobalsessions.size());
+         }
+-        SessionHelper.forEach(allSessions, globalSession -> {
++        SessionHelper.forEach(beginGlobalsessions, globalSession -> {
+             if (LOGGER.isDebugEnabled()) {
+                 LOGGER.debug(
+                         globalSession.getXid() + " " + globalSession.getStatus() + " " + globalSession.getBeginTime() + " "
+@@ -335,7 +400,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+                 return true;
+             });
+         });
+-        if (!allSessions.isEmpty() && LOGGER.isDebugEnabled()) {
++        if (!beginGlobalsessions.isEmpty() && LOGGER.isDebugEnabled()) {
+             LOGGER.debug("Global transaction timeout check end. ");
+         }
+ 
+@@ -344,11 +409,21 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+     /**
+      * Handle retry rollbacking.
+      */
++    @Deprecated
+     protected void handleRetryRollbacking() {
+-        Collection<GlobalSession> rollbackingSessions = SessionHolder.getRetryRollbackingSessionManager().allSessions();
+-        if (CollectionUtils.isEmpty(rollbackingSessions)) {
+-            return;
+-        }
++        SessionCondition sessionCondition =
++                new SessionCondition(rollbackingStatuses.toArray(new GlobalStatus[0]));
++        Collection<GlobalSession> rollbackingSessions =
++                SessionHolder.getRetryRollbackingSessionManager().findGlobalSessions(sessionCondition);
++        handleRetryRollbacking(rollbackingSessions);
++    }
++
++    /**
++     * Handle retry rollbacking.
++     *
++     * @param rollbackingSessions
++     */
++    protected void handleRetryRollbacking(Collection<GlobalSession> rollbackingSessions) {
+         long now = System.currentTimeMillis();
+         SessionHelper.forEach(rollbackingSessions, rollbackingSession -> {
+             try {
+@@ -377,9 +452,10 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+ 
+     /**
+      * Handle retry committing.
++     *
++     * @param committingSessions
+      */
+-    protected void handleRetryCommitting() {
+-        Collection<GlobalSession> committingSessions = SessionHolder.getRetryCommittingSessionManager().allSessions();
++    protected void handleRetryCommitting(Collection<GlobalSession> committingSessions) {
+         if (CollectionUtils.isEmpty(committingSessions)) {
+             return;
+         }
+@@ -412,20 +488,15 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+ 
+     /**
+      * Handle async committing.
++     * 
++     * @param asyncCommittingSessions
+      */
+-    protected void handleAsyncCommitting() {
+-        Collection<GlobalSession> asyncCommittingSessions = SessionHolder.getAsyncCommittingSessionManager()
+-                .allSessions();
++    protected void handleAsyncCommitting(Collection<GlobalSession> asyncCommittingSessions) {
+         if (CollectionUtils.isEmpty(asyncCommittingSessions)) {
+             return;
+         }
+         SessionHelper.forEach(asyncCommittingSessions, asyncCommittingSession -> {
+             try {
+-                // Instruction reordering in DefaultCore#asyncCommit may cause this situation
+-                if (GlobalStatus.AsyncCommitting != asyncCommittingSession.getStatus()) {
+-                    //The function of this 'return' is 'continue'.
+-                    return;
+-                }
+                 asyncCommittingSession.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
+                 core.doGlobalCommit(asyncCommittingSession, true);
+             } catch (TransactionException ex) {
+@@ -464,18 +535,9 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+      * Init.
+      */
+     public void init() {
+-        retryRollbacking.scheduleAtFixedRate(() -> SessionHolder.distributedLockAndExecute(RETRY_ROLLBACKING, this::handleRetryRollbacking),
+-                0, ROLLBACKING_RETRY_PERIOD, TimeUnit.MILLISECONDS);
+-
+-        retryCommitting.scheduleAtFixedRate(() -> SessionHolder.distributedLockAndExecute(RETRY_COMMITTING, this::handleRetryCommitting),
+-                0, COMMITTING_RETRY_PERIOD, TimeUnit.MILLISECONDS);
+-
+-        asyncCommitting.scheduleAtFixedRate(() -> SessionHolder.distributedLockAndExecute(ASYNC_COMMITTING, this::handleAsyncCommitting),
+-                0, ASYNC_COMMITTING_RETRY_PERIOD, TimeUnit.MILLISECONDS);
+-
+-        timeoutCheck.scheduleAtFixedRate(() -> SessionHolder.distributedLockAndExecute(TX_TIMEOUT_CHECK, this::timeoutCheck),
+-                0, TIMEOUT_RETRY_PERIOD, TimeUnit.MILLISECONDS);
+-
++        handleAllSession.scheduleAtFixedRate(
++            () -> SessionHolder.distributedLockAndExecute(HANDLE_ALL_SESSION, this::handleAllSession), 0,
++                HANDLE_ALL_SESSION_PERIOD, TimeUnit.MILLISECONDS);
+         undoLogDelete.scheduleAtFixedRate(() -> SessionHolder.distributedLockAndExecute(UNDOLOG_DELETE, this::undoLogDelete),
+                 UNDO_LOG_DELAY_DELETE_PERIOD, UNDO_LOG_DELETE_PERIOD, TimeUnit.MILLISECONDS);
+     }
+@@ -502,12 +564,14 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
+     @Override
+     public void destroy() {
+         // 1. first shutdown timed task
++        handleAllSession.shutdown();
+         retryRollbacking.shutdown();
+         retryCommitting.shutdown();
+         asyncCommitting.shutdown();
+         timeoutCheck.shutdown();
+         branchRemoveExecutor.shutdown();
+         try {
++            handleAllSession.awaitTermination(TIMED_TASK_SHUTDOWN_MAX_WAIT_MILLS, TimeUnit.MILLISECONDS);
+             retryRollbacking.awaitTermination(TIMED_TASK_SHUTDOWN_MAX_WAIT_MILLS, TimeUnit.MILLISECONDS);
+             retryCommitting.awaitTermination(TIMED_TASK_SHUTDOWN_MAX_WAIT_MILLS, TimeUnit.MILLISECONDS);
+             asyncCommitting.awaitTermination(TIMED_TASK_SHUTDOWN_MAX_WAIT_MILLS, TimeUnit.MILLISECONDS);
+diff --git a/server/src/main/java/io/seata/server/coordinator/DefaultCore.java b/server/src/main/java/io/seata/server/coordinator/DefaultCore.java
+index 0369a17ae..8b76dfbcd 100644
+--- a/server/src/main/java/io/seata/server/coordinator/DefaultCore.java
++++ b/server/src/main/java/io/seata/server/coordinator/DefaultCore.java
+@@ -252,15 +252,20 @@ public class DefaultCore implements Core {
+                 LOGGER.info("Committing global transaction is NOT done, xid = {}.", globalSession.getXid());
+                 return false;
+             }
++            if (!retrying) {
++                globalSession.setStatus(GlobalStatus.Committed);
++            }
+         }
+-        // if it succeeds and there is no branch, retrying=true is the asynchronous state when retrying. EndCommitted is executed to improve concurrency performance, and the global transaction ends..
++        // if it succeeds and there is no branch, retrying=true is the asynchronous state when retrying. EndCommitted is
++        // executed to improve concurrency performance, and the global transaction ends..
+         if (success && globalSession.getBranchSessions().isEmpty() && retrying) {
+             SessionHelper.endCommitted(globalSession);
+ 
+             // committed event
+             eventBus.post(new GlobalTransactionEvent(globalSession.getTransactionId(), GlobalTransactionEvent.ROLE_TC,
+-                globalSession.getTransactionName(), globalSession.getApplicationId(), globalSession.getTransactionServiceGroup(),
+-                globalSession.getBeginTime(), System.currentTimeMillis(), globalSession.getStatus()));
++                globalSession.getTransactionName(), globalSession.getApplicationId(),
++                globalSession.getTransactionServiceGroup(), globalSession.getBeginTime(), System.currentTimeMillis(),
++                globalSession.getStatus()));
+ 
+             LOGGER.info("Committing global transaction is successfully done, xid = {}.", globalSession.getXid());
+         }
+@@ -342,6 +347,9 @@ public class DefaultCore implements Core {
+             if (result != null) {
+                 return result;
+             }
++            if (!retrying) {
++                globalSession.setStatus(GlobalStatus.Rollbacked);
++            }
+         }
+         // In db mode, lock and branch data residual problems may occur.
+         // Therefore, execution needs to be delayed here and cannot be executed synchronously.
+diff --git a/server/src/main/java/io/seata/server/session/BranchSession.java b/server/src/main/java/io/seata/server/session/BranchSession.java
+index 785332133..402701f44 100644
+--- a/server/src/main/java/io/seata/server/session/BranchSession.java
++++ b/server/src/main/java/io/seata/server/session/BranchSession.java
+@@ -406,7 +406,6 @@ public class BranchSession implements Lockable, Comparable<BranchSession>, Sessi
+             + 4 // applicationDataBytes.length
+             + 4 // xidBytes.size
+             + 1 // statusCode
+-            + 1 // lockStatus
+             + (resourceIdBytes == null ? 0 : resourceIdBytes.length)
+             + (lockKeyBytes == null ? 0 : lockKeyBytes.length)
+             + (clientIdBytes == null ? 0 : clientIdBytes.length)
+@@ -465,7 +464,6 @@ public class BranchSession implements Lockable, Comparable<BranchSession>, Sessi
+             this.branchType = BranchType.values()[branchTypeId];
+         }
+         this.status = BranchStatus.get(byteBuffer.get());
+-        this.lockStatus = LockStatus.get(byteBuffer.get());
+     }
+ 
+ }
+diff --git a/server/src/main/java/io/seata/server/session/GlobalSession.java b/server/src/main/java/io/seata/server/session/GlobalSession.java
+index 2f4b01e48..4d21e8b5e 100644
+--- a/server/src/main/java/io/seata/server/session/GlobalSession.java
++++ b/server/src/main/java/io/seata/server/session/GlobalSession.java
+@@ -19,6 +19,8 @@ import java.nio.ByteBuffer;
+ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.HashSet;
++import java.util.List;
++import java.util.Optional;
+ import java.util.Set;
+ import java.util.concurrent.TimeUnit;
+ import java.util.concurrent.locks.Lock;
+@@ -86,9 +88,11 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+ 
+     private String applicationData;
+ 
++    private final boolean lazyLoadBranch;
++
+     private volatile boolean active = true;
+ 
+-    private final ArrayList<BranchSession> branchSessions = new ArrayList<>();
++    private List<BranchSession> branchSessions;
+ 
+     private GlobalSessionLock globalSessionLock = new GlobalSessionLock();
+ 
+@@ -121,6 +125,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+      * @return the boolean
+      */
+     public boolean canBeCommittedAsync() {
++        List<BranchSession> branchSessions = getBranchSessions();
+         for (BranchSession branchSession : branchSessions) {
+             if (!branchSession.canBeCommittedAsync()) {
+                 return false;
+@@ -135,6 +140,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+      * @return the boolean
+      */
+     public boolean hasATBranch() {
++        List<BranchSession> branchSessions = getBranchSessions();
+         for (BranchSession branchSession : branchSessions) {
+             if (branchSession.getBranchType() == BranchType.AT) {
+                 return true;
+@@ -149,6 +155,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+      * @return is saga
+      */
+     public boolean isSaga() {
++        List<BranchSession> branchSessions = getBranchSessions();
+         if (branchSessions.size() > 0) {
+             return BranchType.SAGA == branchSessions.get(0).getBranchType();
+         } else {
+@@ -273,6 +280,18 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+         add(branchSession);
+     }
+ 
++    public void loadBranchs() {
++        if (branchSessions == null && isLazyLoadBranch()) {
++            synchronized (this) {
++                if (branchSessions == null && isLazyLoadBranch()) {
++                    branchSessions = new ArrayList<>();
++                    Optional.ofNullable(SessionHolder.getRootSessionManager().findGlobalSession(xid, true))
++                        .ifPresent(globalSession -> branchSessions.addAll(globalSession.getBranchSessions()));
++                }
++            }
++        }
++    }
++
+     @Override
+     public void removeBranch(BranchSession branchSession) throws TransactionException {
+         // do not unlock if global status in (Committing, CommitRetrying, AsyncCommitting),
+@@ -295,7 +314,8 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+      * @return the branch
+      */
+     public BranchSession getBranch(long branchId) {
+-        synchronized (branchSessions) {
++        synchronized (this) {
++            List<BranchSession> branchSessions = getBranchSessions();
+             for (BranchSession branchSession : branchSessions) {
+                 if (branchSession.getBranchId() == branchId) {
+                     return branchSession;
+@@ -311,8 +331,8 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+      *
+      * @return the sorted branches
+      */
+-    public ArrayList<BranchSession> getSortedBranches() {
+-        return new ArrayList<>(branchSessions);
++    public List<BranchSession> getSortedBranches() {
++        return new ArrayList<>(getBranchSessions());
+     }
+ 
+     /**
+@@ -320,8 +340,8 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+      *
+      * @return the reverse sorted branches
+      */
+-    public ArrayList<BranchSession> getReverseSortedBranches() {
+-        ArrayList<BranchSession> reversed = new ArrayList<>(branchSessions);
++    public List<BranchSession> getReverseSortedBranches() {
++        List<BranchSession> reversed = new ArrayList<>(getBranchSessions());
+         Collections.reverse(reversed);
+         return reversed;
+     }
+@@ -329,7 +349,9 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+     /**
+      * Instantiates a new Global session.
+      */
+-    public GlobalSession() {}
++    public GlobalSession() {
++        this.lazyLoadBranch = false;
++    }
+ 
+     /**
+      * Instantiates a new Global session.
+@@ -338,11 +360,15 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+      * @param transactionServiceGroup the transaction service group
+      * @param transactionName         the transaction name
+      * @param timeout                 the timeout
++     * @param lazyLoadBranch          the lazy load branch
+      */
+-    public GlobalSession(String applicationId, String transactionServiceGroup, String transactionName, int timeout) {
++    public GlobalSession(String applicationId, String transactionServiceGroup, String transactionName, int timeout, boolean lazyLoadBranch) {
+         this.transactionId = UUIDGenerator.generateUUID();
+         this.status = GlobalStatus.Begin;
+-
++        this.lazyLoadBranch = lazyLoadBranch;
++        if (!lazyLoadBranch) {
++            this.branchSessions = new ArrayList<>();
++        }
+         this.applicationId = applicationId;
+         this.transactionServiceGroup = transactionServiceGroup;
+         this.transactionName = transactionName;
+@@ -350,6 +376,18 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+         this.xid = XID.generateXID(transactionId);
+     }
+ 
++    /**
++     * Instantiates a new Global session.
++     *
++     * @param applicationId           the application id
++     * @param transactionServiceGroup the transaction service group
++     * @param transactionName         the transaction name
++     * @param timeout                 the timeout
++     */
++    public GlobalSession(String applicationId, String transactionServiceGroup, String transactionName, int timeout) {
++        this(applicationId, transactionServiceGroup, transactionName, timeout, false);
++    }
++
+     /**
+      * Gets transaction id.
+      *
+@@ -476,6 +514,10 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+         this.applicationData = applicationData;
+     }
+ 
++    public boolean isLazyLoadBranch() {
++        return lazyLoadBranch;
++    }
++
+     /**
+      * Create global session global session.
+      *
+@@ -487,7 +529,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+      */
+     public static GlobalSession createGlobalSession(String applicationId, String txServiceGroup, String txName,
+         int timeout) {
+-        GlobalSession session = new GlobalSession(applicationId, txServiceGroup, txName, timeout);
++        GlobalSession session = new GlobalSession(applicationId, txServiceGroup, txName, timeout, false);
+         return session;
+     }
+ 
+@@ -585,6 +627,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+ 
+     @Override
+     public void decode(byte[] a) {
++        this.branchSessions = new ArrayList<>();
+         ByteBuffer byteBuffer = ByteBuffer.wrap(a);
+         this.transactionId = byteBuffer.getLong();
+         this.timeout = byteBuffer.getInt();
+@@ -629,7 +672,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+      * @return the boolean
+      */
+     public boolean hasBranch() {
+-        return branchSessions.size() > 0;
++        return getBranchSessions().size() > 0;
+     }
+ 
+     public void lock() throws TransactionException {
+@@ -674,7 +717,8 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+         V call() throws TransactionException;
+     }
+ 
+-    public ArrayList<BranchSession> getBranchSessions() {
++    public List<BranchSession> getBranchSessions() {
++        loadBranchs();
+         return branchSessions;
+     }
+ 
+@@ -700,4 +744,5 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
+         }
+         SessionHolder.getRetryRollbackingSessionManager().addGlobalSession(this);
+     }
++
+ }
+diff --git a/server/src/main/java/io/seata/server/session/SessionCondition.java b/server/src/main/java/io/seata/server/session/SessionCondition.java
+index 3a6dd8f1e..de4c919c1 100644
+--- a/server/src/main/java/io/seata/server/session/SessionCondition.java
++++ b/server/src/main/java/io/seata/server/session/SessionCondition.java
+@@ -28,6 +28,7 @@ public class SessionCondition {
+     private GlobalStatus status;
+     private GlobalStatus[] statuses;
+     private long overTimeAliveMills;
++    private boolean lazyLoadBranch;
+ 
+     /**
+      * Instantiates a new Session condition.
+@@ -51,7 +52,7 @@ public class SessionCondition {
+      */
+     public SessionCondition(GlobalStatus status) {
+         this.status = status;
+-        statuses = new GlobalStatus[] {status};
++        this.statuses = new GlobalStatus[] {status};
+     }
+ 
+     /**
+@@ -131,4 +132,13 @@ public class SessionCondition {
+     public void setStatuses(GlobalStatus[] statuses) {
+         this.statuses = statuses;
+     }
++
++    public boolean isLazyLoadBranch() {
++        return lazyLoadBranch;
++    }
++
++    public void setLazyLoadBranch(boolean lazyLoadBranch) {
++        this.lazyLoadBranch = lazyLoadBranch;
++    }
++
+ }
+diff --git a/server/src/main/java/io/seata/server/session/SessionHolder.java b/server/src/main/java/io/seata/server/session/SessionHolder.java
+index 563a7d92d..6a809ed8a 100644
+--- a/server/src/main/java/io/seata/server/session/SessionHolder.java
++++ b/server/src/main/java/io/seata/server/session/SessionHolder.java
+@@ -39,6 +39,7 @@ import io.seata.core.store.DistributedLockDO;
+ import io.seata.core.store.DistributedLocker;
+ import io.seata.server.lock.distributed.DistributedLockerFactory;
+ import io.seata.core.store.StoreMode;
++import io.seata.core.model.LockStatus;
+ 
+ import static io.seata.common.DefaultValues.SERVER_DEFAULT_STORE_MODE;
+ 
+@@ -180,7 +181,11 @@ public class SessionHolder {
+                     default: {
+                         if (storeMode == StoreMode.FILE) {
+                             lockBranchSessions(globalSession.getSortedBranches());
+-
++                            if (GlobalStatus.Rollbacking.equals(globalSession.getStatus())) {
++                                globalSession.getBranchSessions().parallelStream().forEach(branchSession -> {
++                                    branchSession.setLockStatus(LockStatus.Rollbacking);
++                                });
++                            }
+                             switch (globalStatus) {
+                                 case Committing:
+                                 case CommitRetrying:
+@@ -230,7 +235,7 @@ public class SessionHolder {
+         }
+     }
+ 
+-    private static void lockBranchSessions(ArrayList<BranchSession> branchSessions) {
++    private static void lockBranchSessions(List<BranchSession> branchSessions) {
+         branchSessions.forEach(branchSession -> {
+             try {
+                 branchSession.lock();
+@@ -406,7 +411,7 @@ public class SessionHolder {
+     }
+ 
+     @FunctionalInterface
+-    public static interface NoArgsFunc {
+-        public void call();
++    public interface NoArgsFunc {
++        void call();
+     }
+ }
+diff --git a/server/src/main/java/io/seata/server/storage/SessionConverter.java b/server/src/main/java/io/seata/server/storage/SessionConverter.java
+index 2315e91bb..5d92671cc 100644
+--- a/server/src/main/java/io/seata/server/storage/SessionConverter.java
++++ b/server/src/main/java/io/seata/server/storage/SessionConverter.java
+@@ -41,14 +41,14 @@ import io.seata.server.store.SessionStorable;
+  */
+ public class SessionConverter {
+ 
+-    public static GlobalSession convertGlobalSession(GlobalTransactionDO globalTransactionDO) {
++    public static GlobalSession convertGlobalSession(GlobalTransactionDO globalTransactionDO, boolean lazyLoadBranch) {
+         if (globalTransactionDO == null) {
+             return null;
+         }
+         GlobalSession session = new GlobalSession(globalTransactionDO.getApplicationId(),
+                 globalTransactionDO.getTransactionServiceGroup(),
+                 globalTransactionDO.getTransactionName(),
+-                globalTransactionDO.getTimeout());
++                globalTransactionDO.getTimeout(), lazyLoadBranch);
+         session.setXid(globalTransactionDO.getXid());
+         session.setTransactionId(globalTransactionDO.getTransactionId());
+         session.setStatus(GlobalStatus.get(globalTransactionDO.getStatus()));
+@@ -57,6 +57,10 @@ public class SessionConverter {
+         return session;
+     }
+ 
++    public static GlobalSession convertGlobalSession(GlobalTransactionDO globalTransactionDO) {
++        return convertGlobalSession(globalTransactionDO, false);
++    }
++
+     public static BranchSession convertBranchSession(BranchTransactionDO branchTransactionDO) {
+         if (branchTransactionDO == null) {
+             return null;
+@@ -119,7 +123,7 @@ public class SessionConverter {
+      * @param filteredSessions the GlobalSession list
+      * @return the GlobalSessionVO list
+      */
+-    public static List<GlobalSessionVO> convert(List<GlobalSession> filteredSessions) {
++    public static List<GlobalSessionVO> convertGlobalSession(List<GlobalSession> filteredSessions) {
+ 
+         if (CollectionUtils.isEmpty(filteredSessions)) {
+             return Collections.emptyList();
+@@ -138,7 +142,7 @@ public class SessionConverter {
+                     (long) session.getTimeout(),
+                     session.getBeginTime(),
+                     session.getApplicationData(),
+-                    convert(session.getBranchSessions())
++                    convertBranchSession(session.getBranchSessions())
+             ));
+         }
+         return result;
+@@ -150,7 +154,7 @@ public class SessionConverter {
+      * @param branchSessions the BranchSession list
+      * @return the BranchSessionVO list
+      */
+-    public static Set<BranchSessionVO> convert(ArrayList<BranchSession> branchSessions) {
++    public static Set<BranchSessionVO> convertBranchSession(List<BranchSession> branchSessions) {
+ 
+         if (CollectionUtils.isEmpty(branchSessions)) {
+             return Collections.emptySet();
+diff --git a/server/src/main/java/io/seata/server/storage/db/lock/DataBaseDistributedLocker.java b/server/src/main/java/io/seata/server/storage/db/lock/DataBaseDistributedLocker.java
+index 45a47a162..0b39a0126 100644
+--- a/server/src/main/java/io/seata/server/storage/db/lock/DataBaseDistributedLocker.java
++++ b/server/src/main/java/io/seata/server/storage/db/lock/DataBaseDistributedLocker.java
+@@ -20,9 +20,8 @@ import java.sql.Connection;
+ import java.sql.PreparedStatement;
+ import java.sql.ResultSet;
+ import java.sql.SQLException;
+-import javax.sql.DataSource;
+ import java.util.Objects;
+-
++import javax.sql.DataSource;
+ import io.seata.common.exception.ShouldNeverHappenException;
+ import io.seata.common.loader.EnhancedServiceLoader;
+ import io.seata.common.loader.LoadLevel;
+@@ -31,9 +30,9 @@ import io.seata.common.util.IOUtil;
+ import io.seata.common.util.StringUtils;
+ import io.seata.config.Configuration;
+ import io.seata.config.ConfigurationCache;
++import io.seata.config.ConfigurationChangeEvent;
+ import io.seata.config.ConfigurationChangeListener;
+ import io.seata.config.ConfigurationFactory;
+-import io.seata.config.ConfigurationChangeEvent;
+ import io.seata.core.constants.ConfigurationKeys;
+ import io.seata.core.constants.ServerTableColumnsName;
+ import io.seata.core.store.DistributedLockDO;
+@@ -56,7 +55,7 @@ public class DataBaseDistributedLocker implements DistributedLocker {
+ 
+     private final String datasourceType;
+ 
+-    private String distributedLockTable;
++    private volatile String distributedLockTable;
+ 
+     private DataSource distributedLockDataSource;
+ 
+@@ -65,7 +64,7 @@ public class DataBaseDistributedLocker implements DistributedLocker {
+      * using for 1.5.0 only and will remove in 1.6.0
+      */
+     @Deprecated
+-    private boolean demotion;
++    private volatile boolean demotion;
+ 
+     /**
+      * Instantiates a new Log store data base dao.
+@@ -83,9 +82,10 @@ public class DataBaseDistributedLocker implements DistributedLocker {
+                 @Override
+                 public void onChangeEvent(ConfigurationChangeEvent event) {
+                     String newValue = event.getNewValue();
+-                    if (StringUtils.isNotBlank(newValue) && newValue.equalsIgnoreCase(distributedLockTable)) {
++                    if (StringUtils.isNotBlank(newValue)) {
+                         distributedLockTable = newValue;
+                         init();
++                        demotion = false;
+                         ConfigurationCache.removeConfigListener(DISTRIBUTED_LOCK_DB_TABLE, this);
+                     }
+                 }
+@@ -249,6 +249,6 @@ public class DataBaseDistributedLocker implements DistributedLocker {
+ 
+     private void init() {
+         this.distributedLockDataSource = EnhancedServiceLoader.load(DataSourceProvider.class, datasourceType).provide();
+-        demotion = true;
+     }
++
+ }
+diff --git a/server/src/main/java/io/seata/server/storage/db/store/DataBaseTransactionStoreManager.java b/server/src/main/java/io/seata/server/storage/db/store/DataBaseTransactionStoreManager.java
+index 6af1c576c..949b50dfe 100644
+--- a/server/src/main/java/io/seata/server/storage/db/store/DataBaseTransactionStoreManager.java
++++ b/server/src/main/java/io/seata/server/storage/db/store/DataBaseTransactionStoreManager.java
+@@ -16,6 +16,7 @@
+ package io.seata.server.storage.db.store;
+ 
+ import java.util.ArrayList;
++import java.util.Collections;
+ import java.util.LinkedHashMap;
+ import java.util.List;
+ import java.util.Map;
+@@ -173,7 +174,8 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
+      * @param statuses the statuses
+      * @return the list
+      */
+-    public List<GlobalSession> readSession(GlobalStatus[] statuses) {
++    @Override
++    public List<GlobalSession> readSession(GlobalStatus[] statuses, boolean withBranchSessions) {
+         int[] states = new int[statuses.length];
+         for (int i = 0; i < statuses.length; i++) {
+             states[i] = statuses[i].getCode();
+@@ -184,11 +186,17 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
+             return null;
+         }
+         List<String> xids = globalTransactionDOs.stream().map(GlobalTransactionDO::getXid).collect(Collectors.toList());
+-        List<BranchTransactionDO> branchTransactionDOs = logStore.queryBranchTransactionDO(xids);
+-        Map<String, List<BranchTransactionDO>> branchTransactionDOsMap = branchTransactionDOs.stream()
+-            .collect(Collectors.groupingBy(BranchTransactionDO::getXid, LinkedHashMap::new, Collectors.toList()));
+-        return globalTransactionDOs.stream().map(globalTransactionDO ->
+-            getGlobalSession(globalTransactionDO, branchTransactionDOsMap.get(globalTransactionDO.getXid())))
++        Map<String, List<BranchTransactionDO>> branchTransactionDOsMap;
++        if (withBranchSessions) {
++            List<BranchTransactionDO> branchTransactionDOs = logStore.queryBranchTransactionDO(xids);
++            branchTransactionDOsMap = branchTransactionDOs.stream()
++                .collect(Collectors.groupingBy(BranchTransactionDO::getXid, LinkedHashMap::new, Collectors.toList()));
++        } else {
++            branchTransactionDOsMap = Collections.emptyMap();
++        }
++        return globalTransactionDOs.stream()
++            .map(globalTransactionDO -> getGlobalSession(globalTransactionDO,
++                branchTransactionDOsMap.get(globalTransactionDO.getXid()), withBranchSessions))
+             .collect(Collectors.toList());
+     }
+ 
+@@ -209,15 +217,20 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
+                 return globalSessions;
+             }
+         } else if (CollectionUtils.isNotEmpty(sessionCondition.getStatuses())) {
+-            return readSession(sessionCondition.getStatuses());
++            return readSession(sessionCondition.getStatuses(), !sessionCondition.isLazyLoadBranch());
+         }
+         return null;
+     }
+ 
+     private GlobalSession getGlobalSession(GlobalTransactionDO globalTransactionDO,
+         List<BranchTransactionDO> branchTransactionDOs) {
+-        GlobalSession globalSession = SessionConverter.convertGlobalSession(globalTransactionDO);
+-        //branch transactions
++        return getGlobalSession(globalTransactionDO, branchTransactionDOs, true);
++    }
++
++    private GlobalSession getGlobalSession(GlobalTransactionDO globalTransactionDO,
++        List<BranchTransactionDO> branchTransactionDOs, boolean withBranchSessions) {
++        GlobalSession globalSession = SessionConverter.convertGlobalSession(globalTransactionDO, !withBranchSessions);
++        // branch transactions
+         if (CollectionUtils.isNotEmpty(branchTransactionDOs)) {
+             for (BranchTransactionDO branchTransactionDO : branchTransactionDOs) {
+                 globalSession.add(SessionConverter.convertBranchSession(branchTransactionDO));
+@@ -226,7 +239,6 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
+         return globalSession;
+     }
+ 
+-
+     /**
+      * Sets log store.
+      *
+diff --git a/server/src/main/java/io/seata/server/storage/file/lock/FileLockManager.java b/server/src/main/java/io/seata/server/storage/file/lock/FileLockManager.java
+index 1074fd775..37f8e2df0 100644
+--- a/server/src/main/java/io/seata/server/storage/file/lock/FileLockManager.java
++++ b/server/src/main/java/io/seata/server/storage/file/lock/FileLockManager.java
+@@ -15,7 +15,7 @@
+  */
+ package io.seata.server.storage.file.lock;
+ 
+-import java.util.ArrayList;
++import java.util.List;
+ 
+ import io.seata.common.loader.LoadLevel;
+ import io.seata.core.exception.TransactionException;
+@@ -42,7 +42,7 @@ public class FileLockManager extends AbstractLockManager {
+ 
+     @Override
+     public boolean releaseGlobalSessionLock(GlobalSession globalSession) throws TransactionException {
+-        ArrayList<BranchSession> branchSessions = globalSession.getBranchSessions();
++        List<BranchSession> branchSessions = globalSession.getBranchSessions();
+         boolean releaseLockResult = true;
+         for (BranchSession branchSession : branchSessions) {
+             try {
+diff --git a/server/src/main/java/io/seata/server/storage/redis/lock/RedisLocker.java b/server/src/main/java/io/seata/server/storage/redis/lock/RedisLocker.java
+index 499f8cb3c..bcfa57cc9 100644
+--- a/server/src/main/java/io/seata/server/storage/redis/lock/RedisLocker.java
++++ b/server/src/main/java/io/seata/server/storage/redis/lock/RedisLocker.java
+@@ -46,10 +46,8 @@ import org.slf4j.LoggerFactory;
+ import redis.clients.jedis.Jedis;
+ import redis.clients.jedis.Pipeline;
+ 
+-
+ import static io.seata.common.Constants.ROW_LOCK_KEY_SPLIT_CHAR;
+ import static io.seata.core.exception.TransactionExceptionCode.LockKeyConflictFailFast;
+-
+ /**
+  * The redis lock store operation
+  *
+@@ -149,9 +147,8 @@ public class RedisLocker extends AbstractLocker {
+         Long branchId = rowLocks.get(0).getBranchId();
+         List<LockDO> needLockDOS = convertToLockDO(rowLocks);
+         if (needLockDOS.size() > 1) {
+-            needLockDOS = needLockDOS.stream().
+-                filter(LambdaUtils.distinctByKey(LockDO::getRowKey))
+-                .collect(Collectors.toList());
++            needLockDOS =
++                needLockDOS.stream().filter(LambdaUtils.distinctByKey(LockDO::getRowKey)).collect(Collectors.toList());
+         }
+         List<String> needLockKeys = new ArrayList<>();
+         needLockDOS.forEach(lockDO -> needLockKeys.add(buildLockKey(lockDO.getRowKey())));
+@@ -220,14 +217,14 @@ public class RedisLocker extends AbstractLocker {
+         ArrayList<String> success = new ArrayList<>(partitions.size());
+         Integer status = SUCCEED;
+         for (int i = 0; i < partitions.size(); i++) {
+-            if (Objects.equals(partitions.get(i).get(0),FAILED)) {
++            if (Objects.equals(partitions.get(i).get(0), FAILED)) {
+                 status = FAILED;
+             } else {
+                 success.add(readyKeys.get(i));
+             }
+         }
+ 
+-        //If someone has failed,all the lockkey which has been added need to be delete.
++        // If someone has failed,all the lockkey which has been added need to be delete.
+         if (FAILED.equals(status)) {
+             if (success.size() > 0) {
+                 jedis.del(success.toArray(new String[0]));
+@@ -289,8 +286,7 @@ public class RedisLocker extends AbstractLocker {
+             needReleaseKeys[i] = buildLockKey(needReleaseLocks.get(i).getRowKey());
+         }
+ 
+-        try (Jedis jedis = JedisPooledFactory.getJedisInstance()) {
+-            Pipeline pipelined = jedis.pipelined();
++        try (Jedis jedis = JedisPooledFactory.getJedisInstance(); Pipeline pipelined = jedis.pipelined()) {
+             pipelined.del(needReleaseKeys);
+             pipelined.hdel(buildXidLockKey(currentXid), branchId.toString());
+             pipelined.sync();
+@@ -324,10 +320,11 @@ public class RedisLocker extends AbstractLocker {
+             }
+ 
+             String xid = rowLocks.get(0).getXid();
+-            Pipeline pipeline = jedis.pipelined();
+-            lockKeys.forEach(key -> pipeline.hget(key, XID));
+-            List<String> existedXids = (List<String>) (List) pipeline.syncAndReturnAll();
+-            return existedXids.stream().allMatch(existedXid -> existedXid == null || xid.equals(existedXid));
++            try (Pipeline pipeline = jedis.pipelined()) {
++                lockKeys.forEach(key -> pipeline.hget(key, XID));
++                List<String> existedXids = (List<String>)(List)pipeline.syncAndReturnAll();
++                return existedXids.stream().allMatch(existedXid -> existedXid == null || xid.equals(existedXid));
++            }
+         }
+     }
+ 
+diff --git a/server/src/main/java/io/seata/server/storage/redis/store/RedisTransactionStoreManager.java b/server/src/main/java/io/seata/server/storage/redis/store/RedisTransactionStoreManager.java
+index abf9d8459..7af84d934 100644
+--- a/server/src/main/java/io/seata/server/storage/redis/store/RedisTransactionStoreManager.java
++++ b/server/src/main/java/io/seata/server/storage/redis/store/RedisTransactionStoreManager.java
+@@ -166,11 +166,10 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+     private boolean insertBranchTransactionDO(BranchTransactionDO branchTransactionDO) {
+         String branchKey = buildBranchKey(branchTransactionDO.getBranchId());
+         String branchListKey = buildBranchListKeyByXid(branchTransactionDO.getXid());
+-        try (Jedis jedis = JedisPooledFactory.getJedisInstance()) {
++        try (Jedis jedis = JedisPooledFactory.getJedisInstance(); Pipeline pipelined = jedis.pipelined()) {
+             Date now = new Date();
+             branchTransactionDO.setGmtCreate(now);
+             branchTransactionDO.setGmtModified(now);
+-            Pipeline pipelined = jedis.pipelined();
+             pipelined.hmset(branchKey, BeanUtils.objectToMap(branchTransactionDO));
+             pipelined.rpush(branchListKey, branchKey);
+             pipelined.sync();
+@@ -193,10 +192,11 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+                 return true;
+             }
+             String branchListKey = buildBranchListKeyByXid(branchTransactionDO.getXid());
+-            Pipeline pipelined = jedis.pipelined();
+-            pipelined.lrem(branchListKey, 0, branchKey);
+-            pipelined.del(branchKey);
+-            pipelined.sync();
++            try (Pipeline pipelined = jedis.pipelined()) {
++                pipelined.lrem(branchListKey, 0, branchKey);
++                pipelined.del(branchKey);
++                pipelined.sync();
++            }
+             return true;
+         } catch (Exception ex) {
+             throw new RedisException(ex);
+@@ -235,11 +235,10 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+      */
+     private boolean insertGlobalTransactionDO(GlobalTransactionDO globalTransactionDO) {
+         String globalKey = buildGlobalKeyByTransactionId(globalTransactionDO.getTransactionId());
+-        try (Jedis jedis = JedisPooledFactory.getJedisInstance()) {
++        try (Jedis jedis = JedisPooledFactory.getJedisInstance(); Pipeline pipelined = jedis.pipelined()) {
+             Date now = new Date();
+             globalTransactionDO.setGmtCreate(now);
+             globalTransactionDO.setGmtModified(now);
+-            Pipeline pipelined = jedis.pipelined();
+             pipelined.hmset(globalKey, BeanUtils.objectToMap(globalTransactionDO));
+             pipelined.rpush(buildGlobalStatus(globalTransactionDO.getStatus()), globalTransactionDO.getXid());
+             pipelined.sync();
+@@ -267,10 +266,11 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+                     globalTransactionDO.getXid());
+                 return true;
+             }
+-            Pipeline pipelined = jedis.pipelined();
+-            pipelined.lrem(buildGlobalStatus(globalTransactionDO.getStatus()), 0, globalTransactionDO.getXid());
+-            pipelined.del(globalKey);
+-            pipelined.sync();
++            try (Pipeline pipelined = jedis.pipelined()) {
++                pipelined.lrem(buildGlobalStatus(globalTransactionDO.getStatus()), 0, globalTransactionDO.getXid());
++                pipelined.del(globalKey);
++                pipelined.sync();
++            }
+             return true;
+         } catch (Exception ex) {
+             throw new RedisException(ex);
+@@ -369,9 +369,10 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+             GlobalTransactionDO globalTransactionDO = (GlobalTransactionDO)BeanUtils.mapToObject(map, GlobalTransactionDO.class);
+             List<BranchTransactionDO> branchTransactionDOs = null;
+             if (withBranchSessions) {
+-                branchTransactionDOs = this.readBranchSessionByXid(jedis,xid);
++                branchTransactionDOs = this.readBranchSessionByXid(jedis, xid);
+             }
+-            return getGlobalSession(globalTransactionDO,branchTransactionDOs);
++            GlobalSession session = getGlobalSession(globalTransactionDO, branchTransactionDOs, withBranchSessions);
++            return session;
+         }
+     }
+ 
+@@ -393,7 +394,8 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+      * @param statuses the statuses
+      * @return the list
+      */
+-    public List<GlobalSession> readSession(GlobalStatus[] statuses) {
++    @Override
++    public List<GlobalSession> readSession(GlobalStatus[] statuses, boolean withBranchSessions) {
+         List<String> statusKeys = new ArrayList<>();
+         for (int i = 0; i < statuses.length; i++) {
+             statusKeys.add(buildGlobalStatus(statuses[i].getCode()));
+@@ -402,11 +404,12 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+             Pipeline pipelined = jedis.pipelined();
+             statusKeys.stream().forEach(statusKey -> pipelined.lrange(statusKey, 0, -1));
+             List<List<String>> list = (List<List<String>>)(List)pipelined.syncAndReturnAll();
++            pipelined.close();
+             List<GlobalSession> globalSessions = Collections.synchronizedList(new ArrayList<>());
+             if (CollectionUtils.isNotEmpty(list)) {
+                 List<String> xids = list.stream().flatMap(ll -> ll.stream()).collect(Collectors.toList());
+                 xids.parallelStream().forEach(xid -> {
+-                    GlobalSession globalSession = this.readSession(xid, true);
++                    GlobalSession globalSession = this.readSession(xid, withBranchSessions);
+                     if (globalSession != null) {
+                         globalSessions.add(globalSession);
+                     }
+@@ -438,9 +441,9 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+             }
+             return globalSessions;
+         } else if (CollectionUtils.isNotEmpty(sessionCondition.getStatuses())) {
+-            return readSession(sessionCondition.getStatuses());
++            return readSession(sessionCondition.getStatuses(), !sessionCondition.isLazyLoadBranch());
+         } else if (sessionCondition.getStatus() != null) {
+-            return readSession(new GlobalStatus[]{sessionCondition.getStatus()});
++            return readSession(new GlobalStatus[] {sessionCondition.getStatus()}, !sessionCondition.isLazyLoadBranch());
+         }
+         return null;
+     }
+@@ -449,11 +452,12 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+      * assemble the global session and branch session
+      * @param globalTransactionDO the global transactionDo
+      * @param branchTransactionDOs the branch transactionDos
++     * @param withBranchSessions if read branch sessions
+      * @return the global session with branch session
+      */
+     private GlobalSession getGlobalSession(GlobalTransactionDO globalTransactionDO,
+-        List<BranchTransactionDO> branchTransactionDOs) {
+-        GlobalSession globalSession = SessionConverter.convertGlobalSession(globalTransactionDO);
++        List<BranchTransactionDO> branchTransactionDOs, boolean withBranchSessions) {
++        GlobalSession globalSession = SessionConverter.convertGlobalSession(globalTransactionDO, !withBranchSessions);
+         if (CollectionUtils.isNotEmpty(branchTransactionDOs)) {
+             for (BranchTransactionDO branchTransactionDO : branchTransactionDOs) {
+                 globalSession.add(SessionConverter.convertBranchSession(branchTransactionDO));
+@@ -482,32 +486,34 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
+             }
+             List<BranchTransactionDO> branchTransactionDOs = new ArrayList<>();
+             if (withBranchSessions) {
+-                branchTransactionDOs = this.readBranchSessionByXid(jedis,xid);
++                branchTransactionDOs = this.readBranchSessionByXid(jedis, xid);
+             }
+-            return getGlobalSession(globalTransactionDO,branchTransactionDOs);
++            return getGlobalSession(globalTransactionDO, branchTransactionDOs, withBranchSessions);
+         }
+     }
+ 
++
+     /**
+      * Read the branch session list by xid
+-     * @param jedis
++     * @param jedis the jedis
+      * @param xid the xid
+      * @return the branch transactionDo list
+      */
+-    private List<BranchTransactionDO> readBranchSessionByXid(Jedis jedis,String xid) {
++    private List<BranchTransactionDO> readBranchSessionByXid(Jedis jedis, String xid) {
+         List<BranchTransactionDO> branchTransactionDOs = new ArrayList<>();
+         String branchListKey = buildBranchListKeyByXid(xid);
+         List<String> branchKeys = lRange(jedis, branchListKey);
+-        Pipeline pipeline = jedis.pipelined();
+         if (CollectionUtils.isNotEmpty(branchKeys)) {
+-            branchKeys.stream().forEach(branchKey -> pipeline.hgetAll(branchKey));
+-            List<Object> branchInfos = pipeline.syncAndReturnAll();
+-            for (Object branchInfo : branchInfos) {
+-                if (branchInfo != null) {
+-                    Map<String, String> branchInfoMap = (Map<String, String>) branchInfo;
+-                    Optional<BranchTransactionDO> branchTransactionDO =
+-                        Optional.ofNullable((BranchTransactionDO) BeanUtils.mapToObject(branchInfoMap, BranchTransactionDO.class));
+-                    branchTransactionDO.ifPresent(branchTransactionDOs::add);
++            try (Pipeline pipeline = jedis.pipelined()) {
++                branchKeys.stream().forEach(branchKey -> pipeline.hgetAll(branchKey));
++                List<Object> branchInfos = pipeline.syncAndReturnAll();
++                for (Object branchInfo : branchInfos) {
++                    if (branchInfo != null) {
++                        Map<String, String> branchInfoMap = (Map<String, String>)branchInfo;
++                        Optional<BranchTransactionDO> branchTransactionDO = Optional.ofNullable(
++                            (BranchTransactionDO)BeanUtils.mapToObject(branchInfoMap, BranchTransactionDO.class));
++                        branchTransactionDO.ifPresent(branchTransactionDOs::add);
++                    }
+                 }
+             }
+         }
+diff --git a/server/src/main/java/io/seata/server/store/AbstractTransactionStoreManager.java b/server/src/main/java/io/seata/server/store/AbstractTransactionStoreManager.java
+index 31e9813f8..a4b019f52 100644
+--- a/server/src/main/java/io/seata/server/store/AbstractTransactionStoreManager.java
++++ b/server/src/main/java/io/seata/server/store/AbstractTransactionStoreManager.java
+@@ -15,6 +15,7 @@
+  */
+ package io.seata.server.store;
+ 
++import io.seata.core.model.GlobalStatus;
+ import io.seata.server.session.GlobalSession;
+ import io.seata.server.session.SessionCondition;
+ 
+@@ -37,6 +38,11 @@ public abstract class AbstractTransactionStoreManager implements TransactionStor
+         return null;
+     }
+ 
++    @Override
++    public List<GlobalSession> readSession(GlobalStatus[] statuses, boolean withBranchSessions) {
++        return null;
++    }
++
+     @Override
+     public List<GlobalSession> readSession(SessionCondition sessionCondition) {
+         return null;
+diff --git a/server/src/main/java/io/seata/server/store/TransactionStoreManager.java b/server/src/main/java/io/seata/server/store/TransactionStoreManager.java
+index f05ca772c..b71d70544 100644
+--- a/server/src/main/java/io/seata/server/store/TransactionStoreManager.java
++++ b/server/src/main/java/io/seata/server/store/TransactionStoreManager.java
+@@ -15,6 +15,7 @@
+  */
+ package io.seata.server.store;
+ 
++import io.seata.core.model.GlobalStatus;
+ import io.seata.server.session.GlobalSession;
+ import io.seata.server.session.SessionCondition;
+ 
+@@ -54,6 +55,15 @@ public interface TransactionStoreManager {
+      */
+     GlobalSession readSession(String xid, boolean withBranchSessions);
+ 
++    /**
++     * Read session global session.
++     *
++     * @param statuses the statuses
++     * @param withBranchSessions the withBranchSessions
++     * @return the global session list
++     */
++    List<GlobalSession> readSession(GlobalStatus[] statuses, boolean withBranchSessions);
++
+     /**
+      * Read session by status list.
+      *
+diff --git a/server/src/main/java/io/seata/server/transaction/saga/SagaCore.java b/server/src/main/java/io/seata/server/transaction/saga/SagaCore.java
+index d66581442..ea17a0898 100644
+--- a/server/src/main/java/io/seata/server/transaction/saga/SagaCore.java
++++ b/server/src/main/java/io/seata/server/transaction/saga/SagaCore.java
+@@ -18,7 +18,6 @@ package io.seata.server.transaction.saga;
+ import java.io.IOException;
+ import java.util.Map;
+ import java.util.concurrent.TimeoutException;
+-
+ import io.netty.channel.Channel;
+ import io.seata.common.util.CollectionUtils;
+ import io.seata.core.exception.GlobalTransactionException;
+@@ -30,8 +29,8 @@ import io.seata.core.protocol.transaction.BranchCommitRequest;
+ import io.seata.core.protocol.transaction.BranchCommitResponse;
+ import io.seata.core.protocol.transaction.BranchRollbackRequest;
+ import io.seata.core.protocol.transaction.BranchRollbackResponse;
+-import io.seata.core.rpc.netty.ChannelManager;
+ import io.seata.core.rpc.RemotingServer;
++import io.seata.core.rpc.netty.ChannelManager;
+ import io.seata.server.coordinator.AbstractCore;
+ import io.seata.server.session.BranchSession;
+ import io.seata.server.session.GlobalSession;

@@ -1,0 +1,7 @@
+{
+  "issue_id": 5654,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5654",
+  "title": "Support calculate inflight messages for pop",
+  "description": "<p dir=\"auto\">In RIP 48, we introduce the concept of ready and inflight messages.</p>\n<p dir=\"auto\">And for pop consumption mode, we also need the metrics of inflight messages.</p>",
+  "description_text": "In RIP 48, we introduce the concept of ready and inflight messages.\nAnd for pop consumption mode, we also need the metrics of inflight messages."
+}

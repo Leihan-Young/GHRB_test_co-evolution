@@ -1,0 +1,20 @@
+diff --git a/common/src/main/java/org/apache/rocketmq/common/utils/NetworkUtil.java b/common/src/main/java/org/apache/rocketmq/common/utils/NetworkUtil.java
+index fa1d89314..5d05bc12f 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/utils/NetworkUtil.java
++++ b/common/src/main/java/org/apache/rocketmq/common/utils/NetworkUtil.java
+@@ -95,12 +95,12 @@ public class NetworkUtil {
+             ArrayList<String> ipv4Result = new ArrayList<>();
+             ArrayList<String> ipv6Result = new ArrayList<>();
+             while (enumeration.hasMoreElements()) {
+-                final NetworkInterface networkInterface = enumeration.nextElement();
+-                if (isBridge(networkInterface)) {
++                final NetworkInterface nif = enumeration.nextElement();
++                if (isBridge(nif) || nif.isVirtual() || nif.isPointToPoint() || !nif.isUp()) {
+                     continue;
+                 }
+ 
+-                final Enumeration<InetAddress> en = networkInterface.getInetAddresses();
++                final Enumeration<InetAddress> en = nif.getInetAddresses();
+                 while (en.hasMoreElements()) {
+                     final InetAddress address = en.nextElement();
+                     if (!address.isLoopbackAddress()) {

@@ -1,0 +1,89 @@
+diff --git a/auth/src/main/java/org/apache/rocketmq/auth/authentication/manager/AuthenticationMetadataManagerImpl.java b/auth/src/main/java/org/apache/rocketmq/auth/authentication/manager/AuthenticationMetadataManagerImpl.java
+index 5feabe8a6..3634a10cb 100644
+--- a/auth/src/main/java/org/apache/rocketmq/auth/authentication/manager/AuthenticationMetadataManagerImpl.java
++++ b/auth/src/main/java/org/apache/rocketmq/auth/authentication/manager/AuthenticationMetadataManagerImpl.java
+@@ -16,7 +16,7 @@
+  */
+ package org.apache.rocketmq.auth.authentication.manager;
+ 
+-import com.alibaba.fastjson.JSON;
++import com.alibaba.fastjson2.JSON;
+ import java.util.List;
+ import java.util.concurrent.CompletableFuture;
+ import org.apache.commons.lang3.StringUtils;
+diff --git a/auth/src/main/java/org/apache/rocketmq/auth/authentication/provider/LocalAuthenticationMetadataProvider.java b/auth/src/main/java/org/apache/rocketmq/auth/authentication/provider/LocalAuthenticationMetadataProvider.java
+index 6832102f5..dcf906182 100644
+--- a/auth/src/main/java/org/apache/rocketmq/auth/authentication/provider/LocalAuthenticationMetadataProvider.java
++++ b/auth/src/main/java/org/apache/rocketmq/auth/authentication/provider/LocalAuthenticationMetadataProvider.java
+@@ -35,7 +35,6 @@ import org.apache.rocketmq.auth.authentication.model.User;
+ import org.apache.rocketmq.auth.config.AuthConfig;
+ import org.apache.rocketmq.common.config.ConfigRocksDBStorage;
+ import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+-import org.checkerframework.checker.nullness.qual.NonNull;
+ import org.rocksdb.RocksIterator;
+ 
+ public class LocalAuthenticationMetadataProvider implements AuthenticationMetadataProvider {
+@@ -152,7 +151,7 @@ public class LocalAuthenticationMetadataProvider implements AuthenticationMetada
+         }
+ 
+         @Override
+-        public User load(@NonNull String username) {
++        public User load(String username) {
+             try {
+                 byte[] keyBytes = username.getBytes(StandardCharsets.UTF_8);
+                 byte[] valueBytes = storage.get(keyBytes);
+diff --git a/auth/src/main/java/org/apache/rocketmq/auth/authorization/provider/LocalAuthorizationMetadataProvider.java b/auth/src/main/java/org/apache/rocketmq/auth/authorization/provider/LocalAuthorizationMetadataProvider.java
+index b698444ac..bc6317810 100644
+--- a/auth/src/main/java/org/apache/rocketmq/auth/authorization/provider/LocalAuthorizationMetadataProvider.java
++++ b/auth/src/main/java/org/apache/rocketmq/auth/authorization/provider/LocalAuthorizationMetadataProvider.java
+@@ -40,7 +40,6 @@ import org.apache.rocketmq.auth.authorization.model.PolicyEntry;
+ import org.apache.rocketmq.auth.config.AuthConfig;
+ import org.apache.rocketmq.common.config.ConfigRocksDBStorage;
+ import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+-import org.checkerframework.checker.nullness.qual.NonNull;
+ import org.rocksdb.RocksIterator;
+ 
+ public class LocalAuthorizationMetadataProvider implements AuthorizationMetadataProvider {
+@@ -181,7 +180,7 @@ public class LocalAuthorizationMetadataProvider implements AuthorizationMetadata
+         }
+ 
+         @Override
+-        public Acl load(@NonNull String subjectKey) {
++        public Acl load(String subjectKey) {
+             try {
+                 byte[] keyBytes = subjectKey.getBytes(StandardCharsets.UTF_8);
+                 Subject subject = Subject.of(subjectKey);
+diff --git a/auth/src/main/java/org/apache/rocketmq/auth/migration/AuthMigrator.java b/auth/src/main/java/org/apache/rocketmq/auth/migration/AuthMigrator.java
+index f2e4f7a65..5229ce168 100644
+--- a/auth/src/main/java/org/apache/rocketmq/auth/migration/AuthMigrator.java
++++ b/auth/src/main/java/org/apache/rocketmq/auth/migration/AuthMigrator.java
+@@ -45,8 +45,8 @@ import org.apache.rocketmq.common.constant.CommonConstants;
+ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.common.resource.ResourcePattern;
+ import org.apache.rocketmq.common.resource.ResourceType;
+-import org.apache.rocketmq.logging.org.slf4j.Logger;
+-import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
+ 
+ public class AuthMigrator {
+ 
+diff --git a/client/src/main/java/org/apache/rocketmq/client/impl/MQAdminImpl.java b/client/src/main/java/org/apache/rocketmq/client/impl/MQAdminImpl.java
+index dd64571e4..b1d07b85f 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/impl/MQAdminImpl.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/MQAdminImpl.java
+@@ -264,11 +264,11 @@ public class MQAdminImpl {
+ 
+     public MessageExt viewMessage(String topic, String msgId)
+         throws RemotingException, MQBrokerException, InterruptedException, MQClientException {
+-        MessageId messageId = null;
++        MessageId messageId;
+         try {
+             messageId = MessageDecoder.decodeMessageId(msgId);
+-            return this.mQClientFactory.getMQAdminImpl().viewMessage(topic, msgId);
+-        } catch (Exception ignored) {
++        } catch (Exception e) {
++            throw new MQClientException(ResponseCode.NO_MESSAGE, "query message by id finished, but no message.");
+         }
+         return this.mQClientFactory.getMQClientAPIImpl().viewMessage(NetworkUtil.socketAddress2String(messageId.getAddress()),
+             topic, messageId.getOffset(), timeoutMillis);

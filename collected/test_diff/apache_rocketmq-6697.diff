@@ -1,0 +1,83 @@
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/service/BaseServiceTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/service/BaseServiceTest.java
+index d4172d900..baecd4742 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/service/BaseServiceTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/service/BaseServiceTest.java
+@@ -21,8 +21,8 @@ import java.util.HashMap;
+ import org.apache.rocketmq.client.exception.MQClientException;
+ import org.apache.rocketmq.common.MixAll;
+ import org.apache.rocketmq.proxy.config.InitConfigTest;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIExt;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIExt;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.route.MessageQueueView;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteService;
+ import org.apache.rocketmq.remoting.protocol.ResponseCode;
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/service/admin/DefaultAdminServiceTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/service/admin/DefaultAdminServiceTest.java
+index f0e618d11..cdfc7f7fc 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/service/admin/DefaultAdminServiceTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/service/admin/DefaultAdminServiceTest.java
+@@ -25,8 +25,8 @@ import org.apache.rocketmq.common.TopicConfig;
+ import org.apache.rocketmq.remoting.protocol.ResponseCode;
+ import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+ import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIExt;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIExt;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.junit.Before;
+ import org.junit.Test;
+ import org.junit.runner.RunWith;
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/service/message/ClusterMessageServiceTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/service/message/ClusterMessageServiceTest.java
+index 1a5a68ce2..734207f02 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/service/message/ClusterMessageServiceTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/service/message/ClusterMessageServiceTest.java
+@@ -22,7 +22,7 @@ import org.apache.rocketmq.common.message.MessageClientIDSetter;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.common.ProxyException;
+ import org.apache.rocketmq.proxy.common.ProxyExceptionCode;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteService;
+ import org.apache.rocketmq.remoting.protocol.ResponseCode;
+ import org.apache.rocketmq.remoting.protocol.header.AckMessageRequestHeader;
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIExtTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIExtTest.java
+index 61ec73388..77a119a29 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIExtTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIExtTest.java
+@@ -39,6 +39,8 @@ import org.apache.rocketmq.client.consumer.PullStatus;
+ import org.apache.rocketmq.client.impl.CommunicationMode;
+ import org.apache.rocketmq.client.impl.MQClientAPIImpl;
+ import org.apache.rocketmq.client.impl.consumer.PullResultExt;
++import org.apache.rocketmq.client.impl.mqclient.DoNothingClientRemotingProcessor;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIExt;
+ import org.apache.rocketmq.client.producer.SendResult;
+ import org.apache.rocketmq.client.producer.SendStatus;
+ import org.apache.rocketmq.common.message.MessageClientIDSetter;
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessorTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessorTest.java
+index eb90b9205..a6d807937 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessorTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessorTest.java
+@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutorService;
+ import java.util.concurrent.Executors;
+ import java.util.concurrent.atomic.AtomicInteger;
+ import org.apache.rocketmq.broker.client.ProducerManager;
++import org.apache.rocketmq.proxy.service.client.ProxyClientRemotingProcessor;
+ import org.apache.rocketmq.common.message.MessageAccessor;
+ import org.apache.rocketmq.common.message.MessageConst;
+ import org.apache.rocketmq.common.message.MessageDecoder;
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java
+index df98f31dc..078a1bc99 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java
+@@ -50,8 +50,8 @@ import org.apache.rocketmq.proxy.remoting.RemotingProxyOutClient;
+ import org.apache.rocketmq.proxy.remoting.channel.RemotingChannel;
+ import org.apache.rocketmq.proxy.service.admin.AdminService;
+ import org.apache.rocketmq.proxy.service.channel.SimpleChannel;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIExt;
+-import org.apache.rocketmq.proxy.service.mqclient.MQClientAPIFactory;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIExt;
++import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+ import org.apache.rocketmq.proxy.service.relay.ProxyRelayService;
+ import org.apache.rocketmq.proxy.service.route.MessageQueueView;
+ import org.apache.rocketmq.proxy.service.route.TopicRouteService;

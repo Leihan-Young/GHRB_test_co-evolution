@@ -1,0 +1,150 @@
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/metrics/ClassFanOutComplexityCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/metrics/ClassFanOutComplexityCheckTest.java
+index 37ea8df..241cf35 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/metrics/ClassFanOutComplexityCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/metrics/ClassFanOutComplexityCheckTest.java
+@@ -232,6 +232,15 @@ public class ClassFanOutComplexityCheckTest extends AbstractModuleTestSupport {
+     }
+ 
+     @Test
++    public void testImplementsAndNestedCount() throws Exception {
++        final String[] expected = {
++            "26:1: " + getCheckMessage(MSG_KEY, 3, 0),
++        };
++        verifyWithInlineConfigParser(
++                getPath("InputClassFanOutComplexityImplementsAndNestedCount.java"), expected);
++    }
++
++    @Test
+     public void testClassFanOutComplexityRecords() throws Exception {
+         final String[] expected = {
+             "32:1: " + getCheckMessage(MSG_KEY, 4, 2),
+@@ -263,10 +272,13 @@ public class ClassFanOutComplexityCheckTest extends AbstractModuleTestSupport {
+     }
+ 
+     @Test
+-    public void testClassFanOutComplexityRemoveMultiCatchBitwiseOr() throws Exception {
+-        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
++    public void testClassFanOutComplexityMultiCatchBitwiseOr() throws Exception {
++        final String[] expected = {
++            "27:1: " + getCheckMessage(MSG_KEY, 5, 4),
++        };
++
+         verifyWithInlineConfigParser(
+-                getPath("InputClassFanOutComplexityRemoveMultiCatchBitwiseOr.java"), expected);
++                getPath("InputClassFanOutComplexityMultiCatchBitwiseOr.java"), expected);
+     }
+ 
+     /**
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/utils/CheckUtilTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/utils/CheckUtilTest.java
+index 4bb0666..a27dc22 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/utils/CheckUtilTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/utils/CheckUtilTest.java
+@@ -23,7 +23,6 @@ import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.findTokenI
+ import static com.puppycrawl.tools.checkstyle.internal.utils.TestUtil.isUtilsClassHasPrivateConstructor;
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertFalse;
+-import static org.junit.jupiter.api.Assertions.assertNull;
+ import static org.junit.jupiter.api.Assertions.assertTrue;
+ import static org.junit.jupiter.api.Assertions.fail;
+ 
+@@ -40,7 +39,6 @@ import com.puppycrawl.tools.checkstyle.AbstractPathTestSupport;
+ import com.puppycrawl.tools.checkstyle.DetailAstImpl;
+ import com.puppycrawl.tools.checkstyle.JavaParser;
+ import com.puppycrawl.tools.checkstyle.api.DetailAST;
+-import com.puppycrawl.tools.checkstyle.api.FullIdent;
+ import com.puppycrawl.tools.checkstyle.api.TokenTypes;
+ import com.puppycrawl.tools.checkstyle.checks.naming.AccessModifierOption;
+ 
+@@ -156,23 +154,6 @@ public class CheckUtilTest extends AbstractPathTestSupport {
+     }
+ 
+     @Test
+-    public void testCreateFullType() throws Exception {
+-        final DetailAST typeNode = getNodeFromFile(TokenTypes.TYPE);
+-
+-        assertEquals("Map[13x12]", CheckUtil.createFullType(typeNode).toString(),
+-                "Invalid full type");
+-    }
+-
+-    @Test
+-    public void testCreateFullTypeOfArray() throws Exception {
+-        final DetailAST arrayTypeNode = getNodeFromFile(TokenTypes.VARIABLE_DEF)
+-                .getNextSibling().getFirstChild().getNextSibling();
+-
+-        assertEquals("int[][14x14]", CheckUtil.createFullType(arrayTypeNode).toString(),
+-                "Invalid full type");
+-    }
+-
+-    @Test
+     public void testGetTypeParameterNames() throws Exception {
+         final DetailAST parameterizedClassNode = getNodeFromFile(TokenTypes.CLASS_DEF);
+         final List<String> expected = Arrays.asList("V", "C");
+@@ -399,13 +380,6 @@ public class CheckUtilTest extends AbstractPathTestSupport {
+         assertEquals(expected, actual, "Result is not expected");
+     }
+ 
+-    @Test
+-    public void testNullChild() {
+-        final DetailAstImpl root = new DetailAstImpl();
+-        final FullIdent ident = CheckUtil.createFullType(root);
+-        assertNull(ident.getDetailAst(), "'ident' should be null");
+-    }
+-
+     private DetailAST getNodeFromFile(int type) throws Exception {
+         return getNode(JavaParser.parseFile(new File(getPath("InputCheckUtilTest.java")),
+             JavaParser.Options.WITH_COMMENTS), type);
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityImplementsAndNestedCount.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityImplementsAndNestedCount.java
+new file mode 100644
+index 000000000..3f5c0ba12
+--- /dev/null
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityImplementsAndNestedCount.java
+@@ -0,0 +1,33 @@
++/*
++ClassFanOutComplexity
++max = 0
++excludedClasses = (default)ArrayIndexOutOfBoundsException, ArrayList, Boolean, Byte, \
++                  Character, Class, Collection, Deprecated, Deque, Double, DoubleStream, \
++                  EnumSet, Exception, Float, FunctionalInterface, HashMap, HashSet, \
++                  IllegalArgumentException, IllegalStateException, IndexOutOfBoundsException, \
++                  IntStream, Integer, LinkedHashMap, LinkedHashSet, LinkedList, List, Long, \
++                  LongStream, Map, NullPointerException, Object, Optional, OptionalDouble, \
++                  OptionalInt, OptionalLong, Override, Queue, RuntimeException, SafeVarargs, \
++                  SecurityException, Set, Short, SortedMap, SortedSet, Stream, String, \
++                  StringBuffer, StringBuilder, SuppressWarnings, Throwable, TreeMap, TreeSet, \
++                  UnsupportedOperationException, Void, boolean, byte, char, double, float, \
++                  int, long, short, var, void
++excludeClassesRegexps = (default)^$
++excludedPackages = (default)
++
++
++*/
++
++package com.puppycrawl.tools.checkstyle.checks.metrics.classfanoutcomplexity;
++
++import java.io.Serializable;
++import java.util.RandomAccess;
++
++public class InputClassFanOutComplexityImplementsAndNestedCount // violation '.* Complexity is 3 .*'
++    extends Outer.Nested implements Serializable, RandomAccess {
++
++}
++
++class Outer {
++    static class Nested {}
++}
+diff --git a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityRemoveMultiCatchBitwiseOr.java b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityMultiCatchBitwiseOr.java
+similarity index 94%
+rename from src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityRemoveMultiCatchBitwiseOr.java
+rename to src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityMultiCatchBitwiseOr.java
+index 42b3b5bed..77c2e47a4 100644
+--- a/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityRemoveMultiCatchBitwiseOr.java
++++ b/src/test/resources/com/puppycrawl/tools/checkstyle/checks/metrics/classfanoutcomplexity/InputClassFanOutComplexityMultiCatchBitwiseOr.java
+@@ -24,7 +24,7 @@ import java.io.File;
+ import java.io.IOException;
+ import java.io.InputStream;
+ 
+-public class InputClassFanOutComplexityRemoveMultiCatchBitwiseOr { // ok
++public class InputClassFanOutComplexityMultiCatchBitwiseOr { // violation '.* Complexity is 5 .*'
+     public static void main(String[] args) {
+         try {
+             System.out.println(args[7]);

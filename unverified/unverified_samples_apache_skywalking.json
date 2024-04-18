@@ -1,0 +1,114 @@
+{
+  "apache_skywalking-9247": {
+    "bug_id": "apache_skywalking-9247",
+    "PR_number": 9247,
+    "PR_createdAt": "2022-06-18T04:09:46Z",
+    "merge_commit": "61278ddd0ef22d7aba0e6834d765eb6027c07770",
+    "buggy_commits": [
+      {
+        "oid": "0945b36dd8648623ea3d60fdf5b1bd5462f67815",
+        "message": "fix broken link in PR template (#9248)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/skywalking/issues/7572",
+      "createdAt": "2021-08-26T02:14:41Z",
+      "content": "bug_report_all/apache_skywalking-9247.json"
+    },
+    "changed_tests": [
+      "oap-server/server-alarm-plugin/src/test/java/org/apache/skywalking/oap/server/core/alarm/provider/RulesReaderTest.java",
+      "oap-server/server-alarm-plugin/src/test/java/org/apache/skywalking/oap/server/core/alarm/provider/pagerduty/PagerDutyHookCallbackTest.java"
+    ],
+    "PR_url": "https://github.com/apache/skywalking/pull/9247",
+    "merge_commit_url": "https://github.com/apache/skywalking/commit/61278ddd0ef22d7aba0e6834d765eb6027c07770",
+    "buggy_commit": "0945b36dd8648623ea3d60fdf5b1bd5462f67815",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.skywalking.oap.server.core.alarm.provider.RulesReaderTest#testReadRules"
+      ],
+      "test_tgt": [
+        ".org.apache.skywalking.oap.server.core.alarm.provider.RulesReaderTest#testReadRules"
+      ]
+    }
+  },
+  "apache_skywalking-11262": {
+    "bug_id": "apache_skywalking-11262",
+    "PR_number": 11262,
+    "PR_createdAt": "2023-08-25T01:12:49Z",
+    "merge_commit": "8763359fc1f4d8111072502bb5c861fb61be1f1a",
+    "buggy_commits": [
+      {
+        "oid": "a96d9a167849934376ef00d21cfb8f8c6621f136",
+        "message": "sync ui (#11253)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/skywalking/issues/11257",
+      "createdAt": "2023-08-24T07:31:28Z",
+      "content": "bug_report_all/apache_skywalking-11262.json"
+    },
+    "changed_tests": [
+      "oap-server/server-alarm-plugin/src/test/java/org/apache/skywalking/oap/server/core/alarm/provider/RulesReaderTest.java",
+      "oap-server/server-alarm-plugin/src/test/java/org/apache/skywalking/oap/server/core/alarm/provider/RunningRuleTest.java",
+      "oap-server/server-alarm-plugin/src/test/java/org/apache/skywalking/oap/server/core/alarm/provider/ThresholdTest.java",
+      "oap-server/server-alarm-plugin/src/test/java/org/apache/skywalking/oap/server/core/alarm/provider/expression/ExpressionContextTest.java",
+      "oap-server/server-alarm-plugin/src/test/java/org/apache/skywalking/oap/server/core/alarm/provider/expression/ExpressionTest.java"
+    ],
+    "PR_url": "https://github.com/apache/skywalking/pull/11262",
+    "merge_commit_url": "https://github.com/apache/skywalking/commit/8763359fc1f4d8111072502bb5c861fb61be1f1a",
+    "buggy_commit": "a96d9a167849934376ef00d21cfb8f8c6621f136",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.skywalking.oap.server.core.alarm.provider.AlarmMessageFormatterTest#testStringFormatWithNoArg",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.AlarmMessageFormatterTest#testStringFormatWithArg",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithEndpointCatalog",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithServiceInstanceCatalog",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithServiceCatalog",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithServiceRelationCatalog",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithServiceInstanceRelationCatalog",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithEndpointRelationCatalog"
+      ],
+      "test_tgt": [
+        ".org.apache.skywalking.oap.server.core.alarm.provider.AlarmMessageFormatterTest#testStringFormatWithNoArg",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.AlarmMessageFormatterTest#testStringFormatWithArg",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithEndpointCatalog",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithServiceInstanceCatalog",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithServiceCatalog",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithServiceRelationCatalog",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithServiceInstanceRelationCatalog",
+        ".org.apache.skywalking.oap.server.core.alarm.provider.NotifyHandlerTest#testNotifyWithEndpointRelationCatalog"
+      ]
+    }
+  },
+  "apache_skywalking-11897": {
+    "bug_id": "apache_skywalking-11897",
+    "PR_number": 11897,
+    "PR_createdAt": "2024-02-20T04:01:49Z",
+    "merge_commit": "a61b3bb1f760c5dc91650a1f4fb3704f527b3e16",
+    "buggy_commits": [
+      {
+        "oid": "a471b85ac2648d4a93ec4e853e4ee101324cf1bd",
+        "message": "Fix ServiceInstance `in` query. (#11888)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/skywalking/issues/11894",
+      "createdAt": "2024-02-20T02:41:07Z",
+      "content": "bug_report_all/apache_skywalking-11897.json"
+    },
+    "changed_tests": [
+      "oap-server/server-storage-plugin/storage-jdbc-hikaricp-plugin/src/test/java/org/apache/skywalking/oap/server/storage/plugin/jdbc/common/dao/JDBCHistoryDeleteDAOIT.java"
+    ],
+    "PR_url": "https://github.com/apache/skywalking/pull/11897",
+    "merge_commit_url": "https://github.com/apache/skywalking/commit/a61b3bb1f760c5dc91650a1f4fb3704f527b3e16",
+    "buggy_commit": "a471b85ac2648d4a93ec4e853e4ee101324cf1bd",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCHistoryDeleteDAOIT#test"
+      ],
+      "test_tgt": [
+        ".org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCHistoryDeleteDAOIT#test"
+      ]
+    }
+  }
+}

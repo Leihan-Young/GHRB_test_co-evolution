@@ -1,0 +1,12 @@
+diff --git a/namesrv/src/test/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManagerNewTest.java b/namesrv/src/test/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManagerNewTest.java
+index 6002d1f5a..b52cf5074 100644
+--- a/namesrv/src/test/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManagerNewTest.java
++++ b/namesrv/src/test/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManagerNewTest.java
+@@ -130,7 +130,6 @@ public class RouteInfoManagerNewTest {
+         topicList = TopicList.decode(content, TopicList.class);
+         assertThat(topicList.getTopicList()).contains("TestTopic", "TestTopic1", "TestTopic2");
+     }
+-
+     @Test
+     public void registerBroker() {
+         // Register master broker

@@ -1,0 +1,130 @@
+diff --git a/controller/src/test/java/org/apache/rocketmq/controller/impl/controller/ControllerManagerTest.java b/controller/src/test/java/org/apache/rocketmq/controller/ControllerManagerTest.java
+similarity index 99%
+rename from controller/src/test/java/org/apache/rocketmq/controller/impl/controller/ControllerManagerTest.java
+rename to controller/src/test/java/org/apache/rocketmq/controller/ControllerManagerTest.java
+index b7a4c328e..8ad67d404 100644
+--- a/controller/src/test/java/org/apache/rocketmq/controller/impl/controller/ControllerManagerTest.java
++++ b/controller/src/test/java/org/apache/rocketmq/controller/ControllerManagerTest.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.controller.impl.controller;
++package org.apache.rocketmq.controller;
+ 
+ import java.io.File;
+ import java.time.Duration;
+@@ -26,7 +26,6 @@ import java.util.concurrent.ScheduledExecutorService;
+ import java.util.concurrent.TimeUnit;
+ import org.apache.rocketmq.common.ControllerConfig;
+ import org.apache.rocketmq.common.UtilAll;
+-import org.apache.rocketmq.controller.ControllerManager;
+ import org.apache.rocketmq.controller.impl.DLedgerController;
+ import org.apache.rocketmq.remoting.RemotingClient;
+ import org.apache.rocketmq.remoting.netty.NettyClientConfig;
+diff --git a/controller/src/test/java/org/apache/rocketmq/controller/impl/controller/ControllerTestBase.java b/controller/src/test/java/org/apache/rocketmq/controller/ControllerTestBase.java
+similarity index 95%
+rename from controller/src/test/java/org/apache/rocketmq/controller/impl/controller/ControllerTestBase.java
+rename to controller/src/test/java/org/apache/rocketmq/controller/ControllerTestBase.java
+index 9b8fa757c..f77f49dcf 100644
+--- a/controller/src/test/java/org/apache/rocketmq/controller/impl/controller/ControllerTestBase.java
++++ b/controller/src/test/java/org/apache/rocketmq/controller/ControllerTestBase.java
+@@ -15,7 +15,7 @@
+  * limitations under the License.
+  */
+ 
+-package org.apache.rocketmq.controller.impl.controller;
++package org.apache.rocketmq.controller;
+ 
+ public class ControllerTestBase {
+ 
+diff --git a/controller/src/test/java/org/apache/rocketmq/controller/impl/controller/impl/DLedgerControllerTest.java b/controller/src/test/java/org/apache/rocketmq/controller/impl/DLedgerControllerTest.java
+similarity index 97%
+rename from controller/src/test/java/org/apache/rocketmq/controller/impl/controller/impl/DLedgerControllerTest.java
+rename to controller/src/test/java/org/apache/rocketmq/controller/impl/DLedgerControllerTest.java
+index 3bffad689..eaf78b63d 100644
+--- a/controller/src/test/java/org/apache/rocketmq/controller/impl/controller/impl/DLedgerControllerTest.java
++++ b/controller/src/test/java/org/apache/rocketmq/controller/impl/DLedgerControllerTest.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.controller.impl.controller.impl;
++package org.apache.rocketmq.controller.impl;
+ 
+ import io.openmessaging.storage.dledger.DLedgerConfig;
+ import java.io.File;
+@@ -31,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
+ import org.apache.rocketmq.common.ControllerConfig;
+ import org.apache.rocketmq.controller.Controller;
+ import org.apache.rocketmq.controller.elect.impl.DefaultElectPolicy;
+-import org.apache.rocketmq.controller.impl.DLedgerController;
+ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
+ import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
+ import org.apache.rocketmq.remoting.protocol.ResponseCode;
+@@ -49,9 +48,9 @@ import org.junit.After;
+ import org.junit.Before;
+ import org.junit.Test;
+ 
+-import static org.apache.rocketmq.controller.impl.controller.ControllerTestBase.DEFAULT_BROKER_NAME;
+-import static org.apache.rocketmq.controller.impl.controller.ControllerTestBase.DEFAULT_CLUSTER_NAME;
+-import static org.apache.rocketmq.controller.impl.controller.ControllerTestBase.DEFAULT_IP;
++import static org.apache.rocketmq.controller.ControllerTestBase.DEFAULT_BROKER_NAME;
++import static org.apache.rocketmq.controller.ControllerTestBase.DEFAULT_CLUSTER_NAME;
++import static org.apache.rocketmq.controller.ControllerTestBase.DEFAULT_IP;
+ import static org.awaitility.Awaitility.await;
+ import static org.junit.Assert.assertArrayEquals;
+ import static org.junit.Assert.assertEquals;
+diff --git a/controller/src/test/java/org/apache/rocketmq/controller/impl/controller/impl/DefaultBrokerHeartbeatManagerTest.java b/controller/src/test/java/org/apache/rocketmq/controller/impl/DefaultBrokerHeartbeatManagerTest.java
+similarity index 97%
+rename from controller/src/test/java/org/apache/rocketmq/controller/impl/controller/impl/DefaultBrokerHeartbeatManagerTest.java
+rename to controller/src/test/java/org/apache/rocketmq/controller/impl/DefaultBrokerHeartbeatManagerTest.java
+index 74de637dd..b97ea3249 100644
+--- a/controller/src/test/java/org/apache/rocketmq/controller/impl/controller/impl/DefaultBrokerHeartbeatManagerTest.java
++++ b/controller/src/test/java/org/apache/rocketmq/controller/impl/DefaultBrokerHeartbeatManagerTest.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.controller.impl.controller.impl;
++package org.apache.rocketmq.controller.impl;
+ 
+ import java.util.concurrent.CountDownLatch;
+ import java.util.concurrent.TimeUnit;
+diff --git a/controller/src/test/java/org/apache/rocketmq/controller/impl/controller/impl/manager/ReplicasInfoManagerTest.java b/controller/src/test/java/org/apache/rocketmq/controller/impl/manager/ReplicasInfoManagerTest.java
+similarity index 98%
+rename from controller/src/test/java/org/apache/rocketmq/controller/impl/controller/impl/manager/ReplicasInfoManagerTest.java
+rename to controller/src/test/java/org/apache/rocketmq/controller/impl/manager/ReplicasInfoManagerTest.java
+index f677daf28..19411e778 100644
+--- a/controller/src/test/java/org/apache/rocketmq/controller/impl/controller/impl/manager/ReplicasInfoManagerTest.java
++++ b/controller/src/test/java/org/apache/rocketmq/controller/impl/manager/ReplicasInfoManagerTest.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.controller.impl.controller.impl.manager;
++package org.apache.rocketmq.controller.impl.manager;
+ 
+ import java.util.Arrays;
+ import java.util.HashSet;
+@@ -29,7 +29,6 @@ import org.apache.rocketmq.controller.impl.heartbeat.DefaultBrokerHeartbeatManag
+ import org.apache.rocketmq.controller.impl.event.ControllerResult;
+ import org.apache.rocketmq.controller.impl.event.ElectMasterEvent;
+ import org.apache.rocketmq.controller.impl.event.EventMessage;
+-import org.apache.rocketmq.controller.impl.manager.ReplicasInfoManager;
+ import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
+ import org.apache.rocketmq.remoting.protocol.ResponseCode;
+ import org.apache.rocketmq.remoting.protocol.body.BrokerReplicasInfo;
+@@ -51,9 +50,9 @@ import org.junit.After;
+ import org.junit.Before;
+ import org.junit.Test;
+ 
+-import static org.apache.rocketmq.controller.impl.controller.ControllerTestBase.DEFAULT_BROKER_NAME;
+-import static org.apache.rocketmq.controller.impl.controller.ControllerTestBase.DEFAULT_CLUSTER_NAME;
+-import static org.apache.rocketmq.controller.impl.controller.ControllerTestBase.DEFAULT_IP;
++import static org.apache.rocketmq.controller.ControllerTestBase.DEFAULT_BROKER_NAME;
++import static org.apache.rocketmq.controller.ControllerTestBase.DEFAULT_CLUSTER_NAME;
++import static org.apache.rocketmq.controller.ControllerTestBase.DEFAULT_IP;
+ import static org.junit.Assert.assertArrayEquals;
+ import static org.junit.Assert.assertEquals;
+ import static org.junit.Assert.assertFalse;

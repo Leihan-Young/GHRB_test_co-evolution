@@ -1,0 +1,437 @@
+diff --git a/src/main/java/org/assertj/core/api/AbstractMatcherAssert.java b/src/main/java/org/assertj/core/api/AbstractMatcherAssert.java
+new file mode 100644
+index 000000000..6d92532b3
+--- /dev/null
++++ b/src/main/java/org/assertj/core/api/AbstractMatcherAssert.java
+@@ -0,0 +1,61 @@
++/*
++ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
++ * the License. You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
++ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
++ * specific language governing permissions and limitations under the License.
++ *
++ * Copyright 2012-2022 the original author or authors.
++ */
++package org.assertj.core.api;
++
++import static org.assertj.core.error.MatcherShouldMatch.shouldMatch;
++
++import java.util.regex.Matcher;
++import org.assertj.core.internal.Failures;
++
++
++/**
++ * Assertions for {@link java.util.regex.Matcher}
++ *
++ * @author Jiashu Zhang
++ */
++public abstract class AbstractMatcherAssert<SELF extends AbstractMatcherAssert<SELF>> extends
++  AbstractAssert<SELF, Matcher> {
++
++  protected AbstractMatcherAssert(Matcher actual, Class<?> selfType) {
++    super(actual, selfType);
++  }
++
++  /**
++   * Verifies that the Matcher matches.
++   * <p>
++   * Example:
++   * <pre><code class='java'>
++   * // Assertion will pass
++   * Pattern p = Pattern.compile("a*");
++   * String str = "aaa";
++   * Matcher matcher = p.matcher(str);
++   * assertThat(matcher).matches();
++   * // Assertion will fail :
++   * Pattern p = Pattern.compile("a*");
++   * String str = "abc";
++   * Matcher matcher = p.matcher(str);
++   * assertThat(matcher).matches();</code></pre>
++   *
++   * @return this assertion object.
++   * @throws AssertionError if actual does not match.
++   * @throws AssertionError if actual is null.
++   * @since 3.23.0
++   */
++  public SELF matches() {
++    isNotNull();
++    if (!actual.matches()) {
++      throw Failures.instance().failure(info, shouldMatch(actual));
++    }
++    return myself;
++  }
++}
+diff --git a/src/main/java/org/assertj/core/api/Assertions.java b/src/main/java/org/assertj/core/api/Assertions.java
+index 47bbd9a4f..ca05b5844 100644
+--- a/src/main/java/org/assertj/core/api/Assertions.java
++++ b/src/main/java/org/assertj/core/api/Assertions.java
+@@ -68,6 +68,7 @@ import java.util.function.Function;
+ import java.util.function.IntPredicate;
+ import java.util.function.LongPredicate;
+ import java.util.function.Predicate;
++import java.util.regex.Matcher;
+ import java.util.stream.DoubleStream;
+ import java.util.stream.IntStream;
+ import java.util.stream.LongStream;
+@@ -275,6 +276,17 @@ public class Assertions implements InstanceOfAssertFactories {
+     return AssertionsForClassTypes.assertThat(actual);
+   }
+ 
++  /**
++  * Create assertion for {@link java.util.regex.Matcher}.
++  *
++  * @param actual the actual value.
++  *
++  * @return the created assertion object.
++  */
++  public static MatcherAssert assertThat(Matcher actual) {
++    return AssertionsForClassTypes.assertThat(actual);
++  }
++
+   /**
+    * Creates a new instance of <code>{@link BigDecimalAssert}</code>.
+    *
+diff --git a/src/main/java/org/assertj/core/api/AssertionsForClassTypes.java b/src/main/java/org/assertj/core/api/AssertionsForClassTypes.java
+index 911d57dd6..eedcffc29 100644
+--- a/src/main/java/org/assertj/core/api/AssertionsForClassTypes.java
++++ b/src/main/java/org/assertj/core/api/AssertionsForClassTypes.java
+@@ -39,6 +39,7 @@ import java.util.OptionalInt;
+ import java.util.OptionalLong;
+ import java.util.concurrent.CompletableFuture;
+ 
++import java.util.regex.Matcher;
+ import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
+ import org.assertj.core.api.filter.FilterOperator;
+ import org.assertj.core.api.filter.Filters;
+@@ -120,6 +121,17 @@ public class AssertionsForClassTypes {
+     return new OptionalIntAssert(actual);
+   }
+ 
++  /**
++   * Create assertion for {@link java.util.regex.Matcher}
++   *
++   * @param actual the actual value
++   *
++   * @return the created assertion object
++   */
++  public static MatcherAssert assertThat(Matcher actual) {
++    return new MatcherAssert(actual);
++  }
++
+   /**
+    * Create assertion for {@link java.util.OptionalInt}.
+    *
+diff --git a/src/main/java/org/assertj/core/api/Assumptions.java b/src/main/java/org/assertj/core/api/Assumptions.java
+index 6cf756587..279027e7f 100644
+--- a/src/main/java/org/assertj/core/api/Assumptions.java
++++ b/src/main/java/org/assertj/core/api/Assumptions.java
+@@ -69,6 +69,7 @@ import java.util.function.DoublePredicate;
+ import java.util.function.IntPredicate;
+ import java.util.function.LongPredicate;
+ import java.util.function.Predicate;
++import java.util.regex.Matcher;
+ import java.util.stream.DoubleStream;
+ import java.util.stream.IntStream;
+ import java.util.stream.LongStream;
+@@ -1092,6 +1093,16 @@ public class Assumptions {
+     return asAssumption(OptionalDoubleAssert.class, OptionalDouble.class, actual);
+   }
+ 
++  /**
++   * Creates a new instance of {@link MatcherAssert} assumption.
++   *
++   * @param actual the Matcher to test
++   * @return the created assumption for assertion object.
++   */
++  public static MatcherAssert assumeThat(Matcher actual) {
++    return asAssumption(MatcherAssert.class, Matcher.class, actual);
++  }
++
+   /**
+    * Creates a new instance of {@link OptionalIntAssert} assumption.
+    *
+diff --git a/src/main/java/org/assertj/core/api/BDDAssertions.java b/src/main/java/org/assertj/core/api/BDDAssertions.java
+index 828aaee4f..1bb6856d2 100644
+--- a/src/main/java/org/assertj/core/api/BDDAssertions.java
++++ b/src/main/java/org/assertj/core/api/BDDAssertions.java
+@@ -65,6 +65,7 @@ import java.util.function.Function;
+ import java.util.function.IntPredicate;
+ import java.util.function.LongPredicate;
+ import java.util.function.Predicate;
++import java.util.regex.Matcher;
+ import java.util.stream.DoubleStream;
+ import java.util.stream.IntStream;
+ import java.util.stream.LongStream;
+@@ -265,6 +266,17 @@ public class BDDAssertions extends Assertions {
+     return assertThat(optional);
+   }
+ 
++  /**
++   * Create assertion for {@link java.util.regex.Matcher}
++   *
++   * @param actual the actual matcher
++   *
++   * @return the created assertion object.
++   */
++  public static MatcherAssert then(Matcher actual) {
++    return assertThat(actual);
++  }
++
+   /**
+    * Create assertion for {@link java.util.OptionalDouble}.
+    *
+diff --git a/src/main/java/org/assertj/core/api/BDDAssumptions.java b/src/main/java/org/assertj/core/api/BDDAssumptions.java
+index 3cd5de886..0e8d7f8c8 100644
+--- a/src/main/java/org/assertj/core/api/BDDAssumptions.java
++++ b/src/main/java/org/assertj/core/api/BDDAssumptions.java
+@@ -61,6 +61,7 @@ import java.util.function.DoublePredicate;
+ import java.util.function.IntPredicate;
+ import java.util.function.LongPredicate;
+ import java.util.function.Predicate;
++import java.util.regex.Matcher;
+ import java.util.stream.DoubleStream;
+ import java.util.stream.IntStream;
+ import java.util.stream.LongStream;
+@@ -1778,6 +1779,17 @@ public final class BDDAssumptions {
+     return assumeThat(actual);
+   }
+ 
++  /**
++   * Creates a new assumption's instance for an {@link Matcher}.
++   * <p>
++   *
++   * @param actual the actual {@link Matcher} value to be validated.
++   * @return the {@link Matcher} assertion object to be used for validation.
++   */
++  public static MatcherAssert given(Matcher actual) {
++    return assumeThat(actual);
++  }
++
+   /**
+    * Creates a new assumption's instance for an {@link OptionalLong} value.
+    * <p>
+diff --git a/src/main/java/org/assertj/core/api/BDDSoftAssertionsProvider.java b/src/main/java/org/assertj/core/api/BDDSoftAssertionsProvider.java
+index 22a3cc301..31d9043e4 100644
+--- a/src/main/java/org/assertj/core/api/BDDSoftAssertionsProvider.java
++++ b/src/main/java/org/assertj/core/api/BDDSoftAssertionsProvider.java
+@@ -35,6 +35,7 @@ import java.util.function.DoublePredicate;
+ import java.util.function.IntPredicate;
+ import java.util.function.LongPredicate;
+ import java.util.function.Predicate;
++import java.util.regex.Matcher;
+ import java.util.stream.DoubleStream;
+ import java.util.stream.IntStream;
+ import java.util.stream.LongStream;
+@@ -105,6 +106,19 @@ public interface BDDSoftAssertionsProvider extends Java6BDDSoftAssertionsProvide
+     return proxy(OptionalLongAssert.class, OptionalLong.class, actual);
+   }
+ 
++  /**
++   * Create assertion for {@link java.util.regex.Matcher}.
++   *
++   * @param actual the actual matcher
++   *
++   * @return the created assertion object.
++   */
++  @CheckReturnValue
++  default MatcherAssert then(Matcher actual) {
++    return proxy(MatcherAssert.class, Matcher.class, actual);
++  }
++
++
+   /**
+   * Creates a new instance of <code>{@link LocalDateAssert}</code>.
+   *
+diff --git a/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java b/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java
+index fffd8518e..3362e602a 100644
+--- a/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java
++++ b/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java
+@@ -58,6 +58,7 @@ import java.util.function.DoublePredicate;
+ import java.util.function.IntPredicate;
+ import java.util.function.LongPredicate;
+ import java.util.function.Predicate;
++import java.util.regex.Matcher;
+ import java.util.stream.DoubleStream;
+ import java.util.stream.IntStream;
+ import java.util.stream.LongStream;
+@@ -195,6 +196,12 @@ public interface InstanceOfAssertFactories {
+   InstanceOfAssertFactory<OptionalLong, OptionalLongAssert> OPTIONAL_LONG = new InstanceOfAssertFactory<>(OptionalLong.class,
+                                                                                                           Assertions::assertThat);
+ 
++  /**
++   * {@link InstanceOfAssertFactory} for an {@link Matcher}.
++   */
++  InstanceOfAssertFactory<Matcher, MatcherAssert> MATCHER = new InstanceOfAssertFactory<>(Matcher.class,
++    Assertions::assertThat);
++
+   /**
+    * {@link InstanceOfAssertFactory} for a {@link BigDecimal}.
+    */
+diff --git a/src/main/java/org/assertj/core/api/MatcherAssert.java b/src/main/java/org/assertj/core/api/MatcherAssert.java
+new file mode 100644
+index 000000000..8cfbda3dd
+--- /dev/null
++++ b/src/main/java/org/assertj/core/api/MatcherAssert.java
+@@ -0,0 +1,27 @@
++/*
++ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
++ * the License. You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
++ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
++ * specific language governing permissions and limitations under the License.
++ *
++ * Copyright 2012-2022 the original author or authors.
++ */
++package org.assertj.core.api;
++
++import java.util.regex.Matcher;
++
++/**
++ * Assertions for {@link java.util.regex.Matcher}.
++ *
++ * @author Jiashu Zhang
++ */
++public class MatcherAssert extends AbstractMatcherAssert<MatcherAssert>{
++
++  protected MatcherAssert(Matcher actual) {
++    super(actual, MatcherAssert.class);
++  }
++}
+diff --git a/src/main/java/org/assertj/core/api/StandardSoftAssertionsProvider.java b/src/main/java/org/assertj/core/api/StandardSoftAssertionsProvider.java
+index 8e4c744f0..ca3ceb938 100644
+--- a/src/main/java/org/assertj/core/api/StandardSoftAssertionsProvider.java
++++ b/src/main/java/org/assertj/core/api/StandardSoftAssertionsProvider.java
+@@ -35,6 +35,7 @@ import java.util.function.DoublePredicate;
+ import java.util.function.IntPredicate;
+ import java.util.function.LongPredicate;
+ import java.util.function.Predicate;
++import java.util.regex.Matcher;
+ import java.util.stream.DoubleStream;
+ import java.util.stream.IntStream;
+ import java.util.stream.LongStream;
+@@ -90,6 +91,17 @@ public interface StandardSoftAssertionsProvider extends Java6StandardSoftAsserti
+     return proxy(OptionalLongAssert.class, OptionalLong.class, actual);
+   }
+ 
++  /**
++   * Create assertion for {@link java.util.regex.Matcher}
++   *
++   * @param actual the actual matcher
++   *
++   * @return the created assertion object.
++   */
++  default MatcherAssert assertThat(Matcher actual) {
++    return proxy(MatcherAssert.class, Matcher.class, actual);
++  }
++
+   /**
+    * Create assertion for {@link java.util.OptionalInt}.
+    *
+diff --git a/src/main/java/org/assertj/core/api/WithAssertions.java b/src/main/java/org/assertj/core/api/WithAssertions.java
+index 9a081529a..61f8a99a3 100644
+--- a/src/main/java/org/assertj/core/api/WithAssertions.java
++++ b/src/main/java/org/assertj/core/api/WithAssertions.java
+@@ -65,6 +65,7 @@ import java.util.function.Function;
+ import java.util.function.IntPredicate;
+ import java.util.function.LongPredicate;
+ import java.util.function.Predicate;
++import java.util.regex.Matcher;
+ import java.util.stream.DoubleStream;
+ import java.util.stream.IntStream;
+ import java.util.stream.LongStream;
+@@ -2342,6 +2343,17 @@ public interface WithAssertions extends InstanceOfAssertFactories {
+     return Assertions.assertThat(optional);
+   }
+ 
++  /**
++   * Create assertion for {@link java.util.regex.Matcher}
++   *
++   *
++   * @param matcher the actual matcher.
++   * @return the created assertion object.
++   */
++  default MatcherAssert assertThat(final Matcher matcher) {
++    return Assertions.assertThat(matcher);
++  }
++
+   /**
+    * Create assertion for {@link java.util.OptionalInt}.
+    *
+diff --git a/src/main/java/org/assertj/core/api/WithAssumptions.java b/src/main/java/org/assertj/core/api/WithAssumptions.java
+index b3ff9ab5c..4c71dcdee 100644
+--- a/src/main/java/org/assertj/core/api/WithAssumptions.java
++++ b/src/main/java/org/assertj/core/api/WithAssumptions.java
+@@ -59,6 +59,7 @@ import java.util.function.DoublePredicate;
+ import java.util.function.IntPredicate;
+ import java.util.function.LongPredicate;
+ import java.util.function.Predicate;
++import java.util.regex.Matcher;
+ import java.util.stream.DoubleStream;
+ import java.util.stream.IntStream;
+ import java.util.stream.LongStream;
+@@ -953,6 +954,16 @@ public interface WithAssumptions {
+     return Assumptions.assumeThat(optionalLong);
+   }
+ 
++  /**
++   * Creates a new instance of <code>{@link MatcherAssert}</code> assumption.
++   *
++   * @param matcher the actual Matcher.
++   * @return the created assumption for assertion object.
++   */
++  default MatcherAssert assumeThat(final Matcher matcher) {
++    return Assumptions.assumeThat(matcher);
++  }
++
+   /**
+    * Creates a new instance of <code>{@link LocalDateTimeAssert}</code> assumption.
+    *
+diff --git a/src/main/java/org/assertj/core/error/MatcherShouldMatch.java b/src/main/java/org/assertj/core/error/MatcherShouldMatch.java
+new file mode 100644
+index 000000000..e4123d104
+--- /dev/null
++++ b/src/main/java/org/assertj/core/error/MatcherShouldMatch.java
+@@ -0,0 +1,36 @@
++/*
++ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
++ * the License. You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
++ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
++ * specific language governing permissions and limitations under the License.
++ *
++ * Copyright 2012-2022 the original author or authors.
++ */
++package org.assertj.core.error;
++
++import java.util.regex.Matcher;
++
++/**
++ * Build error message when an {@link java.util.regex.Matcher} should match.
++ *
++ * @author Jiashu Zhang
++ */
++public class MatcherShouldMatch extends BasicErrorMessageFactory {
++  private MatcherShouldMatch(Matcher matcher) {
++    super("%nExpecting %s to match.", matcher);
++  }
++
++  /**
++   * Indicates that the provided {@link java.util.regex.Matcher} should match.
++   *
++   * @param matcher the actual {@link Matcher} to test.
++   * @return an error message factory.
++   */
++  public static MatcherShouldMatch shouldMatch(Matcher matcher) {
++    return new MatcherShouldMatch(matcher);
++  }
++}

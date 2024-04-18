@@ -1,0 +1,2267 @@
+{
+  "apache_rocketmq-5062": {
+    "bug_id": "apache_rocketmq-5062",
+    "PR_number": 5062,
+    "PR_createdAt": "2022-09-13T13:29:17Z",
+    "merge_commit": "4af193e3253a8b7e15e8447ae00d6df079599919",
+    "buggy_commits": [
+      {
+        "oid": "03ffc45a8b93844b692b7a834cf28b922015de3a",
+        "message": "[ISSUE #5364] Support changeInvisibleTime for pop orderly (#5367)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5012",
+      "createdAt": "2022-09-07T02:56:54Z",
+      "content": "bug_report_all/apache_rocketmq-5062.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/transaction/queue/TransactionalMessageServiceImplTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/transaction/queue/TransactionalMessageUtilTest.java",
+      "test/src/test/java/org/apache/rocketmq/test/container/ContainerIntegrationTestBase.java",
+      "test/src/test/java/org/apache/rocketmq/test/container/TransactionListenerImpl.java",
+      "test/src/test/java/org/apache/rocketmq/test/container/TransactionMessageIT.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5062",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/4af193e3253a8b7e15e8447ae00d6df079599919",
+    "buggy_commit": "03ffc45a8b93844b692b7a834cf28b922015de3a",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.transaction.queue.TransactionalMessageServiceImplTest#testCheck_withDiscard"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.broker.transaction.queue.TransactionalMessageServiceImplTest#testCheck_withDiscard"
+      ]
+    }
+  },
+  "apache_rocketmq-5193": {
+    "bug_id": "apache_rocketmq-5193",
+    "PR_number": 5193,
+    "PR_createdAt": "2022-09-26T13:41:06Z",
+    "merge_commit": "d52be62f718290c315e9edeb87623f0549b8ba59",
+    "buggy_commits": [
+      {
+        "oid": "2c6ea9eeaf7321ca4277da871fe5775c1aa4ee45",
+        "message": "[ISSUE #5198] Fix NPE in ClusterList SubCommand (#5199)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5122",
+      "createdAt": "2022-09-20T01:44:57Z",
+      "content": "bug_report_all/apache_rocketmq-5193.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/AdminBrokerProcessorTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/EndTransactionProcessorTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/PopMessageProcessorTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/PopReviveServiceTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/SendMessageProcessorTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/schedule/ScheduleMessageServiceTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/topic/TopicQueueMappingManagerTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/transaction/queue/TransactionalMessageBridgeTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/transaction/queue/TransactionalMessageServiceImplTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5193",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/d52be62f718290c315e9edeb87623f0549b8ba59",
+    "buggy_commit": "2c6ea9eeaf7321ca4277da871fe5775c1aa4ee45",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.client.ProducerManagerTest#scanNotActiveChannel",
+        ".org.apache.rocketmq.broker.filter.ConsumerFilterManagerTest#testRegister_change",
+        ".org.apache.rocketmq.broker.processor.SendMessageProcessorTest#testProcessRequest_WithHook",
+        ".org.apache.rocketmq.broker.processor.SendMessageProcessorTest#testProcessRequest_WithAbortProcessSendMessageBeforeHook"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.broker.client.ProducerManagerTest#scanNotActiveChannel",
+        ".org.apache.rocketmq.broker.filter.ConsumerFilterManagerTest#testRegister_change",
+        ".org.apache.rocketmq.broker.processor.SendMessageProcessorTest#testProcessRequest_WithHook",
+        ".org.apache.rocketmq.broker.processor.SendMessageProcessorTest#testProcessRequest_WithAbortProcessSendMessageBeforeHook"
+      ]
+    }
+  },
+  "apache_rocketmq-5218": {
+    "bug_id": "apache_rocketmq-5218",
+    "PR_number": 5218,
+    "PR_createdAt": "2022-09-29T02:09:49Z",
+    "merge_commit": "0ad7db69562fbb9d6abdf2d8efb021fb1446e950",
+    "buggy_commits": [
+      {
+        "oid": "0e16aa261d793fa5dc6e404a8da91fba8b9873da",
+        "message": "[ISSUE #5210]Fix controller quick start document some command error (#5217)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5216",
+      "createdAt": "2022-09-28T14:26:20Z",
+      "content": "bug_report_all/apache_rocketmq-5218.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/GrpcMessagingApplicationTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/transaction/ClusterTransactionServiceTest.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/RemotingServerTest.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/SubRemotingServerTest.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/netty/NettyClientConfigTest.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/netty/NettyServerConfigTest.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/protocol/RemotingCommandTest.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/protocol/RemotingSerializableTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5218",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/0ad7db69562fbb9d6abdf2d8efb021fb1446e950",
+    "buggy_commit": "0e16aa261d793fa5dc6e404a8da91fba8b9873da",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.service.transaction.ClusterTransactionServiceTest#testScanProducerHeartBeat"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.service.transaction.ClusterTransactionServiceTest#testScanProducerHeartBeat"
+      ]
+    }
+  },
+  "apache_rocketmq-5222": {
+    "bug_id": "apache_rocketmq-5222",
+    "PR_number": 5222,
+    "PR_createdAt": "2022-09-29T05:01:38Z",
+    "merge_commit": "b0d0deca0be9848cf35561010fb90d5edff8a8d2",
+    "buggy_commits": [
+      {
+        "oid": "cf6ed4d5765d297283569e144c320382548cb692",
+        "message": "bugfix: compatible rocketmq-mqtt save offset (#5208)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5221",
+      "createdAt": "2022-09-29T04:31:10Z",
+      "content": "bug_report_all/apache_rocketmq-5222.json"
+    },
+    "changed_tests": [
+      "store/src/test/java/org/apache/rocketmq/store/StoreTestUtil.java",
+      "store/src/test/java/org/apache/rocketmq/store/ha/HAClientTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHATest.java",
+      "store/src/test/java/org/apache/rocketmq/store/index/IndexFileTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/queue/BatchConsumeMessageTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/queue/QueueTestBase.java",
+      "store/src/test/java/org/apache/rocketmq/store/stats/BrokerStatsManagerTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/timer/TimerLogTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/timer/TimerMessageStoreTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/timer/TimerMetricsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5222",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/b0d0deca0be9848cf35561010fb90d5edff8a8d2",
+    "buggy_commit": "cf6ed4d5765d297283569e144c320382548cb692",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.store.StoreStatsServiceTest#findPutMessageEntireTimePXTest",
+        ".org.apache.rocketmq.store.timer.TimerMessageStoreTest#testStateAndRecover"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.store.StoreStatsServiceTest#findPutMessageEntireTimePXTest",
+        ".org.apache.rocketmq.store.timer.TimerMessageStoreTest#testStateAndRecover"
+      ]
+    }
+  },
+  "apache_rocketmq-5224": {
+    "bug_id": "apache_rocketmq-5224",
+    "PR_number": 5224,
+    "PR_createdAt": "2022-09-29T07:28:02Z",
+    "merge_commit": "3690049cb5c30d74ec82b76b016e23cdb57f1f82",
+    "buggy_commits": [
+      {
+        "oid": "b0d0deca0be9848cf35561010fb90d5edff8a8d2",
+        "message": "[ISSUE #5221] Enable checkstyle for test code (rocketmq-store) (#5222)\n\n* style(store):Enable checkstyle for test code\r\n\r\n* style(store):Enable checkstyle for test code (supplement)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5223",
+      "createdAt": "2022-09-29T05:03:22Z",
+      "content": "bug_report_all/apache_rocketmq-5224.json"
+    },
+    "changed_tests": [
+      "test/src/test/java/org/apache/rocketmq/test/grpc/v2/ClusterGrpcIT.java",
+      "test/src/test/java/org/apache/rocketmq/test/grpc/v2/GrpcBaseIT.java",
+      "test/src/test/java/org/apache/rocketmq/test/grpc/v2/LocalGrpcIT.java",
+      "test/src/test/java/org/apache/rocketmq/test/offset/OffsetNotFoundIT.java",
+      "test/src/test/java/org/apache/rocketmq/test/schema/SchemaTest.java",
+      "test/src/test/java/org/apache/rocketmq/test/smoke/NormalMessageSendAndRecvIT.java",
+      "test/src/test/java/org/apache/rocketmq/test/statictopic/StaticTopicIT.java",
+      "test/src/test/java/org/apache/rocketmq/test/tls/TlsIT.java",
+      "test/src/test/java/org/apache/rocketmq/test/tls/TlsMix2IT.java",
+      "test/src/test/java/org/apache/rocketmq/test/tls/TlsMixIT.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5224",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/3690049cb5c30d74ec82b76b016e23cdb57f1f82",
+    "buggy_commit": "b0d0deca0be9848cf35561010fb90d5edff8a8d2",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.test.client.consumer.pop.PopSubCheckIT#testNormalPopAck",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testSendCallBackNull",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testSendMQNull",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testSendSelectorNull",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testSelectorThrowsException",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testQueueIdBigThanQueueNum",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testQueueIdSmallZero",
+        ".org.apache.rocketmq.test.client.producer.batch.BatchSendIT#testBatchSend_ViewMessage",
+        ".org.apache.rocketmq.test.client.producer.batch.BatchSendIT#testBatchSend_SysInnerBatch",
+        ".org.apache.rocketmq.test.client.producer.batch.BatchSendIT#testBatchSend_SysOuterBatch",
+        ".org.apache.rocketmq.test.client.producer.batch.BatchSendIT#testBatchSend_CheckProperties",
+        ".org.apache.rocketmq.test.client.producer.exception.producer.ProducerGroupAndInstanceNameValidityIT#testTwoProducerSameGroupAndInstanceName",
+        ".org.apache.rocketmq.test.client.producer.exception.producer.ProducerGroupAndInstanceNameValidityIT#testTwoProducerSameGroup",
+        ".org.apache.rocketmq.test.client.producer.oneway.OneWaySendExceptionIT#testSendMQNull",
+        ".org.apache.rocketmq.test.client.producer.oneway.OneWaySendExceptionIT#testSendSelectorNull",
+        ".org.apache.rocketmq.test.client.producer.oneway.OneWaySendExceptionIT#testSelectorThrowsException",
+        ".org.apache.rocketmq.test.grpc.v2.LocalGrpcIT#testQueryAssignment",
+        ".org.apache.rocketmq.test.offset.OffsetNotFoundIT#testConsumeStopAndResume",
+        ".org.apache.rocketmq.test.offset.OffsetNotFoundIT#testOffsetNotFoundException"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.test.client.consumer.pop.PopSubCheckIT#testNormalPopAck",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testSendCallBackNull",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testSendMQNull",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testSendSelectorNull",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testSelectorThrowsException",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testQueueIdBigThanQueueNum",
+        ".org.apache.rocketmq.test.client.producer.async.AsyncSendExceptionIT#testQueueIdSmallZero",
+        ".org.apache.rocketmq.test.client.producer.batch.BatchSendIT#testBatchSend_ViewMessage",
+        ".org.apache.rocketmq.test.client.producer.batch.BatchSendIT#testBatchSend_SysInnerBatch",
+        ".org.apache.rocketmq.test.client.producer.batch.BatchSendIT#testBatchSend_SysOuterBatch",
+        ".org.apache.rocketmq.test.client.producer.batch.BatchSendIT#testBatchSend_CheckProperties",
+        ".org.apache.rocketmq.test.client.producer.exception.producer.ProducerGroupAndInstanceNameValidityIT#testTwoProducerSameGroupAndInstanceName",
+        ".org.apache.rocketmq.test.client.producer.exception.producer.ProducerGroupAndInstanceNameValidityIT#testTwoProducerSameGroup",
+        ".org.apache.rocketmq.test.client.producer.oneway.OneWaySendExceptionIT#testSendMQNull",
+        ".org.apache.rocketmq.test.client.producer.oneway.OneWaySendExceptionIT#testSendSelectorNull",
+        ".org.apache.rocketmq.test.client.producer.oneway.OneWaySendExceptionIT#testSelectorThrowsException",
+        ".org.apache.rocketmq.test.grpc.v2.LocalGrpcIT#testQueryAssignment",
+        ".org.apache.rocketmq.test.offset.OffsetNotFoundIT#testConsumeStopAndResume",
+        ".org.apache.rocketmq.test.offset.OffsetNotFoundIT#testOffsetNotFoundException"
+      ]
+    }
+  },
+  "apache_rocketmq-5258": {
+    "bug_id": "apache_rocketmq-5258",
+    "PR_number": 5258,
+    "PR_createdAt": "2022-10-09T15:25:01Z",
+    "merge_commit": "32c7d37f488ef3ba78e2318e1535717d5efb1f7b",
+    "buggy_commits": [
+      {
+        "oid": "294e263677c26841c2c44f875dcdea0cb029463a",
+        "message": "[ISSUE #5020] Add find_java_home function to tool script (#5024)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5205",
+      "createdAt": "2022-09-28T07:42:04Z",
+      "content": "bug_report_all/apache_rocketmq-5258.json"
+    },
+    "changed_tests": [
+      "logging/src/test/java/org/apache/rocketmq/logging/InnerLoggerFactoryTest.java",
+      "logging/src/test/java/org/apache/rocketmq/logging/inner/AppenderTest.java",
+      "logging/src/test/java/org/apache/rocketmq/logging/inner/LayoutTest.java",
+      "logging/src/test/java/org/apache/rocketmq/logging/inner/LevelTest.java",
+      "logging/src/test/java/org/apache/rocketmq/logging/inner/LoggerTest.java",
+      "logging/src/test/java/org/apache/rocketmq/logging/inner/MessageFormatterTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5258",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/32c7d37f488ef3ba78e2318e1535717d5efb1f7b",
+    "buggy_commit": "294e263677c26841c2c44f875dcdea0cb029463a",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.logging.InnerLoggerFactoryTest#testInnerLoggerFactory",
+        ".org.apache.rocketmq.logging.inner.AppenderTest#testInnerFile",
+        ".org.apache.rocketmq.logging.inner.LayoutTest#testLogFormat",
+        ".org.apache.rocketmq.logging.inner.LoggerTest#testInnerConsoleLogger",
+        ".org.apache.rocketmq.logging.inner.LoggerTest#testInnerFileLogger",
+        ".org.apache.rocketmq.logging.inner.MessageFormatterTest#formatTest"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.logging.InnerLoggerFactoryTest#testInnerLoggerFactory",
+        ".org.apache.rocketmq.logging.inner.AppenderTest#testInnerFile",
+        ".org.apache.rocketmq.logging.inner.LayoutTest#testLogFormat",
+        ".org.apache.rocketmq.logging.inner.LoggerTest#testInnerConsoleLogger",
+        ".org.apache.rocketmq.logging.inner.LoggerTest#testInnerFileLogger",
+        ".org.apache.rocketmq.logging.inner.MessageFormatterTest#formatTest"
+      ]
+    }
+  },
+  "apache_rocketmq-5286": {
+    "bug_id": "apache_rocketmq-5286",
+    "PR_number": 5286,
+    "PR_createdAt": "2022-10-11T16:56:17Z",
+    "merge_commit": "9e63f09ad86229636f3708023e4fa00e4e2c5ab1",
+    "buggy_commits": [
+      {
+        "oid": "d8c2930a204c34c17de7677629b3654f77878c6d",
+        "message": "[ISSUE #5276] Use OS pick-up port (#5280)\n\n* Use OS pick-up port\r\n\r\n* Replace deprecated PosixParser with DefaultParser for cli argument parsing\r\n\r\n* DefaultParser cannot parse values that contain '=' character\r\n\r\n* Revert changes to ServerUtil"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5285",
+      "createdAt": "2022-10-11T16:52:31Z",
+      "content": "bug_report_all/apache_rocketmq-5286.json"
+    },
+    "changed_tests": [
+      "remoting/src/test/java/org/apache/rocketmq/remoting/netty/NettyClientConfigTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5286",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/9e63f09ad86229636f3708023e4fa00e4e2c5ab1",
+    "buggy_commit": "d8c2930a204c34c17de7677629b3654f77878c6d",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.remoting.netty.NettyClientConfigTest#testChangeConfigBySystemProperty"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.remoting.netty.NettyClientConfigTest#testChangeConfigBySystemProperty"
+      ]
+    }
+  },
+  "apache_rocketmq-5308": {
+    "bug_id": "apache_rocketmq-5308",
+    "PR_number": 5308,
+    "PR_createdAt": "2022-10-13T14:38:01Z",
+    "merge_commit": "db1f1839b9f8b9486e670b70cdc0c22ad2dcc708",
+    "buggy_commits": [
+      {
+        "oid": "f7878d1b7cdf7ffe10339078a7dc40c1beb67642",
+        "message": "[ISSUE #5305] fix proxy TopicRouteService cache bug (#5306)\n\n* [ISSUE #5305] fix proxy TopicRouteService cache bug\r\n\r\n* [ISSUE #5305] add log\r\n\r\n* [ISSUE #5305] add  cache unit test"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5298",
+      "createdAt": "2022-10-13T02:35:31Z",
+      "content": "bug_report_all/apache_rocketmq-5308.json"
+    },
+    "changed_tests": [
+      "tools/src/test/java/org/apache/rocketmq/tools/command/message/QueryMsgByUniqueKeySubCommandTest.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/command/message/QueryMsgTraceByIdSubCommandTest.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/command/message/SendMessageCommandTest.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/command/namesrv/AddWritePermSubCommandTest.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/command/namesrv/WipeWritePermSubCommandTest.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/command/producer/ProducerSubCommandTest.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/command/server/NameServerMocker.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/command/server/ServerResponseMocker.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/monitor/DefaultMonitorListenerTest.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/monitor/MonitorServiceTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5308",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/db1f1839b9f8b9486e670b70cdc0c22ad2dcc708",
+    "buggy_commit": "f7878d1b7cdf7ffe10339078a7dc40c1beb67642",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.tools.command.acl.UpdateAccessConfigSubCommandTest#testExecute",
+        ".org.apache.rocketmq.tools.monitor.DefaultMonitorListenerTest#testReportConsumerRunningInfo"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.tools.command.acl.UpdateAccessConfigSubCommandTest#testExecute",
+        ".org.apache.rocketmq.tools.monitor.DefaultMonitorListenerTest#testReportConsumerRunningInfo"
+      ]
+    }
+  },
+  "apache_rocketmq-5345": {
+    "bug_id": "apache_rocketmq-5345",
+    "PR_number": 5345,
+    "PR_createdAt": "2022-10-18T11:11:07Z",
+    "merge_commit": "61fa3b0c232ea21910de0979f0a0c0b8024efda7",
+    "buggy_commits": [
+      {
+        "oid": "3963c754ed20cc5bdaa3e59cc2ebcc832c1d2dc7",
+        "message": "[ISSUE #5453]Combine parseDelayLevel error log information (#5454)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5344",
+      "createdAt": "2022-10-18T11:10:19Z",
+      "content": "bug_report_all/apache_rocketmq-5345.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessorTest.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/TlsTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/ConsumeQueueTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/MappedFileQueueTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/dledger/DLedgerCommitlogTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/dledger/DLedgerMultiPathTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/dledger/MixCommitlogTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/kv/CompactionLogTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/timer/TimerMessageStoreTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5345",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/61fa3b0c232ea21910de0979f0a0c0b8024efda7",
+    "buggy_commit": "3963c754ed20cc5bdaa3e59cc2ebcc832c1d2dc7",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK"
+      ]
+    }
+  },
+  "apache_rocketmq-5351": {
+    "bug_id": "apache_rocketmq-5351",
+    "PR_number": 5351,
+    "PR_createdAt": "2022-10-19T07:19:42Z",
+    "merge_commit": "e38da5590f0677e7b3d092c295218bcafa19149b",
+    "buggy_commits": [
+      {
+        "oid": "4af193e3253a8b7e15e8447ae00d6df079599919",
+        "message": "[ISSUE #5012] Support escaping transactional messages (#5062)\n\n* support escaping transactional messages\r\n\r\n* add integration test\r\n\r\n* increase the number of messages and size integration test\r\n\r\n* reorder condition and remove sysout\r\n\r\n* add mock in unit test\r\n\r\n* fix checkstyle\r\n\r\n* ignore integration test by default\r\n\r\n* use PutMessageResult.isOk() to check the result of escaping messages"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/3799",
+      "createdAt": "2022-01-26T09:26:10Z",
+      "content": "bug_report_all/apache_rocketmq-5351.json"
+    },
+    "changed_tests": [
+      "store/src/test/java/org/apache/rocketmq/store/AppendCallbackTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/MappedFileQueueTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/kv/CompactionLogTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/kv/CompactionPositionMgrTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/kv/OffsetMapTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/logfile/DefaultMappedFileTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/queue/SparseConsumeQueueTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5351",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/e38da5590f0677e7b3d092c295218bcafa19149b",
+    "buggy_commit": "4af193e3253a8b7e15e8447ae00d6df079599919",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.store.DefaultMessageStoreTest#testPutLongMessage"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.store.DefaultMessageStoreTest#testPutLongMessage",
+        ".org.apache.rocketmq.store.MappedFileQueueTest#testMappedFile_Rename"
+      ]
+    }
+  },
+  "apache_rocketmq-5403": {
+    "bug_id": "apache_rocketmq-5403",
+    "PR_number": 5403,
+    "PR_createdAt": "2022-10-26T03:11:36Z",
+    "merge_commit": "d54f8cb1eba99b0c83131ccbce193ad64380d0ef",
+    "buggy_commits": [
+      {
+        "oid": "a7c1d49454ce405fc651f95d036571d91bd8c9e0",
+        "message": "[ISSUE #5356] [RIP 48] Introduces the concept of ready and inflight messages (#5357)\n\n* Introduces the concept of ready and inflight messages\r\n\r\n* update consumer progress subcommand\r\n\r\n* fix consumer pull offset is less than consumer offset\r\n\r\n* remove unused import\r\n\r\nCo-authored-by: \u659c\u9633 <terrance.lzm@alibaba-inc.com>\r\nCo-authored-by: ShadowySpirits <admin@lv5.moe>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5402",
+      "createdAt": "2022-10-26T03:04:44Z",
+      "content": "bug_report_all/apache_rocketmq-5403.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/failover/EscapeBridgeTest.java",
+      "test/src/test/java/org/apache/rocketmq/test/client/consumer/pop/BasePopNormally.java",
+      "test/src/test/java/org/apache/rocketmq/test/client/consumer/pop/PopBigMessageIT.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5403",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/d54f8cb1eba99b0c83131ccbce193ad64380d0ef",
+    "buggy_commit": "a7c1d49454ce405fc651f95d036571d91bd8c9e0",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#getMessageTest",
+        ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#decodeMsgListTest"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#getMessageTest",
+        ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#decodeMsgListTest"
+      ]
+    }
+  },
+  "apache_rocketmq-5447": {
+    "bug_id": "apache_rocketmq-5447",
+    "PR_number": 5447,
+    "PR_createdAt": "2022-11-02T06:06:45Z",
+    "merge_commit": "08bcd80681566d93abcf6de93ec90082d5ea8b32",
+    "buggy_commits": [
+      {
+        "oid": "2113c16ebc4fa22cb47d812cda844b84882aa55f",
+        "message": "[RIP-48] Support reset offset in server-side for pop message (#5457)\n\n* [RIP-48] Support reset offset in server-side for pop message\r\n\r\n* [RIP-48] Support reset offset in server-side for pop message\r\n\r\n* no need remove error log\r\n\r\nCo-authored-by: \u659c\u9633 <terrance.lzm@alibaba-inc.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5446",
+      "createdAt": "2022-11-02T06:03:56Z",
+      "content": "bug_report_all/apache_rocketmq-5447.json"
+    },
+    "changed_tests": [
+      "store/src/test/java/org/apache/rocketmq/store/timer/TimerMessageStoreTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5447",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/08bcd80681566d93abcf6de93ec90082d5ea8b32",
+    "buggy_commit": "2113c16ebc4fa22cb47d812cda844b84882aa55f",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.store.timer.TimerMessageStoreTest#testPutExpiredTimerMessage"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.store.timer.TimerMessageStoreTest#testPutExpiredTimerMessage"
+      ]
+    }
+  },
+  "apache_rocketmq-5510": {
+    "bug_id": "apache_rocketmq-5510",
+    "PR_number": 5510,
+    "PR_createdAt": "2022-11-11T03:08:40Z",
+    "merge_commit": "48ed8980719c14fde8ce145e5d585c6c0852920f",
+    "buggy_commits": [
+      {
+        "oid": "ec5d3236f65786be7dde712dda5f5ee152d0dce6",
+        "message": "invert dependency between remoting and common module (#5503)\n\n* invert dependency between remoting and common module\r\n\r\n* fix bazel\r\n\r\n* Fix Bazel warning of indirect dependency\r\n\r\n* remove duplicate class ServiceThread\r\n\r\n* fix conflict\r\n\r\n* revert delete class ServiceThread because of introduced by dledger\r\n\r\nCo-authored-by: Li Zhanhui <lizhanhui@gmail.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5509",
+      "createdAt": "2022-11-11T03:03:08Z",
+      "content": "bug_report_all/apache_rocketmq-5510.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/BrokerOuterAPITest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5510",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/48ed8980719c14fde8ce145e5d585c6c0852920f",
+    "buggy_commit": "ec5d3236f65786be7dde712dda5f5ee152d0dce6",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.BrokerOuterAPITest#test_register_timeout"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.broker.BrokerOuterAPITest#test_register_timeout"
+      ]
+    }
+  },
+  "apache_rocketmq-5513": {
+    "bug_id": "apache_rocketmq-5513",
+    "PR_number": 5513,
+    "PR_createdAt": "2022-11-11T11:44:45Z",
+    "merge_commit": "407d2738f2d8b20a8ea264c75dbfc876ecb8519e",
+    "buggy_commits": [
+      {
+        "oid": "48ed8980719c14fde8ce145e5d585c6c0852920f",
+        "message": "Use Mockito to directly throw TimeoutException through set-up (#5510)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5512",
+      "createdAt": "2022-11-11T11:10:04Z",
+      "content": "bug_report_all/apache_rocketmq-5513.json"
+    },
+    "changed_tests": [
+      "common/src/test/java/org/apache/rocketmq/common/NetworkUtilTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5513",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/407d2738f2d8b20a8ea264c75dbfc876ecb8519e",
+    "buggy_commit": "48ed8980719c14fde8ce145e5d585c6c0852920f",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.common.NetworkUtilTest#testGetLocalAddress"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.common.NetworkUtilTest#testGetLocalAddress"
+      ]
+    }
+  },
+  "apache_rocketmq-5524": {
+    "bug_id": "apache_rocketmq-5524",
+    "PR_number": 5524,
+    "PR_createdAt": "2022-11-14T07:17:17Z",
+    "merge_commit": "809ff6b3e045d6ccd0899f756822b2d7dd65f6c0",
+    "buggy_commits": [
+      {
+        "oid": "48fab975e40cf963f46aab40521b326b0b5600d1",
+        "message": "Fix : the topic attribute will be replace by null (#5527)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5484",
+      "createdAt": "2022-11-08T08:35:57Z",
+      "content": "bug_report_all/apache_rocketmq-5524.json"
+    },
+    "changed_tests": [
+      "tools/src/test/java/org/apache/rocketmq/tools/command/broker/DeleteExpiredCommitLogSubCommandTest.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/command/server/ServerResponseMocker.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5524",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/809ff6b3e045d6ccd0899f756822b2d7dd65f6c0",
+    "buggy_commit": "48fab975e40cf963f46aab40521b326b0b5600d1",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.tools.command.broker.DeleteExpiredCommitLogSubCommandTest#testExecute"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.tools.command.broker.DeleteExpiredCommitLogSubCommandTest#testExecute"
+      ]
+    }
+  },
+  "apache_rocketmq-5539": {
+    "bug_id": "apache_rocketmq-5539",
+    "PR_number": 5539,
+    "PR_createdAt": "2022-11-18T04:05:03Z",
+    "merge_commit": "da5a5b62927d041ad858bc4dd973e1bf68abcb1b",
+    "buggy_commits": [
+      {
+        "oid": "44072e62bdba8ef1111808046f06c081c766d4ae",
+        "message": "[Issue #4330]Fix some comments in DefaultElectPolicy"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5536",
+      "createdAt": "2022-11-17T03:41:19Z",
+      "content": "bug_report_all/apache_rocketmq-5539.json"
+    },
+    "changed_tests": [
+      "remoting/src/test/java/org/apache/rocketmq/remoting/protocol/RegisterBrokerBodyTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5539",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/da5a5b62927d041ad858bc4dd973e1bf68abcb1b",
+    "buggy_commit": "44072e62bdba8ef1111808046f06c081c766d4ae",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.remoting.protocol.RegisterBrokerBodyTest#test_encode_decode"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.remoting.protocol.RegisterBrokerBodyTest#test_encode_decode"
+      ]
+    }
+  },
+  "apache_rocketmq-5540": {
+    "bug_id": "apache_rocketmq-5540",
+    "PR_number": 5540,
+    "PR_createdAt": "2022-11-18T05:38:32Z",
+    "merge_commit": "a68078fef8315a0deeae32af42a029ccd2fa76a4",
+    "buggy_commits": [
+      {
+        "oid": "991af5e2042ddd0a5519b251a7b693d3bb4ef7ee",
+        "message": "[ISSUE #5542] Fix ConsumerProcessor lockBatchMQ future allOf data race issue"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5484",
+      "createdAt": "2022-11-08T08:35:57Z",
+      "content": "bug_report_all/apache_rocketmq-5540.json"
+    },
+    "changed_tests": [
+      "tools/src/test/java/org/apache/rocketmq/tools/command/broker/DeleteExpiredCommitLogSubCommandTest.java",
+      "tools/src/test/java/org/apache/rocketmq/tools/command/server/ServerResponseMocker.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5540",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/a68078fef8315a0deeae32af42a029ccd2fa76a4",
+    "buggy_commit": "991af5e2042ddd0a5519b251a7b693d3bb4ef7ee",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.tools.command.broker.DeleteExpiredCommitLogSubCommandTest#testExecute"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.tools.command.broker.DeleteExpiredCommitLogSubCommandTest#testExecute"
+      ]
+    }
+  },
+  "apache_rocketmq-5591": {
+    "bug_id": "apache_rocketmq-5591",
+    "PR_number": 5591,
+    "PR_createdAt": "2022-11-24T11:15:36Z",
+    "merge_commit": "08dbe7ede925e578c2c9e9bda4a556937cec7c89",
+    "buggy_commits": [
+      {
+        "oid": "ffb4a3664e9d3d8e3ed5795fe0f84a2664a6fdb0",
+        "message": "Apply MDC in broker container mode (#5587)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5309",
+      "createdAt": "2022-10-14T01:59:14Z",
+      "content": "bug_report_all/apache_rocketmq-5591.json"
+    },
+    "changed_tests": [
+      "test/src/main/java/org/apache/rocketmq/test/util/VerifyUtils.java",
+      "test/src/test/java/org/apache/rocketmq/test/delay/NormalMsgDelayIT.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5591",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/08dbe7ede925e578c2c9e9bda4a556937cec7c89",
+    "buggy_commit": "ffb4a3664e9d3d8e3ed5795fe0f84a2664a6fdb0",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.test.delay.NormalMsgDelayIT#testDelayLevel1",
+        ".org.apache.rocketmq.test.delay.NormalMsgDelayIT#testDelayLevel2",
+        ".org.apache.rocketmq.test.delay.NormalMsgDelayIT#testDelayLevel3",
+        ".org.apache.rocketmq.test.delay.NormalMsgDelayIT#testDelayLevel4"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.test.delay.NormalMsgDelayIT#testDelayLevel1",
+        ".org.apache.rocketmq.test.delay.NormalMsgDelayIT#testDelayLevel2",
+        ".org.apache.rocketmq.test.delay.NormalMsgDelayIT#testDelayLevel3",
+        ".org.apache.rocketmq.test.delay.NormalMsgDelayIT#testDelayLevel4"
+      ]
+    }
+  },
+  "apache_rocketmq-5640": {
+    "bug_id": "apache_rocketmq-5640",
+    "PR_number": 5640,
+    "PR_createdAt": "2022-12-03T03:05:42Z",
+    "merge_commit": "e5fadc7db7c4a5c098e5f912a19fd71cba3dde3d",
+    "buggy_commits": [
+      {
+        "oid": "59acc7d3554d61f046233fc00308b07b7a7b39fb",
+        "message": "Try to make AutoSwitchRoleIntegrationTest more stable (#5638)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5639",
+      "createdAt": "2022-12-03T03:05:10Z",
+      "content": "bug_report_all/apache_rocketmq-5640.json"
+    },
+    "changed_tests": [
+      "client/src/test/java/org/apache/rocketmq/client/consumer/DefaultLitePullConsumerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5640",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/e5fadc7db7c4a5c098e5f912a19fd71cba3dde3d",
+    "buggy_commit": "59acc7d3554d61f046233fc00308b07b7a7b39fb",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.client.consumer.DefaultLitePullConsumerTest#testConsumerCommitSyncWithMQOffset"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.client.consumer.DefaultLitePullConsumerTest#testConsumerCommitSyncWithMQOffset"
+      ]
+    }
+  },
+  "apache_rocketmq-5652": {
+    "bug_id": "apache_rocketmq-5652",
+    "PR_number": 5652,
+    "PR_createdAt": "2022-12-06T07:10:06Z",
+    "merge_commit": "508f5b14b02a1c6c653f7900b6afb20aeb9796ee",
+    "buggy_commits": [
+      {
+        "oid": "d5e6fb6634d93cbfb8231b5e8f03c0083174be4e",
+        "message": "Fix bug that make static topic ITs unable to pass (#5645)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5583",
+      "createdAt": "2022-11-24T02:02:36Z",
+      "content": "bug_report_all/apache_rocketmq-5652.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5652",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/508f5b14b02a1c6c653f7900b6afb20aeb9796ee",
+    "buggy_commit": "d5e6fb6634d93cbfb8231b5e8f03c0083174be4e",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout"
+      ]
+    }
+  },
+  "apache_rocketmq-5666": {
+    "bug_id": "apache_rocketmq-5666",
+    "PR_number": 5666,
+    "PR_createdAt": "2022-12-08T07:04:05Z",
+    "merge_commit": "cc6614c23677041a39331a48cdcfa0a3f829b29f",
+    "buggy_commits": [
+      {
+        "oid": "7a68fca72e803a86b0c58a2f88572df37c1f8735",
+        "message": "[ISSUE #5659] remove redundant error log output (#5662)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5644",
+      "createdAt": "2022-12-05T07:30:08Z",
+      "content": "bug_report_all/apache_rocketmq-5666.json"
+    },
+    "changed_tests": [
+      "test/src/test/java/org/apache/rocketmq/test/statictopic/StaticTopicIT.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5666",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/cc6614c23677041a39331a48cdcfa0a3f829b29f",
+    "buggy_commit": "7a68fca72e803a86b0c58a2f88572df37c1f8735",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.test.statictopic.StaticTopicIT#testDoubleReadCheckConsumerOffset",
+        ".org.apache.rocketmq.test.statictopic.StaticTopicIT#testRemappingAndClear"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.test.statictopic.StaticTopicIT#testDoubleReadCheckConsumerOffset",
+        ".org.apache.rocketmq.test.statictopic.StaticTopicIT#testRemappingAndClear"
+      ]
+    }
+  },
+  "apache_rocketmq-5700": {
+    "bug_id": "apache_rocketmq-5700",
+    "PR_number": 5700,
+    "PR_createdAt": "2022-12-15T08:05:47Z",
+    "merge_commit": "e98653472868555e3b6235861eb7c24fe61a50d3",
+    "buggy_commits": [
+      {
+        "oid": "3effd04fbba09a876ab63b0d3439e7d87d728a81",
+        "message": "[ISSUE #5763] add the default subscribe * tag method (#5764)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5699",
+      "createdAt": "2022-12-15T07:58:20Z",
+      "content": "bug_report_all/apache_rocketmq-5700.json"
+    },
+    "changed_tests": [
+      "remoting/src/test/java/org/apache/rocketmq/remoting/protocol/RocketMQSerializableTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5700",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/e98653472868555e3b6235861eb7c24fe61a50d3",
+    "buggy_commit": "3effd04fbba09a876ab63b0d3439e7d87d728a81",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.remoting.protocol.RocketMQSerializableTest#testIsBlank_NotBlank",
+        ".org.apache.rocketmq.remoting.protocol.RocketMQSerializableTest#testIsBlank_Blank"
+      ],
+      "test_tgt": []
+    }
+  },
+  "apache_rocketmq-5818": {
+    "bug_id": "apache_rocketmq-5818",
+    "PR_number": 5818,
+    "PR_createdAt": "2023-01-04T08:43:15Z",
+    "merge_commit": "5894332918e7158d6ff4cc35b126a1b82a1f6b0c",
+    "buggy_commits": [
+      {
+        "oid": "0533816d42961d0ba0ea012a115261ea71dd30c4",
+        "message": "[ISSUE #5839] Code.ILLEGAL_POLLING_TIME is not compatible with gRPC Client <=5.0.2 (#5841)\n\n* Fix #5839: Code.ILLEGAL_POLLING_TIME is not compatible with gRPC Client <=5.0.2\r\n\r\n* Merge two tests into testReceiveMessageWithIllegalPollingTime"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5816",
+      "createdAt": "2023-01-04T07:55:48Z",
+      "content": "bug_report_all/apache_rocketmq-5818.json"
+    },
+    "changed_tests": [
+      "tools/src/test/java/org/apache/rocketmq/tools/command/broker/BrokerStatusSubCommandTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5818",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/5894332918e7158d6ff4cc35b126a1b82a1f6b0c",
+    "buggy_commit": "0533816d42961d0ba0ea012a115261ea71dd30c4",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.tools.command.broker.BrokerStatusSubCommandTest#testExecute"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.tools.command.broker.BrokerStatusSubCommandTest#testExecute"
+      ]
+    }
+  },
+  "apache_rocketmq-5922": {
+    "bug_id": "apache_rocketmq-5922",
+    "PR_number": 5922,
+    "PR_createdAt": "2023-01-24T12:42:25Z",
+    "merge_commit": "5a43f1d5ef151a130bd286d5966486d21781bb0d",
+    "buggy_commits": [
+      {
+        "oid": "46869c9e9b44fac006c2d9783ebd5182964a5bd1",
+        "message": "[ISSUE #5876] fix resource leak in DefaultLitePullConsumerTest"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5921",
+      "createdAt": "2023-01-24T12:41:50Z",
+      "content": "bug_report_all/apache_rocketmq-5922.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/BrokerOuterAPITest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5922",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/5a43f1d5ef151a130bd286d5966486d21781bb0d",
+    "buggy_commit": "46869c9e9b44fac006c2d9783ebd5182964a5bd1",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.BrokerOuterAPITest#testLookupAddressByDomain"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.broker.BrokerOuterAPITest#testLookupAddressByDomain"
+      ]
+    }
+  },
+  "apache_rocketmq-5926": {
+    "bug_id": "apache_rocketmq-5926",
+    "PR_number": 5926,
+    "PR_createdAt": "2023-01-26T02:22:41Z",
+    "merge_commit": "845f96f4f6a79e580a99f613e00e43779b25511b",
+    "buggy_commits": [
+      {
+        "oid": "0c26369a0d187ebaf2887ce1218f332f413bd513",
+        "message": "refactor: simplify getPID (#5962)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5923",
+      "createdAt": "2023-01-24T13:02:04Z",
+      "content": "bug_report_all/apache_rocketmq-5926.json"
+    },
+    "changed_tests": [
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageFetcherTest.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/container/TieredIndexFileTest.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/metadata/MetadataStoreTest.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/posix/PosixFileSegmentTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5926",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/845f96f4f6a79e580a99f613e00e43779b25511b",
+    "buggy_commit": "0c26369a0d187ebaf2887ce1218f332f413bd513",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.tieredstore.TieredMessageFetcherTest#testQueryMessageAsync"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.tieredstore.TieredMessageFetcherTest#testQueryMessageAsync"
+      ]
+    }
+  },
+  "apache_rocketmq-5988": {
+    "bug_id": "apache_rocketmq-5988",
+    "PR_number": 5988,
+    "PR_createdAt": "2023-02-05T16:59:27Z",
+    "merge_commit": "da531ef71346fb659e00bb881041ebf3ff9e6c0c",
+    "buggy_commits": [
+      {
+        "oid": "2545b783d0ee2050e9301c8275d7da2c52ddd363",
+        "message": "[ISSUE #5924] Optimize UtilAll#sleep method (#5925)\n\n* [ISSUE #5924]Optimize UtilAll#sleep method\r\n\r\n* polish code"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/5986",
+      "createdAt": "2023-02-05T15:51:47Z",
+      "content": "bug_report_all/apache_rocketmq-5988.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/BrokerOuterAPITest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/5988",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/da531ef71346fb659e00bb881041ebf3ff9e6c0c",
+    "buggy_commit": "2545b783d0ee2050e9301c8275d7da2c52ddd363",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.BrokerOuterAPITest#test_needRegister_normal",
+        ".org.apache.rocketmq.broker.BrokerOuterAPITest#test_needRegister_timeout"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.broker.BrokerOuterAPITest#test_needRegister_normal",
+        ".org.apache.rocketmq.broker.BrokerOuterAPITest#test_needRegister_timeout"
+      ]
+    }
+  },
+  "apache_rocketmq-6013": {
+    "bug_id": "apache_rocketmq-6013",
+    "PR_number": 6013,
+    "PR_createdAt": "2023-02-08T05:55:47Z",
+    "merge_commit": "3ac1977c78704eef35dd22fc380ff590fc765140",
+    "buggy_commits": [
+      {
+        "oid": "9a55592409fc7105c482bf36bb261e8cfb216c5a",
+        "message": "[ISSUE #5994] [RIP-46] add pop and timer metrics (#5995)\n\n* add pop and timer metrics\r\n* fix according to review comment"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6012",
+      "createdAt": "2023-02-08T05:47:53Z",
+      "content": "bug_report_all/apache_rocketmq-6013.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/PopBufferMergeServiceTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/PopInflightMessageCounterTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/PopReviveServiceTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6013",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/3ac1977c78704eef35dd22fc380ff590fc765140",
+    "buggy_commit": "9a55592409fc7105c482bf36bb261e8cfb216c5a",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.processor.PopBufferMergeServiceTest#testBasic",
+        ".org.apache.rocketmq.broker.processor.PopInflightMessageCounterTest#testNum"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.broker.processor.PopBufferMergeServiceTest#testBasic",
+        ".org.apache.rocketmq.broker.processor.PopInflightMessageCounterTest#testNum"
+      ]
+    }
+  },
+  "apache_rocketmq-6150": {
+    "bug_id": "apache_rocketmq-6150",
+    "PR_number": 6150,
+    "PR_createdAt": "2023-02-21T06:34:15Z",
+    "merge_commit": "6f115385bbc37a837f11b6999e1b05d1c487ba93",
+    "buggy_commits": [
+      {
+        "oid": "68ec1afb2ef8eb3b4518c052dbfb87ab5ddaf550",
+        "message": "[ISSUE #6140]Use apache/rocketmq-ci docker repo in CI (#6135)\n\n* Create pr-ci.yml\r\n\r\n* Create pr-e2e-test.yml\r\n\r\n* Create push-ci.yml\r\n\r\n* Update push-ci.yml\r\n\r\n* Update push-ci.yml\r\n\r\n* Update pr-ci.yml\r\n\r\n* Update README.md\r\n\r\n* improve performance\r\n\r\n* Update README.md\r\n\r\n* Update push-ci.yml\r\n\r\n* Create README.md\r\n\r\n* modify docker repo\r\n\r\n* Update push-ci.yml\r\n\r\n* Update pr-e2e-test.yml\r\n\r\n* use apache/rocketmq-ci docker repo\r\n\r\n* Revert \"Create README.md\"\r\n\r\nThis reverts commit be678f1a65545070ce6682263efa6ce15de18861.\r\n\r\n---------\r\n\r\nCo-authored-by: yueya <102146039+cryptoya@users.noreply.github.com>\r\nCo-authored-by: \u6708\u4f22 <yuanchen.zyc@alibaba-inc.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6149",
+      "createdAt": "2023-02-21T06:31:55Z",
+      "content": "bug_report_all/apache_rocketmq-6150.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6150",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/6f115385bbc37a837f11b6999e1b05d1c487ba93",
+    "buggy_commit": "68ec1afb2ef8eb3b4518c052dbfb87ab5ddaf550",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout"
+      ]
+    }
+  },
+  "apache_rocketmq-6160": {
+    "bug_id": "apache_rocketmq-6160",
+    "PR_number": 6160,
+    "PR_createdAt": "2023-02-22T06:04:43Z",
+    "merge_commit": "2e69a05fa5b6110cbef2e5473238eec8aabf3199",
+    "buggy_commits": [
+      {
+        "oid": "2dff070a774c0aa529738d9fffba590193453a47",
+        "message": "[ISSUE #6138] Add back the protection of the master branch (#6143)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6159",
+      "createdAt": "2023-02-22T05:52:01Z",
+      "content": "bug_report_all/apache_rocketmq-6160.json"
+    },
+    "changed_tests": [
+      "acl/src/test/java/org/apache/rocketmq/acl/common/PermissionTest.java",
+      "acl/src/test/java/org/apache/rocketmq/acl/plain/RemoteAddressStrategyTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6160",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/2e69a05fa5b6110cbef2e5473238eec8aabf3199",
+    "buggy_commit": "2dff070a774c0aa529738d9fffba590193453a47",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.acl.common.PermissionTest#AclExceptionTest"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.acl.common.PermissionTest#AclExceptionTest"
+      ]
+    }
+  },
+  "apache_rocketmq-6184": {
+    "bug_id": "apache_rocketmq-6184",
+    "PR_number": 6184,
+    "PR_createdAt": "2023-02-26T02:09:03Z",
+    "merge_commit": "9e0fb1b0293aebbe5019e55c0fdbd356611b3d16",
+    "buggy_commits": [
+      {
+        "oid": "61c4ba5009a9fe1fa2d68135e2349e85d556db3a",
+        "message": "[ISSUE #6213] fix: when subscriptionGroupConfig is null ,we do not register consumer"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6169",
+      "createdAt": "2023-02-24T03:28:08Z",
+      "content": "bug_report_all/apache_rocketmq-6184.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/PopMessageProcessorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6184",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/9e0fb1b0293aebbe5019e55c0fdbd356611b3d16",
+    "buggy_commit": "61c4ba5009a9fe1fa2d68135e2349e85d556db3a",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_TopicNotExist",
+        ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_Found",
+        ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_MsgWasRemoving",
+        ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_NoMsgInQueue"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_TopicNotExist",
+        ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_Found",
+        ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_MsgWasRemoving",
+        ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_NoMsgInQueue",
+        ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_whenTimerWheelIsFalse"
+      ]
+    }
+  },
+  "apache_rocketmq-6190": {
+    "bug_id": "apache_rocketmq-6190",
+    "PR_number": 6190,
+    "PR_createdAt": "2023-02-26T07:39:20Z",
+    "merge_commit": "5c45294c45199d19c378f8c02049a3804acd5872",
+    "buggy_commits": [
+      {
+        "oid": "9e0fb1b0293aebbe5019e55c0fdbd356611b3d16",
+        "message": "[ISSUE #6169] Fix NPE when timerWheel disabled (#6184)\n\n* Fix some NPE when timerWheel disabled\r\n\r\n* Add UT"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6189",
+      "createdAt": "2023-02-26T07:09:29Z",
+      "content": "bug_report_all/apache_rocketmq-6190.json"
+    },
+    "changed_tests": [
+      "remoting/src/test/java/org/apache/rocketmq/remoting/netty/RemotingCodeDistributionHandlerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6190",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/5c45294c45199d19c378f8c02049a3804acd5872",
+    "buggy_commit": "9e0fb1b0293aebbe5019e55c0fdbd356611b3d16",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.remoting.netty.RemotingCodeDistributionHandlerTest#remotingCodeCountTest"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.remoting.netty.RemotingCodeDistributionHandlerTest#remotingCodeCountTest"
+      ]
+    }
+  },
+  "apache_rocketmq-6204": {
+    "bug_id": "apache_rocketmq-6204",
+    "PR_number": 6204,
+    "PR_createdAt": "2023-02-28T02:28:18Z",
+    "merge_commit": "59b49dee31879f8159c476cb41a2741287b02812",
+    "buggy_commits": [
+      {
+        "oid": "77cb5ce672e92f45b979f5556352fb97dc1559e8",
+        "message": "[ISSUE #6492] Polish persistent unique broker id document (#6493)\n\n* Polish persistent unique broker id document\r\n\r\n* Polish persistent unique broker id document"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6203",
+      "createdAt": "2023-02-28T02:27:56Z",
+      "content": "bug_report_all/apache_rocketmq-6204.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/producer/SendMessageActivityTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6204",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/59b49dee31879f8159c476cb41a2741287b02812",
+    "buggy_commit": "77cb5ce672e92f45b979f5556352fb97dc1559e8",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.grpc.v2.producer.SendMessageActivityTest#testBuildMessage"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.grpc.v2.producer.SendMessageActivityTest#testBuildMessage"
+      ]
+    }
+  },
+  "apache_rocketmq-6329": {
+    "bug_id": "apache_rocketmq-6329",
+    "PR_number": 6329,
+    "PR_createdAt": "2023-03-13T11:31:10Z",
+    "merge_commit": "acc3b89e305275fd9c397de5770a2bdba459b807",
+    "buggy_commits": [
+      {
+        "oid": "22a7ec6b6324fab470fd4a42e7858a048dadee15",
+        "message": "[ISSUE #6333] Simplify the logic of the FilterAPI#buildSubscriptionData method (#6334)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6328",
+      "createdAt": "2023-03-13T11:29:00Z",
+      "content": "bug_report_all/apache_rocketmq-6329.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/config/ConfigurationManagerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6329",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/acc3b89e305275fd9c397de5770a2bdba459b807",
+    "buggy_commit": "22a7ec6b6324fab470fd4a42e7858a048dadee15",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.config.ConfigurationManagerTest#testInitEnv",
+        ".org.apache.rocketmq.proxy.config.ConfigurationManagerTest#testGetProxyHome"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.config.ConfigurationManagerTest#testGetProxyHome"
+      ]
+    }
+  },
+  "apache_rocketmq-6383": {
+    "bug_id": "apache_rocketmq-6383",
+    "PR_number": 6383,
+    "PR_createdAt": "2023-03-17T05:07:15Z",
+    "merge_commit": "1e2a301266a41e7b4088f6f956dd850df407a600",
+    "buggy_commits": [
+      {
+        "oid": "c5fec3af414f029759cc9ec498c425ce6ad37612",
+        "message": "[ISSUE #6402]opt transaction message check (#6401)\n\n* If you specify a custom first check time CheckImmunityTimeInSeconds,And the commit/rollback request whose validity period exceeds CheckImmunityTimeInSeconds and is not checked back will be processed and failed\r\n\r\n* remove useless code\r\n\r\n* update transactionCheckInterval default to be 30s"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6382",
+      "createdAt": "2023-03-17T04:53:53Z",
+      "content": "bug_report_all/apache_rocketmq-6383.json"
+    },
+    "changed_tests": [
+      "controller/src/test/java/org/apache/rocketmq/controller/impl/DLedgerControllerTest.java",
+      "controller/src/test/java/org/apache/rocketmq/controller/impl/DefaultBrokerHeartbeatManagerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6383",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/1e2a301266a41e7b4088f6f956dd850df407a600",
+    "buggy_commit": "c5fec3af414f029759cc9ec498c425ce6ad37612",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.controller.impl.DefaultBrokerHeartbeatManagerTest#testDetectBrokerAlive"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.controller.impl.DefaultBrokerHeartbeatManagerTest#testDetectBrokerAlive"
+      ]
+    }
+  },
+  "apache_rocketmq-6495": {
+    "bug_id": "apache_rocketmq-6495",
+    "PR_number": 6495,
+    "PR_createdAt": "2023-03-28T06:30:02Z",
+    "merge_commit": "450d0d69ccbcab56fa48ccd99a63406e587450d1",
+    "buggy_commits": [
+      {
+        "oid": "a325d144b24a1acdc92a5ac308865080532325d9",
+        "message": "[ISSUE #6858] passing through ProxyContext for future expansion (#6859)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6154",
+      "createdAt": "2023-02-21T14:56:41Z",
+      "content": "bug_report_all/apache_rocketmq-6495.json"
+    },
+    "changed_tests": [
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/MockS3AsyncClient.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/MockS3TestBase.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentMetadataTest.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3FileSegmentTest.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/S3MockStarterTestImpl.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredDispatcherForS3Test.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredFileSegmentForS3Test.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredMessageFetcherForS3Test.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/provider/s3/TieredStorageS3ClientTest.java",
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/util/MessageBufferUtilTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6495",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/450d0d69ccbcab56fa48ccd99a63406e587450d1",
+    "buggy_commit": "a325d144b24a1acdc92a5ac308865080532325d9",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManagerTest#init"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManagerTest#init"
+      ]
+    }
+  },
+  "apache_rocketmq-6641": {
+    "bug_id": "apache_rocketmq-6641",
+    "PR_number": 6641,
+    "PR_createdAt": "2023-04-24T03:53:10Z",
+    "merge_commit": "e3b8178871158e1a981915ac40c11e3a5e451922",
+    "buggy_commits": [
+      {
+        "oid": "fad3dece7b88bc62c5beae1a492917bfd85d87ed",
+        "message": "[ISSUE #6537] Fix bug MessageStoreConfig.haListenPort item config not\u2026 (#6538)\n\n* [ISSUE #6537] Fix bug MessageStoreConfig.haListenPort item config not effective\r\n\r\n* rerun\r\n\r\n* [ISSUE #6537] fix bug, if user not config haListenPort, then safe set haListenPort value as listenPort +1\r\n\r\n* rerun"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6570",
+      "createdAt": "2023-04-11T08:19:55Z",
+      "content": "bug_report_all/apache_rocketmq-6641.json"
+    },
+    "changed_tests": [
+      "store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/MultiDispatchTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6641",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/e3b8178871158e1a981915ac40c11e3a5e451922",
+    "buggy_commit": "fad3dece7b88bc62c5beae1a492917bfd85d87ed",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.store.MultiDispatchTest#wrapMultiDispatch"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.store.MultiDispatchTest#wrapMultiDispatch"
+      ]
+    }
+  },
+  "apache_rocketmq-6651": {
+    "bug_id": "apache_rocketmq-6651",
+    "PR_number": 6651,
+    "PR_createdAt": "2023-04-25T12:37:04Z",
+    "merge_commit": "dcf7ccdd9ba92c22a44cde4c1df36c4d1ef6a172",
+    "buggy_commits": [
+      {
+        "oid": "b00c82caccea8d8a23614c1854885d0a187e159e",
+        "message": "Rewrite the issue/pull request template of RocketMQ (#6645)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6650",
+      "createdAt": "2023-04-25T12:36:01Z",
+      "content": "bug_report_all/apache_rocketmq-6651.json"
+    },
+    "changed_tests": [
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageStoreTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6651",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/dcf7ccdd9ba92c22a44cde4c1df36c4d1ef6a172",
+    "buggy_commit": "b00c82caccea8d8a23614c1854885d0a187e159e",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.tieredstore.TieredMessageStoreTest#testGetMessageAsync"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.tieredstore.TieredMessageStoreTest#testGetMessageAsync"
+      ]
+    }
+  },
+  "apache_rocketmq-6692": {
+    "bug_id": "apache_rocketmq-6692",
+    "PR_number": 6692,
+    "PR_createdAt": "2023-05-04T10:10:49Z",
+    "merge_commit": "57642bc630d5ee42cca026ae389ae3016a61bb9c",
+    "buggy_commits": [
+      {
+        "oid": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
+        "message": "[ISSUE #6673]Issue template enhancements (#6674)\n\n* [ISSUE #6673]Issue template enhancements\r\n\r\n* optimize issue template"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6691",
+      "createdAt": "2023-05-04T10:08:29Z",
+      "content": "bug_report_all/apache_rocketmq-6692.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManagerLockFreeNotifyTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManagerTest.java",
+      "test/src/main/java/org/apache/rocketmq/test/client/rmq/RMQPopClient.java",
+      "test/src/test/java/org/apache/rocketmq/test/client/consumer/pop/BasePopOrderly.java",
+      "test/src/test/java/org/apache/rocketmq/test/client/consumer/pop/PopOrderlyIT.java",
+      "test/src/test/java/org/apache/rocketmq/test/offset/OffsetResetForPopIT.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6692",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/57642bc630d5ee42cca026ae389ae3016a61bb9c",
+    "buggy_commit": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenNoAck",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenAck",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleLonger",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleShorter",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testRecover",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenNoAck",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenAck",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleLonger",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleShorter",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testRecover",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
+        ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testReentrant"
+      ]
+    }
+  },
+  "apache_rocketmq-6707": {
+    "bug_id": "apache_rocketmq-6707",
+    "PR_number": 6707,
+    "PR_createdAt": "2023-05-06T06:56:21Z",
+    "merge_commit": "e73a9aa8a71a05b70970939dd2036ee89355d75f",
+    "buggy_commits": [
+      {
+        "oid": "6770f92819f6842ca0f9fc532f833b06a4e3c3aa",
+        "message": "[ISSUE #6693]Fix the description of the acl directory in the document is incorrect (#6694)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6706",
+      "createdAt": "2023-05-06T06:53:40Z",
+      "content": "bug_report_all/apache_rocketmq-6707.json"
+    },
+    "changed_tests": [
+      "store/src/test/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHATest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6707",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/e73a9aa8a71a05b70970939dd2036ee89355d75f",
+    "buggy_commit": "6770f92819f6842ca0f9fc532f833b06a4e3c3aa",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.store.ha.autoswitch.AutoSwitchHATest#testConfirmOffset",
+        ".org.apache.rocketmq.store.ha.autoswitch.AutoSwitchHATest#testBuildConsumeQueueNotExceedConfirmOffset"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.store.ha.autoswitch.AutoSwitchHATest#testConfirmOffset",
+        ".org.apache.rocketmq.store.ha.autoswitch.AutoSwitchHATest#testBuildConsumeQueueNotExceedConfirmOffset"
+      ]
+    }
+  },
+  "apache_rocketmq-6755": {
+    "bug_id": "apache_rocketmq-6755",
+    "PR_number": 6755,
+    "PR_createdAt": "2023-05-15T05:57:12Z",
+    "merge_commit": "8ab99aceb704e4c8906b9d6d57c97143a59b04c7",
+    "buggy_commits": [
+      {
+        "oid": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
+        "message": "[ISSUE #6933] Support delete expired or damaged file in tiered storage and optimize fetch code (#6952)\n\nIf cq dispatch smaller than local store min offset, do self-healing logic for storage and rebuild automatically"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6754",
+      "createdAt": "2023-05-15T05:54:34Z",
+      "content": "bug_report_all/apache_rocketmq-6755.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroupTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivityTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/processor/ConsumerProcessorTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6755",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/8ab99aceb704e4c8906b9d6d57c97143a59b04c7",
+    "buggy_commit": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresent",
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresentReturnNull",
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresent",
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresentReturnNull",
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveMultiThread",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessagePollingTime",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessage",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testPopMessage",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testAddDuplicationHandle",
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresent",
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresentReturnNull",
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresent",
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresentReturnNull",
+        ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveMultiThread",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessagePollingTime",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessage",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testPopMessage",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ]
+    }
+  },
+  "apache_rocketmq-6842": {
+    "bug_id": "apache_rocketmq-6842",
+    "PR_number": 6842,
+    "PR_createdAt": "2023-05-31T11:48:44Z",
+    "merge_commit": "6238caaac92fb1870f5eb234ddce86f3be045c79",
+    "buggy_commits": [
+      {
+        "oid": "3ac885705d9fa36870c1b059e1089c158fa66285",
+        "message": "new feature: sql expression CONTAINS support (#6864)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6841",
+      "createdAt": "2023-05-31T11:42:18Z",
+      "content": "bug_report_all/apache_rocketmq-6842.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/AckMessageProcessorTest.java",
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/PopInflightMessageCounterTest.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/protocol/body/BatchAckTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6842",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/6238caaac92fb1870f5eb234ddce86f3be045c79",
+    "buggy_commit": "3ac885705d9fa36870c1b059e1089c158fa66285",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.processor.PopInflightMessageCounterTest#testNum"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.broker.processor.PopInflightMessageCounterTest#testNum"
+      ]
+    }
+  },
+  "apache_rocketmq-6859": {
+    "bug_id": "apache_rocketmq-6859",
+    "PR_number": 6859,
+    "PR_createdAt": "2023-06-06T07:27:52Z",
+    "merge_commit": "a325d144b24a1acdc92a5ac308865080532325d9",
+    "buggy_commits": [
+      {
+        "oid": "bee5077bcb77411f103aafb2220184f59db2c95e",
+        "message": "[ISSUE #6336] [RIP-62] Cold Read Control  (#6507)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6858",
+      "createdAt": "2023-06-06T07:26:13Z",
+      "content": "bug_report_all/apache_rocketmq-6859.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/processor/TransactionProcessorTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/remoting/activity/SendMessageActivityTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/BaseServiceTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/message/ClusterMessageServiceTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataServiceTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteServiceTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteServiceTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/transaction/AbstractTransactionServiceTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/transaction/ClusterTransactionServiceTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6859",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/a325d144b24a1acdc92a5ac308865080532325d9",
+    "buggy_commit": "bee5077bcb77411f103aafb2220184f59db2c95e",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.grpc.v2.client.ClientActivityTest#testProducerHeartbeat",
+        ".org.apache.rocketmq.proxy.grpc.v2.client.ClientActivityTest#testProducerNotifyClientTermination",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.ChangeInvisibleDurationActivityTest#testChangeInvisibleDurationActivityWhenHasMappingHandle",
+        ".org.apache.rocketmq.proxy.grpc.v2.producer.ForwardMessageToDLQActivityTest#testForwardMessageToDeadLetterQueueWhenHasMappingHandle",
+        ".org.apache.rocketmq.proxy.grpc.v2.route.RouteActivityTest#testQueryRoute",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testPopMessage",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testLockBatch",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testLockBatchPartialSuccess",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testLockBatchPartialSuccessWithException",
+        ".org.apache.rocketmq.proxy.processor.ProducerProcessorTest#testSendMessage",
+        ".org.apache.rocketmq.proxy.processor.ProducerProcessorTest#testSendRetryMessage",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline",
+        ".org.apache.rocketmq.proxy.remoting.activity.SendMessageActivityTest#testSendMessage",
+        ".org.apache.rocketmq.proxy.service.message.ClusterMessageServiceTest#testAckMessageByInvalidBrokerNameHandle",
+        ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetTopicMessageType",
+        ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetSubscriptionGroupConfig",
+        ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetCurrentMessageQueueView",
+        ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetTopicRouteForProxy",
+        ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetCurrentMessageQueueView",
+        ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetTopicRouteForProxy"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.grpc.v2.client.ClientActivityTest#testProducerHeartbeat",
+        ".org.apache.rocketmq.proxy.grpc.v2.client.ClientActivityTest#testProducerNotifyClientTermination",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.ChangeInvisibleDurationActivityTest#testChangeInvisibleDurationActivityWhenHasMappingHandle",
+        ".org.apache.rocketmq.proxy.grpc.v2.producer.ForwardMessageToDLQActivityTest#testForwardMessageToDeadLetterQueueWhenHasMappingHandle",
+        ".org.apache.rocketmq.proxy.grpc.v2.route.RouteActivityTest#testQueryRoute",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testPopMessage",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testLockBatch",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testLockBatchPartialSuccess",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testLockBatchPartialSuccessWithException",
+        ".org.apache.rocketmq.proxy.processor.ProducerProcessorTest#testSendMessage",
+        ".org.apache.rocketmq.proxy.processor.ProducerProcessorTest#testSendRetryMessage",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
+        ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline",
+        ".org.apache.rocketmq.proxy.remoting.activity.SendMessageActivityTest#testSendMessage",
+        ".org.apache.rocketmq.proxy.service.message.ClusterMessageServiceTest#testAckMessageByInvalidBrokerNameHandle",
+        ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetTopicMessageType",
+        ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetSubscriptionGroupConfig",
+        ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetCurrentMessageQueueView",
+        ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetTopicRouteForProxy",
+        ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetCurrentMessageQueueView",
+        ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetTopicRouteForProxy"
+      ]
+    }
+  },
+  "apache_rocketmq-6883": {
+    "bug_id": "apache_rocketmq-6883",
+    "PR_number": 6883,
+    "PR_createdAt": "2023-06-09T07:04:57Z",
+    "merge_commit": "7996ec3b3f7ccea01f66951ac639b48303bbf7a6",
+    "buggy_commits": [
+      {
+        "oid": "737c1e53383350a5671fa207ee0e4ce932850bac",
+        "message": "[ISSUE #7029] Add a config to determine whether pop response should return the actual retry topic or tamper with the original topic (#7030)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6879",
+      "createdAt": "2023-06-09T05:52:58Z",
+      "content": "bug_report_all/apache_rocketmq-6883.json"
+    },
+    "changed_tests": [
+      "common/src/test/java/org/apache/rocketmq/common/utils/ConcurrentHashMapUtilsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6883",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/7996ec3b3f7ccea01f66951ac639b48303bbf7a6",
+    "buggy_commit": "737c1e53383350a5671fa207ee0e4ce932850bac",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.common.utils.ConcurrentHashMapUtilsTest#computeIfAbsent"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.common.utils.ConcurrentHashMapUtilsTest#computeIfAbsent"
+      ]
+    }
+  },
+  "apache_rocketmq-6885": {
+    "bug_id": "apache_rocketmq-6885",
+    "PR_number": 6885,
+    "PR_createdAt": "2023-06-09T09:42:44Z",
+    "merge_commit": "aea5811df007c2abf2d46eea931e4c867514e0eb",
+    "buggy_commits": [
+      {
+        "oid": "3dda55e812240ee5bb667d078fb49acc13f0ccb4",
+        "message": "[RIP-64] Heartbeat Optimization  (#6724)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6884",
+      "createdAt": "2023-06-09T09:26:05Z",
+      "content": "bug_report_all/apache_rocketmq-6885.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6885",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/aea5811df007c2abf2d46eea931e4c867514e0eb",
+    "buggy_commit": "3dda55e812240ee5bb667d078fb49acc13f0ccb4",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncGrpcV2Channel",
+        ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncRemotingChannel"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncGrpcV2Channel",
+        ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncRemotingChannel"
+      ]
+    }
+  },
+  "apache_rocketmq-6915": {
+    "bug_id": "apache_rocketmq-6915",
+    "PR_number": 6915,
+    "PR_createdAt": "2023-06-17T14:23:09Z",
+    "merge_commit": "867c296150ec9734d10917dffe3fb453317e7fc2",
+    "buggy_commits": [
+      {
+        "oid": "9899be15e7fcac45f60988ea84c41c1a6f615554",
+        "message": "[ISSUE #6933] Support recreate file if local cq and tiered storage offset not match"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6916",
+      "createdAt": "2023-06-17T14:27:26Z",
+      "content": "bug_report_all/apache_rocketmq-6915.json"
+    },
+    "changed_tests": [
+      "filter/src/test/java/org/apache/rocketmq/filter/ExpressionTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6915",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/867c296150ec9734d10917dffe3fb453317e7fc2",
+    "buggy_commit": "9899be15e7fcac45f60988ea84c41c1a6f615554",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_has_not",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_has_not",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_hasEmpty",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_hasEmpty",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_null_has_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_null_has_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_null_has_2",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_null_has_2",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_number_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_number_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_boolean_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_boolean_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_object_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_has_not_string_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_has_not_string_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_has_not_string_2",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_has_not_string_2",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_string_has_string",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_string_has_string",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_string_has_not_string",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_string_has_not_string",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_string_has_empty",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_string_has_empty",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_string_has_space",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_string_has_space",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_string_has_nothing",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_string_has_nothing",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_string_has_special_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notConstains_string_has_special_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#testConstains_string_has_special_2"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_has_not",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_has_not",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_hasEmpty",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_hasEmpty",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_null_has_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_null_has_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_null_has_2",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_null_has_2",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_number_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_number_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_boolean_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_boolean_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_object_has",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_has_not_string_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_has_not_string_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_has_not_string_2",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_has_not_string_2",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_string_has_string",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_string_has_string",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_startsWith_endsWith_string_has_not_string",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_string_has_not_string",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_string_has_empty",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_string_has_empty",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_string_has_space",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_string_has_space",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_string_has_nothing",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_string_has_nothing",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_string_has_special_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#test_notContains_notStartsWith_notEndsWith_string_has_special_1",
+        ".org.apache.rocketmq.filter.ExpressionTest#testContains_StartsWith_EndsWith_string_has_special_2",
+        ".org.apache.rocketmq.filter.ExpressionTest#testStartsWithAllInOne",
+        ".org.apache.rocketmq.filter.ExpressionTest#testEndsWithAllInOne"
+      ]
+    }
+  },
+  "apache_rocketmq-6930": {
+    "bug_id": "apache_rocketmq-6930",
+    "PR_number": 6930,
+    "PR_createdAt": "2023-06-21T15:07:02Z",
+    "merge_commit": "1f0cdc88f86ff0293db0b67168d50950e76aeb5a",
+    "buggy_commits": [
+      {
+        "oid": "6238caaac92fb1870f5eb234ddce86f3be045c79",
+        "message": "[ISSUE #6841] new feature: pop batch ack implementation broker-side (#6842)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6929",
+      "createdAt": "2023-06-21T15:06:28Z",
+      "content": "bug_report_all/apache_rocketmq-6930.json"
+    },
+    "changed_tests": [
+      "tieredstore/src/test/java/org/apache/rocketmq/tieredstore/TieredMessageFetcherTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6930",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/1f0cdc88f86ff0293db0b67168d50950e76aeb5a",
+    "buggy_commit": "6238caaac92fb1870f5eb234ddce86f3be045c79",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.tieredstore.TieredMessageFetcherTest#testQueryMessageAsync"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.tieredstore.TieredMessageFetcherTest#testQueryMessageAsync"
+      ]
+    }
+  },
+  "apache_rocketmq-6941": {
+    "bug_id": "apache_rocketmq-6941",
+    "PR_number": 6941,
+    "PR_createdAt": "2023-06-25T05:19:25Z",
+    "merge_commit": "16ef5755375e7c8f4fb11dd63f5fdfdfa25668e7",
+    "buggy_commits": [
+      {
+        "oid": "e369d7deac6e4dde950a8da7c3d976bb26d0e6b5",
+        "message": "[maven-release-plugin] prepare for next development iteration (#6939)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/4612",
+      "createdAt": "2022-07-15T06:55:25Z",
+      "content": "bug_report_all/apache_rocketmq-6941.json"
+    },
+    "changed_tests": [
+      "client/src/test/java/org/apache/rocketmq/client/trace/TraceDataEncoderTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6941",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/16ef5755375e7c8f4fb11dd63f5fdfdfa25668e7",
+    "buggy_commit": "e369d7deac6e4dde950a8da7c3d976bb26d0e6b5",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.client.trace.TraceDataEncoderTest#testSubAfterTraceDataFormatTest"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.client.trace.TraceDataEncoderTest#testSubAfterTraceDataFormatTest"
+      ]
+    }
+  },
+  "apache_rocketmq-6965": {
+    "bug_id": "apache_rocketmq-6965",
+    "PR_number": 6965,
+    "PR_createdAt": "2023-06-29T05:52:49Z",
+    "merge_commit": "bbbe737e4e57ebc32581220fa8766cf32f7833eb",
+    "buggy_commits": [
+      {
+        "oid": "87075c26623c2c40486c4189e2fb1855426a8ae9",
+        "message": "[ISSUE #6955] add removeOne method for ReceiptHandleGroup (#6955)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/6964",
+      "createdAt": "2023-06-29T05:42:27Z",
+      "content": "bug_report_all/apache_rocketmq-6965.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/client/ClientActivityTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManagerTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/remoting/activity/PullMessageActivityTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/remoting/channel/RemotingChannelManagerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/6965",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/bbbe737e4e57ebc32581220fa8766cf32f7833eb",
+    "buggy_commit": "87075c26623c2c40486c4189e2fb1855426a8ae9",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
+        ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData",
+        ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithoutSub",
+        ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithSub"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
+        ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData",
+        ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithoutSub",
+        ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithSub"
+      ]
+    }
+  },
+  "apache_rocketmq-7105": {
+    "bug_id": "apache_rocketmq-7105",
+    "PR_number": 7105,
+    "PR_createdAt": "2023-08-01T09:54:47Z",
+    "merge_commit": "ab61183030f4f230619ea539cbd2cb977234208b",
+    "buggy_commits": [
+      {
+        "oid": "a1bf49d5d07cf64374bc3dde5ab43add831433ad",
+        "message": "[ISSUE #7093] Avoid dispatch tasks too much cause dispatch task failed (#7094)\n\n* Avoid dispatch tasks too much cause dispatch task failed\r\n\r\n* set schedule task async"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7104",
+      "createdAt": "2023-08-01T09:53:38Z",
+      "content": "bug_report_all/apache_rocketmq-7105.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManagerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7105",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/ab61183030f4f230619ea539cbd2cb977234208b",
+    "buggy_commit": "a1bf49d5d07cf64374bc3dde5ab43add831433ad",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.service.receipt.DefaultReceiptHandleManagerTest#testClearGroup"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.service.receipt.DefaultReceiptHandleManagerTest#testClearGroup"
+      ]
+    }
+  },
+  "apache_rocketmq-7120": {
+    "bug_id": "apache_rocketmq-7120",
+    "PR_number": 7120,
+    "PR_createdAt": "2023-08-05T06:33:59Z",
+    "merge_commit": "f5656543519bcd6c5fe59875535311a44b10ad2b",
+    "buggy_commits": [
+      {
+        "oid": "2113fa371b9c2bf7c512f8ad234e51c616f1362c",
+        "message": "[ISSUE #7453] Fix the problem in constructing the GetMessageResult (#7456)\n\n* Fix the problem in constructing the GetMessageResult\r\n\r\n* Optimize the initialization size of GetMessageResult"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7064",
+      "createdAt": "2023-07-23T03:32:37Z",
+      "content": "bug_report_all/apache_rocketmq-7120.json"
+    },
+    "changed_tests": [
+      "store/src/test/java/org/apache/rocketmq/store/DefaultMessageStoreTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/MultiDispatchTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/RocksDBMessageStoreTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/StoreTestUtil.java",
+      "store/src/test/java/org/apache/rocketmq/store/ha/HAServerTest.java",
+      "store/src/test/java/org/apache/rocketmq/store/ha/autoswitch/AutoSwitchHATest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7120",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/f5656543519bcd6c5fe59875535311a44b10ad2b",
+    "buggy_commit": "2113fa371b9c2bf7c512f8ad234e51c616f1362c",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.store.MultiDispatchTest#queueKey",
+        ".org.apache.rocketmq.store.MultiDispatchTest#wrapMultiDispatch"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.store.MultiDispatchTest#lmqQueueKey",
+        ".org.apache.rocketmq.store.MultiDispatchTest#wrapMultiDispatch"
+      ]
+    }
+  },
+  "apache_rocketmq-7225": {
+    "bug_id": "apache_rocketmq-7225",
+    "PR_number": 7225,
+    "PR_createdAt": "2023-08-22T08:23:07Z",
+    "merge_commit": "77e8e54b37c3fc3ea0beffc1ace6f5bf20af10d9",
+    "buggy_commits": [
+      {
+        "oid": "017ad110475e8024585327b44f47e5e97aabc63b",
+        "message": "[ISSUE #7219] Fix Concurrent modify syncStateSet and Mark synchronizing frequently when shrink. (#7220)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7223",
+      "createdAt": "2023-08-22T08:16:19Z",
+      "content": "bug_report_all/apache_rocketmq-7225.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivityTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/processor/BaseProcessorTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/processor/ConsumerProcessorTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/MQClientAPIExtTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7225",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/77e8e54b37c3fc3ea0beffc1ace6f5bf20af10d9",
+    "buggy_commit": "017ad110475e8024585327b44f47e5e97aabc63b",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.AckMessageActivityTest#testAckMessage"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.AckMessageActivityTest#testAckMessage",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.AckMessageActivityTest#testAckMessageInBatch",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testBatchAckExpireMessage",
+        ".org.apache.rocketmq.proxy.processor.ConsumerProcessorTest#testBatchAckMessage",
+        ".org.apache.rocketmq.proxy.service.mqclient.MQClientAPIExtTest#testBatchAckMessageAsync"
+      ]
+    }
+  },
+  "apache_rocketmq-7322": {
+    "bug_id": "apache_rocketmq-7322",
+    "PR_number": 7322,
+    "PR_createdAt": "2023-09-07T07:09:35Z",
+    "merge_commit": "84156084a4c5228e1d2fe21e068fff330bbc40d1",
+    "buggy_commits": [
+      {
+        "oid": "c36bb78e850129b9db40adc5b0e1b9bfd5c8fd2e",
+        "message": "[ISSUE 7313]  Enhancement Optimization Method name (#7420)\n\n* Enhancment/method_name/#7313/\r\n\r\n* Enhancment/method_name/#7313/\r\n\r\n* Enhancment/method_name/#7313/"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7321",
+      "createdAt": "2023-09-07T06:57:33Z",
+      "content": "bug_report_all/apache_rocketmq-7322.json"
+    },
+    "changed_tests": [
+      "remoting/src/test/java/org/apache/rocketmq/remoting/RemotingServerTest.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/netty/MockChannel.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/netty/MockChannelPromise.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/netty/NettyRemotingAbstractTest.java",
+      "remoting/src/test/java/org/apache/rocketmq/remoting/netty/NettyRemotingClientTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7322",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/84156084a4c5228e1d2fe21e068fff330bbc40d1",
+    "buggy_commit": "c36bb78e850129b9db40adc5b0e1b9bfd5c8fd2e",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.remoting.RemotingServerTest#testInvokeAsync",
+        ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand",
+        ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand_RunCallBackInCurrentThread",
+        ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testScanResponseTable",
+        ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessRequestCommand"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.remoting.RemotingServerTest#testInvokeAsync",
+        ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand",
+        ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand_RunCallBackInCurrentThread",
+        ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testScanResponseTable",
+        ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessRequestCommand"
+      ]
+    }
+  },
+  "apache_rocketmq-7352": {
+    "bug_id": "apache_rocketmq-7352",
+    "PR_number": 7352,
+    "PR_createdAt": "2023-09-13T06:57:44Z",
+    "merge_commit": "4a8e0d5b851d1f9573cda79b7d2e42ee498809da",
+    "buggy_commits": [
+      {
+        "oid": "fd32dae2ab59f86dd215eeec405bf4fa6212bcb3",
+        "message": "[ISSUE #6633] Not clear uninitialized files and fix metadata recover (#7342)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7351",
+      "createdAt": "2023-09-13T06:57:18Z",
+      "content": "bug_report_all/apache_rocketmq-7352.json"
+    },
+    "changed_tests": [
+      "broker/src/test/java/org/apache/rocketmq/broker/processor/AdminBrokerProcessorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7352",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/4a8e0d5b851d1f9573cda79b7d2e42ee498809da",
+    "buggy_commit": "fd32dae2ab59f86dd215eeec405bf4fa6212bcb3",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.broker.processor.AdminBrokerProcessorTest#testUpdateAndCreateTopicOnSlaveInRocksdb",
+        ".org.apache.rocketmq.broker.processor.AdminBrokerProcessorTest#testUpdateAndCreateTopicOnSlave",
+        ".org.apache.rocketmq.broker.processor.AdminBrokerProcessorTest#testDeleteTopicOnSlaveInRocksdb",
+        ".org.apache.rocketmq.broker.processor.AdminBrokerProcessorTest#testDeleteTopicOnSlave",
+        ".org.apache.rocketmq.broker.processor.AdminBrokerProcessorTest#testUpdateAndCreateSubscriptionGroupOnSlaveInRocksdb",
+        ".org.apache.rocketmq.broker.processor.AdminBrokerProcessorTest#testUpdateAndCreateSubscriptionGroupOnSlave",
+        ".org.apache.rocketmq.broker.processor.AdminBrokerProcessorTest#testDeleteSubscriptionGroupOnSlaveInRocksdb",
+        ".org.apache.rocketmq.broker.processor.AdminBrokerProcessorTest#testDeleteSubscriptionGroupOnSlave"
+      ],
+      "test_tgt": []
+    }
+  },
+  "apache_rocketmq-7382": {
+    "bug_id": "apache_rocketmq-7382",
+    "PR_number": 7382,
+    "PR_createdAt": "2023-09-22T02:54:55Z",
+    "merge_commit": "88a9d939ce110381b3b418370d4711c0c214dc7f",
+    "buggy_commits": [
+      {
+        "oid": "73b3fde83765e066541e3455cd1e6604292a9b7c",
+        "message": "[maven-release-plugin] prepare for next development iteration (#7379)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7381",
+      "createdAt": "2023-09-22T02:42:55Z",
+      "content": "bug_report_all/apache_rocketmq-7382.json"
+    },
+    "changed_tests": [
+      "store/src/test/java/org/apache/rocketmq/store/timer/TimerMetricsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7382",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/88a9d939ce110381b3b418370d4711c0c214dc7f",
+    "buggy_commit": "73b3fde83765e066541e3455cd1e6604292a9b7c",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.store.timer.TimerMetricsTest#testTimingCount"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.store.timer.TimerMetricsTest#testTimingCount"
+      ]
+    }
+  },
+  "apache_rocketmq-7432": {
+    "bug_id": "apache_rocketmq-7432",
+    "PR_number": 7432,
+    "PR_createdAt": "2023-10-09T12:40:44Z",
+    "merge_commit": "b18e564addbcff50165a5e1d9d4ab7db789d901b",
+    "buggy_commits": [
+      {
+        "oid": "0027a1486d4f2d6f7dce3010751167e883783945",
+        "message": "[ISSUE #7412] Fix pop revive message error when reput checkpoint"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7431",
+      "createdAt": "2023-10-09T12:38:59Z",
+      "content": "bug_report_all/apache_rocketmq-7432.json"
+    },
+    "changed_tests": [
+      "controller/src/test/java/org/apache/rocketmq/controller/impl/DLedgerControllerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7432",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/b18e564addbcff50165a5e1d9d4ab7db789d901b",
+    "buggy_commit": "0027a1486d4f2d6f7dce3010751167e883783945",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.controller.impl.DLedgerControllerTest#testBrokerLifecycleListener"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.controller.impl.DLedgerControllerTest#testBrokerLifecycleListener"
+      ]
+    }
+  },
+  "apache_rocketmq-7631": {
+    "bug_id": "apache_rocketmq-7631",
+    "PR_number": 7631,
+    "PR_createdAt": "2023-12-11T11:01:26Z",
+    "merge_commit": "1e69e3904f20820c9f78971680f99bb7ddcd69ce",
+    "buggy_commits": [
+      {
+        "oid": "d626d6087d3da7a6636c20de72f3ac18f67517d7",
+        "message": "Bump com.squareup.okio:okio-jvm from 3.0.0 to 3.4.0 (#7638)\n\nBumps [com.squareup.okio:okio-jvm](https://github.com/square/okio) from 3.0.0 to 3.4.0.\r\n- [Changelog](https://github.com/square/okio/blob/master/CHANGELOG.md)\r\n- [Commits](https://github.com/square/okio/compare/parent-3.0.0...parent-3.4.0)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: com.squareup.okio:okio-jvm\r\n  dependency-type: direct:production\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7627",
+      "createdAt": "2023-12-08T11:32:21Z",
+      "content": "bug_report_all/apache_rocketmq-7631.json"
+    },
+    "changed_tests": [
+      "store/src/test/java/org/apache/rocketmq/store/HATest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7631",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/1e69e3904f20820c9f78971680f99bb7ddcd69ce",
+    "buggy_commit": "d626d6087d3da7a6636c20de72f3ac18f67517d7",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.store.HATest#testSemiSyncReplicaWhenAdaptiveDegradation"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.store.HATest#testSemiSyncReplicaWhenAdaptiveDegradation"
+      ]
+    }
+  },
+  "apache_rocketmq-7708": {
+    "bug_id": "apache_rocketmq-7708",
+    "PR_number": 7708,
+    "PR_createdAt": "2023-12-28T03:16:37Z",
+    "merge_commit": "3f99b1e96bedb0dc6854c92b2f753cdf9fa68197",
+    "buggy_commits": [
+      {
+        "oid": "6fce427e109d905530b17e64aa5dc9bc19795c5d",
+        "message": "[ISSUE ##7719] Add more property check for dealy message when auto-batch chack (#7720)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7707",
+      "createdAt": "2023-12-28T03:14:13Z",
+      "content": "bug_report_all/apache_rocketmq-7708.json"
+    },
+    "changed_tests": [
+      "proxy/src/test/java/org/apache/rocketmq/proxy/ContextNodeTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/common/ProxyContextTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/BaseActivityTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/channel/GrpcClientChannelTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManagerTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivityTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/message/LocalMessageServiceTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessorTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManagerTest.java",
+      "proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7708",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/3f99b1e96bedb0dc6854c92b2f753cdf9fa68197",
+    "buggy_commit": "6fce427e109d905530b17e64aa5dc9bc19795c5d",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
+        ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessagePollingTime",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessageWithIllegalPollingTime",
+        ".org.apache.rocketmq.proxy.service.mqclient.ProxyClientRemotingProcessorTest#testTransactionCheck",
+        ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncGrpcV2Channel",
+        ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testProcessConsumerGroupEventForGrpcV2"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
+        ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessagePollingTime",
+        ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessageWithIllegalPollingTime",
+        ".org.apache.rocketmq.proxy.service.mqclient.ProxyClientRemotingProcessorTest#testTransactionCheck",
+        ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncGrpcV2Channel",
+        ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testProcessConsumerGroupEventForGrpcV2"
+      ]
+    }
+  },
+  "apache_rocketmq-7714": {
+    "bug_id": "apache_rocketmq-7714",
+    "PR_number": 7714,
+    "PR_createdAt": "2024-01-02T15:01:49Z",
+    "merge_commit": "af1936d93ad9adab9527e19ceb5c89bb3a907e49",
+    "buggy_commits": [
+      {
+        "oid": "84285d13a7d056a444e52f0f58e713b9a6343c08",
+        "message": "Update copyright year (#7797)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7715",
+      "createdAt": "2024-01-02T15:03:35Z",
+      "content": "bug_report_all/apache_rocketmq-7714.json"
+    },
+    "changed_tests": [
+      "common/src/test/java/org/apache/rocketmq/common/MixAllTest.java",
+      "common/src/test/java/org/apache/rocketmq/common/NetworkUtilTest.java",
+      "common/src/test/java/org/apache/rocketmq/common/utils/ConcurrentHashMapUtilsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7714",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/af1936d93ad9adab9527e19ceb5c89bb3a907e49",
+    "buggy_commit": "84285d13a7d056a444e52f0f58e713b9a6343c08",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.common.MixAllTest#testGetLocalhostByNetworkInterface",
+        ".org.apache.rocketmq.common.NetworkUtilTest#testGetLocalAddress",
+        ".org.apache.rocketmq.common.utils.ConcurrentHashMapUtilsTest#computeIfAbsent"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.common.NetworkUtilTest#testGetLocalAddress",
+        ".org.apache.rocketmq.common.utils.ConcurrentHashMapUtilsTest#computeIfAbsent"
+      ]
+    }
+  },
+  "apache_rocketmq-7930": {
+    "bug_id": "apache_rocketmq-7930",
+    "PR_number": 7930,
+    "PR_createdAt": "2024-03-15T06:53:01Z",
+    "merge_commit": "e656f91da5c5376fb30c36fc18048a2b62eb08fc",
+    "buggy_commits": [
+      {
+        "oid": "9ab37b98541e875c22768458955cfe90c424881d",
+        "message": "Fix some ambiguous logs (#7934)\n\n* Fix thread name ambiguity\r\n\r\n* Fix namesrv log ambiguity"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/rocketmq/issues/7929",
+      "createdAt": "2024-03-15T06:52:22Z",
+      "content": "bug_report_all/apache_rocketmq-7930.json"
+    },
+    "changed_tests": [
+      "acl/src/test/java/org/apache/rocketmq/acl/common/PermissionTest.java"
+    ],
+    "PR_url": "https://github.com/apache/rocketmq/pull/7930",
+    "merge_commit_url": "https://github.com/apache/rocketmq/commit/e656f91da5c5376fb30c36fc18048a2b62eb08fc",
+    "buggy_commit": "9ab37b98541e875c22768458955cfe90c424881d",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.rocketmq.acl.common.PermissionTest#checkAdminCodeTest"
+      ],
+      "test_tgt": [
+        ".org.apache.rocketmq.acl.common.PermissionTest#checkAdminCodeTest"
+      ]
+    }
+  }
+}

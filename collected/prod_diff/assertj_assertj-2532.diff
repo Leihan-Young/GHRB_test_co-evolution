@@ -1,0 +1,972 @@
+diff --git a/src/main/java/org/assertj/core/api/AbstractUniversalComparableAssert.java b/src/main/java/org/assertj/core/api/AbstractUniversalComparableAssert.java
+new file mode 100644
+index 000000000..97010792d
+--- /dev/null
++++ b/src/main/java/org/assertj/core/api/AbstractUniversalComparableAssert.java
+@@ -0,0 +1,290 @@
++/*
++ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
++ * the License. You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
++ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
++ * specific language governing permissions and limitations under the License.
++ *
++ * Copyright 2012-2022 the original author or authors.
++ */
++package org.assertj.core.api;
++
++import java.math.BigDecimal;
++import java.util.Comparator;
++
++import org.assertj.core.internal.Comparables;
++import org.assertj.core.internal.ComparatorBasedComparisonStrategy;
++import org.assertj.core.util.CheckReturnValue;
++import org.assertj.core.util.VisibleForTesting;
++
++/**
++ * Base class for {@link Comparable} assertions.
++ * <p>
++ * This class offers better compatibility than {@link ComparableAssert} and related implementations, currently limited
++ * due to the upper bound of {@link ComparableAssert}'s type parameters.
++ * <p> 
++ * Let's take an example with a class <code>Name</code> implementing <code>Comparable&lt;Name&gt;</code>.
++ * <pre><code class='java'> Comparable&lt;Name&gt; name1 = new Name("abc");</code></pre>
++ * <p>
++ * The following does not compile or work as expected: 
++ * <pre><code class='java'> // does not compile as assertThat(name1) resolves to Object assertions
++ * assertThat(name1).isLessThanOrEqualTo(name1);
++ * 
++ * // compiles fine but requires a raw Comparable cast (assertThat resolves to AbstractComparableAssert)
++ * assertThat((Comparable)name1).isLessThanOrEqualTo(name1);
++ * 
++ * // does not compile: Cannot infer type arguments for GenericComparableAssert&lt;&gt;
++ * new GenericComparableAssert&lt;&gt;(name1).isLessThanOrEqualTo(name3);
++ * 
++ * // compiles fine with the concrete type (assertThat resolves to AbstractComparableAssert)
++ * Name name = name1;
++ * assertThat(name).isEqualByComparingTo(name);</code></pre>
++ * <p>
++ * This class aims to allow writing 
++ * <pre><code class='java'> // assertThatComparable resolves to AbstractUniversalComparableAssert
++ * assertThatComparable(name1).isLessThanOrEqualTo(name1);
++ * 
++ * // it works with the concrete type too
++ * assertThatComparable(name).isEqualByComparingTo(name);</code></pre>
++ *
++ * @see Assertions#assertThatComparable(Comparable)
++ * @since 3.23.0
++ */
++public abstract class AbstractUniversalComparableAssert<SELF extends AbstractUniversalComparableAssert<SELF, T>, T>
++    extends AbstractObjectAssert<SELF, Comparable<T>> {
++
++  @VisibleForTesting
++  Comparables comparables = new Comparables();
++
++  protected AbstractUniversalComparableAssert(Comparable<T> actual, Class<?> selfType) {
++    super(actual, selfType);
++  }
++
++  /**
++   * Verifies that the actual value is equal to the given one by invoking
++   * <code>{@link Comparable#compareTo(Object)}</code>.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThatComparable(1.0).isEqualByComparingTo(1.0);
++   * // assertion will pass because 8.0 is equal to 8.00 using {@link BigDecimal#compareTo(BigDecimal)}
++   * assertThatComparable(new BigDecimal(&quot;8.0&quot;)).isEqualByComparingTo(new BigDecimal(&quot;8.00&quot;));
++   *
++   * // assertion will fail
++   * assertThatComparable(new BigDecimal(1.0)).isEqualByComparingTo(new BigDecimal(2.0));</code></pre>
++   *
++   * @param other the given value to compare the actual value to.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual value is {@code null}.
++   * @throws AssertionError if the actual value is not equal when comparing to the given one.
++   */
++  public SELF isEqualByComparingTo(T other) {
++    comparables.assertEqualByComparison(info, actual, other);
++    return myself;
++  }
++
++  /**
++   * Verifies that the actual value is not equal to the given one by invoking
++   * <code>{@link Comparable#compareTo(Object)}</code>.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion will pass
++   * assertThatComparable(new BigDecimal(1.0)).isNotEqualByComparingTo(new BigDecimal(2.0));
++   *
++   * // assertion will fail
++   * assertThatComparable(1.0).isNotEqualByComparingTo(1.0);
++   * // assertion will fail because 8.0 is equal to 8.00 using {@link BigDecimal#compareTo(BigDecimal)}
++   * assertThatComparable(new BigDecimal(&quot;8.0&quot;)).isNotEqualByComparingTo(new BigDecimal(&quot;8.00&quot;));</code></pre>
++   *
++   * @param other the given value to compare the actual value to.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual value is {@code null}.
++   * @throws AssertionError if the actual value is equal when comparing to the given one.
++   */
++  public SELF isNotEqualByComparingTo(T other) {
++    comparables.assertNotEqualByComparison(info, actual, other);
++    return myself;
++  }
++
++  /**
++   * Verifies that the actual value is less than the given one.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertions will pass
++   * assertThatComparable('a').isLessThan('b');
++   * assertThatComparable(BigInteger.ZERO).isLessThan(BigInteger.ONE);
++   *
++   * // assertions will fail
++   * assertThatComparable('a').isLessThan('a');
++   * assertThatComparable(BigInteger.ONE).isLessThan(BigInteger.ZERO);</code></pre>
++   *
++   * @param other the given value to compare the actual value to.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual value is {@code null}.
++   * @throws AssertionError if the actual value is equal to or greater than the given one.
++   */
++  public SELF isLessThan(T other) {
++    comparables.assertLessThan(info, actual, other);
++    return myself;
++  }
++
++  /**
++   * Verifies that the actual value is less than or equal to the given one.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertions will pass
++   * assertThatComparable('a').isLessThanOrEqualTo('b');
++   * assertThatComparable('a').isLessThanOrEqualTo('a');
++   * assertThatComparable(BigInteger.ZERO).isLessThanOrEqualTo(BigInteger.ZERO);
++   *
++   * // assertions will fail
++   * assertThatComparable('b').isLessThanOrEqualTo('a');
++   * assertThatComparable(BigInteger.ONE).isLessThanOrEqualTo(BigInteger.ZERO);</code></pre>
++   *
++   * @param other the given value to compare the actual value to.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual value is {@code null}.
++   * @throws AssertionError if the actual value is greater than the given one.
++   */
++  public SELF isLessThanOrEqualTo(T other) {
++    comparables.assertLessThanOrEqualTo(info, actual, other);
++    return myself;
++  }
++
++  /**
++   * Verifies that the actual value is greater than the given one.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertions will pass
++   * assertThatComparable('b').isGreaterThan('a');
++   * assertThatComparable(BigInteger.ONE).isGreaterThan(BigInteger.ZERO);
++   *
++   * // assertions will fail
++   * assertThatComparable('b').isGreaterThan('a');
++   * assertThatComparable(BigInteger.ZERO).isGreaterThan(BigInteger.ZERO);</code></pre>
++   *
++   * @param other the given value to compare the actual value to.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual value is {@code null}.
++   * @throws AssertionError if the actual value is equal to or less than the given one.
++   */
++  public SELF isGreaterThan(T other) {
++    comparables.assertGreaterThan(info, actual, other);
++    return myself;
++  }
++
++  /**
++   * Verifies that the actual value is greater than or equal to the given one.
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertions will pass
++   * assertThatComparable('b').isGreaterThanOrEqualTo('a');
++   * assertThatComparable(BigInteger.ONE).isGreaterThanOrEqualTo(BigInteger.ONE);
++   *
++   * // assertions will fail
++   * assertThatComparable('a').isGreaterThanOrEqualTo('b');
++   * assertThatComparable(BigInteger.ZERO).isGreaterThanOrEqualTo(BigInteger.ONE);</code></pre>
++   *
++   * @param other the given value to compare the actual value to.
++   * @return {@code this} assertion object.
++   * @throws AssertionError if the actual value is {@code null}.
++   * @throws AssertionError if the actual value is less than the given one.
++   */
++  public SELF isGreaterThanOrEqualTo(T other) {
++    comparables.assertGreaterThanOrEqualTo(info, actual, other);
++    return myself;
++  }
++
++  /**
++   * Verifies that the actual value is in [start, end] range (start included, end included).
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertions succeed
++   * assertThatComparable('b').isBetween('a', 'c');
++   * assertThatComparable('a').isBetween('a', 'b');
++   * assertThatComparable('b').isBetween('a', 'b');
++   *
++   * // assertions fail
++   * assertThatComparable('a').isBetween('b', 'c');
++   * assertThatComparable('c').isBetween('a', 'b');</code></pre>
++   *
++   * @param startInclusive the start value (inclusive), expected not to be null.
++   * @param endInclusive the end value (inclusive), expected not to be null.
++   * @return this assertion object.
++   * @throws AssertionError if the actual value is {@code null}.
++   * @throws NullPointerException if start value is {@code null}.
++   * @throws NullPointerException if end value is {@code null}.
++   * @throws AssertionError if the actual value is not in [start, end] range.
++   */
++  public SELF isBetween(T startInclusive, T endInclusive) {
++    comparables.assertIsBetween(info, actual, startInclusive, endInclusive, true, true);
++    return myself;
++  }
++
++  /**
++   * Verifies that the actual value is in ]start, end[ range (start excluded, end excluded).
++   * <p>
++   * Example:
++   * <pre><code class='java'> // assertion succeeds
++   * assertThatComparable('b').isStrictlyBetween('a', 'c');
++   *
++   * // assertions fail
++   * assertThatComparable('d').isStrictlyBetween('a', 'c');
++   * assertThatComparable('a').isStrictlyBetween('b', 'd');
++   * assertThatComparable('a').isStrictlyBetween('a', 'b');
++   * assertThatComparable('b').isStrictlyBetween('a', 'b');</code></pre>
++   *
++   * @param startExclusive the start value (exclusive), expected not to be null.
++   * @param endExclusive the end value (exclusive), expected not to be null.
++   * @return this assertion object.
++   * @throws AssertionError if the actual value is {@code null}.
++   * @throws NullPointerException if start value is {@code null}.
++   * @throws NullPointerException if end value is {@code null}.
++   * @throws AssertionError if the actual value is not in ]start, end[ range.
++   */
++  public SELF isStrictlyBetween(T startExclusive, T endExclusive) {
++    comparables.assertIsBetween(info, actual, startExclusive, endExclusive, false, false);
++    return myself;
++  }
++
++  /** {@inheritDoc} */
++  @Override
++  @CheckReturnValue
++  public SELF usingComparator(Comparator<? super Comparable<T>> customComparator) {
++    return super.usingComparator(customComparator);
++  }
++
++  /** {@inheritDoc} */
++  @Override
++  @CheckReturnValue
++  public SELF usingComparator(Comparator<? super Comparable<T>> customComparator, String customComparatorDescription) {
++    this.comparables = new Comparables(new ComparatorBasedComparisonStrategy(customComparator, customComparatorDescription));
++    return super.usingComparator(customComparator, customComparatorDescription);
++  }
++
++  /** {@inheritDoc} */
++  @Override
++  @CheckReturnValue
++  public SELF usingDefaultComparator() {
++    this.comparables = new Comparables();
++    return super.usingDefaultComparator();
++  }
++
++  /** {@inheritDoc} */
++  @Override
++  @CheckReturnValue
++  public SELF inHexadecimal() {
++    return super.inHexadecimal();
++  }
++
++  /** {@inheritDoc} */
++  @Override
++  @CheckReturnValue
++  public SELF inBinary() {
++    return super.inBinary();
++  }
++
++}
+diff --git a/src/main/java/org/assertj/core/api/Assertions.java b/src/main/java/org/assertj/core/api/Assertions.java
+index 21f20645c..71ef1b205 100644
+--- a/src/main/java/org/assertj/core/api/Assertions.java
++++ b/src/main/java/org/assertj/core/api/Assertions.java
+@@ -3493,7 +3493,7 @@ public class Assertions implements InstanceOfAssertFactories {
+   }
+ 
+   /**
+-   * Creates a new instance of <code>{@link GenericComparableAssert}</code> with
++   * Creates a new instance of <code>{@link UniversalComparableAssert}</code> with
+    * standard comparison semantics.
+    * <p>
+    * Use this over {@link #assertThat(Comparable)} in case of ambiguous method resolution when the object under test 
+@@ -3504,9 +3504,8 @@ public class Assertions implements InstanceOfAssertFactories {
+    * @return the created assertion object.
+    * @since 3.23.0
+    */
+-  @SuppressWarnings({ "unchecked", "rawtypes" })
+-  public static <T extends Comparable<? super T>> AbstractComparableAssert<?, T> assertThatComparable(T actual) {
+-    return new GenericComparableAssert(actual);
++  public static <T> AbstractUniversalComparableAssert<?, T> assertThatComparable(Comparable<T> actual) {
++    return AssertionsForInterfaceTypes.assertThatComparable(actual);
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/api/AssertionsForInterfaceTypes.java b/src/main/java/org/assertj/core/api/AssertionsForInterfaceTypes.java
+index 48fced03d..3a173028e 100644
+--- a/src/main/java/org/assertj/core/api/AssertionsForInterfaceTypes.java
++++ b/src/main/java/org/assertj/core/api/AssertionsForInterfaceTypes.java
+@@ -446,7 +446,7 @@ public class AssertionsForInterfaceTypes extends AssertionsForClassTypes {
+   }
+ 
+   /**
+-   * Creates a new instance of <code>{@link GenericComparableAssert}</code> with
++   * Creates a new instance of <code>{@link UniversalComparableAssert}</code> with
+    * standard comparison semantics.
+    * <p>
+    * Use this over {@link #assertThat(Comparable)} in case of ambiguous method resolution when the object under test 
+@@ -457,8 +457,8 @@ public class AssertionsForInterfaceTypes extends AssertionsForClassTypes {
+    * @return the created assertion object.
+    * @since 3.23.0
+    */
+-  public static <T extends Comparable<? super T>> AbstractComparableAssert<?, T> assertThatComparable(T actual) {
+-    return assertThat(actual);
++  public static <T> AbstractUniversalComparableAssert<?, T> assertThatComparable(Comparable<T> actual) {
++    return new UniversalComparableAssert<>(actual);
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/api/Assumptions.java b/src/main/java/org/assertj/core/api/Assumptions.java
+index 9bb1cc52e..d891863ea 100644
+--- a/src/main/java/org/assertj/core/api/Assumptions.java
++++ b/src/main/java/org/assertj/core/api/Assumptions.java
+@@ -989,18 +989,19 @@ public class Assumptions {
+   }
+ 
+   /**
+-   * Creates a new instance of <code>{@link GenericComparableAssert}</code> assumption.
++   * Creates a new instance of <code>{@link UniversalComparableAssert}</code> assumption.
+    * <p>
+    * Use this over {@link #assumeThat(Comparable)} in case of ambiguous method resolution when the object under test
+    * implements several interfaces Assertj provides <code>assumeThat</code> for.
+    *
+-   * @param <T> the type of elements.
++   * @param <T> the type of actual.
+    * @param actual the actual value.
+    * @return the created assumption for assertion object.
+    * @since 3.23.0
+    */
+-  public static <T extends Comparable<? super T>> AbstractComparableAssert<?, T> assumeThatComparable(T actual) {
+-    return assumeThat(actual);
++  @SuppressWarnings("unchecked")
++  public static <T> AbstractUniversalComparableAssert<?, T> assumeThatComparable(Comparable<T> actual) {
++    return asAssumption(UniversalComparableAssert.class, Comparable.class, actual);
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/api/BDDAssertions.java b/src/main/java/org/assertj/core/api/BDDAssertions.java
+index ed2314086..03bbddf8d 100644
+--- a/src/main/java/org/assertj/core/api/BDDAssertions.java
++++ b/src/main/java/org/assertj/core/api/BDDAssertions.java
+@@ -470,7 +470,7 @@ public class BDDAssertions extends Assertions {
+   }
+ 
+   /**
+-   * Creates a new instance of <code>{@link GenericComparableAssert}</code> with
++   * Creates a new instance of <code>{@link UniversalComparableAssert}</code> with
+    * standard comparison semantics.
+    * <p>
+    * Use this over {@link #then(Comparable)} in case of ambiguous method resolution when the object under test 
+@@ -481,8 +481,8 @@ public class BDDAssertions extends Assertions {
+    * @return the created assertion object.
+    * @since 3.23.0
+    */
+-  public static <T extends Comparable<? super T>> AbstractComparableAssert<?, T> thenComparable(T actual) {
+-    return then(actual);
++  public static <T> AbstractUniversalComparableAssert<?, T> thenComparable(Comparable<T> actual) {
++    return assertThatComparable(actual);
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java b/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java
+index ead74b9ac..7df93290b 100644
+--- a/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java
++++ b/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java
+@@ -240,8 +240,7 @@ public interface Java6BDDSoftAssertionsProvider extends SoftAssertionsProvider {
+   }
+ 
+   /**
+-   * Creates a new instance of <code>{@link org.assertj.core.api.GenericComparableAssert}</code> with
+-   * standard comparison semantics.
++   * Creates a new instance of <code>{@link GenericComparableAssert}</code> with standard comparison semantics.
+    *
+    * @param <T> the type of actual.
+    * @param actual the actual value.
+@@ -253,8 +252,7 @@ public interface Java6BDDSoftAssertionsProvider extends SoftAssertionsProvider {
+   }
+ 
+   /**
+-   * Creates a new instance of <code>{@link GenericComparableAssert}</code> with
+-   * standard comparison semantics.
++   * Creates a new instance of <code>{@link UniversalComparableAssert}</code> with standard comparison semantics.
+    * <p>
+    * Use this over {@link #then(Comparable)} in case of ambiguous method resolution when the object under test 
+    * implements several interfaces Assertj provides <code>then</code> for. 
+@@ -264,8 +262,9 @@ public interface Java6BDDSoftAssertionsProvider extends SoftAssertionsProvider {
+    * @return the created assertion object.
+    * @since 3.23.0
+    */
+-  default <T extends Comparable<? super T>> AbstractComparableAssert<?, T> thenComparable(T actual) {
+-    return then(actual);
++  @SuppressWarnings("unchecked")
++  default <T> AbstractUniversalComparableAssert<?, T> thenComparable(Comparable<T> actual) {
++    return proxy(UniversalComparableAssert.class, Comparable.class, actual);
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java b/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java
+index d2a380320..711297e59 100644
+--- a/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java
++++ b/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java
+@@ -251,7 +251,7 @@ public interface Java6StandardSoftAssertionsProvider extends SoftAssertionsProvi
+   }
+ 
+   /**
+-   * Creates a new instance of <code>{@link GenericComparableAssert}</code> with
++   * Creates a new instance of <code>{@link UniversalComparableAssert}</code> with
+    * standard comparison semantics.
+    * <p>
+    * Use this over {@link #assertThat(Comparable)} in case of ambiguous method resolution when the object under test 
+@@ -262,8 +262,9 @@ public interface Java6StandardSoftAssertionsProvider extends SoftAssertionsProvi
+    * @return the created assertion object.
+    * @since 3.23.0
+    */
+-  default <T extends Comparable<? super T>> AbstractComparableAssert<?, T> assertThatComparable(T actual) {
+-    return assertThat(actual);
++  @SuppressWarnings("unchecked")
++  default <T> AbstractUniversalComparableAssert<?, T> assertThatComparable(Comparable<T> actual) {
++    return proxy(UniversalComparableAssert.class, Comparable.class, actual);
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/api/UniversalComparableAssert.java b/src/main/java/org/assertj/core/api/UniversalComparableAssert.java
+new file mode 100644
+index 000000000..30e6ee95d
+--- /dev/null
++++ b/src/main/java/org/assertj/core/api/UniversalComparableAssert.java
+@@ -0,0 +1,30 @@
++/*
++ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
++ * the License. You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
++ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
++ * specific language governing permissions and limitations under the License.
++ *
++ * Copyright 2012-2022 the original author or authors.
++ */
++package org.assertj.core.api;
++
++/**
++ * {@link Comparable} assertions.
++ * <p>
++ * This class offers better compatibility than {@link ComparableAssert} and related implementations, currently limited
++ * due to the upper bound of {@link ComparableAssert}'s type parameters.
++ *
++ * @see Assertions#assertThatComparable(Comparable)
++ * @since 3.23.0
++ */
++public class UniversalComparableAssert<T> extends AbstractUniversalComparableAssert<UniversalComparableAssert<T>, T> {
++
++  protected UniversalComparableAssert(Comparable<T> actual) {
++    super(actual, UniversalComparableAssert.class);
++  }
++
++}
+diff --git a/src/main/java/org/assertj/core/api/WithAssertions.java b/src/main/java/org/assertj/core/api/WithAssertions.java
+index af11ba484..114070b35 100644
+--- a/src/main/java/org/assertj/core/api/WithAssertions.java
++++ b/src/main/java/org/assertj/core/api/WithAssertions.java
+@@ -721,7 +721,7 @@ public interface WithAssertions extends InstanceOfAssertFactories {
+   }
+ 
+   /**
+-   * Creates a new instance of <code>{@link GenericComparableAssert}</code> with standard comparison semantics.
++   * Creates a new instance of <code>{@link UniversalComparableAssert}</code> with standard comparison semantics.
+    * <p>
+    * Use this over {@link #assertThat(Comparable)} in case of ambiguous method resolution when the object under test 
+    * implements several interfaces Assertj provides <code>assertThat</code> for. 
+@@ -731,8 +731,8 @@ public interface WithAssertions extends InstanceOfAssertFactories {
+    * @return the created assertion object.
+    * @since 3.23.0
+    */
+-  default <T extends Comparable<? super T>> AbstractComparableAssert<?, T> assertThatComparable(T actual) {
+-    return assertThat(actual);
++  default <T> AbstractUniversalComparableAssert<?, T> assertThatComparable(Comparable<T> actual) {
++    return Assertions.assertThatComparable(actual);
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/error/ShouldBeBetween.java b/src/main/java/org/assertj/core/error/ShouldBeBetween.java
+index 7ea9cac2e..990da60d6 100644
+--- a/src/main/java/org/assertj/core/error/ShouldBeBetween.java
++++ b/src/main/java/org/assertj/core/error/ShouldBeBetween.java
+@@ -17,10 +17,9 @@ import java.util.Date;
+ import org.assertj.core.internal.ComparisonStrategy;
+ import org.assertj.core.internal.StandardComparisonStrategy;
+ 
+-
+ /**
+- * Creates an error message indicating that an assertion that verifies that a {@link Date} is between start - end dates (inclusive
+- * or not) failed.
++ * Creates an error message indicating that an assertion that verifies that a value is between a start and an end
++ * (inclusive or not) failed.
+  *
+  * @author Joel Costigliola
+  */
+@@ -37,7 +36,7 @@ public class ShouldBeBetween extends BasicErrorMessageFactory {
+    * @return the created {@code ErrorMessageFactory}.
+    */
+   public static ErrorMessageFactory shouldBeBetween(Date actual, Date start, Date end, boolean inclusiveStart,
+-      boolean inclusiveEnd, ComparisonStrategy comparisonStrategy) {
++                                                    boolean inclusiveEnd, ComparisonStrategy comparisonStrategy) {
+     return new ShouldBeBetween(actual, start, end, inclusiveStart, inclusiveEnd, comparisonStrategy);
+   }
+ 
+@@ -51,7 +50,7 @@ public class ShouldBeBetween extends BasicErrorMessageFactory {
+    * @return the created {@code ErrorMessageFactory}.
+    */
+   public static ErrorMessageFactory shouldBeBetween(Date actual, Date start, Date end, boolean inclusiveStart,
+-      boolean inclusiveEnd) {
++                                                    boolean inclusiveEnd) {
+     return new ShouldBeBetween(actual, start, end, inclusiveStart, inclusiveEnd, StandardComparisonStrategy.instance());
+   }
+ 
+@@ -65,9 +64,29 @@ public class ShouldBeBetween extends BasicErrorMessageFactory {
+    * @param inclusiveEnd whether to include end value in range.
+    * @param comparisonStrategy the {@link ComparisonStrategy} used to evaluate assertion.
+    * @return the created {@code ErrorMessageFactory}.
++   * @deprecated Use {@link #shouldBeBetween(Object, Object, Object, boolean, boolean, ComparisonStrategy)} instead.
+    */
+-  public static <T extends Comparable<? super T>> ErrorMessageFactory shouldBeBetween(T actual, T start, T end, boolean inclusiveStart,
+-      boolean inclusiveEnd, ComparisonStrategy comparisonStrategy) {
++  @Deprecated
++  public static <T> ErrorMessageFactory shouldBeBetween(Comparable<? super T> actual,
++                                                        Comparable<? super T> start, Comparable<? super T> end,
++                                                        boolean inclusiveStart, boolean inclusiveEnd,
++                                                        ComparisonStrategy comparisonStrategy) {
++    return new ShouldBeBetween(actual, start, end, inclusiveStart, inclusiveEnd, comparisonStrategy);
++  }
++
++  /**
++   * Creates a new <code>{@link ShouldBeBetween}</code>.
++   * @param actual the actual value in the failed assertion.
++   * @param start the lower boundary of range.
++   * @param end the lower boundary of range.
++   * @param inclusiveStart whether to include start value in range.
++   * @param inclusiveEnd whether to include end value in range.
++   * @param comparisonStrategy the {@link ComparisonStrategy} used to evaluate assertion.
++   * @return the created {@code ErrorMessageFactory}.
++   */
++  public static <T> ErrorMessageFactory shouldBeBetween(Object actual, Object start, Object end,
++                                                        boolean inclusiveStart, boolean inclusiveEnd,
++                                                        ComparisonStrategy comparisonStrategy) {
+     return new ShouldBeBetween(actual, start, end, inclusiveStart, inclusiveEnd, comparisonStrategy);
+   }
+ 
+@@ -81,20 +100,22 @@ public class ShouldBeBetween extends BasicErrorMessageFactory {
+    * @param inclusiveEnd whether to include end value in range.
+    * @return the created {@code ErrorMessageFactory}.
+    */
+-  public static <T extends Comparable<? super T>> ErrorMessageFactory shouldBeBetween(T actual, T start, T end, boolean inclusiveStart,
+-      boolean inclusiveEnd) {
++  public static <T> ErrorMessageFactory shouldBeBetween(Comparable<? super T> actual,
++                                                        Comparable<? super T> start, Comparable<? super T> end,
++                                                        boolean inclusiveStart, boolean inclusiveEnd) {
+     return new ShouldBeBetween(actual, start, end, inclusiveStart, inclusiveEnd, StandardComparisonStrategy.instance());
+   }
+ 
+   private ShouldBeBetween(Date actual, Date start, Date end, boolean inclusiveStart, boolean inclusiveEnd,
+-      ComparisonStrategy comparisonStrategy) {
++                          ComparisonStrategy comparisonStrategy) {
+     super("%nExpecting actual:%n  %s%nto be in period:%n  " + (inclusiveStart ? '[' : ']') + "%s, %s" +
+           (inclusiveEnd ? ']' : '[') + "%n%s", actual, start, end, comparisonStrategy);
+   }
+ 
+-  private <T extends Comparable<? super T>> ShouldBeBetween(T actual, T start, T end, boolean inclusiveStart, boolean inclusiveEnd,
+-	  ComparisonStrategy comparisonStrategy) {
++  private <T> ShouldBeBetween(T actual, T start, T end, boolean inclusiveStart, boolean inclusiveEnd,
++                              ComparisonStrategy comparisonStrategy) {
+     super("%nExpecting actual:%n  %s%nto be between:%n  " + (inclusiveStart ? '[' : ']')
+           + "%s, %s" + (inclusiveEnd ? ']' : '[') + "%n%s", actual, start, end, comparisonStrategy);
+   }
++
+ }
+diff --git a/src/main/java/org/assertj/core/error/ShouldBeGreater.java b/src/main/java/org/assertj/core/error/ShouldBeGreater.java
+index 0b6ff278b..72038057e 100644
+--- a/src/main/java/org/assertj/core/error/ShouldBeGreater.java
++++ b/src/main/java/org/assertj/core/error/ShouldBeGreater.java
+@@ -31,7 +31,7 @@ public class ShouldBeGreater extends BasicErrorMessageFactory {
+    * @param other the value used in the failed assertion to compare the actual value to.
+    * @return the created {@code ErrorMessageFactory}.
+    */
+-  public static <T extends Comparable<? super T>> ErrorMessageFactory shouldBeGreater(T actual, T other) {
++  public static <T> ErrorMessageFactory shouldBeGreater(Comparable<? super T> actual, Comparable<? super T> other) {
+     return new ShouldBeGreater(actual, other, StandardComparisonStrategy.instance());
+   }
+ 
+@@ -43,13 +43,28 @@ public class ShouldBeGreater extends BasicErrorMessageFactory {
+    * @param other the value used in the failed assertion to compare the actual value to.
+    * @param comparisonStrategy the {@link ComparisonStrategy} used to evaluate assertion.
+    * @return the created {@code ErrorMessageFactory}.
++   * @deprecated Use {@link #shouldBeGreater(Object, Object, ComparisonStrategy)} instead.
+    */
+-  public static <T extends Comparable<? super T>> ErrorMessageFactory shouldBeGreater(T actual, T other,
+-                                                                                      ComparisonStrategy comparisonStrategy) {
++  @Deprecated
++  public static <T> ErrorMessageFactory shouldBeGreater(Comparable<? super T> actual, Comparable<? super T> other,
++                                                        ComparisonStrategy comparisonStrategy) {
+     return new ShouldBeGreater(actual, other, comparisonStrategy);
+   }
+ 
+-  private ShouldBeGreater(Comparable<?> actual, Comparable<?> other, ComparisonStrategy comparisonStrategy) {
++  /**
++   * Creates a new <code>{@link ShouldBeGreater}</code>.
++   *
++   * @param actual the actual value in the failed assertion.
++   * @param other the value used in the failed assertion to compare the actual value to.
++   * @param comparisonStrategy the {@link ComparisonStrategy} used to evaluate assertion.
++   * @return the created {@code ErrorMessageFactory}.
++   */
++  public static ErrorMessageFactory shouldBeGreater(Object actual, Object other, ComparisonStrategy comparisonStrategy) {
++    return new ShouldBeGreater(actual, other, comparisonStrategy);
++  }
++
++  private <T> ShouldBeGreater(T actual, T other, ComparisonStrategy comparisonStrategy) {
+     super("%nExpecting actual:%n  %s%nto be greater than:%n  %s%n%s", actual, other, comparisonStrategy);
+   }
++
+ }
+diff --git a/src/main/java/org/assertj/core/error/ShouldBeGreaterOrEqual.java b/src/main/java/org/assertj/core/error/ShouldBeGreaterOrEqual.java
+index 85514c3e6..074ecc659 100644
+--- a/src/main/java/org/assertj/core/error/ShouldBeGreaterOrEqual.java
++++ b/src/main/java/org/assertj/core/error/ShouldBeGreaterOrEqual.java
+@@ -31,7 +31,7 @@ public class ShouldBeGreaterOrEqual extends BasicErrorMessageFactory {
+    * @param other the value used in the failed assertion to compare the actual value to.
+    * @return the created {@code ErrorMessageFactory}.
+    */
+-  public static <T extends Comparable<T>> ErrorMessageFactory shouldBeGreaterOrEqual(T actual, T other) {
++  public static <T> ErrorMessageFactory shouldBeGreaterOrEqual(Comparable<? super T> actual, Comparable<? super T> other) {
+     return new ShouldBeGreaterOrEqual(actual, other, StandardComparisonStrategy.instance());
+   }
+ 
+@@ -42,13 +42,28 @@ public class ShouldBeGreaterOrEqual extends BasicErrorMessageFactory {
+    * @param other the value used in the failed assertion to compare the actual value to.
+    * @param comparisonStrategy the {@link ComparisonStrategy} used to evaluate assertion.
+    * @return the created {@code ErrorMessageFactory}.
++   * @deprecated Use {@link #shouldBeGreaterOrEqual(Object, Object, ComparisonStrategy)} instead.
+    */
+-  public static <T extends Comparable<? super T>> ErrorMessageFactory shouldBeGreaterOrEqual(T actual, T other,
+-                                                                                             ComparisonStrategy comparisonStrategy) {
++  @Deprecated
++  public static <T> ErrorMessageFactory shouldBeGreaterOrEqual(Comparable<? super T> actual, Comparable<? super T> other,
++                                                               ComparisonStrategy comparisonStrategy) {
+     return new ShouldBeGreaterOrEqual(actual, other, comparisonStrategy);
+   }
+ 
+-  private ShouldBeGreaterOrEqual(Comparable<?> actual, Comparable<?> other, ComparisonStrategy comparisonStrategy) {
++  /**
++   * Creates a new <code>{@link ShouldBeGreaterOrEqual}</code>.
++   * @param actual the actual value in the failed assertion.
++   * @param other the value used in the failed assertion to compare the actual value to.
++   * @param comparisonStrategy the {@link ComparisonStrategy} used to evaluate assertion.
++   * @return the created {@code ErrorMessageFactory}.
++   */
++  public static ErrorMessageFactory shouldBeGreaterOrEqual(Object actual, Object other,
++                                                           ComparisonStrategy comparisonStrategy) {
++    return new ShouldBeGreaterOrEqual(actual, other, comparisonStrategy);
++  }
++
++  private <T> ShouldBeGreaterOrEqual(T actual, T other, ComparisonStrategy comparisonStrategy) {
+     super("%nExpecting actual:%n  %s%nto be greater than or equal to:%n  %s%n%s", actual, other, comparisonStrategy);
+   }
++
+ }
+diff --git a/src/main/java/org/assertj/core/error/ShouldBeLess.java b/src/main/java/org/assertj/core/error/ShouldBeLess.java
+index 7e107a1b6..9275773fe 100644
+--- a/src/main/java/org/assertj/core/error/ShouldBeLess.java
++++ b/src/main/java/org/assertj/core/error/ShouldBeLess.java
+@@ -30,7 +30,7 @@ public class ShouldBeLess extends BasicErrorMessageFactory {
+    * @param other the value used in the failed assertion to compare the actual value to.
+    * @return the created {@code ErrorMessageFactory}.
+    */
+-  public static <T extends Comparable<? super T>> ErrorMessageFactory shouldBeLess(T actual, T other) {
++  public static <T> ErrorMessageFactory shouldBeLess(Comparable<? super T> actual, Comparable<? super T> other) {
+     return new ShouldBeLess(actual, other, StandardComparisonStrategy.instance());
+   }
+ 
+@@ -41,13 +41,27 @@ public class ShouldBeLess extends BasicErrorMessageFactory {
+    * @param other the value used in the failed assertion to compare the actual value to.
+    * @param comparisonStrategy the {@link ComparisonStrategy} used to evaluate assertion.
+    * @return the created {@code ErrorMessageFactory}.
++   * @deprecated Use {@link #shouldBeLess(Object, Object, ComparisonStrategy)} instead.
+    */
++  @Deprecated
+   public static <T extends Comparable<? super T>> ErrorMessageFactory shouldBeLess(T actual, T other,
+                                                                                    ComparisonStrategy comparisonStrategy) {
+     return new ShouldBeLess(actual, other, comparisonStrategy);
+   }
+ 
+-  private ShouldBeLess(Comparable<?> actual, Comparable<?> other, ComparisonStrategy comparisonStrategy) {
++  /**
++   * Creates a new <code>{@link ShouldBeLess}</code>.
++   * @param actual the actual value in the failed assertion.
++   * @param other the value used in the failed assertion to compare the actual value to.
++   * @param comparisonStrategy the {@link ComparisonStrategy} used to evaluate assertion.
++   * @return the created {@code ErrorMessageFactory}.
++   */
++  public static ErrorMessageFactory shouldBeLess(Object actual, Object other, ComparisonStrategy comparisonStrategy) {
++    return new ShouldBeLess(actual, other, comparisonStrategy);
++  }
++
++  private <T> ShouldBeLess(T actual, T other, ComparisonStrategy comparisonStrategy) {
+     super("%nExpecting actual:%n  %s%nto be less than:%n  %s %s", actual, other, comparisonStrategy);
+   }
++
+ }
+diff --git a/src/main/java/org/assertj/core/error/ShouldBeLessOrEqual.java b/src/main/java/org/assertj/core/error/ShouldBeLessOrEqual.java
+index 1b2e9ff63..2de6e0705 100644
+--- a/src/main/java/org/assertj/core/error/ShouldBeLessOrEqual.java
++++ b/src/main/java/org/assertj/core/error/ShouldBeLessOrEqual.java
+@@ -30,7 +30,7 @@ public class ShouldBeLessOrEqual extends BasicErrorMessageFactory {
+    * @param other the value used in the failed assertion to compare the actual value to.
+    * @return the created {@code ErrorMessageFactory}.
+    */
+-  public static <T extends Comparable<? super T>> ErrorMessageFactory shouldBeLessOrEqual(T actual, T other) {
++  public static <T> ErrorMessageFactory shouldBeLessOrEqual(Comparable<? super T> actual, Comparable<? super T> other) {
+     return new ShouldBeLessOrEqual(actual, other, StandardComparisonStrategy.instance());
+   }
+ 
+@@ -41,13 +41,27 @@ public class ShouldBeLessOrEqual extends BasicErrorMessageFactory {
+    * @param other the value used in the failed assertion to compare the actual value to.
+    * @param comparisonStrategy the {@link ComparisonStrategy} used to evaluate assertion.
+    * @return the created {@code ErrorMessageFactory}.
++   * @deprecated Use {@link #shouldBeLessOrEqual(Object, Object, ComparisonStrategy)} instead.
+    */
+-  public static <T extends Comparable<? super T>> ErrorMessageFactory shouldBeLessOrEqual(T actual, T other,
+-      ComparisonStrategy comparisonStrategy) {
++  @Deprecated
++  public static <T> ErrorMessageFactory shouldBeLessOrEqual(Comparable<? super T> actual, Comparable<? super T> other,
++                                                            ComparisonStrategy comparisonStrategy) {
+     return new ShouldBeLessOrEqual(actual, other, comparisonStrategy);
+   }
+ 
+-  private ShouldBeLessOrEqual(Comparable<?> actual, Comparable<?> other, ComparisonStrategy comparisonStrategy) {
++  /**
++   * Creates a new <code>{@link ShouldBeLessOrEqual}</code>.
++   * @param actual the actual value in the failed assertion.
++   * @param other the value used in the failed assertion to compare the actual value to.
++   * @param comparisonStrategy the {@link ComparisonStrategy} used to evaluate assertion.
++   * @return the created {@code ErrorMessageFactory}.
++   */
++  public static <T> ErrorMessageFactory shouldBeLessOrEqual(Object actual, Object other, ComparisonStrategy comparisonStrategy) {
++    return new ShouldBeLessOrEqual(actual, other, comparisonStrategy);
++  }
++
++  private <T> ShouldBeLessOrEqual(T actual, T other, ComparisonStrategy comparisonStrategy) {
+     super("%nExpecting actual:%n  %s%nto be less than or equal to:%n  %s %s", actual, other, comparisonStrategy);
+   }
++
+ }
+diff --git a/src/main/java/org/assertj/core/internal/Comparables.java b/src/main/java/org/assertj/core/internal/Comparables.java
+index 363bbcdbf..e3e4ac754 100644
+--- a/src/main/java/org/assertj/core/internal/Comparables.java
++++ b/src/main/java/org/assertj/core/internal/Comparables.java
+@@ -36,7 +36,8 @@ import org.assertj.core.util.TriFunction;
+ import org.assertj.core.util.VisibleForTesting;
+ 
+ /**
+- * Reusable assertions for <code>{@link Comparable}</code>s.
++ * Reusable assertions for types that can be compared between each other, most of the time it means <code>{@link Comparable}</code>s 
++ * but also for type not implementing <code>{@link Comparable}</code> like {@link Number} (surprisingly not comparable). 
+  *
+  * @author Alex Ruiz
+  * @author Joel Costigliola
+@@ -153,12 +154,10 @@ public class Comparables {
+    *           {@code org.junit.ComparisonFailure} instead if JUnit is in the classpath and the expected and actual
+    *           values are not equal.
+    */
+-  public <T extends Comparable<? super T>> void assertEqualByComparison(AssertionInfo info, T actual, T expected) {
++  public <T> void assertEqualByComparison(AssertionInfo info, Comparable<? super T> actual, T expected) {
+     assertNotNull(info, actual);
+     // we don't delegate to comparisonStrategy, as this assertion makes it clear it relies on Comparable
+-    if (actual.compareTo(expected) == 0)
+-      return;
+-    throw failures.failure(info, shouldBeEqual(actual, expected, info.representation()));
++    if (actual.compareTo(expected) != 0) throw failures.failure(info, shouldBeEqual(actual, expected, info.representation()));
+   }
+ 
+   /**
+@@ -173,12 +172,10 @@ public class Comparables {
+    * @throws AssertionError if the actual value is {@code null}.
+    * @throws AssertionError if the actual value is equal to the other one.
+    */
+-  public <T extends Comparable<? super T>> void assertNotEqualByComparison(AssertionInfo info, T actual, T other) {
++  public <T> void assertNotEqualByComparison(AssertionInfo info, Comparable<? super T> actual, T other) {
+     assertNotNull(info, actual);
+     // we don't delegate to comparisonStrategy, as this assertion makes it clear it relies on Comparable
+-    if (actual.compareTo(other) != 0)
+-      return;
+-    throw failures.failure(info, shouldNotBeEqual(actual, other));
++    if (actual.compareTo(other) == 0) throw failures.failure(info, shouldNotBeEqual(actual, other));
+   }
+ 
+   /**
+@@ -192,7 +189,7 @@ public class Comparables {
+    * @throws AssertionError if the actual value is not less than the other one: this assertion will fail if the actual
+    *           value is equal to or greater than the other value.
+    */
+-  public <T extends Comparable<? super T>> void assertLessThan(AssertionInfo info, T actual, T other) {
++  public <T> void assertLessThan(AssertionInfo info, Comparable<? super T> actual, T other) {
+     assertLessThan(info, actual, other, ShouldBeLess::shouldBeLess);
+   }
+ 
+@@ -207,8 +204,9 @@ public class Comparables {
+    * @throws AssertionError if the actual value is not before the other one: this assertion will fail if the actual
+    *           value is equal to or greater than the other value.
+    */
+-  public <T extends Comparable<? super T>> void assertIsBefore(AssertionInfo info, T actual, T other) {
+-    assertLessThan(info, actual, other, ShouldBeBefore::shouldBeBefore);
++  public <T> void assertIsBefore(AssertionInfo info, Comparable<? super T> actual, T other) {
++    assertLessThan(info, actual, other,
++                   (actual1, other1, comparisonStrategy1) -> ShouldBeBefore.shouldBeBefore(actual1, other1, comparisonStrategy1));
+   }
+ 
+   /**
+@@ -223,18 +221,18 @@ public class Comparables {
+    * @throws AssertionError if the actual value is not before the other one: this assertion will fail if the actual
+    *           value is equal to or after the other value.
+    */
+-  private <T extends Comparable<? super T>> void assertLessThan(AssertionInfo info, T actual, T other,
+-                                                                TriFunction<T, T, ComparisonStrategy, ErrorMessageFactory> errorMessageFactory) {
++  private <T> void assertLessThan(AssertionInfo info, Comparable<? super T> actual, T other,
++                                  TriFunction<Comparable<? super T>, T, ComparisonStrategy, ErrorMessageFactory> errorMessageFactory) {
+     assertNotNull(info, actual);
+     if (isLessThan(actual, other)) return;
+     throw failures.failure(info, errorMessageFactory.apply(actual, other, comparisonStrategy));
+   }
+ 
+-  public <T extends Comparable<? super T>> void assertIsBeforeOrEqualTo(AssertionInfo info, T actual, T other) {
++  public <T> void assertIsBeforeOrEqualTo(AssertionInfo info, Comparable<? super T> actual, T other) {
+     assertLessThanOrEqualTo(info, actual, other, ShouldBeBeforeOrEqualTo::shouldBeBeforeOrEqualTo);
+   }
+ 
+-  public <T extends Comparable<? super T>> void assertLessThanOrEqualTo(AssertionInfo info, T actual, T other) {
++  public <T> void assertLessThanOrEqualTo(AssertionInfo info, Comparable<? super T> actual, T other) {
+     assertLessThanOrEqualTo(info, actual, other, ShouldBeLessOrEqual::shouldBeLessOrEqual);
+   }
+ 
+@@ -249,19 +247,19 @@ public class Comparables {
+    * @throws AssertionError if the actual value is {@code null}.
+    * @throws AssertionError if the actual value is greater than the other one.
+    */
+-  private <T extends Comparable<? super T>> void assertLessThanOrEqualTo(AssertionInfo info, T actual, T other,
+-                                                                         TriFunction<T, T, ComparisonStrategy, ErrorMessageFactory> errorMessageFactory) {
++  private <T> void assertLessThanOrEqualTo(AssertionInfo info, Comparable<? super T> actual, T other,
++                                           TriFunction<Comparable<? super T>, T, ComparisonStrategy, ErrorMessageFactory> errorMessageFactory) {
+     assertNotNull(info, actual);
+     if (!isGreaterThan(actual, other))
+       return;
+     throw failures.failure(info, errorMessageFactory.apply(actual, other, comparisonStrategy));
+   }
+ 
+-  public <T extends Comparable<? super T>> void assertIsAfter(AssertionInfo info, T actual, T other) {
++  public <T> void assertIsAfter(AssertionInfo info, Comparable<? super T> actual, T other) {
+     assertGreaterThan(info, actual, other, ShouldBeAfter::shouldBeAfter);
+   }
+ 
+-  public <T extends Comparable<? super T>> void assertGreaterThan(AssertionInfo info, T actual, T other) {
++  public <T> void assertGreaterThan(AssertionInfo info, Comparable<? super T> actual, T other) {
+     assertGreaterThan(info, actual, other, ShouldBeGreater::shouldBeGreater);
+   }
+ 
+@@ -277,8 +275,8 @@ public class Comparables {
+    * @throws AssertionError if the actual value is not greater than the other one: this assertion will fail if the
+    *           actual value is equal to or less than the other value.
+    */
+-  private <T extends Comparable<? super T>> void assertGreaterThan(AssertionInfo info, T actual, T other,
+-                                                                   TriFunction<T, T, ComparisonStrategy, ErrorMessageFactory> errorMessageFactory) {
++  private <T> void assertGreaterThan(AssertionInfo info, Comparable<? super T> actual, T other,
++                                     TriFunction<Comparable<? super T>, T, ComparisonStrategy, ErrorMessageFactory> errorMessageFactory) {
+     assertNotNull(info, actual);
+     if (isGreaterThan(actual, other))
+       return;
+@@ -289,11 +287,11 @@ public class Comparables {
+     return comparisonStrategy.isGreaterThan(actual, other);
+   }
+ 
+-  public <T extends Comparable<? super T>> void assertGreaterThanOrEqualTo(AssertionInfo info, T actual, T other) {
++  public <T> void assertGreaterThanOrEqualTo(AssertionInfo info, Comparable<? super T> actual, T other) {
+     assertGreaterThanOrEqualTo(info, actual, other, ShouldBeGreaterOrEqual::shouldBeGreaterOrEqual);
+   }
+ 
+-  public <T extends Comparable<? super T>> void assertIsAfterOrEqualTo(AssertionInfo info, T actual, T other) {
++  public <T> void assertIsAfterOrEqualTo(AssertionInfo info, Comparable<? super T> actual, T other) {
+     assertGreaterThanOrEqualTo(info, actual, other, ShouldBeAfterOrEqualTo::shouldBeAfterOrEqualTo);
+   }
+ 
+@@ -308,15 +306,15 @@ public class Comparables {
+    * @throws AssertionError if the actual value is {@code null}.
+    * @throws AssertionError if the actual value is less than the other one.
+    */
+-  private <T extends Comparable<? super T>> void assertGreaterThanOrEqualTo(AssertionInfo info, T actual, T other,
+-                                                                            TriFunction<T, T, ComparisonStrategy, ErrorMessageFactory> errorMessageFactory) {
++  private <T> void assertGreaterThanOrEqualTo(AssertionInfo info, Comparable<? super T> actual, T other,
++                                              TriFunction<Comparable<? super T>, T, ComparisonStrategy, ErrorMessageFactory> errorMessageFactory) {
+     assertNotNull(info, actual);
+     if (!isLessThan(actual, other))
+       return;
+     throw failures.failure(info, errorMessageFactory.apply(actual, other, comparisonStrategy));
+   }
+ 
+-  private boolean isLessThan(Object actual, Object other) {
++  private <T> boolean isLessThan(Object actual, Object other) {
+     return comparisonStrategy.isLessThan(actual, other);
+   }
+ 
+@@ -340,8 +338,8 @@ public class Comparables {
+    * @throws NullPointerException if end value is {@code null}.
+    * @throws IllegalArgumentException if end value is less than start value.
+    */
+-  public <T extends Comparable<? super T>> void assertIsBetween(AssertionInfo info, T actual, T start, T end,
+-                                                                boolean inclusiveStart, boolean inclusiveEnd) {
++  public <T> void assertIsBetween(AssertionInfo info, Comparable<? super T> actual, T start, T end,
++                                  boolean inclusiveStart, boolean inclusiveEnd) {
+     assertNotNull(info, actual);
+     requireNonNull(start, "The start range to compare actual with should not be null");
+     requireNonNull(end, "The end range to compare actual with should not be null");
+@@ -353,8 +351,7 @@ public class Comparables {
+     throw failures.failure(info, shouldBeBetween(actual, start, end, inclusiveStart, inclusiveEnd, comparisonStrategy));
+   }
+ 
+-  protected <T extends Comparable<? super T>> void checkBoundsValidity(T start, T end, boolean inclusiveStart,
+-                                                                       boolean inclusiveEnd) {
++  private <T> void checkBoundsValidity(T start, T end, boolean inclusiveStart, boolean inclusiveEnd) {
+     // don't use isLessThanOrEqualTo or isGreaterThanOrEqualTo to avoid equal comparison which makes BigDecimal
+     // to fail when start = end with different precision, ex: [10.0, 10.00].
+     boolean inclusiveBoundsCheck = inclusiveEnd && inclusiveStart && !isGreaterThan(start, end);
+@@ -364,4 +361,5 @@ public class Comparables {
+                                             (comparisonStrategy.isStandard() ? "" : " (using " + comparisonStrategy + ")"));
+     checkArgument(inclusiveBoundsCheck || strictBoundsCheck, boundsCheckErrorMessage);
+   }
++
+ }

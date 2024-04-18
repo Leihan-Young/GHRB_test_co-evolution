@@ -1,0 +1,3769 @@
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredDispatcher.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredDispatcher.java
+new file mode 100644
+index 000000000..1d7aeae38
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredDispatcher.java
+@@ -0,0 +1,484 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore;
++
++import io.opentelemetry.api.common.Attributes;
++import java.nio.ByteBuffer;
++import java.util.ArrayList;
++import java.util.Collections;
++import java.util.Comparator;
++import java.util.HashMap;
++import java.util.Iterator;
++import java.util.List;
++import java.util.Map;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.ConcurrentMap;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.locks.ReentrantLock;
++import org.apache.rocketmq.common.ServiceThread;
++import org.apache.rocketmq.common.message.MessageConst;
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.logging.org.slf4j.Logger;
++import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.store.CommitLogDispatcher;
++import org.apache.rocketmq.store.ConsumeQueue;
++import org.apache.rocketmq.store.DispatchRequest;
++import org.apache.rocketmq.store.MessageStore;
++import org.apache.rocketmq.store.SelectMappedBufferResult;
++import org.apache.rocketmq.tieredstore.common.AppendResult;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.common.TieredStoreExecutor;
++import org.apache.rocketmq.tieredstore.container.TieredContainerManager;
++import org.apache.rocketmq.tieredstore.container.TieredMessageQueueContainer;
++import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant;
++import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManager;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.util.CQItemBufferUtil;
++import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
++
++public class TieredDispatcher extends ServiceThread implements CommitLogDispatcher {
++    private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
++
++    private final MessageStore defaultStore;
++    private final TieredContainerManager tieredContainerManager;
++    private final TieredMessageStoreConfig storeConfig;
++    private final String brokerName;
++
++    private ConcurrentMap<TieredMessageQueueContainer, List<DispatchRequest>> dispatchRequestReadMap;
++    private ConcurrentMap<TieredMessageQueueContainer, List<DispatchRequest>> dispatchRequestWriteMap;
++    private final ReentrantLock dispatchRequestListLock;
++
++    public TieredDispatcher(MessageStore defaultStore, TieredMessageStoreConfig storeConfig) {
++        this.defaultStore = defaultStore;
++        this.storeConfig = storeConfig;
++        this.brokerName = storeConfig.getBrokerName();
++        this.tieredContainerManager = TieredContainerManager.getInstance(storeConfig);
++        this.dispatchRequestReadMap = new ConcurrentHashMap<>();
++        this.dispatchRequestWriteMap = new ConcurrentHashMap<>();
++        this.dispatchRequestListLock = new ReentrantLock();
++
++        TieredStoreExecutor.COMMON_SCHEDULED_EXECUTOR.scheduleWithFixedDelay(() -> {
++            try {
++                for (TieredMessageQueueContainer container : tieredContainerManager.getAllMQContainer()) {
++                    if (!container.getQueueLock().isLocked()) {
++                        TieredStoreExecutor.DISPATCH_EXECUTOR.execute(() -> {
++                            try {
++                                dispatchByMQContainer(container);
++                            } catch (Throwable throwable) {
++                                logger.error("[Bug]dispatch failed, can not dispatch by container: topic: {}, queueId: {}", container.getMessageQueue().getTopic(), container.getMessageQueue().getQueueId(), throwable);
++                            }
++                        });
++                    }
++                }
++            } catch (Throwable ignore) {
++            }
++        }, 30, 10, TimeUnit.SECONDS);
++        TieredStoreExecutor.COMMON_SCHEDULED_EXECUTOR.scheduleWithFixedDelay(() -> {
++            try {
++                for (TieredMessageQueueContainer container : tieredContainerManager.getAllMQContainer()) {
++                    container.flushMetadata();
++                }
++            } catch (Throwable e) {
++                logger.error("dispatch by queue container failed: ", e);
++            }
++        }, 30, 10, TimeUnit.SECONDS);
++    }
++
++    @Override
++    public void dispatch(DispatchRequest request) {
++        if (stopped) {
++            return;
++        }
++        String topic = request.getTopic();
++        if (TieredStoreUtil.isSystemTopic(topic)) {
++            return;
++        }
++
++        TieredMessageQueueContainer container =
++            tieredContainerManager.getOrCreateMQContainer(new MessageQueue(topic, brokerName, request.getQueueId()));
++        if (container == null) {
++            logger.error("[Bug]TieredDispatcher#dispatch: dispatch failed, can not create container: topic: {}, queueId: {}", request.getTopic(), request.getQueueId());
++            return;
++        }
++
++        // prevent consume queue and index file falling too far
++        if (dispatchRequestWriteMap.getOrDefault(container, Collections.emptyList()).size() > storeConfig.getTieredStoreMaxGroupCommitCount()
++            || dispatchRequestReadMap.getOrDefault(container, Collections.emptyList()).size() > storeConfig.getTieredStoreMaxGroupCommitCount()) {
++            return;
++        }
++
++        // init dispatch offset
++        if (container.getDispatchOffset() == -1) {
++            container.initOffset(request.getConsumeQueueOffset());
++        }
++
++        if (request.getConsumeQueueOffset() == container.getDispatchOffset()) {
++            try {
++                if (container.getQueueLock().isLocked() || !container.getQueueLock().tryLock(1, TimeUnit.MILLISECONDS)) {
++                    return;
++                }
++            } catch (Exception e) {
++                logger.warn("TieredDispatcher#dispatch: dispatch failed, can not get container lock: topic: {}, queueId: {}", request.getTopic(), request.getQueueId(), e);
++                if (container.getQueueLock().isLocked()) {
++                    container.getQueueLock().unlock();
++                }
++                return;
++            }
++
++            // double check
++            if (request.getConsumeQueueOffset() != container.getDispatchOffset()) {
++                container.getQueueLock().unlock();
++                return;
++            }
++
++            SelectMappedBufferResult message = defaultStore.selectOneMessageByOffset(request.getCommitLogOffset(), request.getMsgSize());
++            if (message == null) {
++                logger.error("TieredDispatcher#dispatch: dispatch failed, can not get message from next store: topic: {}, queueId: {}, commitLog offset: {}, size: {}",
++                    request.getTopic(), request.getQueueId(), request.getCommitLogOffset(), request.getMsgSize());
++                container.getQueueLock().unlock();
++                return;
++            }
++
++            try {
++                // drop expired request
++                if (request.getConsumeQueueOffset() < container.getDispatchOffset()) {
++                    return;
++                }
++                AppendResult result = container.appendCommitLog(message.getByteBuffer());
++                long newCommitLogOffset = container.getCommitLogMaxOffset() - message.getByteBuffer().remaining();
++                handleAppendCommitLogResult(result, container, request.getConsumeQueueOffset(),
++                    container.getDispatchOffset(), newCommitLogOffset, request.getMsgSize(), request.getTagsCode(), message.getByteBuffer());
++                if (result == AppendResult.SUCCESS) {
++                    Attributes attributes = TieredStoreMetricsManager.newAttributesBuilder()
++                        .put(TieredStoreMetricsConstant.LABEL_TOPIC, request.getTopic())
++                        .put(TieredStoreMetricsConstant.LABEL_QUEUE, request.getQueueId())
++                        .put(TieredStoreMetricsConstant.LABEL_FILE_TYPE, TieredFileSegment.FileSegmentType.COMMIT_LOG.name().toLowerCase())
++                        .build();
++                    TieredStoreMetricsManager.messagesDispatchTotal.add(1, attributes);
++                }
++            } catch (Exception throwable) {
++                logger.error("TieredDispatcher#dispatch: dispatch failed: topic: {}, queueId: {}, queue offset: {}", request.getTopic(), request.getQueueId(), request.getConsumeQueueOffset(), throwable);
++            } finally {
++                message.release();
++                container.getQueueLock().unlock();
++            }
++        } else {
++            if (!container.getQueueLock().isLocked()) {
++                try {
++                    TieredStoreExecutor.DISPATCH_EXECUTOR.execute(() -> {
++                        try {
++                            dispatchByMQContainer(container);
++                        } catch (Throwable throwable) {
++                            logger.error("[Bug]TieredDispatcher#dispatchByMQContainer: dispatch failed, can not dispatch by container: topic: {}, queueId: {}", topic, container.getMessageQueue().getQueueId(), throwable);
++                        }
++                    });
++                } catch (Throwable ignore) {
++                }
++            }
++        }
++    }
++
++    protected void dispatchByMQContainer(TieredMessageQueueContainer container) {
++        if (stopped) {
++            return;
++        }
++        if (container.getDispatchOffset() == -1) {
++            return;
++        }
++
++        // prevent consume queue and index file falling too far
++        if (dispatchRequestWriteMap.getOrDefault(container, Collections.emptyList()).size() > storeConfig.getTieredStoreMaxGroupCommitCount()
++            || dispatchRequestReadMap.getOrDefault(container, Collections.emptyList()).size() > storeConfig.getTieredStoreMaxGroupCommitCount()) {
++            return;
++        }
++
++        MessageQueue mq = container.getMessageQueue();
++        String topic = mq.getTopic();
++        int queueId = mq.getQueueId();
++
++        long beforeOffset = container.getDispatchOffset();
++        long minOffsetInQueue = defaultStore.getMinOffsetInQueue(topic, queueId);
++        long maxOffsetInQueue = defaultStore.getMaxOffsetInQueue(topic, queueId);
++
++        if (beforeOffset >= maxOffsetInQueue) {
++            return;
++        }
++
++        try {
++            if (!container.getQueueLock().tryLock(200, TimeUnit.MILLISECONDS)) {
++                return;
++            }
++        } catch (Exception e) {
++            logger.warn("TieredDispatcher#dispatchByMQContainer: dispatch failed, can not get container lock: topic: {}, queueId: {}", mq.getTopic(), mq.getQueueId(), e);
++            if (container.getQueueLock().isLocked()) {
++                container.getQueueLock().unlock();
++            }
++            return;
++        }
++
++        try {
++            long queueOffset = container.getDispatchOffset();
++            beforeOffset = queueOffset;
++            if (minOffsetInQueue > queueOffset) {
++                container.initOffset(minOffsetInQueue);
++                queueOffset = minOffsetInQueue;
++                logger.warn("TieredDispatcher#dispatchByMQContainer: message that needs to be dispatched does not exist: topic: {}, queueId: {}, message queue offset: {}, min queue offset: {}",
++                    topic, queueId, queueOffset, minOffsetInQueue);
++            }
++            // TODO flow control based on message size
++            long limit = Math.min(queueOffset + 100000, maxOffsetInQueue);
++            ConsumeQueue consumeQueue = (ConsumeQueue) defaultStore.getConsumeQueue(topic, queueId);
++            for (; queueOffset < limit; queueOffset++) {
++                SelectMappedBufferResult cqItem = consumeQueue.getIndexBuffer(queueOffset);
++                if (cqItem == null) {
++                    logger.error("[Bug]TieredDispatcher#dispatchByMQContainer: dispatch failed, can not get cq item: topic: {}, queueId: {}, offset: {}", topic, queueId, queueOffset);
++                    return;
++                }
++                long commitLogOffset = CQItemBufferUtil.getCommitLogOffset(cqItem.getByteBuffer());
++                int size = CQItemBufferUtil.getSize(cqItem.getByteBuffer());
++                long tagCode = CQItemBufferUtil.getTagCode(cqItem.getByteBuffer());
++                cqItem.release();
++
++                SelectMappedBufferResult message = defaultStore.selectOneMessageByOffset(commitLogOffset, size);
++                if (message == null) {
++                    logger.error("TieredDispatcher#dispatchByMQContainer: dispatch failed, can not get message from next store: topic: {}, queueId: {}, commitLog offset: {}, size: {}",
++                        topic, queueId, commitLogOffset, size);
++                    break;
++                }
++                AppendResult result = container.appendCommitLog(message.getByteBuffer(), true);
++                long newCommitLogOffset = container.getCommitLogMaxOffset() - message.getByteBuffer().remaining();
++                handleAppendCommitLogResult(result, container, queueOffset, container.getDispatchOffset(), newCommitLogOffset, size, tagCode, message.getByteBuffer());
++                message.release();
++                if (result != AppendResult.SUCCESS) {
++                    queueOffset--;
++                    break;
++                }
++            }
++            Attributes attributes = TieredStoreMetricsManager.newAttributesBuilder()
++                .put(TieredStoreMetricsConstant.LABEL_TOPIC, mq.getTopic())
++                .put(TieredStoreMetricsConstant.LABEL_QUEUE, mq.getQueueId())
++                .put(TieredStoreMetricsConstant.LABEL_FILE_TYPE, TieredFileSegment.FileSegmentType.COMMIT_LOG.name().toLowerCase())
++                .build();
++            TieredStoreMetricsManager.messagesDispatchTotal.add(queueOffset - beforeOffset, attributes);
++        } finally {
++            container.getQueueLock().unlock();
++        }
++        // If this queue dispatch falls too far, dispatch again immediately
++        if (container.getDispatchOffset() < maxOffsetInQueue && !container.getQueueLock().isLocked()) {
++            TieredStoreExecutor.DISPATCH_EXECUTOR.execute(() -> {
++                try {
++                    dispatchByMQContainer(container);
++                } catch (Throwable throwable) {
++                    logger.error("[Bug]TieredDispatcher#dispatchByMQContainer: dispatch failed, can not dispatch by container: topic: {}, queueId: {}", topic, queueId, throwable);
++                }
++            });
++        }
++    }
++
++    public void handleAppendCommitLogResult(AppendResult result, TieredMessageQueueContainer container, long queueOffset,
++        long dispatchOffset, long newCommitLogOffset, int size, long tagCode, ByteBuffer message) {
++        MessageQueue mq = container.getMessageQueue();
++        String topic = mq.getTopic();
++        int queueId = mq.getQueueId();
++        switch (result) {
++            case SUCCESS:
++                break;
++            case OFFSET_INCORRECT:
++                long offset = MessageBufferUtil.getQueueOffset(message);
++                if (queueOffset != offset) {
++                    logger.error("[Bug]queue offset: {} is not equal to queue offset in message: {}", queueOffset, offset);
++                }
++                logger.error("[Bug]append message failed, offset is incorrect, maybe because of race: topic: {}, queueId: {}, queue offset: {}, dispatchOffset: {}", topic, queueId, queueOffset, dispatchOffset);
++                return;
++            case BUFFER_FULL:
++                logger.debug("append message failed: topic: {}, queueId: {}, queue offset: {}, result: {}", topic, queueId, queueOffset, result);
++                return;
++            default:
++                logger.info("append message failed: topic: {}, queueId: {}, queue offset: {}, result: {}", topic, queueId, queueOffset, result);
++                return;
++        }
++        dispatchRequestListLock.lock();
++        try {
++            Map<String, String> properties = MessageBufferUtil.getProperties(message);
++            DispatchRequest dispatchRequest = new DispatchRequest(
++                topic,
++                queueId,
++                newCommitLogOffset,
++                size,
++                tagCode,
++                MessageBufferUtil.getStoreTimeStamp(message),
++                queueOffset,
++                properties.getOrDefault(MessageConst.PROPERTY_KEYS, ""),
++                properties.getOrDefault(MessageConst.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX, ""),
++                0, 0, new HashMap<>());
++            dispatchRequest.setOffsetId(MessageBufferUtil.getOffsetId(message));
++            List<DispatchRequest> requestList = dispatchRequestWriteMap.computeIfAbsent(container, k -> new ArrayList<>());
++            requestList.add(dispatchRequest);
++            if (requestList.get(0).getConsumeQueueOffset() >= container.getBuildCQMaxOffset()) {
++                wakeup();
++            }
++        } finally {
++            dispatchRequestListLock.unlock();
++        }
++    }
++
++    public void swapDispatchRequestList() {
++        dispatchRequestListLock.lock();
++        try {
++            dispatchRequestReadMap = dispatchRequestWriteMap;
++            dispatchRequestWriteMap = new ConcurrentHashMap<>();
++        } finally {
++            dispatchRequestListLock.unlock();
++        }
++    }
++
++    public void sendBackDispatchRequestList() {
++        if (!dispatchRequestReadMap.isEmpty()) {
++            dispatchRequestListLock.lock();
++            try {
++                dispatchRequestReadMap.forEach((container, requestList) -> {
++                    if (requestList.isEmpty()) {
++                        logger.warn("[Bug]TieredDispatcher#sendBackDispatchRequestList: requestList is empty, no need to send back: topic: {}, queueId: {}", container.getMessageQueue().getTopic(), container.getMessageQueue().getQueueId());
++                        return;
++                    }
++                    List<DispatchRequest> requestListToWrite = dispatchRequestWriteMap.computeIfAbsent(container, k -> new ArrayList<>());
++                    if (!requestListToWrite.isEmpty() && requestList.get(requestList.size() - 1).getConsumeQueueOffset() > requestListToWrite.get(0).getConsumeQueueOffset()) {
++                        logger.warn("[Bug]TieredDispatcher#sendBackDispatchRequestList: dispatch request list is not continuous: topic: {}, queueId: {}, last list max offset: {}, new list min offset: {}",
++                            container.getMessageQueue().getTopic(), container.getMessageQueue().getQueueId(),
++                            requestList.get(requestList.size() - 1).getConsumeQueueOffset(), requestListToWrite.get(0).getConsumeQueueOffset());
++                        requestList.sort(Comparator.comparingLong(DispatchRequest::getConsumeQueueOffset));
++                    }
++                    requestList.addAll(requestListToWrite);
++                    dispatchRequestWriteMap.put(container, requestList);
++                });
++                dispatchRequestReadMap = new ConcurrentHashMap<>();
++            } finally {
++                dispatchRequestListLock.unlock();
++            }
++        }
++    }
++
++    public void buildCQAndIndexFile() {
++        swapDispatchRequestList();
++        Map<MessageQueue, Long> cqMetricsMap = new HashMap<>();
++        Map<MessageQueue, Long> ifMetricsMap = new HashMap<>();
++
++        for (Map.Entry<TieredMessageQueueContainer, List<DispatchRequest>> entry : dispatchRequestReadMap.entrySet()) {
++            TieredMessageQueueContainer container = entry.getKey();
++            List<DispatchRequest> requestList = entry.getValue();
++            if (container.isClosed()) {
++                requestList.clear();
++            }
++            MessageQueue messageQueue = container.getMessageQueue();
++            Iterator<DispatchRequest> iterator = requestList.iterator();
++            while (iterator.hasNext()) {
++                DispatchRequest request = iterator.next();
++
++                // remove expired request
++                if (request.getConsumeQueueOffset() < container.getConsumeQueueMaxOffset()) {
++                    iterator.remove();
++                    continue;
++                }
++
++                // wait uploading commitLog
++                if (container.getBuildCQMaxOffset() < request.getConsumeQueueOffset()) {
++                    break;
++                }
++
++                // build cq
++                AppendResult result = container.appendConsumeQueue(request, true);
++                if (result == AppendResult.SUCCESS) {
++                    Long count = cqMetricsMap.computeIfAbsent(messageQueue, key -> 0L);
++                    cqMetricsMap.put(messageQueue, count + 1);
++                } else if (result == AppendResult.OFFSET_INCORRECT) {
++                    logger.error("build consumeQueue and indexFile failed, offset is messed up, try to rebuild cq: topic: {}, queue: {}, queue offset: {}, max queue offset: {}"
++                        , request.getTopic(), request.getQueueId(), request.getConsumeQueueOffset(), container.getConsumeQueueMaxOffset());
++                    container.getQueueLock().lock();
++                    try {
++                        // rollback dispatch offset, this operation will cause duplicate message in commitLog
++                        container.initOffset(container.getConsumeQueueMaxOffset());
++                        // clean invalid dispatch request
++                        dispatchRequestWriteMap.remove(container);
++                        requestList.clear();
++                        break;
++                    } finally {
++                        container.getQueueLock().unlock();
++                    }
++                } else {
++                    logger.warn("build consumeQueue failed, result: {}, topic: {}, queue: {}, queue offset: {}",
++                        result, request.getTopic(), request.getQueueId(), request.getConsumeQueueOffset());
++                }
++
++                // build index
++                if (storeConfig.isMessageIndexEnable() && result == AppendResult.SUCCESS) {
++                    result = container.appendIndexFile(request);
++                    switch (result) {
++                        case SUCCESS:
++                            Long count = ifMetricsMap.computeIfAbsent(messageQueue, key -> 0L);
++                            ifMetricsMap.put(messageQueue, count + 1);
++                            iterator.remove();
++                            break;
++                        default:
++                            logger.warn("build indexFile failed, result: {}, topic: {}, queue: {}, queue offset: {}",
++                                result, request.getTopic(), request.getQueueId(), request.getConsumeQueueOffset());
++                            break;
++                    }
++                }
++            }
++
++            // remove empty list, prevent send back
++            if (requestList.isEmpty()) {
++                dispatchRequestReadMap.remove(container);
++            }
++        }
++        cqMetricsMap.forEach((messageQueue, count) -> {
++            Attributes attributes = TieredStoreMetricsManager.newAttributesBuilder()
++                .put(TieredStoreMetricsConstant.LABEL_TOPIC, messageQueue.getTopic())
++                .put(TieredStoreMetricsConstant.LABEL_QUEUE, messageQueue.getQueueId())
++                .put(TieredStoreMetricsConstant.LABEL_FILE_TYPE, TieredFileSegment.FileSegmentType.CONSUME_QUEUE.name().toLowerCase())
++                .build();
++            TieredStoreMetricsManager.messagesDispatchTotal.add(count, attributes);
++        });
++        ifMetricsMap.forEach((messageQueue, count) -> {
++            Attributes attributes = TieredStoreMetricsManager.newAttributesBuilder()
++                .put(TieredStoreMetricsConstant.LABEL_TOPIC, messageQueue.getTopic())
++                .put(TieredStoreMetricsConstant.LABEL_QUEUE, messageQueue.getQueueId())
++                .put(TieredStoreMetricsConstant.LABEL_FILE_TYPE, TieredFileSegment.FileSegmentType.INDEX.name().toLowerCase())
++                .build();
++            TieredStoreMetricsManager.messagesDispatchTotal.add(count, attributes);
++        });
++        sendBackDispatchRequestList();
++    }
++
++    @Override
++    public String getServiceName() {
++        return "TieredStoreDispatcherService";
++    }
++
++    @Override
++    public void run() {
++        while (!stopped) {
++            waitForRunning(1000);
++            try {
++                buildCQAndIndexFile();
++            } catch (Exception e) {
++                logger.error("build consumeQueue and indexFile failed: ", e);
++            }
++        }
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageFetcher.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageFetcher.java
+new file mode 100644
+index 000000000..dcc99c932
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageFetcher.java
+@@ -0,0 +1,586 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore;
++
++import com.github.benmanes.caffeine.cache.Cache;
++import com.github.benmanes.caffeine.cache.Caffeine;
++import com.github.benmanes.caffeine.cache.Scheduler;
++import com.google.common.base.Stopwatch;
++import com.google.common.collect.Sets;
++import io.opentelemetry.api.common.Attributes;
++import java.nio.ByteBuffer;
++import java.util.ArrayList;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Set;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.TimeUnit;
++import javax.annotation.Nullable;
++import org.apache.commons.lang3.tuple.Pair;
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.logging.org.slf4j.Logger;
++import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.store.GetMessageResult;
++import org.apache.rocketmq.store.GetMessageStatus;
++import org.apache.rocketmq.store.MessageFilter;
++import org.apache.rocketmq.store.QueryMessageResult;
++import org.apache.rocketmq.store.SelectMappedBufferResult;
++import org.apache.rocketmq.tieredstore.common.BoundaryType;
++import org.apache.rocketmq.tieredstore.common.InflightRequestFuture;
++import org.apache.rocketmq.tieredstore.common.MessageCacheKey;
++import org.apache.rocketmq.tieredstore.common.SelectMappedBufferResultWrapper;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.common.TieredStoreExecutor;
++import org.apache.rocketmq.tieredstore.container.TieredConsumeQueue;
++import org.apache.rocketmq.tieredstore.container.TieredContainerManager;
++import org.apache.rocketmq.tieredstore.container.TieredIndexFile;
++import org.apache.rocketmq.tieredstore.container.TieredMessageQueueContainer;
++import org.apache.rocketmq.tieredstore.exception.TieredStoreErrorCode;
++import org.apache.rocketmq.tieredstore.exception.TieredStoreException;
++import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
++import org.apache.rocketmq.tieredstore.metadata.TopicMetadata;
++import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant;
++import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManager;
++import org.apache.rocketmq.tieredstore.util.CQItemBufferUtil;
++import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
++
++public class TieredMessageFetcher {
++    private static final Logger LOGGER = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
++
++    private final TieredMessageStoreConfig storeConfig;
++    private final String brokerName;
++    private TieredMetadataStore metadataStore;
++    private final TieredContainerManager containerManager;
++    protected final Cache<MessageCacheKey, SelectMappedBufferResultWrapper> readAheadCache;
++
++    public TieredMessageFetcher(TieredMessageStoreConfig storeConfig) {
++        this.storeConfig = storeConfig;
++        this.brokerName = storeConfig.getBrokerName();
++        this.containerManager = TieredContainerManager.getInstance(storeConfig);
++        this.readAheadCache = Caffeine.newBuilder()
++            .scheduler(Scheduler.systemScheduler())
++            // TODO adjust expire time dynamically
++            .expireAfterWrite(storeConfig.getReadAheadCacheExpireDuration(), TimeUnit.MILLISECONDS)
++            .maximumWeight((long) (Runtime.getRuntime().maxMemory() * storeConfig.getReadAheadCacheSizeThresholdRate()))
++            .weigher((MessageCacheKey key, SelectMappedBufferResultWrapper msg) -> msg.getDuplicateResult().getSize())
++            .recordStats()
++            .build();
++        try {
++            this.metadataStore = TieredStoreUtil.getMetadataStore(storeConfig);
++        } catch (Exception ignored) {
++
++        }
++    }
++
++    public Cache<MessageCacheKey, SelectMappedBufferResultWrapper> getReadAheadCache() {
++        return readAheadCache;
++    }
++
++    public CompletableFuture<GetMessageResult> getMessageFromCacheAsync(TieredMessageQueueContainer container,
++        String group, long queueOffset, int maxMsgNums) {
++        // wait for inflight request by default
++        return getMessageFromCacheAsync(container, group, queueOffset, maxMsgNums, true);
++    }
++
++    protected SelectMappedBufferResultWrapper putMessageToCache(TieredMessageQueueContainer container, long queueOffset,
++        SelectMappedBufferResult msg, long minOffset, long maxOffset, int size) {
++        return putMessageToCache(container, queueOffset, msg, minOffset, maxOffset, size, false);
++    }
++
++    protected SelectMappedBufferResultWrapper putMessageToCache(TieredMessageQueueContainer container, long queueOffset,
++        SelectMappedBufferResult msg, long minOffset, long maxOffset, int size, boolean used) {
++        SelectMappedBufferResultWrapper wrapper = new SelectMappedBufferResultWrapper(msg, queueOffset, minOffset, maxOffset, size);
++        if (used) {
++            wrapper.addAccessCount();
++        }
++        readAheadCache.put(new MessageCacheKey(container, queueOffset), wrapper);
++        return wrapper;
++    }
++
++    @Nullable
++    protected SelectMappedBufferResultWrapper getMessageFromCache(TieredMessageQueueContainer container,
++        long queueOffset) {
++        MessageCacheKey cacheKey = new MessageCacheKey(container, queueOffset);
++        return readAheadCache.getIfPresent(cacheKey);
++    }
++
++    protected void recordCacheAccess(TieredMessageQueueContainer container, String group, long queueOffset,
++        List<SelectMappedBufferResultWrapper> resultWrapperList) {
++        if (resultWrapperList.size() > 0) {
++            queueOffset = resultWrapperList.get(resultWrapperList.size() - 1).getCurOffset();
++        }
++        container.recordGroupAccess(group, queueOffset);
++        for (SelectMappedBufferResultWrapper wrapper : resultWrapperList) {
++            wrapper.addAccessCount();
++            if (wrapper.getAccessCount() >= container.getActiveGroupCount()) {
++                MessageCacheKey cacheKey = new MessageCacheKey(container, wrapper.getCurOffset());
++                readAheadCache.invalidate(cacheKey);
++            }
++        }
++    }
++
++    private void preFetchMessage(TieredMessageQueueContainer container, String group, int maxMsgNums,
++        long nextBeginOffset) {
++        if (maxMsgNums == 1 || container.getReadAheadFactor() == 1) {
++            return;
++        }
++        MessageQueue mq = container.getMessageQueue();
++        // make sure there is only one inflight request per group and request range
++        int prefetchBatchSize = Math.min(maxMsgNums * container.getReadAheadFactor(), storeConfig.getReadAheadMessageCountThreshold());
++        InflightRequestFuture inflightRequest = container.getInflightRequest(group, nextBeginOffset, prefetchBatchSize);
++        if (!inflightRequest.isAllDone()) {
++            return;
++        }
++
++        synchronized (container) {
++            inflightRequest = container.getInflightRequest(nextBeginOffset, maxMsgNums);
++            if (!inflightRequest.isAllDone()) {
++                return;
++            }
++
++            long maxOffsetOfLastRequest = inflightRequest.getLastFuture().join();
++            boolean lastRequestIsExpired = getMessageFromCache(container, nextBeginOffset) == null;
++
++            // if message fetch by last request is expired, we need to prefetch the message from tiered store
++            int cacheRemainCount = (int) (maxOffsetOfLastRequest - nextBeginOffset);
++            LOGGER.debug("TieredMessageFetcher#preFetchMessage: group={}, nextBeginOffset={}, maxOffsetOfLastRequest={}, lastRequestIsExpired={}, cacheRemainCount={}",
++                group, nextBeginOffset, maxOffsetOfLastRequest, lastRequestIsExpired, cacheRemainCount);
++            if (lastRequestIsExpired || maxOffsetOfLastRequest != -1L && nextBeginOffset >= inflightRequest.getStartOffset()) {
++                long queueOffset;
++                if (lastRequestIsExpired) {
++                    queueOffset = nextBeginOffset;
++                    container.decreaseReadAheadFactor();
++                } else {
++                    queueOffset = maxOffsetOfLastRequest + 1;
++                    container.increaseReadAheadFactor();
++                }
++
++                int factor = Math.min(container.getReadAheadFactor(), storeConfig.getReadAheadMessageCountThreshold() / maxMsgNums);
++                int flag = 0;
++                int concurrency = 1;
++                if (factor > storeConfig.getReadAheadBatchSizeFactorThreshold()) {
++                    flag = factor % storeConfig.getReadAheadBatchSizeFactorThreshold() == 0 ? 0 : 1;
++                    concurrency = factor / storeConfig.getReadAheadBatchSizeFactorThreshold() + flag;
++                }
++                int requestBatchSize = maxMsgNums * Math.min(factor, storeConfig.getReadAheadBatchSizeFactorThreshold());
++
++                List<Pair<Integer, CompletableFuture<Long>>> futureList = new ArrayList<>();
++                long nextQueueOffset = queueOffset;
++                if (flag == 1) {
++                    int firstBatchSize = factor % storeConfig.getReadAheadBatchSizeFactorThreshold() * maxMsgNums;
++                    CompletableFuture<Long> future = prefetchAndPutMsgToCache(container, mq, nextQueueOffset, firstBatchSize);
++                    futureList.add(Pair.of(firstBatchSize, future));
++                    nextQueueOffset += firstBatchSize;
++                }
++                for (long i = 0; i < concurrency - flag; i++) {
++                    CompletableFuture<Long> future = prefetchAndPutMsgToCache(container, mq, nextQueueOffset + i * requestBatchSize, requestBatchSize);
++                    futureList.add(Pair.of(requestBatchSize, future));
++                }
++                container.putInflightRequest(group, queueOffset, maxMsgNums * factor, futureList);
++                LOGGER.debug("TieredMessageFetcher#preFetchMessage: try to prefetch messages for later requests: next begin offset: {}, request offset: {}, factor: {}, flag: {}, request batch: {}, concurrency: {}",
++                    nextBeginOffset, queueOffset, factor, flag, requestBatchSize, concurrency);
++            }
++        }
++    }
++
++    private CompletableFuture<Long> prefetchAndPutMsgToCache(TieredMessageQueueContainer container, MessageQueue mq,
++        long queueOffset, int batchSize) {
++        return getMessageFromTieredStoreAsync(container, queueOffset, batchSize)
++            .thenApplyAsync(result -> {
++                if (result.getStatus() != GetMessageStatus.FOUND) {
++                    LOGGER.warn("TieredMessageFetcher#prefetchAndPutMsgToCache: read ahead failed: topic: {}, queue: {}, queue offset: {}, batch size: {}, result: {}",
++                        mq.getTopic(), mq.getQueueId(), queueOffset, batchSize, result.getStatus());
++                    return -1L;
++                }
++                // put message into cache
++                List<Long> offsetList = result.getMessageQueueOffset();
++                List<SelectMappedBufferResult> msgList = result.getMessageMapedList();
++                if (offsetList.size() != msgList.size()) {
++                    LOGGER.error("TieredMessageFetcher#prefetchAndPutMsgToCache: read ahead failed, result is illegal: topic: {}, queue: {}, queue offset: {}, batch size: {}, offsetList size: {}, msgList size: {}",
++                        mq.getTopic(), mq.getQueueId(), queueOffset, batchSize, offsetList.size(), msgList.size());
++                    return -1L;
++                }
++                if (offsetList.isEmpty()) {
++                    LOGGER.error("TieredMessageFetcher#prefetchAndPutMsgToCache: read ahead failed, result is FOUND but msgList is empty: topic: {}, queue: {}, queue offset: {}, batch size: {}",
++                        mq.getTopic(), mq.getQueueId(), queueOffset, batchSize);
++                    return -1L;
++                }
++                Long minOffset = offsetList.get(0);
++                Long maxOffset = offsetList.get(offsetList.size() - 1);
++                int size = offsetList.size();
++                for (int n = 0; n < offsetList.size(); n++) {
++                    putMessageToCache(container, offsetList.get(n), msgList.get(n), minOffset, maxOffset, size);
++                }
++                if (size != batchSize || maxOffset != queueOffset + batchSize - 1) {
++                    LOGGER.warn("TieredMessageFetcher#prefetchAndPutMsgToCache: size not match: except: {}, actual: {}, queue offset: {}, min offset: {}, except offset: {}, max offset: {}",
++                        batchSize, size, queueOffset, minOffset, queueOffset + batchSize - 1, maxOffset);
++                }
++                return maxOffset;
++            }, TieredStoreExecutor.FETCH_DATA_EXECUTOR);
++    }
++
++    private CompletableFuture<GetMessageResult> getMessageFromCacheAsync(TieredMessageQueueContainer container,
++        String group, long queueOffset, int maxMsgNums, boolean waitInflightRequest) {
++        MessageQueue mq = container.getMessageQueue();
++
++        long lastGetOffset = queueOffset - 1;
++        List<SelectMappedBufferResultWrapper> resultWrapperList = new ArrayList<>(maxMsgNums);
++        for (int i = 0; i < maxMsgNums; i++) {
++            lastGetOffset++;
++            SelectMappedBufferResultWrapper wrapper = getMessageFromCache(container, lastGetOffset);
++            if (wrapper == null) {
++                lastGetOffset--;
++                break;
++            }
++            resultWrapperList.add(wrapper);
++        }
++
++        // only record cache access count once
++        if (waitInflightRequest) {
++            Attributes attributes = TieredStoreMetricsManager.newAttributesBuilder()
++                .put(TieredStoreMetricsConstant.LABEL_TOPIC, mq.getTopic())
++                .put(TieredStoreMetricsConstant.LABEL_GROUP, group)
++                .build();
++            TieredStoreMetricsManager.cacheAccess.add(maxMsgNums, attributes);
++            TieredStoreMetricsManager.cacheHit.add(resultWrapperList.size(), attributes);
++        }
++
++        // if no cached message found and there is currently an inflight request, wait for the request to end before continuing
++        if (resultWrapperList.isEmpty() && waitInflightRequest) {
++            CompletableFuture<Long> future = container.getInflightRequest(group, queueOffset, maxMsgNums)
++                .getFuture(queueOffset);
++            if (!future.isDone()) {
++                Stopwatch stopwatch = Stopwatch.createStarted();
++                // to prevent starvation issues, only allow waiting for inflight request once
++                return future.thenCompose(v -> {
++                    LOGGER.debug("TieredMessageFetcher#getMessageFromCacheAsync: wait for inflight request cost: {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
++                    return getMessageFromCacheAsync(container, group, queueOffset, maxMsgNums, false);
++                });
++            }
++        }
++
++        // try to get message from cache again when prefetch request is done
++        for (int i = 0; i < maxMsgNums - resultWrapperList.size(); i++) {
++            lastGetOffset++;
++            SelectMappedBufferResultWrapper wrapper = getMessageFromCache(container, lastGetOffset);
++            if (wrapper == null) {
++                lastGetOffset--;
++                break;
++            }
++            resultWrapperList.add(wrapper);
++        }
++
++        recordCacheAccess(container, group, queueOffset, resultWrapperList);
++
++        // if cache is hit, result will be returned immediately and asynchronously prefetch messages for later requests
++        if (!resultWrapperList.isEmpty()) {
++            LOGGER.debug("TieredMessageFetcher#getMessageFromCacheAsync: cache hit: topic: {}, queue: {}, queue offset: {}, max message num: {}, cache hit num: {}",
++                mq.getTopic(), mq.getQueueId(), queueOffset, maxMsgNums, resultWrapperList.size());
++            preFetchMessage(container, group, maxMsgNums, lastGetOffset + 1);
++
++            GetMessageResult result = new GetMessageResult();
++            result.setStatus(GetMessageStatus.FOUND);
++            result.setMinOffset(container.getConsumeQueueMinOffset());
++            result.setMaxOffset(container.getConsumeQueueCommitOffset());
++            result.setNextBeginOffset(queueOffset + resultWrapperList.size());
++            resultWrapperList.forEach(wrapper -> result.addMessage(wrapper.getDuplicateResult(), wrapper.getCurOffset()));
++            return CompletableFuture.completedFuture(result);
++        }
++
++        // if cache is miss, immediately pull messages
++        LOGGER.warn("TieredMessageFetcher#getMessageFromCacheAsync: cache miss: topic: {}, queue: {}, queue offset: {}, max message num: {}",
++            mq.getTopic(), mq.getQueueId(), queueOffset, maxMsgNums);
++        CompletableFuture<GetMessageResult> resultFuture;
++        synchronized (container) {
++            int batchSize = maxMsgNums * storeConfig.getReadAheadMinFactor();
++            resultFuture = getMessageFromTieredStoreAsync(container, queueOffset, batchSize)
++                .thenApplyAsync(result -> {
++                    if (result.getStatus() != GetMessageStatus.FOUND) {
++                        return result;
++                    }
++                    GetMessageResult newResult = new GetMessageResult();
++                    newResult.setStatus(GetMessageStatus.FOUND);
++                    newResult.setMinOffset(container.getConsumeQueueMinOffset());
++                    newResult.setMaxOffset(container.getConsumeQueueCommitOffset());
++
++                    List<Long> offsetList = result.getMessageQueueOffset();
++                    List<SelectMappedBufferResult> msgList = result.getMessageMapedList();
++                    Long minOffset = offsetList.get(0);
++                    Long maxOffset = offsetList.get(offsetList.size() - 1);
++                    int size = offsetList.size();
++                    for (int i = 0; i < offsetList.size(); i++) {
++                        Long offset = offsetList.get(i);
++                        SelectMappedBufferResult msg = msgList.get(i);
++                        // put message into cache
++                        SelectMappedBufferResultWrapper resultWrapper = putMessageToCache(container, offset, msg, minOffset, maxOffset, size, true);
++                        // try to meet maxMsgNums
++                        if (newResult.getMessageMapedList().size() < maxMsgNums) {
++                            newResult.addMessage(resultWrapper.getDuplicateResult(), offset);
++                        }
++                    }
++                    newResult.setNextBeginOffset(queueOffset + newResult.getMessageMapedList().size());
++                    return newResult;
++                }, TieredStoreExecutor.FETCH_DATA_EXECUTOR);
++
++            List<Pair<Integer, CompletableFuture<Long>>> futureList = new ArrayList<>();
++            CompletableFuture<Long> inflightRequestFuture = resultFuture.thenApply(result ->
++                result.getStatus() == GetMessageStatus.FOUND ? result.getMessageQueueOffset().get(result.getMessageQueueOffset().size() - 1) : -1L);
++            futureList.add(Pair.of(batchSize, inflightRequestFuture));
++            container.putInflightRequest(group, queueOffset, batchSize, futureList);
++        }
++        return resultFuture;
++    }
++
++    public CompletableFuture<GetMessageResult> getMessageFromTieredStoreAsync(TieredMessageQueueContainer container,
++        long queueOffset, int batchSize) {
++        GetMessageResult result = new GetMessageResult();
++        result.setMinOffset(container.getConsumeQueueMinOffset());
++        result.setMaxOffset(container.getConsumeQueueCommitOffset());
++        CompletableFuture<ByteBuffer> readConsumeQueueFuture;
++        try {
++            readConsumeQueueFuture = container.readConsumeQueue(queueOffset, batchSize);
++        } catch (TieredStoreException e) {
++            switch (e.getErrorCode()) {
++                case NO_NEW_DATA:
++                    result.setStatus(GetMessageStatus.OFFSET_OVERFLOW_ONE);
++                    result.setNextBeginOffset(queueOffset);
++                    return CompletableFuture.completedFuture(result);
++                default:
++                    result.setStatus(GetMessageStatus.OFFSET_FOUND_NULL);
++                    result.setNextBeginOffset(queueOffset);
++                    return CompletableFuture.completedFuture(result);
++            }
++        }
++        CompletableFuture<ByteBuffer> readCommitLogFuture = readConsumeQueueFuture.thenComposeAsync(cqBuffer -> {
++            long firstCommitLogOffset = CQItemBufferUtil.getCommitLogOffset(cqBuffer);
++            cqBuffer.position(cqBuffer.remaining() - TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE);
++            long lastCommitLogOffset = CQItemBufferUtil.getCommitLogOffset(cqBuffer);
++            if (lastCommitLogOffset < firstCommitLogOffset) {
++                MessageQueue mq = container.getMessageQueue();
++                LOGGER.error("TieredMessageFetcher#getMessageFromTieredStoreAsync: message is not in order, try to fetch data in next store, topic: {}, queueId: {}, batch size: {}, queue offset {}",
++                    mq.getTopic(), mq.getQueueId(), batchSize, queueOffset);
++                throw new TieredStoreException(TieredStoreErrorCode.ILLEGAL_OFFSET, "message is not in order");
++            }
++            long length = lastCommitLogOffset - firstCommitLogOffset + CQItemBufferUtil.getSize(cqBuffer);
++
++            // prevent OOM
++            long originLength = length;
++            while (cqBuffer.limit() > TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE && length > storeConfig.getReadAheadMessageSizeThreshold()) {
++                cqBuffer.limit(cqBuffer.position());
++                cqBuffer.position(cqBuffer.limit() - TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE);
++                length = CQItemBufferUtil.getCommitLogOffset(cqBuffer) - firstCommitLogOffset + CQItemBufferUtil.getSize(cqBuffer);
++            }
++
++            if (originLength != length) {
++                MessageQueue mq = container.getMessageQueue();
++                LOGGER.info("TieredMessageFetcher#getMessageFromTieredStoreAsync: msg data is too large, topic: {}, queueId: {}, batch size: {}, fix it from {} to {}",
++                    mq.getTopic(), mq.getQueueId(), batchSize, originLength, length);
++            }
++
++            return container.readCommitLog(firstCommitLogOffset, (int) length);
++        }, TieredStoreExecutor.FETCH_DATA_EXECUTOR);
++
++        return readConsumeQueueFuture.thenCombineAsync(readCommitLogFuture, (cqBuffer, msgBuffer) -> {
++            List<Pair<Integer, Integer>> msgList = MessageBufferUtil.splitMessageBuffer(cqBuffer, msgBuffer);
++            if (!msgList.isEmpty()) {
++                int requestSize = cqBuffer.remaining() / TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE;
++                result.setStatus(GetMessageStatus.FOUND);
++                result.setNextBeginOffset(queueOffset + msgList.size());
++                msgList.forEach(pair -> {
++                    msgBuffer.position(pair.getLeft());
++                    ByteBuffer slice = msgBuffer.slice();
++                    slice.limit(pair.getRight());
++                    result.addMessage(new SelectMappedBufferResult(pair.getLeft(), slice, pair.getRight(), null), MessageBufferUtil.getQueueOffset(slice));
++                });
++                if (requestSize != msgList.size()) {
++                    Set<Long> requestOffsetSet = new HashSet<>();
++                    for (int i = 0; i < requestSize; i++) {
++                        requestOffsetSet.add(queueOffset + i);
++                    }
++                    LOGGER.error("TieredMessageFetcher#getMessageFromTieredStoreAsync: split message buffer failed, batch size: {}, request message count: {}, actual message count: {}, these messages may lost: {}", batchSize, requestSize, msgList.size(), Sets.difference(requestOffsetSet, Sets.newHashSet(result.getMessageQueueOffset())));
++                } else if (requestSize != batchSize) {
++                    LOGGER.debug("TieredMessageFetcher#getMessageFromTieredStoreAsync: message count does not meet batch size, maybe dispatch delay: batch size: {}, request message count: {}", batchSize, requestSize);
++                }
++                return result;
++            }
++            long nextBeginOffset = queueOffset + cqBuffer.remaining() / TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE;
++            LOGGER.error("TieredMessageFetcher#getMessageFromTieredStoreAsync: split message buffer failed, consume queue buffer size: {}, message buffer size: {}, change offset from {} to {}", cqBuffer.remaining(), msgBuffer.remaining(), queueOffset, nextBeginOffset);
++            result.setStatus(GetMessageStatus.MESSAGE_WAS_REMOVING);
++            result.setNextBeginOffset(nextBeginOffset);
++            return result;
++        }, TieredStoreExecutor.FETCH_DATA_EXECUTOR).exceptionally(e -> {
++            MessageQueue mq = container.getMessageQueue();
++            LOGGER.warn("TieredMessageFetcher#getMessageFromTieredStoreAsync: get message failed: topic: {} queueId: {}", mq.getTopic(), mq.getQueueId(), e);
++            result.setStatus(GetMessageStatus.OFFSET_FOUND_NULL);
++            result.setNextBeginOffset(queueOffset);
++            return result;
++        });
++    }
++
++    public CompletableFuture<GetMessageResult> getMessageAsync(String group, String topic, int queueId,
++        long queueOffset, int maxMsgNums, final MessageFilter messageFilter) {
++        TieredMessageQueueContainer container = containerManager.getMQContainer(new MessageQueue(topic, brokerName, queueId));
++        if (container == null) {
++            GetMessageResult result = new GetMessageResult();
++            result.setNextBeginOffset(queueOffset);
++            result.setStatus(GetMessageStatus.NO_MATCHED_LOGIC_QUEUE);
++            return CompletableFuture.completedFuture(result);
++        }
++        GetMessageResult result = new GetMessageResult();
++        long minQueueOffset = container.getConsumeQueueMinOffset();
++        result.setMinOffset(minQueueOffset);
++        long maxQueueOffset = container.getConsumeQueueCommitOffset();
++        result.setMaxOffset(maxQueueOffset);
++
++        if (container.getConsumeQueueCommitOffset() <= 0) {
++            result.setStatus(GetMessageStatus.NO_MESSAGE_IN_QUEUE);
++            result.setNextBeginOffset(queueOffset);
++            return CompletableFuture.completedFuture(result);
++        }
++
++        if (queueOffset < minQueueOffset) {
++            result.setStatus(GetMessageStatus.OFFSET_TOO_SMALL);
++            result.setNextBeginOffset(container.getConsumeQueueMinOffset());
++            return CompletableFuture.completedFuture(result);
++        } else if (queueOffset == maxQueueOffset) {
++            result.setStatus(GetMessageStatus.OFFSET_OVERFLOW_ONE);
++            result.setNextBeginOffset(container.getConsumeQueueCommitOffset());
++            return CompletableFuture.completedFuture(result);
++        } else if (queueOffset > maxQueueOffset) {
++            result.setStatus(GetMessageStatus.OFFSET_OVERFLOW_BADLY);
++            result.setNextBeginOffset(container.getConsumeQueueCommitOffset());
++            return CompletableFuture.completedFuture(result);
++        }
++
++        return getMessageFromCacheAsync(container, group, queueOffset, maxMsgNums);
++    }
++
++    public CompletableFuture<Long> getEarliestMessageTimeAsync(String topic, int queueId) {
++        TieredMessageQueueContainer container = containerManager.getMQContainer(new MessageQueue(topic, brokerName, queueId));
++        if (container == null) {
++            return CompletableFuture.completedFuture(-1L);
++        }
++
++        return container.readCommitLog(container.getCommitLogMinOffset(), MessageBufferUtil.STORE_TIMESTAMP_POSITION + 8)
++            .thenApply(MessageBufferUtil::getStoreTimeStamp);
++    }
++
++    public CompletableFuture<Long> getMessageStoreTimeStampAsync(String topic, int queueId, long queueOffset) {
++        TieredMessageQueueContainer container = containerManager.getMQContainer(new MessageQueue(topic, brokerName, queueId));
++        if (container == null) {
++            return CompletableFuture.completedFuture(-1L);
++        }
++        return container.readConsumeQueue(queueOffset)
++            .thenComposeAsync(cqItem -> {
++                long commitLogOffset = CQItemBufferUtil.getCommitLogOffset(cqItem);
++                int size = CQItemBufferUtil.getSize(cqItem);
++                return container.readCommitLog(commitLogOffset, size);
++            }, TieredStoreExecutor.FETCH_DATA_EXECUTOR)
++            .thenApply(MessageBufferUtil::getStoreTimeStamp)
++            .exceptionally(e -> {
++                LOGGER.error("TieredMessageFetcher#getMessageStoreTimeStampAsync: get or decode message failed: topic: {}, queue: {}, offset: {}", topic, queueId, queueOffset, e);
++                return -1L;
++            });
++    }
++
++    public long getOffsetInQueueByTime(String topic, int queueId, long timestamp,
++        BoundaryType type) {
++        TieredMessageQueueContainer container = containerManager.getMQContainer(new MessageQueue(topic, brokerName, queueId));
++        if (container == null) {
++            return -1L;
++        }
++        try {
++            return container.binarySearchInQueueByTime(timestamp, type);
++        } catch (Exception e) {
++            LOGGER.error("TieredMessageFetcher#getOffsetInQueueByTime: get offset in queue by time failed: topic: {}, queue: {}, timestamp: {}, type: {}", topic, queueId, timestamp, type, e);
++        }
++        return -1L;
++    }
++
++    public CompletableFuture<QueryMessageResult> queryMessageAsync(String topic, String key, int maxNum, long begin,
++        long end) {
++        TieredIndexFile indexFile = TieredContainerManager.getIndexFile(storeConfig);
++
++        int hashCode = TieredIndexFile.indexKeyHashMethod(TieredIndexFile.buildKey(topic, key));
++        int topicId;
++        try {
++            TopicMetadata topicMetadata = metadataStore.getTopic(topic);
++            if (topicMetadata == null) {
++                LOGGER.info("TieredMessageFetcher#queryMessageAsync: get topic id from metadata failed, topic metadata not found: topic: {}", topic);
++                return CompletableFuture.completedFuture(new QueryMessageResult());
++            }
++            topicId = topicMetadata.getTopicId();
++        } catch (Exception e) {
++            LOGGER.error("TieredMessageFetcher#queryMessageAsync: get topic id from metadata failed: topic: {}", topic, e);
++            return CompletableFuture.completedFuture(new QueryMessageResult());
++        }
++
++        return indexFile.queryAsync(topic, key, begin, end)
++            .thenCompose(indexBufferList -> {
++                QueryMessageResult result = new QueryMessageResult();
++                int resultCount = 0;
++                List<CompletableFuture<Void>> futureList = new ArrayList<>(maxNum);
++                for (Pair<Long, ByteBuffer> pair : indexBufferList) {
++                    Long fileBeginTimestamp = pair.getKey();
++                    ByteBuffer indexBuffer = pair.getValue();
++                    if (indexBuffer.remaining() % TieredIndexFile.INDEX_FILE_HASH_COMPACT_INDEX_SIZE != 0) {
++                        LOGGER.error("[Bug]TieredMessageFetcher#queryMessageAsync: index buffer size {} is not multiple of index item size {}", indexBuffer.remaining(), TieredIndexFile.INDEX_FILE_HASH_COMPACT_INDEX_SIZE);
++                        continue;
++                    }
++                    for (int indexOffset = indexBuffer.position(); indexOffset < indexBuffer.limit(); indexOffset += TieredIndexFile.INDEX_FILE_HASH_COMPACT_INDEX_SIZE) {
++                        int indexItemHashCode = indexBuffer.getInt(indexOffset);
++                        if (indexItemHashCode != hashCode) {
++                            continue;
++                        }
++
++                        int indexItemTopicId = indexBuffer.getInt(indexOffset + 4);
++                        if (indexItemTopicId != topicId) {
++                            continue;
++                        }
++
++                        int queueId = indexBuffer.getInt(indexOffset + 4 + 4);
++                        TieredMessageQueueContainer container = TieredContainerManager.getInstance(storeConfig).getMQContainer(new MessageQueue(topic, brokerName, queueId));
++                        if (container == null) {
++                            continue;
++                        }
++
++                        long offset = indexBuffer.getLong(indexOffset + 4 + 4 + 4);
++                        int size = indexBuffer.getInt(indexOffset + 4 + 4 + 4 + 8);
++                        int timeDiff = indexBuffer.getInt(indexOffset + 4 + 4 + 4 + 8 + 4);
++                        long indexTimestamp = fileBeginTimestamp + timeDiff;
++                        if (indexTimestamp < begin || indexTimestamp > end) {
++                            continue;
++                        }
++                        CompletableFuture<Void> getMessageFuture = container.readCommitLog(offset, size)
++                            .thenAccept(messageBuffer -> result.addMessage(new SelectMappedBufferResult(0, messageBuffer, size, null)));
++                        futureList.add(getMessageFuture);
++
++                        resultCount++;
++                        if (resultCount >= maxNum) {
++                            break;
++                        }
++                    }
++                    if (resultCount >= maxNum) {
++                        break;
++                    }
++                }
++                return CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0]))
++                    .thenApply(v -> result);
++            });
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java
+new file mode 100644
+index 000000000..5ef1b2081
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java
+@@ -0,0 +1,416 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore;
++
++import com.google.common.base.Stopwatch;
++import io.opentelemetry.api.common.Attributes;
++import io.opentelemetry.api.common.AttributesBuilder;
++import io.opentelemetry.api.metrics.Meter;
++import io.opentelemetry.sdk.metrics.InstrumentSelector;
++import io.opentelemetry.sdk.metrics.View;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Set;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.TimeUnit;
++import java.util.function.Supplier;
++import org.apache.rocketmq.common.MixAll;
++import org.apache.rocketmq.common.Pair;
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.common.topic.TopicValidator;
++import org.apache.rocketmq.logging.org.slf4j.Logger;
++import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.store.GetMessageResult;
++import org.apache.rocketmq.store.GetMessageStatus;
++import org.apache.rocketmq.store.MessageFilter;
++import org.apache.rocketmq.store.MessageStore;
++import org.apache.rocketmq.store.QueryMessageResult;
++import org.apache.rocketmq.store.SelectMappedBufferResult;
++import org.apache.rocketmq.store.plugin.AbstractPluginMessageStore;
++import org.apache.rocketmq.store.plugin.MessageStorePluginContext;
++import org.apache.rocketmq.tieredstore.common.BoundaryType;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.common.TieredStoreExecutor;
++import org.apache.rocketmq.tieredstore.container.TieredContainerManager;
++import org.apache.rocketmq.tieredstore.container.TieredMessageQueueContainer;
++import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
++import org.apache.rocketmq.tieredstore.metadata.TopicMetadata;
++import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant;
++import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManager;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
++
++public class TieredMessageStore extends AbstractPluginMessageStore {
++    private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
++    private final TieredMessageFetcher fetcher;
++    private final TieredDispatcher dispatcher;
++    private final String brokerName;
++    private final TieredMessageStoreConfig storeConfig;
++    private final TieredContainerManager containerManager;
++    private final TieredMetadataStore metadataStore;
++
++    public TieredMessageStore(MessageStorePluginContext context, MessageStore next) {
++        super(context, next);
++        this.storeConfig = new TieredMessageStoreConfig();
++        context.registerConfiguration(storeConfig);
++        this.brokerName = storeConfig.getBrokerName();
++        TieredStoreUtil.addSystemTopic(storeConfig.getBrokerClusterName());
++        TieredStoreUtil.addSystemTopic(brokerName);
++
++        this.metadataStore = TieredStoreUtil.getMetadataStore(storeConfig);
++        this.fetcher = new TieredMessageFetcher(storeConfig);
++        this.dispatcher = new TieredDispatcher(next, storeConfig);
++
++        this.containerManager = TieredContainerManager.getInstance(storeConfig);
++        next.addDispatcher(dispatcher);
++    }
++
++    @Override
++    public boolean load() {
++        boolean loadContainer = containerManager.load();
++        boolean loadNextStore = next.load();
++        boolean result = loadContainer && loadNextStore;
++        if (result) {
++            dispatcher.start();
++        }
++        return result;
++    }
++
++    public TieredMessageStoreConfig getStoreConfig() {
++        return storeConfig;
++    }
++
++    public boolean viaTieredStorage(String topic, int queueId, long offset) {
++        return viaTieredStorage(topic, queueId, offset, 1);
++    }
++
++    public boolean viaTieredStorage(String topic, int queueId, long offset, int batchSize) {
++        TieredMessageStoreConfig.TieredStorageLevel deepStorageLevel = storeConfig.getTieredStorageLevel();
++        if (!deepStorageLevel.isEnable()) {
++            return false;
++        }
++
++        TieredMessageQueueContainer container = containerManager.getMQContainer(new MessageQueue(topic, brokerName, queueId));
++        if (container == null) {
++            return false;
++        }
++
++        if (offset >= container.getConsumeQueueCommitOffset()) {
++            return false;
++        }
++
++        // determine whether tiered storage path conditions are met
++        if (deepStorageLevel.check(TieredMessageStoreConfig.TieredStorageLevel.NOT_IN_DISK)
++            && !next.checkInStoreByConsumeOffset(topic, queueId, offset)) {
++            return true;
++        }
++
++        if (deepStorageLevel.check(TieredMessageStoreConfig.TieredStorageLevel.NOT_IN_MEM)
++            && !next.checkInMemByConsumeOffset(topic, queueId, offset, batchSize)) {
++            return true;
++        }
++        return deepStorageLevel.check(TieredMessageStoreConfig.TieredStorageLevel.FORCE);
++    }
++
++    @Override
++    public GetMessageResult getMessage(String group, String topic, int queueId, long offset, int maxMsgNums,
++        MessageFilter messageFilter) {
++        return getMessageAsync(group, topic, queueId, offset, maxMsgNums, messageFilter).join();
++    }
++
++    @Override
++    public CompletableFuture<GetMessageResult> getMessageAsync(String group, String topic,
++        int queueId, long offset, int maxMsgNums, MessageFilter messageFilter) {
++        if (viaTieredStorage(topic, queueId, offset, maxMsgNums)) {
++            Stopwatch stopwatch = Stopwatch.createStarted();
++            return fetcher.getMessageAsync(group, topic, queueId, offset, maxMsgNums, messageFilter)
++                .thenApply(result -> {
++                    Attributes latencyAttributes = TieredStoreMetricsManager.newAttributesBuilder()
++                        .put(TieredStoreMetricsConstant.LABEL_OPERATION, TieredStoreMetricsConstant.OPERATION_API_GET_MESSAGE)
++                        .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)
++                        .put(TieredStoreMetricsConstant.LABEL_GROUP, group)
++                        .build();
++                    TieredStoreMetricsManager.apiLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), latencyAttributes);
++
++                    if (result.getStatus() == GetMessageStatus.OFFSET_FOUND_NULL ||
++                        result.getStatus() == GetMessageStatus.OFFSET_OVERFLOW_ONE ||
++                        result.getStatus() == GetMessageStatus.OFFSET_OVERFLOW_BADLY) {
++                        if (next.checkInDiskByConsumeOffset(topic, queueId, offset)) {
++                            logger.debug("TieredMessageStore#getMessageAsync: not found message, try to get message from next store: topic: {}, queue: {}, queue offset: {}, tiered store result: {}, min offset: {}, max offset: {}",
++                                topic, queueId, offset, result.getStatus(), result.getMinOffset(), result.getMaxOffset());
++                            TieredStoreMetricsManager.fallbackTotal.add(1, latencyAttributes);
++                            return next.getMessage(group, topic, queueId, offset, maxMsgNums, messageFilter);
++                        }
++                    }
++                    if (result.getStatus() != GetMessageStatus.FOUND &&
++                        result.getStatus() != GetMessageStatus.OFFSET_OVERFLOW_ONE &&
++                        result.getStatus() != GetMessageStatus.OFFSET_OVERFLOW_BADLY) {
++                        logger.warn("TieredMessageStore#getMessageAsync: not found message, and message is not in next store: topic: {}, queue: {}, queue offset: {}, result: {}, min offset: {}, max offset: {}",
++                            topic, queueId, offset, result.getStatus(), result.getMinOffset(), result.getMaxOffset());
++                    }
++                    if (result.getStatus() == GetMessageStatus.FOUND) {
++                        Attributes messagesOutAttributes = TieredStoreMetricsManager.newAttributesBuilder()
++                            .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)
++                            .put(TieredStoreMetricsConstant.LABEL_GROUP, group)
++                            .build();
++                        TieredStoreMetricsManager.messagesOutTotal.add(result.getMessageCount(), messagesOutAttributes);
++                    }
++
++                    // fix min or max offset using next store
++                    long minOffsetInQueue = next.getMinOffsetInQueue(topic, queueId);
++                    if (minOffsetInQueue >= 0 && minOffsetInQueue < result.getMinOffset()) {
++                        result.setMinOffset(minOffsetInQueue);
++                    }
++                    long maxOffsetInQueue = next.getMaxOffsetInQueue(topic, queueId);
++                    if (maxOffsetInQueue >= 0 && maxOffsetInQueue > result.getMaxOffset()) {
++                        result.setMaxOffset(maxOffsetInQueue);
++                    }
++                    return result;
++                }).exceptionally(e -> {
++                    logger.error("TieredMessageStore#getMessageAsync: get message from tiered store failed: ", e);
++                    return next.getMessage(group, topic, queueId, offset, maxMsgNums, messageFilter);
++                });
++        }
++        return next.getMessageAsync(group, topic, queueId, offset, maxMsgNums, messageFilter);
++    }
++
++    @Override
++    public long getMinOffsetInQueue(String topic, int queueId) {
++        long minOffsetInNextStore = next.getMinOffsetInQueue(topic, queueId);
++        TieredMessageQueueContainer container = containerManager.getMQContainer(new MessageQueue(topic, brokerName, queueId));
++        if (container == null) {
++            return minOffsetInNextStore;
++        }
++        long minOffsetInTieredStore = container.getConsumeQueueMinOffset();
++        if (minOffsetInTieredStore < 0) {
++            return minOffsetInNextStore;
++        }
++        return Math.min(minOffsetInNextStore, minOffsetInTieredStore);
++    }
++
++    @Override
++    public long getEarliestMessageTime(String topic, int queueId) {
++        return getEarliestMessageTimeAsync(topic, queueId).join();
++    }
++
++    @Override
++    public CompletableFuture<Long> getEarliestMessageTimeAsync(String topic, int queueId) {
++        long nextEarliestMessageTime = next.getEarliestMessageTime(topic, queueId);
++        long finalNextEarliestMessageTime = nextEarliestMessageTime > 0 ? nextEarliestMessageTime : Long.MAX_VALUE;
++        Stopwatch stopwatch = Stopwatch.createStarted();
++        return fetcher.getEarliestMessageTimeAsync(topic, queueId)
++            .thenApply(time -> {
++                Attributes latencyAttributes = TieredStoreMetricsManager.newAttributesBuilder()
++                    .put(TieredStoreMetricsConstant.LABEL_OPERATION, TieredStoreMetricsConstant.OPERATION_API_GET_EARLIEST_MESSAGE_TIME)
++                    .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)
++                    .build();
++                TieredStoreMetricsManager.apiLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), latencyAttributes);
++                if (time < 0) {
++                    logger.debug("TieredMessageStore#getEarliestMessageTimeAsync: get earliest message time failed, try to get earliest message time from next store: topic: {}, queue: {}",
++                        topic, queueId);
++                    return finalNextEarliestMessageTime != Long.MAX_VALUE ? finalNextEarliestMessageTime : -1;
++                }
++                return Math.min(finalNextEarliestMessageTime, time);
++            });
++    }
++
++    @Override
++    public CompletableFuture<Long> getMessageStoreTimeStampAsync(String topic, int queueId,
++        long consumeQueueOffset) {
++        if (viaTieredStorage(topic, queueId, consumeQueueOffset)) {
++            Stopwatch stopwatch = Stopwatch.createStarted();
++            return fetcher.getMessageStoreTimeStampAsync(topic, queueId, consumeQueueOffset)
++                .thenApply(time -> {
++                    Attributes latencyAttributes = TieredStoreMetricsManager.newAttributesBuilder()
++                        .put(TieredStoreMetricsConstant.LABEL_OPERATION, TieredStoreMetricsConstant.OPERATION_API_GET_TIME_BY_OFFSET)
++                        .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)
++                        .build();
++                    TieredStoreMetricsManager.apiLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), latencyAttributes);
++                    if (time == -1) {
++                        logger.debug("TieredMessageStore#getMessageStoreTimeStampAsync: get message time failed, try to get message time from next store: topic: {}, queue: {}, queue offset: {}",
++                            topic, queueId, consumeQueueOffset);
++                        return next.getMessageStoreTimeStamp(topic, queueId, consumeQueueOffset);
++                    }
++                    return time;
++                });
++        }
++        return next.getMessageStoreTimeStampAsync(topic, queueId, consumeQueueOffset);
++    }
++
++    @Override
++    public long getOffsetInQueueByTime(String topic, int queueId, long timestamp) {
++        return getOffsetInQueueByTime(topic, queueId, timestamp, BoundaryType.LOWER);
++    }
++
++    public long getOffsetInQueueByTime(String topic, int queueId, long timestamp, BoundaryType boundaryType) {
++        long earliestTimeInNextStore = next.getEarliestMessageTime();
++        if (earliestTimeInNextStore <= 0) {
++            logger.warn("TieredMessageStore#getOffsetInQueueByTimeAsync: get earliest message time in next store failed: {}", earliestTimeInNextStore);
++            return next.getOffsetInQueueByTime(topic, queueId, timestamp);
++        }
++        boolean isForce = storeConfig.getTieredStorageLevel() == TieredMessageStoreConfig.TieredStorageLevel.FORCE;
++        if (timestamp < earliestTimeInNextStore || isForce) {
++            Stopwatch stopwatch = Stopwatch.createStarted();
++            long offsetInTieredStore = fetcher.getOffsetInQueueByTime(topic, queueId, timestamp, boundaryType);
++            Attributes latencyAttributes = TieredStoreMetricsManager.newAttributesBuilder()
++                .put(TieredStoreMetricsConstant.LABEL_OPERATION, TieredStoreMetricsConstant.OPERATION_API_GET_OFFSET_BY_TIME)
++                .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)
++                .build();
++            TieredStoreMetricsManager.apiLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), latencyAttributes);
++            if (offsetInTieredStore == -1 && !isForce) {
++                return next.getOffsetInQueueByTime(topic, queueId, timestamp);
++            }
++            return offsetInTieredStore;
++        }
++        return next.getOffsetInQueueByTime(topic, queueId, timestamp);
++    }
++
++    @Override
++    public QueryMessageResult queryMessage(String topic, String key, int maxNum, long begin, long end) {
++        return queryMessageAsync(topic, key, maxNum, begin, end).join();
++    }
++
++    @Override
++    public CompletableFuture<QueryMessageResult> queryMessageAsync(String topic, String key,
++        int maxNum, long begin, long end) {
++        long earliestTimeInNextStore = next.getEarliestMessageTime();
++        if (earliestTimeInNextStore <= 0) {
++            logger.warn("TieredMessageStore#queryMessageAsync: get earliest message time in next store failed: {}", earliestTimeInNextStore);
++        }
++        boolean isForce = storeConfig.getTieredStorageLevel() == TieredMessageStoreConfig.TieredStorageLevel.FORCE;
++        QueryMessageResult result = end < earliestTimeInNextStore || isForce ?
++            new QueryMessageResult() :
++            next.queryMessage(topic, key, maxNum, begin, end);
++        int resultSize = result.getMessageBufferList().size();
++        if (resultSize < maxNum && begin < earliestTimeInNextStore || isForce) {
++            Stopwatch stopwatch = Stopwatch.createStarted();
++            try {
++                return fetcher.queryMessageAsync(topic, key, maxNum - resultSize, begin, isForce ? end : earliestTimeInNextStore)
++                    .thenApply(tieredStoreResult -> {
++                        Attributes latencyAttributes = TieredStoreMetricsManager.newAttributesBuilder()
++                            .put(TieredStoreMetricsConstant.LABEL_OPERATION, TieredStoreMetricsConstant.OPERATION_API_QUERY_MESSAGE)
++                            .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)
++                            .build();
++                        TieredStoreMetricsManager.apiLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), latencyAttributes);
++                        for (SelectMappedBufferResult msg : tieredStoreResult.getMessageMapedList()) {
++                            result.addMessage(msg);
++                        }
++                        return result;
++                    });
++            } catch (Exception e) {
++                logger.error("TieredMessageStore#queryMessageAsync: query message in tiered store failed", e);
++                return CompletableFuture.completedFuture(result);
++            }
++        }
++        return CompletableFuture.completedFuture(result);
++    }
++
++    @Override
++    public List<Pair<InstrumentSelector, View>> getMetricsView() {
++        List<Pair<InstrumentSelector, View>> res = new ArrayList<>();
++        res.addAll(next.getMetricsView());
++        res.addAll(TieredStoreMetricsManager.getMetricsView());
++        return res;
++    }
++
++    @Override
++    public void initMetrics(Meter meter, Supplier<AttributesBuilder> attributesBuilderSupplier) {
++        super.initMetrics(meter, attributesBuilderSupplier);
++        TieredStoreMetricsManager.init(meter, attributesBuilderSupplier, storeConfig, fetcher, next);
++    }
++
++    @Override
++    public void shutdown() {
++        next.shutdown();
++
++        dispatcher.shutdown();
++        TieredContainerManager.getInstance(storeConfig).shutdown();
++        TieredStoreExecutor.shutdown();
++    }
++
++    @Override
++    public void destroy() {
++        next.destroy();
++
++        TieredContainerManager.getInstance(storeConfig).destroy();
++        try {
++            metadataStore.destroy();
++        } catch (Exception e) {
++            logger.error("TieredMessageStore#destroy: destroy metadata store failed", e);
++        }
++    }
++
++    @Override
++    public int cleanUnusedTopic(Set<String> retainTopics) {
++        try {
++            metadataStore.iterateTopic(topicMetadata -> {
++                String topic = topicMetadata.getTopic();
++                if (retainTopics.contains(topic) ||
++                    TopicValidator.isSystemTopic(topic) ||
++                    MixAll.isLmq(topic)) {
++                    return;
++                }
++                logger.info("TieredMessageStore#cleanUnusedTopic: start deleting topic {}", topic);
++                try {
++                    destroyContainer(topicMetadata);
++                } catch (Exception e) {
++                    logger.error("TieredMessageStore#cleanUnusedTopic: delete topic {} failed", topic, e);
++                }
++            });
++        } catch (Exception e) {
++            logger.error("TieredMessageStore#cleanUnusedTopic: iterate topic metadata failed", e);
++        }
++        return next.cleanUnusedTopic(retainTopics);
++    }
++
++    @Override
++    public int deleteTopics(Set<String> deleteTopics) {
++        for (String topic : deleteTopics) {
++            logger.info("TieredMessageStore#deleteTopics: start deleting topic {}", topic);
++            try {
++                TopicMetadata topicMetadata = metadataStore.getTopic(topic);
++                if (topicMetadata != null) {
++                    destroyContainer(topicMetadata);
++                } else {
++                    logger.error("TieredMessageStore#deleteTopics: delete topic {} failed, can not obtain metadata", topic);
++                }
++            } catch (Exception e) {
++                logger.error("TieredMessageStore#deleteTopics: delete topic {} failed", topic, e);
++            }
++        }
++
++        return next.deleteTopics(deleteTopics);
++    }
++
++    public void destroyContainer(TopicMetadata topicMetadata) {
++        String topic = topicMetadata.getTopic();
++        metadataStore.iterateQueue(topic, queueMetadata -> {
++            MessageQueue mq = queueMetadata.getQueue();
++            TieredMessageQueueContainer container = containerManager.getMQContainer(mq);
++            if (container != null) {
++                containerManager.destroyContainer(mq);
++                try {
++                    metadataStore.deleteQueue(mq);
++                    metadataStore.deleteFileSegment(mq);
++                } catch (Exception e) {
++                    throw new IllegalStateException(e);
++                }
++                logger.info("TieredMessageStore#destroyContainer: destroy container success: topic: {}, queueId: {}", mq.getTopic(), mq.getQueueId());
++            }
++        });
++        metadataStore.deleteTopic(topicMetadata.getTopic());
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/AppendResult.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/AppendResult.java
+similarity index 93%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/AppendResult.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/AppendResult.java
+index 0dd5e9a8e..309a0f47b 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/AppendResult.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/AppendResult.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.common;
++package org.apache.rocketmq.tieredstore.common;
+ 
+ public enum AppendResult {
+     SUCCESS,
+@@ -22,6 +22,6 @@ public enum AppendResult {
+     BUFFER_FULL,
+     FILE_FULL,
+     IO_ERROR,
+-    FILE_CLOSE,
++    FILE_CLOSED,
+     UNKNOWN_ERROR
+ }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/BoundaryType.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/BoundaryType.java
+similarity index 96%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/BoundaryType.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/BoundaryType.java
+index 0e78f1211..7bb7a1014 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/BoundaryType.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/BoundaryType.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.common;
++package org.apache.rocketmq.tieredstore.common;
+ 
+ public enum BoundaryType {
+     /**
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/InflightRequestFuture.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/InflightRequestFuture.java
+new file mode 100644
+index 000000000..f98a572e9
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/InflightRequestFuture.java
+@@ -0,0 +1,80 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore.common;
++
++import java.util.List;
++import java.util.concurrent.CompletableFuture;
++import java.util.stream.Collectors;
++import javax.annotation.Nonnull;
++import org.apache.commons.lang3.tuple.Pair;
++
++public class InflightRequestFuture {
++    private final long startOffset;
++    private final List<Pair<Integer, CompletableFuture<Long>>> futureList;
++
++    public InflightRequestFuture(long startOffset,
++        @Nonnull List<Pair<Integer, CompletableFuture<Long>>> futureList) {
++        this.startOffset = startOffset;
++        this.futureList = futureList;
++    }
++
++    public long getStartOffset() {
++        return startOffset;
++    }
++
++    public CompletableFuture<Long> getFirstFuture() {
++        return futureList.isEmpty() ? CompletableFuture.completedFuture(-1L) : futureList.get(0).getRight();
++    }
++
++    public CompletableFuture<Long> getFuture(long queueOffset) {
++        if (queueOffset < startOffset) {
++            return CompletableFuture.completedFuture(-1L);
++        }
++        long nextRequestOffset = startOffset;
++        for (Pair<Integer, CompletableFuture<Long>> pair : futureList) {
++            nextRequestOffset += pair.getLeft();
++            if (queueOffset < nextRequestOffset) {
++                return pair.getRight();
++            }
++        }
++        return CompletableFuture.completedFuture(-1L);
++    }
++
++    public CompletableFuture<Long> getLastFuture() {
++        return futureList.isEmpty() ? CompletableFuture.completedFuture(-1L) : futureList.get(futureList.size() - 1).getRight();
++    }
++
++    public boolean isFirstDone() {
++        if (!futureList.isEmpty()) {
++            return futureList.get(0).getRight().isDone();
++        }
++        return true;
++    }
++
++    public boolean isAllDone() {
++        for (Pair<Integer, CompletableFuture<Long>> pair : futureList) {
++            if (!pair.getRight().isDone()) {
++                return false;
++            }
++        }
++        return true;
++    }
++
++    public List<CompletableFuture<Long>> getAllFuture() {
++        return futureList.stream().map(Pair::getValue).collect(Collectors.toList());
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/InflightRequestKey.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/InflightRequestKey.java
+new file mode 100644
+index 000000000..6f77e570b
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/InflightRequestKey.java
+@@ -0,0 +1,65 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore.common;
++
++import com.google.common.base.Objects;
++
++public class InflightRequestKey {
++    private final String group;
++    private long offset;
++    private int batchSize;
++    private final long requestTime = System.currentTimeMillis();
++
++    public InflightRequestKey(String group) {
++        this.group = group;
++    }
++
++    public InflightRequestKey(String group, long offset, int batchSize) {
++        this.group = group;
++        this.offset = offset;
++        this.batchSize = batchSize;
++    }
++
++    public String getGroup() {
++        return group;
++    }
++
++    public long getOffset() {
++        return offset;
++    }
++
++    public int getBatchSize() {
++        return batchSize;
++    }
++
++    public long getRequestTime() {
++        return requestTime;
++    }
++
++    @Override public boolean equals(Object o) {
++        if (this == o)
++            return true;
++        if (o == null || getClass() != o.getClass())
++            return false;
++        InflightRequestKey key = (InflightRequestKey) o;
++        return Objects.equal(group, key.group);
++    }
++
++    @Override public int hashCode() {
++        return Objects.hashCode(group);
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/MessageCacheKey.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/MessageCacheKey.java
+new file mode 100644
+index 000000000..87061c479
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/MessageCacheKey.java
+@@ -0,0 +1,55 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore.common;
++
++import java.util.Objects;
++import org.apache.rocketmq.tieredstore.container.TieredMessageQueueContainer;
++
++public class MessageCacheKey {
++    private TieredMessageQueueContainer container;
++    private long offset;
++
++    public MessageCacheKey(TieredMessageQueueContainer container, long offset) {
++        this.container = container;
++        this.offset = offset;
++    }
++
++    public TieredMessageQueueContainer getContainer() {
++        return container;
++    }
++
++    public long getOffset() {
++        return offset;
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) {
++            return true;
++        }
++        if (o == null || getClass() != o.getClass()) {
++            return false;
++        }
++        MessageCacheKey that = (MessageCacheKey) o;
++        return offset == that.offset && Objects.equals(container, that.container);
++    }
++
++    @Override
++    public int hashCode() {
++        return Objects.hash(container, offset);
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/SelectMappedBufferResultWrapper.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/SelectMappedBufferResultWrapper.java
+new file mode 100644
+index 000000000..4a159ad69
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/SelectMappedBufferResultWrapper.java
+@@ -0,0 +1,74 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore.common;
++
++import java.util.concurrent.atomic.LongAdder;
++import org.apache.rocketmq.store.SelectMappedBufferResult;
++
++public class SelectMappedBufferResultWrapper {
++    private final SelectMappedBufferResult result;
++    private LongAdder accessCount = new LongAdder();
++
++    private long curOffset;
++    private long minOffset;
++    private long maxOffset;
++    private long size;
++
++    public SelectMappedBufferResultWrapper(SelectMappedBufferResult result, long curOffset, long minOffset, long maxOffset, long size) {
++        this.result = result;
++        this.curOffset = curOffset;
++        this.minOffset = minOffset;
++        this.maxOffset = maxOffset;
++        this.size = size;
++    }
++
++    public SelectMappedBufferResult getResult() {
++        return result;
++    }
++
++    public SelectMappedBufferResult getDuplicateResult() {
++        return new SelectMappedBufferResult(result.getStartOffset(), result.getByteBuffer().asReadOnlyBuffer(), result.getSize(), result.getMappedFile());
++    }
++
++    public long getCurOffset() {
++        return curOffset;
++    }
++
++    public void setCurOffset(long curOffset) {
++        this.curOffset = curOffset;
++    }
++
++    public long getMinOffset() {
++        return minOffset;
++    }
++
++    public long getMaxOffset() {
++        return maxOffset;
++    }
++
++    public long getSize() {
++        return size;
++    }
++
++    public void addAccessCount() {
++        accessCount.increment();
++    }
++
++    public long getAccessCount() {
++        return accessCount.sum();
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/TieredMessageStoreConfig.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java
+similarity index 99%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/TieredMessageStoreConfig.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java
+index f7712c41d..f91650419 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/TieredMessageStoreConfig.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.common;
++package org.apache.rocketmq.tieredstore.common;
+ 
+ import java.io.File;
+ import java.net.InetAddress;
+@@ -73,7 +73,7 @@ public class TieredMessageStoreConfig {
+     private int tieredStoreIndexFileMaxIndexNum = 5000000 * 4;
+     // index file will force rolling to next file after idle specified time, default is 3h
+     private int tieredStoreIndexFileRollingIdleInterval = 3 * 60 * 60 * 1000;
+-    private String tieredMetadataServiceProvider = "org.apache.rocketmq.store.tiered.metadata.TieredMetadataManager";
++    private String tieredMetadataServiceProvider = "org.apache.rocketmq.tieredstore.metadata.TieredMetadataManager";
+     private String tieredBackendServiceProvider = "";
+     // file reserved time, default is 72 hour
+     private int tieredStoreFileReservedTime = 72;
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/TieredStoreExecutor.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredStoreExecutor.java
+similarity index 98%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/TieredStoreExecutor.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredStoreExecutor.java
+index 3c56b3dc1..890e8f3a2 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/common/TieredStoreExecutor.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredStoreExecutor.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.common;
++package org.apache.rocketmq.tieredstore.common;
+ 
+ import java.util.concurrent.BlockingQueue;
+ import java.util.concurrent.ExecutorService;
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredCommitLog.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredCommitLog.java
+similarity index 91%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredCommitLog.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredCommitLog.java
+index 91e26de91..6b27df411 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredCommitLog.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredCommitLog.java
+@@ -14,17 +14,18 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.container;
++package org.apache.rocketmq.tieredstore.container;
+ 
+ import java.nio.ByteBuffer;
+ import java.util.concurrent.CompletableFuture;
+ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.store.tiered.common.AppendResult;
+-import org.apache.rocketmq.store.tiered.common.TieredMessageStoreConfig;
+-import org.apache.rocketmq.store.tiered.util.MessageBufferUtil;
+-import org.apache.rocketmq.store.tiered.util.TieredStoreUtil;
++import org.apache.rocketmq.tieredstore.common.AppendResult;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
+ 
+ public class TieredCommitLog {
+     private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredConsumeQueue.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredConsumeQueue.java
+similarity index 92%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredConsumeQueue.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredConsumeQueue.java
+index f4fecdc1a..b12b3e355 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredConsumeQueue.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredConsumeQueue.java
+@@ -14,15 +14,16 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.container;
++package org.apache.rocketmq.tieredstore.container;
+ 
+ import java.nio.ByteBuffer;
+ import java.util.concurrent.CompletableFuture;
+ import org.apache.commons.lang3.tuple.Pair;
+ import org.apache.rocketmq.common.message.MessageQueue;
+-import org.apache.rocketmq.store.tiered.common.AppendResult;
+-import org.apache.rocketmq.store.tiered.common.BoundaryType;
+-import org.apache.rocketmq.store.tiered.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.common.AppendResult;
++import org.apache.rocketmq.tieredstore.common.BoundaryType;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
+ 
+ public class TieredConsumeQueue {
+     public static final int CONSUME_QUEUE_STORE_UNIT_SIZE = 8 /* commit log offset: long, 8 bytes */
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredContainerManager.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredContainerManager.java
+new file mode 100644
+index 000000000..20cd32d9f
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredContainerManager.java
+@@ -0,0 +1,239 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore.container;
++
++import com.google.common.collect.ImmutableList;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Random;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.ConcurrentMap;
++import java.util.concurrent.Future;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.atomic.AtomicInteger;
++import javax.annotation.Nullable;
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.logging.org.slf4j.Logger;
++import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.common.TieredStoreExecutor;
++import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
++
++public class TieredContainerManager {
++    private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
++    private volatile static TieredContainerManager instance;
++    private volatile static TieredIndexFile indexFile;
++    private final ConcurrentMap<MessageQueue, TieredMessageQueueContainer> messageQueueContainerMap;
++
++    private final TieredMetadataStore metadataStore;
++    private final TieredMessageStoreConfig storeConfig;
++
++    public static TieredContainerManager getInstance(TieredMessageStoreConfig storeConfig) {
++        if (instance == null) {
++            synchronized (TieredContainerManager.class) {
++                if (instance == null) {
++                    try {
++                        instance = new TieredContainerManager(storeConfig);
++                    } catch (Exception ignored) {
++                    }
++                }
++            }
++        }
++        return instance;
++    }
++
++    public static TieredIndexFile getIndexFile(TieredMessageStoreConfig storeConfig) {
++        if (indexFile == null) {
++            synchronized (TieredContainerManager.class) {
++                if (indexFile == null) {
++                    try {
++                        indexFile = new TieredIndexFile(storeConfig);
++                    } catch (Exception e) {
++                        logger.error("TieredContainerManager#getIndexFile: create index file failed", e);
++                    }
++                }
++            }
++        }
++        return indexFile;
++    }
++
++    public TieredContainerManager(TieredMessageStoreConfig storeConfig) {
++        this.storeConfig = storeConfig;
++        this.metadataStore = TieredStoreUtil.getMetadataStore(storeConfig);
++        this.messageQueueContainerMap = new ConcurrentHashMap<>();
++
++        TieredStoreExecutor.COMMON_SCHEDULED_EXECUTOR.scheduleWithFixedDelay(() -> {
++            try {
++                Random random = new Random();
++                for (TieredMessageQueueContainer container : getAllMQContainer()) {
++                    int delay = random.nextInt(storeConfig.getMaxCommitJitter());
++                    TieredStoreExecutor.COMMIT_EXECUTOR.schedule(() -> {
++                        try {
++                            container.commitCommitLog();
++                        } catch (Throwable e) {
++                            MessageQueue mq = container.getMessageQueue();
++                            logger.error("commit commitLog periodically failed: topic: {}, queue: {}", mq.getTopic(), mq.getQueueId(), e);
++                        }
++                    }, delay, TimeUnit.MILLISECONDS);
++                    TieredStoreExecutor.COMMIT_EXECUTOR.schedule(() -> {
++                        try {
++                            container.commitConsumeQueue();
++                        } catch (Throwable e) {
++                            MessageQueue mq = container.getMessageQueue();
++                            logger.error("commit consumeQueue periodically failed: topic: {}, queue: {}", mq.getTopic(), mq.getQueueId(), e);
++                        }
++                    }, delay, TimeUnit.MILLISECONDS);
++                }
++                TieredStoreExecutor.COMMIT_EXECUTOR.schedule(() -> {
++                    try {
++                        if (indexFile != null) {
++                            indexFile.commit(true);
++                        }
++                    } catch (Throwable e) {
++                        logger.error("commit indexFile periodically failed", e);
++                    }
++                }, 0, TimeUnit.MILLISECONDS);
++            } catch (Throwable e) {
++                logger.error("commit container periodically failed: ", e);
++            }
++        }, 60, 60, TimeUnit.SECONDS);
++
++        TieredStoreExecutor.COMMON_SCHEDULED_EXECUTOR.scheduleWithFixedDelay(() -> {
++            try {
++                long expiredTimeStamp = System.currentTimeMillis() - (long) storeConfig.getTieredStoreFileReservedTime() * 60 * 60 * 1000;
++                Random random = new Random();
++                for (TieredMessageQueueContainer container : getAllMQContainer()) {
++                    int delay = random.nextInt(storeConfig.getMaxCommitJitter());
++                    TieredStoreExecutor.CLEAN_EXPIRED_FILE_EXECUTOR.schedule(() -> {
++                        container.getQueueLock().lock();
++                        try {
++                            container.cleanExpiredFile(expiredTimeStamp);
++                            container.destroyExpiredFile();
++                            if (container.getConsumeQueueBaseOffset() == -1) {
++                                destroyContainer(container.getMessageQueue());
++                            }
++                        } finally {
++                            container.getQueueLock().unlock();
++                        }
++                    }, delay, TimeUnit.MILLISECONDS);
++                }
++                if (indexFile != null) {
++                    indexFile.cleanExpiredFile(expiredTimeStamp);
++                    indexFile.destroyExpiredFile();
++                }
++            } catch (Throwable e) {
++                logger.error("clean container expired file failed: ", e);
++            }
++        }, 30, 30, TimeUnit.SECONDS);
++    }
++
++    public boolean load() {
++        try {
++            AtomicInteger maxTopicId = new AtomicInteger();
++            List<Future<?>> futureList = new ArrayList<>();
++            messageQueueContainerMap.clear();
++            metadataStore.iterateTopic(topicMetadata -> {
++                maxTopicId.set(Math.max(maxTopicId.get(), topicMetadata.getTopicId()));
++                Future<?> future = TieredStoreExecutor.DISPATCH_EXECUTOR.submit(() -> {
++                    if (topicMetadata.getStatus() != 0) {
++                        return;
++                    }
++
++                    try {
++                        metadataStore.iterateQueue(topicMetadata.getTopic(),
++                            queueMetadata -> getOrCreateMQContainer(new MessageQueue(topicMetadata.getTopic(), storeConfig.getBrokerName(), queueMetadata.getQueue().getQueueId())));
++                    } catch (Exception e) {
++                        logger.error("load mq container from metadata failed", e);
++                    }
++                });
++                futureList.add(future);
++            });
++
++            // wait for load metadata
++            for (Future<?> future : futureList) {
++                future.get();
++            }
++            metadataStore.setMaxTopicId(maxTopicId.get() + 1);
++        } catch (Exception e) {
++            logger.error("load mq container from metadata failed", e);
++            return false;
++        }
++        return true;
++    }
++
++    public void cleanup() {
++        messageQueueContainerMap.clear();
++        cleanStaticReference();
++    }
++
++    private static void cleanStaticReference() {
++        instance = null;
++        indexFile = null;
++    }
++
++    @Nullable
++    public TieredMessageQueueContainer getOrCreateMQContainer(MessageQueue messageQueue) {
++        return messageQueueContainerMap.computeIfAbsent(messageQueue, mq -> {
++            try {
++                logger.info("TieredContainerManager#getOrCreateMQContainer: try to create new container: topic: {}, queueId: {}",
++                    messageQueue.getTopic(), messageQueue.getQueueId());
++                return new TieredMessageQueueContainer(mq, storeConfig);
++            } catch (Exception e) {
++                logger.error("TieredContainerManager#getOrCreateMQContainer: create new container failed: topic: {}, queueId: {}",
++                    messageQueue.getTopic(), messageQueue.getQueueId(), e);
++                return null;
++            }
++        });
++    }
++
++    @Nullable
++    public TieredMessageQueueContainer getMQContainer(MessageQueue messageQueue) {
++        return messageQueueContainerMap.get(messageQueue);
++    }
++
++    public ImmutableList<TieredMessageQueueContainer> getAllMQContainer() {
++        return ImmutableList.copyOf(messageQueueContainerMap.values());
++    }
++
++    public void shutdown() {
++        if (indexFile != null) {
++            indexFile.commit(true);
++        }
++        for (TieredMessageQueueContainer container : getAllMQContainer()) {
++            container.shutdown();
++        }
++    }
++
++    public void destroy() {
++        if (indexFile != null) {
++            indexFile.destroy();
++        }
++        ImmutableList<TieredMessageQueueContainer> containerList = getAllMQContainer();
++        cleanup();
++        for (TieredMessageQueueContainer container : containerList) {
++            container.destroy();
++        }
++    }
++
++    public void destroyContainer(MessageQueue mq) {
++        TieredMessageQueueContainer container = messageQueueContainerMap.remove(mq);
++        if (container != null) {
++            container.destroy();
++        }
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredFileQueue.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredFileQueue.java
+similarity index 97%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredFileQueue.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredFileQueue.java
+index aa7e8e044..8ad1b1491 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredFileQueue.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredFileQueue.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.container;
++package org.apache.rocketmq.tieredstore.container;
+ 
+ import java.lang.reflect.Constructor;
+ import java.nio.ByteBuffer;
+@@ -32,14 +32,15 @@ import javax.annotation.Nullable;
+ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.store.tiered.common.AppendResult;
+-import org.apache.rocketmq.store.tiered.common.BoundaryType;
+-import org.apache.rocketmq.store.tiered.common.TieredMessageStoreConfig;
+-import org.apache.rocketmq.store.tiered.exception.TieredStoreErrorCode;
+-import org.apache.rocketmq.store.tiered.exception.TieredStoreException;
+-import org.apache.rocketmq.store.tiered.metadata.FileSegmentMetadata;
+-import org.apache.rocketmq.store.tiered.metadata.TieredMetadataStore;
+-import org.apache.rocketmq.store.tiered.util.TieredStoreUtil;
++import org.apache.rocketmq.tieredstore.common.AppendResult;
++import org.apache.rocketmq.tieredstore.common.BoundaryType;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.exception.TieredStoreErrorCode;
++import org.apache.rocketmq.tieredstore.exception.TieredStoreException;
++import org.apache.rocketmq.tieredstore.metadata.FileSegmentMetadata;
++import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
+ 
+ public class TieredFileQueue {
+     private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredIndexFile.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredIndexFile.java
+similarity index 98%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredIndexFile.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredIndexFile.java
+index 0f423a4a3..fd696ed5c 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredIndexFile.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredIndexFile.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.container;
++package org.apache.rocketmq.tieredstore.container;
+ 
+ import java.io.File;
+ import java.io.IOException;
+@@ -33,10 +33,11 @@ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+ import org.apache.rocketmq.store.index.IndexHeader;
+ import org.apache.rocketmq.store.logfile.DefaultMappedFile;
+ import org.apache.rocketmq.store.logfile.MappedFile;
+-import org.apache.rocketmq.store.tiered.common.AppendResult;
+-import org.apache.rocketmq.store.tiered.common.TieredMessageStoreConfig;
+-import org.apache.rocketmq.store.tiered.common.TieredStoreExecutor;
+-import org.apache.rocketmq.store.tiered.util.TieredStoreUtil;
++import org.apache.rocketmq.tieredstore.common.AppendResult;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.common.TieredStoreExecutor;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
+ 
+ public class TieredIndexFile {
+     private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredMessageQueueContainer.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredMessageQueueContainer.java
+new file mode 100644
+index 000000000..c815b9c67
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredMessageQueueContainer.java
+@@ -0,0 +1,543 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore.container;
++
++import com.github.benmanes.caffeine.cache.Cache;
++import com.github.benmanes.caffeine.cache.Caffeine;
++import com.github.benmanes.caffeine.cache.RemovalCause;
++import java.nio.ByteBuffer;
++import java.util.ArrayList;
++import java.util.Comparator;
++import java.util.List;
++import java.util.Map;
++import java.util.Optional;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.ConcurrentMap;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.locks.ReentrantLock;
++import org.apache.commons.lang3.StringUtils;
++import org.apache.commons.lang3.tuple.Pair;
++import org.apache.rocketmq.common.message.MessageConst;
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.logging.org.slf4j.Logger;
++import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.store.DispatchRequest;
++import org.apache.rocketmq.tieredstore.common.AppendResult;
++import org.apache.rocketmq.tieredstore.common.BoundaryType;
++import org.apache.rocketmq.tieredstore.common.InflightRequestFuture;
++import org.apache.rocketmq.tieredstore.common.InflightRequestKey;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.metadata.QueueMetadata;
++import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
++import org.apache.rocketmq.tieredstore.metadata.TopicMetadata;
++import org.apache.rocketmq.tieredstore.util.CQItemBufferUtil;
++import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
++
++public class TieredMessageQueueContainer {
++    private static final Logger LOGGER = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
++
++    private volatile boolean closed = false;
++
++    private final MessageQueue messageQueue;
++    private final int topicId;
++    private final TieredMessageStoreConfig storeConfig;
++    private final TieredMetadataStore metadataStore;
++    private final TieredCommitLog commitLog;
++    private final TieredConsumeQueue consumeQueue;
++    private final TieredIndexFile indexFile;
++
++    private QueueMetadata queueMetadata;
++
++    private long dispatchOffset;
++
++    private final ReentrantLock queueLock = new ReentrantLock();
++
++    private int readAheadFactor;
++    private final Cache<String, Long> groupOffsetCache;
++    private final ConcurrentMap<InflightRequestKey, InflightRequestFuture> inFlightRequestMap;
++
++    public TieredMessageQueueContainer(MessageQueue messageQueue, TieredMessageStoreConfig storeConfig)
++        throws ClassNotFoundException, NoSuchMethodException {
++        this.messageQueue = messageQueue;
++        this.storeConfig = storeConfig;
++        this.metadataStore = TieredStoreUtil.getMetadataStore(storeConfig);
++
++        TopicMetadata topicMetadata = metadataStore.getTopic(messageQueue.getTopic());
++        if (topicMetadata == null) {
++            // TODO specify reserveTime for each topic
++            topicMetadata = metadataStore.addTopic(messageQueue.getTopic(), -1L);
++        }
++        this.topicId = topicMetadata.getTopicId();
++
++        queueMetadata = metadataStore.getQueue(messageQueue);
++        if (queueMetadata == null) {
++            queueMetadata = metadataStore.addQueue(messageQueue, -1);
++        }
++        if (queueMetadata.getMaxOffset() < queueMetadata.getMinOffset()) {
++            queueMetadata.setMaxOffset(queueMetadata.getMinOffset());
++        }
++        this.dispatchOffset = queueMetadata.getMaxOffset();
++
++        this.commitLog = new TieredCommitLog(messageQueue, storeConfig);
++        this.consumeQueue = new TieredConsumeQueue(messageQueue, storeConfig);
++        if (!consumeQueue.isInitialized() && this.dispatchOffset != -1) {
++            consumeQueue.setBaseOffset(this.dispatchOffset * TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE);
++        }
++        this.indexFile = TieredContainerManager.getIndexFile(storeConfig);
++        this.readAheadFactor = storeConfig.getReadAheadMinFactor();
++        this.inFlightRequestMap = new ConcurrentHashMap<>();
++        this.groupOffsetCache = Caffeine.newBuilder()
++            .expireAfterWrite(2, TimeUnit.MINUTES)
++            .removalListener((key, value, cause) -> {
++                if (cause.equals(RemovalCause.EXPIRED)) {
++                    inFlightRequestMap.remove(new InflightRequestKey((String) key));
++                }
++            }).build();
++    }
++
++    public boolean isClosed() {
++        return closed;
++    }
++
++    public ReentrantLock getQueueLock() {
++        return queueLock;
++    }
++
++    public MessageQueue getMessageQueue() {
++        return messageQueue;
++    }
++
++    public long getCommitLogMinOffset() {
++        return commitLog.getMinOffset();
++    }
++
++    public long getCommitLogMaxOffset() {
++        return commitLog.getMaxOffset();
++    }
++
++    public long getCommitLogBeginTimestamp() {
++        return commitLog.getBeginTimestamp();
++    }
++
++    public long getConsumeQueueBaseOffset() {
++        return consumeQueue.getBaseOffset();
++    }
++
++    public long getConsumeQueueMinOffset() {
++        return consumeQueue.getMinOffset() / TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE;
++    }
++
++    public long getConsumeQueueCommitOffset() {
++        return consumeQueue.getCommitOffset() / TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE;
++    }
++
++    public long getConsumeQueueMaxOffset() {
++        return consumeQueue.getMaxOffset() / TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE;
++    }
++
++    public long getConsumeQueueEndTimestamp() {
++        return consumeQueue.getEndTimestamp();
++    }
++
++    // CQ offset
++    public long getDispatchOffset() {
++        return dispatchOffset;
++    }
++
++    public CompletableFuture<ByteBuffer> getMessageAsync(long queueOffset) {
++        return readConsumeQueue(queueOffset).thenComposeAsync(cqBuffer -> {
++            long commitLogOffset = CQItemBufferUtil.getCommitLogOffset(cqBuffer);
++            int length = CQItemBufferUtil.getSize(cqBuffer);
++            return readCommitLog(commitLogOffset, length);
++        });
++    }
++
++    public long binarySearchInQueueByTime(long timestamp, BoundaryType boundaryType) {
++        Pair<Long, Long> pair = consumeQueue.getQueueOffsetInFileByTime(timestamp, boundaryType);
++        long minQueueOffset = pair.getLeft();
++        long maxQueueOffset = pair.getRight();
++
++        if (maxQueueOffset == -1 || maxQueueOffset < minQueueOffset) {
++            return -1L;
++        }
++
++        long low = minQueueOffset;
++        long high = maxQueueOffset;
++
++        long offset = 0;
++
++        // Handle the following corner cases first:
++        // 1. store time of (high) < timestamp
++        // 2. store time of (low) > timestamp
++        long storeTime;
++        // Handle case 1
++        ByteBuffer message = getMessageAsync(maxQueueOffset).join();
++        storeTime = MessageBufferUtil.getStoreTimeStamp(message);
++        if (storeTime < timestamp) {
++            switch (boundaryType) {
++                case LOWER:
++                    return maxQueueOffset + 1;
++                case UPPER:
++                    return maxQueueOffset;
++                default:
++                    LOGGER.warn("TieredMessageQueueContainer#getQueueOffsetByTime: unknown boundary boundaryType");
++                    break;
++            }
++        }
++
++        // Handle case 2
++        message = getMessageAsync(minQueueOffset).join();
++        storeTime = MessageBufferUtil.getStoreTimeStamp(message);
++        if (storeTime > timestamp) {
++            switch (boundaryType) {
++                case LOWER:
++                    return minQueueOffset;
++                case UPPER:
++                    return 0L;
++                default:
++                    LOGGER.warn("TieredMessageQueueContainer#getQueueOffsetByTime: unknown boundary boundaryType");
++                    break;
++            }
++        }
++
++        // Perform binary search
++        long midOffset = -1;
++        long targetOffset = -1;
++        long leftOffset = -1;
++        long rightOffset = -1;
++        while (high >= low) {
++            midOffset = (low + high) / 2;
++            message = getMessageAsync(midOffset).join();
++            storeTime = MessageBufferUtil.getStoreTimeStamp(message);
++            if (storeTime == timestamp) {
++                targetOffset = midOffset;
++                break;
++            } else if (storeTime > timestamp) {
++                high = midOffset - 1;
++                rightOffset = midOffset;
++            } else {
++                low = midOffset + 1;
++                leftOffset = midOffset;
++            }
++        }
++
++        if (targetOffset != -1) {
++            // We just found ONE matched record. These next to it might also share the same store-timestamp.
++            offset = targetOffset;
++            long previousAttempt = targetOffset;
++            switch (boundaryType) {
++                case LOWER:
++                    while (true) {
++                        long attempt = previousAttempt - 1;
++                        if (attempt < minQueueOffset) {
++                            break;
++                        }
++                        message = getMessageAsync(attempt).join();
++                        storeTime = MessageBufferUtil.getStoreTimeStamp(message);
++                        if (storeTime == timestamp) {
++                            previousAttempt = attempt;
++                            continue;
++                        }
++                        break;
++                    }
++                    offset = previousAttempt;
++                    break;
++                case UPPER:
++                    while (true) {
++                        long attempt = previousAttempt + 1;
++                        if (attempt > maxQueueOffset) {
++                            break;
++                        }
++
++                        message = getMessageAsync(attempt).join();
++                        storeTime = MessageBufferUtil.getStoreTimeStamp(message);
++                        if (storeTime == timestamp) {
++                            previousAttempt = attempt;
++                            continue;
++                        }
++                        break;
++                    }
++                    offset = previousAttempt;
++                    break;
++                default:
++                    LOGGER.warn("TieredMessageQueueContainer#getQueueOffsetByTime: unknown boundary boundaryType");
++                    break;
++            }
++        } else {
++            // Given timestamp does not have any message records. But we have a range enclosing the
++            // timestamp.
++            /*
++             * Consider the follow case: t2 has no consume queue entry and we are searching offset of
++             * t2 for lower and upper boundaries.
++             *  --------------------------
++             *   timestamp   Consume Queue
++             *       t1          1
++             *       t1          2
++             *       t1          3
++             *       t3          4
++             *       t3          5
++             *   --------------------------
++             * Now, we return 3 as upper boundary of t2 and 4 as its lower boundary. It looks
++             * contradictory at first sight, but it does make sense when performing range queries.
++             */
++            switch (boundaryType) {
++                case LOWER: {
++                    offset = rightOffset;
++                    break;
++                }
++
++                case UPPER: {
++                    offset = leftOffset;
++                    break;
++                }
++                default: {
++                    LOGGER.warn("TieredMessageQueueContainer#getQueueOffsetByTime: unknown boundary boundaryType");
++                    break;
++                }
++            }
++        }
++        return offset;
++    }
++
++    public void initOffset(long offset) {
++        if (!consumeQueue.isInitialized()) {
++            queueMetadata.setMinOffset(offset);
++            queueMetadata.setMaxOffset(offset);
++        }
++        if (!consumeQueue.isInitialized()) {
++            consumeQueue.setBaseOffset(offset * TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE);
++        }
++        dispatchOffset = offset;
++    }
++
++    // CQ offset
++    public long getBuildCQMaxOffset() {
++        return commitLog.getCommitMsgQueueOffset();
++    }
++
++    public AppendResult appendCommitLog(ByteBuffer message) {
++        return appendCommitLog(message, false);
++    }
++
++    public AppendResult appendCommitLog(ByteBuffer message, boolean commit) {
++        if (closed) {
++            return AppendResult.FILE_CLOSED;
++        }
++        long queueOffset = MessageBufferUtil.getQueueOffset(message);
++        if (queueOffset != dispatchOffset) {
++            return AppendResult.OFFSET_INCORRECT;
++        }
++
++        AppendResult result = commitLog.append(message, commit);
++        if (result == AppendResult.SUCCESS) {
++            dispatchOffset++;
++        }
++
++        return result;
++    }
++
++    public AppendResult appendConsumeQueue(DispatchRequest request) {
++        return appendConsumeQueue(request, false);
++    }
++
++    public AppendResult appendConsumeQueue(DispatchRequest request, boolean commit) {
++        if (closed) {
++            return AppendResult.FILE_CLOSED;
++        }
++        if (request.getConsumeQueueOffset() != getConsumeQueueMaxOffset()) {
++            return AppendResult.OFFSET_INCORRECT;
++        }
++
++        return consumeQueue.append(request.getCommitLogOffset(), request.getMsgSize(), request.getTagsCode(), request.getStoreTimestamp(), commit);
++    }
++
++    public AppendResult appendIndexFile(DispatchRequest request) {
++        if (closed) {
++            return AppendResult.FILE_CLOSED;
++        }
++
++        // building indexes with offsetId is no longer supported because offsetId has changed in tiered storage
++//        AppendResult result = indexFile.append(messageQueue, request.getOffsetId(), request.getCommitLogOffset(), request.getMsgSize(), request.getStoreTimestamp());
++//        if (result != AppendResult.SUCCESS) {
++//            return result;
++//        }
++
++        if (StringUtils.isNotBlank(request.getUniqKey())) {
++            AppendResult result = indexFile.append(messageQueue, topicId, request.getUniqKey(), request.getCommitLogOffset(), request.getMsgSize(), request.getStoreTimestamp());
++            if (result != AppendResult.SUCCESS) {
++                return result;
++            }
++        }
++
++        for (String key : request.getKeys().split(MessageConst.KEY_SEPARATOR)) {
++            if (StringUtils.isNotBlank(key)) {
++                AppendResult result = indexFile.append(messageQueue, topicId, key, request.getCommitLogOffset(), request.getMsgSize(), request.getStoreTimestamp());
++                if (result != AppendResult.SUCCESS) {
++                    return result;
++                }
++            }
++        }
++
++        return AppendResult.SUCCESS;
++    }
++
++    public CompletableFuture<ByteBuffer> readCommitLog(long offset, int length) {
++        return commitLog.readAsync(offset, length);
++    }
++
++    public CompletableFuture<ByteBuffer> readConsumeQueue(long queueOffset) {
++        return readConsumeQueue(queueOffset, 1);
++    }
++
++    public CompletableFuture<ByteBuffer> readConsumeQueue(long queueOffset, int count) {
++        return consumeQueue.readAsync(queueOffset * TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE, count * TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE);
++    }
++
++    public void flushMetadata() {
++        try {
++            if (consumeQueue.getCommitOffset() < queueMetadata.getMinOffset()) {
++                return;
++            }
++            queueMetadata.setMaxOffset(consumeQueue.getCommitOffset() / TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE);
++            metadataStore.updateQueue(queueMetadata);
++        } catch (Exception e) {
++            LOGGER.error("TieredMessageQueueContainer#flushMetadata: update queue metadata failed: topic: {}, queue: {}", messageQueue.getTopic(), messageQueue.getQueueId(), e);
++        }
++    }
++
++    public void commitCommitLog() {
++        commitLog.commit(true);
++    }
++
++    public void commitConsumeQueue() {
++        consumeQueue.commit(true);
++    }
++
++    public void cleanExpiredFile(long expireTimestamp) {
++        commitLog.cleanExpiredFile(expireTimestamp);
++        consumeQueue.cleanExpiredFile(expireTimestamp);
++    }
++
++    public void destroyExpiredFile() {
++        commitLog.destroyExpiredFile();
++        consumeQueue.destroyExpiredFile();
++    }
++
++    public void commit(boolean sync) {
++        commitLog.commit(sync);
++        consumeQueue.commit(sync);
++    }
++
++    public void increaseReadAheadFactor() {
++        readAheadFactor = Math.min(readAheadFactor + 1, storeConfig.getReadAheadMaxFactor());
++    }
++
++    public void decreaseReadAheadFactor() {
++        readAheadFactor = Math.max(readAheadFactor - 1, storeConfig.getReadAheadMinFactor());
++    }
++
++    public void setNotReadAhead() {
++        readAheadFactor = 1;
++    }
++
++    public int getReadAheadFactor() {
++        return readAheadFactor;
++    }
++
++    public void recordGroupAccess(String group, long offset) {
++        groupOffsetCache.put(group, offset);
++    }
++
++    public long getActiveGroupCount(long minOffset, long maxOffset) {
++        return groupOffsetCache.asMap()
++            .values()
++            .stream()
++            .filter(offset -> offset >= minOffset && offset <= maxOffset)
++            .count();
++    }
++
++    public long getActiveGroupCount() {
++        return groupOffsetCache.estimatedSize();
++    }
++
++    public InflightRequestFuture getInflightRequest(long offset, int batchSize) {
++        Optional<InflightRequestFuture> optional = inFlightRequestMap.entrySet()
++            .stream()
++            .filter(entry -> {
++                InflightRequestKey key = entry.getKey();
++                return Math.max(key.getOffset(), offset) <= Math.min(key.getOffset() + key.getBatchSize(), offset + batchSize);
++            })
++            .max(Comparator.comparing(entry -> entry.getKey().getRequestTime()))
++            .map(Map.Entry::getValue);
++        return optional.orElseGet(() -> new InflightRequestFuture(Long.MAX_VALUE, new ArrayList<>()));
++    }
++
++    public InflightRequestFuture getInflightRequest(String group, long offset, int batchSize) {
++        InflightRequestFuture future = inFlightRequestMap.get(new InflightRequestKey(group));
++        if (future != null && !future.isAllDone()) {
++            return future;
++        }
++        return getInflightRequest(offset, batchSize);
++    }
++
++    public void putInflightRequest(String group, long offset, int requestMsgCount,
++        List<Pair<Integer, CompletableFuture<Long>>> futureList) {
++        InflightRequestKey key = new InflightRequestKey(group, offset, requestMsgCount);
++        inFlightRequestMap.remove(key);
++        inFlightRequestMap.putIfAbsent(key, new InflightRequestFuture(offset, futureList));
++    }
++
++    @Override
++    public int hashCode() {
++        return messageQueue.hashCode();
++    }
++
++    @Override
++    public boolean equals(Object obj) {
++        if (this == obj) {
++            return true;
++        }
++        if (obj == null) {
++            return false;
++        }
++        if (getClass() != obj.getClass()) {
++            return false;
++        }
++        return messageQueue.equals(((TieredMessageQueueContainer) obj).messageQueue);
++    }
++
++    public void shutdown() {
++        closed = true;
++        commitLog.commit(true);
++        consumeQueue.commit(true);
++        flushMetadata();
++    }
++
++    public void destroy() {
++        closed = true;
++        commitLog.destroy();
++        consumeQueue.destroy();
++        try {
++            metadataStore.deleteFileSegment(messageQueue);
++            metadataStore.deleteQueue(messageQueue);
++        } catch (Exception e) {
++            LOGGER.error("TieredMessageQueueContainer#destroy: clean metadata failed: ", e);
++        }
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/exception/TieredStoreErrorCode.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreErrorCode.java
+similarity index 94%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/exception/TieredStoreErrorCode.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreErrorCode.java
+index 691d869fa..c1e5d91c2 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/exception/TieredStoreErrorCode.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreErrorCode.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.exception;
++package org.apache.rocketmq.tieredstore.exception;
+ 
+ public enum TieredStoreErrorCode {
+     ILLEGAL_OFFSET,
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/exception/TieredStoreException.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreException.java
+similarity index 97%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/exception/TieredStoreException.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreException.java
+index f29840228..04f253566 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/exception/TieredStoreException.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/exception/TieredStoreException.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.exception;
++package org.apache.rocketmq.tieredstore.exception;
+ 
+ public class TieredStoreException extends RuntimeException {
+     private TieredStoreErrorCode errorCode;
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/FileSegmentMetadata.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/FileSegmentMetadata.java
+similarity index 98%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/FileSegmentMetadata.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/FileSegmentMetadata.java
+index d31de41bb..ed4c07b2b 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/FileSegmentMetadata.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/FileSegmentMetadata.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.metadata;
++package org.apache.rocketmq.tieredstore.metadata;
+ 
+ import org.apache.rocketmq.common.message.MessageQueue;
+ 
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/QueueMetadata.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/QueueMetadata.java
+similarity index 97%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/QueueMetadata.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/QueueMetadata.java
+index e156f6fc1..eca1d7f38 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/QueueMetadata.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/QueueMetadata.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.metadata;
++package org.apache.rocketmq.tieredstore.metadata;
+ 
+ import org.apache.rocketmq.common.message.MessageQueue;
+ 
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TieredMetadataManager.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataManager.java
+similarity index 96%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TieredMetadataManager.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataManager.java
+index da9bb5ce2..1e7aea5e3 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TieredMetadataManager.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataManager.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.metadata;
++package org.apache.rocketmq.tieredstore.metadata;
+ 
+ import java.io.File;
+ import java.util.HashMap;
+@@ -25,8 +25,8 @@ import java.util.function.Consumer;
+ import javax.annotation.Nullable;
+ import org.apache.rocketmq.common.ConfigManager;
+ import org.apache.rocketmq.common.message.MessageQueue;
+-import org.apache.rocketmq.store.tiered.common.TieredMessageStoreConfig;
+-import org.apache.rocketmq.store.tiered.container.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
+ 
+ public class TieredMetadataManager extends ConfigManager implements TieredMetadataStore {
+     private final AtomicInteger maxTopicId = new AtomicInteger(0);
+@@ -39,6 +39,7 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+ 
+     public TieredMetadataManager(TieredMessageStoreConfig storeConfig) {
+         this.storeConfig = storeConfig;
++        load();
+     }
+ 
+     @Override
+@@ -98,6 +99,7 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+         }
+         TopicMetadata metadata = new TopicMetadata(maxTopicId.getAndIncrement(), topic, reserveTime);
+         topicMetadataTable.put(topic, metadata);
++        persist();
+         return metadata;
+     }
+ 
+@@ -109,6 +111,7 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+         }
+         metadata.setReserveTime(reserveTime);
+         metadata.setUpdateTimestamp(System.currentTimeMillis());
++        persist();
+     }
+ 
+     @Override
+@@ -119,11 +122,13 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+         }
+         metadata.setStatus(status);
+         metadata.setUpdateTimestamp(System.currentTimeMillis());
++        persist();
+     }
+ 
+     @Override
+     public void deleteTopic(String topic) {
+         topicMetadataTable.remove(topic);
++        persist();
+     }
+ 
+     @Nullable
+@@ -152,6 +157,7 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+         QueueMetadata metadata = new QueueMetadata(queue, baseOffset, baseOffset);
+         queueMetadataTable.computeIfAbsent(queue.getTopic(), topic -> new ConcurrentHashMap<>())
+             .put(queue.getQueueId(), metadata);
++        persist();
+         return metadata;
+     }
+ 
+@@ -163,6 +169,7 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+             if (metadataMap.containsKey(queue.getQueueId())) {
+                 metadata.setUpdateTimestamp(System.currentTimeMillis());
+                 metadataMap.put(queue.getQueueId(), metadata);
++                persist();
+             }
+         }
+     }
+@@ -173,6 +180,7 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+             queueMetadataTable.get(queue.getTopic())
+                 .remove(queue.getQueueId());
+         }
++        persist();
+     }
+ 
+     @Nullable
+@@ -262,6 +270,7 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+                         .put(fileSegment.getBaseOffset(), metadata);
+                     break;
+             }
++            persist();
+             return metadata;
+         }
+ 
+@@ -275,6 +284,7 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+         old.setSize(fileSegment.getCommitPosition());
+         old.setBeginTimestamp(fileSegment.getBeginTimestamp());
+         old.setEndTimestamp(fileSegment.getEndTimestamp());
++        persist();
+         return old;
+     }
+ 
+@@ -283,6 +293,7 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+         commitLogFileSegmentTable.remove(mq);
+         consumeQueueFileSegmentTable.remove(mq);
+         indexFileSegmentTable.remove(mq);
++        persist();
+     }
+ 
+     @Override
+@@ -307,6 +318,7 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+                 }
+                 break;
+         }
++        persist();
+     }
+ 
+     @Override
+@@ -317,5 +329,6 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+         commitLogFileSegmentTable.clear();
+         consumeQueueFileSegmentTable.clear();
+         indexFileSegmentTable.clear();
++        persist();
+     }
+ }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TieredMetadataSerializeWrapper.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataSerializeWrapper.java
+similarity index 97%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TieredMetadataSerializeWrapper.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataSerializeWrapper.java
+index 82f969e24..24352743f 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TieredMetadataSerializeWrapper.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataSerializeWrapper.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.metadata;
++package org.apache.rocketmq.tieredstore.metadata;
+ 
+ import java.util.Map;
+ import java.util.concurrent.atomic.AtomicInteger;
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TieredMetadataStore.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataStore.java
+similarity index 87%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TieredMetadataStore.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataStore.java
+index be746c7ea..0d6858724 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TieredMetadataStore.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataStore.java
+@@ -14,18 +14,18 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.metadata;
++package org.apache.rocketmq.tieredstore.metadata;
+ 
+ import java.util.function.Consumer;
+ import javax.annotation.Nullable;
+ import org.apache.rocketmq.common.message.MessageQueue;
+-import org.apache.rocketmq.store.tiered.container.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
+ 
+ public interface TieredMetadataStore {
+     /**
+      * Topic metadata operation
+      *
+-     * @see org.apache.rocketmq.store.tiered.metadata.TopicMetadata
++     * @see TopicMetadata
+      */
+     void setMaxTopicId(int maxTopicId);
+ 
+@@ -45,7 +45,7 @@ public interface TieredMetadataStore {
+     /**
+      * Queue metadata operation
+      *
+-     * @see org.apache.rocketmq.store.tiered.metadata.QueueMetadata
++     * @see QueueMetadata
+      */
+     @Nullable
+     QueueMetadata getQueue(MessageQueue queue);
+@@ -61,7 +61,7 @@ public interface TieredMetadataStore {
+     /**
+      * File segment metadata operation
+      *
+-     * @see org.apache.rocketmq.store.tiered.metadata.FileSegmentMetadata
++     * @see FileSegmentMetadata
+      */
+     @Nullable
+     FileSegmentMetadata getFileSegment(TieredFileSegment fileSegment);
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TopicMetadata.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TopicMetadata.java
+similarity index 97%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TopicMetadata.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TopicMetadata.java
+index 37eca400e..a9647e349 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/metadata/TopicMetadata.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TopicMetadata.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.metadata;
++package org.apache.rocketmq.tieredstore.metadata;
+ 
+ public class TopicMetadata {
+     private int topicId;
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsConstant.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsConstant.java
+new file mode 100644
+index 000000000..d9a10d15c
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsConstant.java
+@@ -0,0 +1,52 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore.metrics;
++
++public class TieredStoreMetricsConstant {
++    public static final String HISTOGRAM_API_LATENCY = "rocketmq_tiered_store_api_latency";
++    public static final String HISTOGRAM_PROVIDER_RPC_LATENCY = "rocketmq_tiered_store_provider_rpc_latency";
++    public static final String HISTOGRAM_UPLOAD_BYTES = "rocketmq_tiered_store_provider_upload_bytes";
++    public static final String HISTOGRAM_DOWNLOAD_BYTES = "rocketmq_tiered_store_provider_download_bytes";
++
++    public static final String GAUGE_DISPATCH_BEHIND = "rocketmq_tiered_store_dispatch_behind";
++    public static final String GAUGE_DISPATCH_LATENCY = "rocketmq_tiered_store_dispatch_latency";
++    public static final String COUNTER_MESSAGES_DISPATCH_TOTAL = "rocketmq_tiered_store_messages_dispatch_total";
++    public static final String COUNTER_MESSAGES_OUT_TOTAL = "rocketmq_tiered_store_messages_out_total";
++    public static final String COUNTER_GET_MESSAGE_FALLBACK_TOTAL = "rocketmq_tiered_store_get_message_fallback_total";
++
++    public static final String GAUGE_CACHE_COUNT = "rocketmq_tiered_store_read_ahead_cache_count";
++    public static final String GAUGE_CACHE_BYTES = "rocketmq_tiered_store_read_ahead_cache_bytes";
++    public static final String COUNTER_CACHE_ACCESS = "rocketmq_tiered_store_read_ahead_cache_access_total";
++    public static final String COUNTER_CACHE_HIT = "rocketmq_tiered_store_read_ahead_cache_hit_total";
++
++    public static final String GAUGE_STORAGE_MESSAGE_RESERVE_TIME = "rocketmq_storage_message_reserve_time";
++
++    public static final String LABEL_OPERATION = "operation";
++    public static final String LABEL_TOPIC = "topic";
++    public static final String LABEL_GROUP = "group";
++    public static final String LABEL_QUEUE = "queue";
++    public static final String LABEL_FILE_TYPE = "file_type";
++
++    // blob constants
++    public static final String STORAGE_MEDIUM_BLOB = "blob";
++
++    public static final String OPERATION_API_GET_MESSAGE = "get_message";
++    public static final String OPERATION_API_GET_EARLIEST_MESSAGE_TIME = "get_earliest_message_time";
++    public static final String OPERATION_API_GET_TIME_BY_OFFSET = "get_time_by_offset";
++    public static final String OPERATION_API_GET_OFFSET_BY_TIME = "get_offset_by_time";
++    public static final String OPERATION_API_QUERY_MESSAGE = "query_message";
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsManager.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsManager.java
+new file mode 100644
+index 000000000..69fe28047
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsManager.java
+@@ -0,0 +1,323 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore.metrics;
++
++import com.github.benmanes.caffeine.cache.Policy;
++import io.opentelemetry.api.common.Attributes;
++import io.opentelemetry.api.common.AttributesBuilder;
++import io.opentelemetry.api.metrics.LongCounter;
++import io.opentelemetry.api.metrics.LongHistogram;
++import io.opentelemetry.api.metrics.Meter;
++import io.opentelemetry.api.metrics.ObservableLongGauge;
++import io.opentelemetry.sdk.metrics.Aggregation;
++import io.opentelemetry.sdk.metrics.InstrumentSelector;
++import io.opentelemetry.sdk.metrics.InstrumentType;
++import io.opentelemetry.sdk.metrics.View;
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.Optional;
++import java.util.function.Supplier;
++import org.apache.rocketmq.common.Pair;
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.common.metrics.NopLongCounter;
++import org.apache.rocketmq.common.metrics.NopLongHistogram;
++import org.apache.rocketmq.common.metrics.NopObservableLongGauge;
++import org.apache.rocketmq.logging.org.slf4j.Logger;
++import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.store.MessageStore;
++import org.apache.rocketmq.tieredstore.TieredMessageFetcher;
++import org.apache.rocketmq.tieredstore.common.MessageCacheKey;
++import org.apache.rocketmq.tieredstore.common.SelectMappedBufferResultWrapper;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.container.TieredContainerManager;
++import org.apache.rocketmq.tieredstore.container.TieredMessageQueueContainer;
++import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
++
++import static org.apache.rocketmq.store.metrics.DefaultStoreMetricsConstant.GAUGE_STORAGE_SIZE;
++import static org.apache.rocketmq.store.metrics.DefaultStoreMetricsConstant.LABEL_STORAGE_MEDIUM;
++import static org.apache.rocketmq.store.metrics.DefaultStoreMetricsConstant.LABEL_STORAGE_TYPE;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.COUNTER_CACHE_ACCESS;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.COUNTER_CACHE_HIT;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.COUNTER_GET_MESSAGE_FALLBACK_TOTAL;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.COUNTER_MESSAGES_DISPATCH_TOTAL;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.COUNTER_MESSAGES_OUT_TOTAL;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.GAUGE_CACHE_BYTES;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.GAUGE_CACHE_COUNT;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.GAUGE_DISPATCH_BEHIND;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.GAUGE_DISPATCH_LATENCY;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.GAUGE_STORAGE_MESSAGE_RESERVE_TIME;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.HISTOGRAM_API_LATENCY;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.HISTOGRAM_DOWNLOAD_BYTES;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.HISTOGRAM_PROVIDER_RPC_LATENCY;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.HISTOGRAM_UPLOAD_BYTES;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_FILE_TYPE;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_QUEUE;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_TOPIC;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.STORAGE_MEDIUM_BLOB;
++
++public class TieredStoreMetricsManager {
++    private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
++    public static Supplier<AttributesBuilder> attributesBuilderSupplier;
++
++    public static LongHistogram apiLatency = new NopLongHistogram();
++
++    // tiered store provider metrics
++    public static LongHistogram providerRpcLatency = new NopLongHistogram();
++    public static LongHistogram uploadBytes = new NopLongHistogram();
++    public static LongHistogram downloadBytes = new NopLongHistogram();
++
++    public static ObservableLongGauge dispatchBehind = new NopObservableLongGauge();
++    public static ObservableLongGauge dispatchLatency = new NopObservableLongGauge();
++    public static LongCounter messagesDispatchTotal = new NopLongCounter();
++    public static LongCounter messagesOutTotal = new NopLongCounter();
++    public static LongCounter fallbackTotal = new NopLongCounter();
++
++    public static ObservableLongGauge cacheCount = new NopObservableLongGauge();
++    public static ObservableLongGauge cacheBytes = new NopObservableLongGauge();
++    public static LongCounter cacheAccess = new NopLongCounter();
++    public static LongCounter cacheHit = new NopLongCounter();
++
++    public static ObservableLongGauge storageSize = new NopObservableLongGauge();
++    public static ObservableLongGauge storageMessageReserveTime = new NopObservableLongGauge();
++
++    public static List<Pair<InstrumentSelector, View>> getMetricsView() {
++        ArrayList<Pair<InstrumentSelector, View>> res = new ArrayList<>();
++
++        InstrumentSelector providerRpcLatencySelector = InstrumentSelector.builder()
++            .setType(InstrumentType.HISTOGRAM)
++            .setName(HISTOGRAM_PROVIDER_RPC_LATENCY)
++            .build();
++
++        InstrumentSelector rpcLatencySelector = InstrumentSelector.builder()
++            .setType(InstrumentType.HISTOGRAM)
++            .setName(HISTOGRAM_API_LATENCY)
++            .build();
++
++        View rpcLatencyView = View.builder()
++            .setAggregation(Aggregation.explicitBucketHistogram(Arrays.asList(1d, 10d, 100d, 200d, 400d, 600d, 800d, 1d * 1000, 1d * 1500, 1d * 3000)))
++            .setDescription("tiered_store_rpc_latency_view")
++            .build();
++
++        InstrumentSelector uploadBufferSizeSelector = InstrumentSelector.builder()
++            .setType(InstrumentType.HISTOGRAM)
++            .setName(HISTOGRAM_UPLOAD_BYTES)
++            .build();
++
++        InstrumentSelector downloadBufferSizeSelector = InstrumentSelector.builder()
++            .setType(InstrumentType.HISTOGRAM)
++            .setName(HISTOGRAM_DOWNLOAD_BYTES)
++            .build();
++
++        View bufferSizeView = View.builder()
++            .setAggregation(Aggregation.explicitBucketHistogram(Arrays.asList(1d * TieredStoreUtil.KB, 10d * TieredStoreUtil.KB, 100d * TieredStoreUtil.KB, 1d * TieredStoreUtil.MB, 10d * TieredStoreUtil.MB, 32d * TieredStoreUtil.MB, 50d * TieredStoreUtil.MB, 100d * TieredStoreUtil.MB)))
++            .setDescription("tiered_store_buffer_size_view")
++            .build();
++
++        res.add(new Pair<>(rpcLatencySelector, rpcLatencyView));
++        res.add(new Pair<>(providerRpcLatencySelector, rpcLatencyView));
++        res.add(new Pair<>(uploadBufferSizeSelector, bufferSizeView));
++        res.add(new Pair<>(downloadBufferSizeSelector, bufferSizeView));
++        return res;
++    }
++
++    public static void init(Meter meter, Supplier<AttributesBuilder> attributesBuilderSupplier,
++        TieredMessageStoreConfig storeConfig, TieredMessageFetcher fetcher, MessageStore next) {
++        TieredStoreMetricsManager.attributesBuilderSupplier = attributesBuilderSupplier;
++
++        apiLatency = meter.histogramBuilder(HISTOGRAM_API_LATENCY)
++            .setDescription("Tiered store rpc latency")
++            .setUnit("milliseconds")
++            .ofLongs()
++            .build();
++
++        providerRpcLatency = meter.histogramBuilder(HISTOGRAM_PROVIDER_RPC_LATENCY)
++            .setDescription("Tiered store rpc latency")
++            .setUnit("milliseconds")
++            .ofLongs()
++            .build();
++
++        uploadBytes = meter.histogramBuilder(HISTOGRAM_UPLOAD_BYTES)
++            .setDescription("Tiered store upload buffer size")
++            .setUnit("bytes")
++            .ofLongs()
++            .build();
++
++        downloadBytes = meter.histogramBuilder(HISTOGRAM_DOWNLOAD_BYTES)
++            .setDescription("Tiered store download buffer size")
++            .setUnit("bytes")
++            .ofLongs()
++            .build();
++
++        dispatchBehind = meter.gaugeBuilder(GAUGE_DISPATCH_BEHIND)
++            .setDescription("Tiered store dispatch behind message count")
++            .ofLongs()
++            .buildWithCallback(measurement -> {
++                for (TieredMessageQueueContainer container : TieredContainerManager.getInstance(storeConfig).getAllMQContainer()) {
++                    MessageQueue mq = container.getMessageQueue();
++                    long maxOffset = next.getMaxOffsetInQueue(mq.getTopic(), mq.getQueueId());
++                    long maxTimestamp = next.getMessageStoreTimeStamp(mq.getTopic(), mq.getQueueId(), maxOffset - 1);
++                    if (maxTimestamp > 0 && System.currentTimeMillis() - maxTimestamp > (long) storeConfig.getTieredStoreFileReservedTime() * 60 * 60 * 1000) {
++                        continue;
++                    }
++
++                    Attributes commitLogAttributes = newAttributesBuilder()
++                        .put(LABEL_TOPIC, mq.getTopic())
++                        .put(LABEL_QUEUE, mq.getQueueId())
++                        .put(LABEL_FILE_TYPE, TieredFileSegment.FileSegmentType.COMMIT_LOG.name().toLowerCase())
++                        .build();
++                    measurement.record(Math.max(maxOffset - container.getDispatchOffset(), 0), commitLogAttributes);
++                    Attributes consumeQueueAttributes = newAttributesBuilder()
++                        .put(LABEL_TOPIC, mq.getTopic())
++                        .put(LABEL_QUEUE, mq.getQueueId())
++                        .put(LABEL_FILE_TYPE, TieredFileSegment.FileSegmentType.CONSUME_QUEUE.name().toLowerCase())
++                        .build();
++                    measurement.record(Math.max(maxOffset - container.getConsumeQueueMaxOffset(), 0), consumeQueueAttributes);
++                }
++            });
++
++        dispatchLatency = meter.gaugeBuilder(GAUGE_DISPATCH_LATENCY)
++            .setDescription("Tiered store dispatch latency")
++            .setUnit("seconds")
++            .ofLongs()
++            .buildWithCallback(measurement -> {
++                for (TieredMessageQueueContainer container : TieredContainerManager.getInstance(storeConfig).getAllMQContainer()) {
++                    MessageQueue mq = container.getMessageQueue();
++                    long maxOffset = next.getMaxOffsetInQueue(mq.getTopic(), mq.getQueueId());
++                    long maxTimestamp = next.getMessageStoreTimeStamp(mq.getTopic(), mq.getQueueId(), maxOffset - 1);
++                    if (maxTimestamp > 0 && System.currentTimeMillis() - maxTimestamp > (long) storeConfig.getTieredStoreFileReservedTime() * 60 * 60 * 1000) {
++                        continue;
++                    }
++
++                    Attributes commitLogAttributes = newAttributesBuilder()
++                        .put(LABEL_TOPIC, mq.getTopic())
++                        .put(LABEL_QUEUE, mq.getQueueId())
++                        .put(LABEL_FILE_TYPE, TieredFileSegment.FileSegmentType.COMMIT_LOG.name().toLowerCase())
++                        .build();
++                    long commitLogDispatchLatency = next.getMessageStoreTimeStamp(mq.getTopic(), mq.getQueueId(), container.getDispatchOffset());
++                    if (maxOffset <= container.getDispatchOffset() || commitLogDispatchLatency < 0) {
++                        measurement.record(0, commitLogAttributes);
++                    } else {
++                        measurement.record(System.currentTimeMillis() - commitLogDispatchLatency, commitLogAttributes);
++                    }
++
++                    Attributes consumeQueueAttributes = newAttributesBuilder()
++                        .put(LABEL_TOPIC, mq.getTopic())
++                        .put(LABEL_QUEUE, mq.getQueueId())
++                        .put(LABEL_FILE_TYPE, TieredFileSegment.FileSegmentType.CONSUME_QUEUE.name().toLowerCase())
++                        .build();
++                    long consumeQueueDispatchOffset = container.getConsumeQueueMaxOffset();
++                    long consumeQueueDispatchLatency = next.getMessageStoreTimeStamp(mq.getTopic(), mq.getQueueId(), consumeQueueDispatchOffset);
++                    if (maxOffset <= consumeQueueDispatchOffset || consumeQueueDispatchLatency < 0) {
++                        measurement.record(0, consumeQueueAttributes);
++                    } else {
++                        measurement.record(System.currentTimeMillis() - consumeQueueDispatchLatency, consumeQueueAttributes);
++                    }
++                }
++            });
++
++        messagesDispatchTotal = meter.counterBuilder(COUNTER_MESSAGES_DISPATCH_TOTAL)
++            .setDescription("Total number of dispatch messages")
++            .build();
++
++        messagesOutTotal = meter.counterBuilder(COUNTER_MESSAGES_OUT_TOTAL)
++            .setDescription("Total number of outgoing messages")
++            .build();
++
++        fallbackTotal = meter.counterBuilder(COUNTER_GET_MESSAGE_FALLBACK_TOTAL)
++            .setDescription("Total times of fallback to next store when getting message")
++            .build();
++
++        cacheCount = meter.gaugeBuilder(GAUGE_CACHE_COUNT)
++            .setDescription("Tiered store cache message count")
++            .ofLongs()
++            .buildWithCallback(measurement -> measurement.record(fetcher.getReadAheadCache().estimatedSize(), newAttributesBuilder().build()));
++
++        cacheBytes = meter.gaugeBuilder(GAUGE_CACHE_BYTES)
++            .setDescription("Tiered store cache message bytes")
++            .setUnit("bytes")
++            .ofLongs()
++            .buildWithCallback(measurement -> {
++                Optional<Policy.Eviction<MessageCacheKey, SelectMappedBufferResultWrapper>> eviction = fetcher.getReadAheadCache().policy().eviction();
++                eviction.ifPresent(resultEviction -> measurement.record(resultEviction.weightedSize().orElse(0), newAttributesBuilder().build()));
++            });
++
++        cacheAccess = meter.counterBuilder(COUNTER_CACHE_ACCESS)
++            .setDescription("Tiered store cache access count")
++            .build();
++
++        cacheHit = meter.counterBuilder(COUNTER_CACHE_HIT)
++            .setDescription("Tiered store cache hit count")
++            .build();
++
++        storageSize = meter.gaugeBuilder(GAUGE_STORAGE_SIZE)
++            .setDescription("Broker storage size")
++            .setUnit("bytes")
++            .ofLongs()
++            .buildWithCallback(measurement -> {
++                Map<String, Map<TieredFileSegment.FileSegmentType, Long>> topicFileSizeMap = new HashMap<>();
++                try {
++                    TieredMetadataStore metadataStore = TieredStoreUtil.getMetadataStore(storeConfig);
++                    metadataStore.iterateFileSegment(fileSegment -> {
++                        Map<TieredFileSegment.FileSegmentType, Long> subMap = topicFileSizeMap.computeIfAbsent(fileSegment.getQueue().getTopic(), k -> new HashMap<>());
++                        TieredFileSegment.FileSegmentType fileSegmentType = TieredFileSegment.FileSegmentType.valueOf(fileSegment.getType());
++                        Long size = subMap.computeIfAbsent(fileSegmentType, k -> 0L);
++                        subMap.put(fileSegmentType, size + fileSegment.getSize());
++                    });
++                } catch (Exception e) {
++                    logger.error("Failed to get storage size", e);
++                }
++                topicFileSizeMap.forEach((topic, subMap) -> {
++                    subMap.forEach((fileSegmentType, size) -> {
++                        Attributes attributes = newAttributesBuilder()
++                            .put(LABEL_TOPIC, topic)
++                            .put(LABEL_FILE_TYPE, fileSegmentType.name().toLowerCase())
++                            .build();
++                        measurement.record(size, attributes);
++                    });
++                });
++            });
++
++        storageMessageReserveTime = meter.gaugeBuilder(GAUGE_STORAGE_MESSAGE_RESERVE_TIME)
++            .setDescription("Broker message reserve time")
++            .setUnit("milliseconds")
++            .ofLongs()
++            .buildWithCallback(measurement -> {
++                for (TieredMessageQueueContainer container : TieredContainerManager.getInstance(storeConfig).getAllMQContainer()) {
++                    long timestamp = container.getCommitLogBeginTimestamp();
++                    if (timestamp > 0) {
++                        MessageQueue mq = container.getMessageQueue();
++                        Attributes attributes = newAttributesBuilder()
++                            .put(LABEL_TOPIC, mq.getTopic())
++                            .put(LABEL_QUEUE, mq.getQueueId())
++                            .build();
++                        measurement.record(System.currentTimeMillis() - timestamp, attributes);
++                    }
++                }
++            });
++    }
++
++    public static AttributesBuilder newAttributesBuilder() {
++        AttributesBuilder builder = attributesBuilderSupplier != null ? attributesBuilderSupplier.get() : Attributes.builder();
++        return builder.put(LABEL_STORAGE_TYPE, "tiered")
++            .put(LABEL_STORAGE_MEDIUM, STORAGE_MEDIUM_BLOB);
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredFileSegment.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java
+similarity index 93%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredFileSegment.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java
+index 9cf19c638..5a86db6dd 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/container/TieredFileSegment.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.container;
++package org.apache.rocketmq.tieredstore.provider;
+ 
+ import com.google.common.base.Stopwatch;
+ import java.io.InputStream;
+@@ -28,14 +28,17 @@ import java.util.concurrent.locks.ReentrantLock;
+ import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.store.tiered.common.AppendResult;
+-import org.apache.rocketmq.store.tiered.common.TieredMessageStoreConfig;
+-import org.apache.rocketmq.store.tiered.exception.TieredStoreErrorCode;
+-import org.apache.rocketmq.store.tiered.exception.TieredStoreException;
+-import org.apache.rocketmq.store.tiered.util.MessageBufferUtil;
+-import org.apache.rocketmq.store.tiered.util.TieredStoreUtil;
+-
+-public abstract class TieredFileSegment implements Comparable<TieredFileSegment> {
++import org.apache.rocketmq.tieredstore.common.AppendResult;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.container.TieredCommitLog;
++import org.apache.rocketmq.tieredstore.container.TieredConsumeQueue;
++import org.apache.rocketmq.tieredstore.container.TieredIndexFile;
++import org.apache.rocketmq.tieredstore.exception.TieredStoreErrorCode;
++import org.apache.rocketmq.tieredstore.exception.TieredStoreException;
++import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
++
++public abstract class TieredFileSegment implements Comparable<TieredFileSegment>, TieredStoreBackendProvider {
+     private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
+     private volatile boolean closed = false;
+     private final ReentrantLock bufferLock = new ReentrantLock();
+@@ -113,7 +116,7 @@ public abstract class TieredFileSegment implements Comparable<TieredFileSegment>
+         return beginTimestamp;
+     }
+ 
+-    protected void setBeginTimestamp(long beginTimestamp) {
++    public void setBeginTimestamp(long beginTimestamp) {
+         this.beginTimestamp = beginTimestamp;
+     }
+ 
+@@ -121,7 +124,7 @@ public abstract class TieredFileSegment implements Comparable<TieredFileSegment>
+         return endTimestamp;
+     }
+ 
+-    protected void setEndTimestamp(long endTimestamp) {
++    public void setEndTimestamp(long endTimestamp) {
+         this.endTimestamp = endTimestamp;
+     }
+ 
+@@ -196,7 +199,7 @@ public abstract class TieredFileSegment implements Comparable<TieredFileSegment>
+ 
+     public AppendResult append(ByteBuffer byteBuf, long timeStamp) {
+         if (closed) {
+-            return AppendResult.FILE_CLOSE;
++            return AppendResult.FILE_CLOSED;
+         }
+         bufferLock.lock();
+         try {
+@@ -417,7 +420,7 @@ public abstract class TieredFileSegment implements Comparable<TieredFileSegment>
+         }
+     }
+ 
+-    protected static class TieredFileSegmentInputStream extends InputStream {
++    public static class TieredFileSegmentInputStream extends InputStream {
+ 
+         private final FileSegmentType fileType;
+         private final List<ByteBuffer> uploadBufferList;
+@@ -521,18 +524,25 @@ public abstract class TieredFileSegment implements Comparable<TieredFileSegment>
+         }
+     }
+ 
++    @Override
+     public abstract String getPath();
+ 
++    @Override
+     public abstract long getSize();
+ 
+-    protected abstract boolean exists();
++    @Override
++    public abstract boolean exists();
+ 
+-    protected abstract void createFile();
++    @Override
++    public abstract void createFile();
+ 
+-    protected abstract void destroyFile();
++    @Override
++    public abstract void destroyFile();
+ 
+-    protected abstract CompletableFuture<ByteBuffer> read0(long position, int length);
++    @Override
++    public abstract CompletableFuture<ByteBuffer> read0(long position, int length);
+ 
+-    protected abstract CompletableFuture<Boolean> commit0(TieredFileSegmentInputStream inputStream, long position,
++    @Override
++    public abstract CompletableFuture<Boolean> commit0(TieredFileSegmentInputStream inputStream, long position,
+         int length, boolean append);
+ }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreBackendProvider.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreBackendProvider.java
+new file mode 100644
+index 000000000..cda701026
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreBackendProvider.java
+@@ -0,0 +1,74 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore.provider;
++
++import java.nio.ByteBuffer;
++import java.util.concurrent.CompletableFuture;
++
++public interface TieredStoreBackendProvider {
++    /**
++     * Get file path in backend file system
++     *
++     * @return file real path
++     */
++    String getPath();
++
++    /**
++     * Get file size in backend file system
++     *
++     * @return file real size
++     */
++    long getSize();
++
++    /**
++     * Is file exists in backend file system
++     *
++     * @return <code>true</code> if file with given path exists; <code>false</code> otherwise
++     */
++    boolean exists();
++
++    /**
++     * Create file in backend file system
++     */
++    void createFile();
++
++    /**
++     * Destroy file with given path in backend file system
++     */
++    void destroyFile();
++
++    /**
++     * Get data from backend file system
++     *
++     * @param position the index from where the file will be read
++     * @param length the data size will be read
++     * @return data to be read
++     */
++    CompletableFuture<ByteBuffer> read0(long position, int length);
++
++    /**
++     * Put data to backend file system
++     *
++     * @param inputStream data stream
++     * @param position backend file position to put, used in append mode
++     * @param length data size in stream
++     * @param append try to append or create a new file
++     * @return put result, <code>true</code> if data successfully write; <code>false</code> otherwise
++     */
++    CompletableFuture<Boolean> commit0(TieredFileSegment.TieredFileSegmentInputStream inputStream,
++        long position, int length, boolean append);
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/util/CQItemBufferUtil.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/CQItemBufferUtil.java
+similarity index 96%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/util/CQItemBufferUtil.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/CQItemBufferUtil.java
+index 9a17fcf72..2acc133d8 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/util/CQItemBufferUtil.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/CQItemBufferUtil.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.util;
++package org.apache.rocketmq.tieredstore.util;
+ 
+ import java.nio.ByteBuffer;
+ 
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/util/MessageBufferUtil.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/MessageBufferUtil.java
+similarity index 97%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/util/MessageBufferUtil.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/MessageBufferUtil.java
+index 7306a12b3..6a3157d10 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/util/MessageBufferUtil.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/MessageBufferUtil.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.util;
++package org.apache.rocketmq.tieredstore.util;
+ 
+ import java.nio.ByteBuffer;
+ import java.util.ArrayList;
+@@ -25,8 +25,8 @@ import org.apache.rocketmq.common.UtilAll;
+ import org.apache.rocketmq.common.message.MessageDecoder;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.store.tiered.container.TieredCommitLog;
+-import org.apache.rocketmq.store.tiered.container.TieredConsumeQueue;
++import org.apache.rocketmq.tieredstore.container.TieredCommitLog;
++import org.apache.rocketmq.tieredstore.container.TieredConsumeQueue;
+ 
+ public class MessageBufferUtil {
+     private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/util/TieredStoreUtil.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/TieredStoreUtil.java
+similarity index 87%
+rename from tieredstore/src/main/java/org/apache/rocketmq/store/tiered/util/TieredStoreUtil.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/TieredStoreUtil.java
+index 17597fb08..54e0a0ee4 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/store/tiered/util/TieredStoreUtil.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/TieredStoreUtil.java
+@@ -14,7 +14,7 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-package org.apache.rocketmq.store.tiered.util;
++package org.apache.rocketmq.tieredstore.util;
+ 
+ import java.lang.reflect.Constructor;
+ import java.math.BigInteger;
+@@ -28,23 +28,22 @@ import org.apache.commons.lang3.StringUtils;
+ import org.apache.rocketmq.common.topic.TopicValidator;
+ import org.apache.rocketmq.logging.org.slf4j.Logger;
+ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+-import org.apache.rocketmq.store.tiered.common.TieredMessageStoreConfig;
+-import org.apache.rocketmq.store.tiered.metadata.TieredMetadataStore;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
+ 
+ public class TieredStoreUtil {
+     private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
+ 
+-    private static final long BYTE = 1L;
+-    private static final long KB = BYTE << 10;
+-    private static final long MB = KB << 10;
+-    private static final long GB = MB << 10;
+-    private static final long TB = GB << 10;
+-    private static final long PB = TB << 10;
+-    private static final long EB = PB << 10;
++    public static final long BYTE = 1L;
++    public static final long KB = BYTE << 10;
++    public static final long MB = KB << 10;
++    public static final long GB = MB << 10;
++    public static final long TB = GB << 10;
++    public static final long PB = TB << 10;
++    public static final long EB = PB << 10;
+ 
+-    public static final String TIERED_STORE_LOGGER_NAME = "RocketmqTieredStore";
++    public static final String TIERED_STORE_LOGGER_NAME = "RocketMQTieredStore";
+     public static final String RMQ_SYS_TIERED_STORE_INDEX_TOPIC = "rmq_sys_INDEX";
+-    public static final String PROXY_HOUSEKEEPING_TOPIC_PREFIX = "rocketmq-proxy-";
+     public final static int MSG_ID_LENGTH = 8 + 8;
+ 
+     private static final DecimalFormat DEC_FORMAT = new DecimalFormat("#.##");
+@@ -55,10 +54,7 @@ public class TieredStoreUtil {
+         }
+     };
+ 
+-    private final static List<String> SYSTEM_TOPIC_WHITE_LIST = new LinkedList<String>() {
+-        {
+-        }
+-    };
++    private final static List<String> SYSTEM_TOPIC_WHITE_LIST = new LinkedList<>();
+ 
+     private volatile static TieredMetadataStore metadataStoreInstance;
+ 
+@@ -135,7 +131,7 @@ public class TieredStoreUtil {
+         if (SYSTEM_TOPIC_LIST.contains(topic)) {
+             return true;
+         }
+-        return TopicValidator.isSystemTopic(topic) || topic.toLowerCase().startsWith(PROXY_HOUSEKEEPING_TOPIC_PREFIX);
++        return TopicValidator.isSystemTopic(topic);
+     }
+ 
+     public static TieredMetadataStore getMetadataStore(TieredMessageStoreConfig storeConfig) {

@@ -1,0 +1,13 @@
+diff --git a/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/JavaClientCodegenTest.java b/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/JavaClientCodegenTest.java
+index 4fda6213426..0fbdf04ba03 100644
+--- a/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/JavaClientCodegenTest.java
++++ b/modules/openapi-generator/src/test/java/org/openapitools/codegen/java/JavaClientCodegenTest.java
+@@ -2022,7 +2022,7 @@ public class JavaClientCodegenTest {
+         generator.setGeneratorPropertyDefault(CodegenConstants.APIS, "true");
+         List<File> files = generator.opts(clientOptInput).generate();
+ 
+-        Assert.assertEquals(files.size(), 24);
++        Assert.assertEquals(files.size(), 27);
+         validateJavaSourceFiles(files);
+ 
+         TestUtils.assertFileContains(

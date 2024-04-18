@@ -1,0 +1,482 @@
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java
+index f91650419..6cc51f541 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/common/TieredMessageStoreConfig.java
+@@ -74,7 +74,7 @@ public class TieredMessageStoreConfig {
+     // index file will force rolling to next file after idle specified time, default is 3h
+     private int tieredStoreIndexFileRollingIdleInterval = 3 * 60 * 60 * 1000;
+     private String tieredMetadataServiceProvider = "org.apache.rocketmq.tieredstore.metadata.TieredMetadataManager";
+-    private String tieredBackendServiceProvider = "";
++    private String tieredBackendServiceProvider = "org.apache.rocketmq.tieredstore.provider.posix.PosixFileSegment";
+     // file reserved time, default is 72 hour
+     private int tieredStoreFileReservedTime = 72;
+     // time of forcing commitLog to roll to next file, default is 24 hour
+@@ -97,6 +97,8 @@ public class TieredMessageStoreConfig {
+     private long readAheadCacheExpireDuration = 10 * 1000;
+     private double readAheadCacheSizeThresholdRate = 0.3;
+ 
++    private String tieredStoreFilepath = "";
++
+     public static String localHostName() {
+         try {
+             return InetAddress.getLocalHost().getHostName();
+@@ -321,4 +323,12 @@ public class TieredMessageStoreConfig {
+     public void setReadAheadCacheSizeThresholdRate(double rate) {
+         this.readAheadCacheSizeThresholdRate = rate;
+     }
++
++    public String getTieredStoreFilepath() {
++        return tieredStoreFilepath;
++    }
++
++    public void setTieredStoreFilepath(String tieredStoreFilepath) {
++        this.tieredStoreFilepath = tieredStoreFilepath;
++    }
+ }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredIndexFile.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredIndexFile.java
+index fd696ed5c..6514c4e95 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredIndexFile.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/container/TieredIndexFile.java
+@@ -45,8 +45,8 @@ public class TieredIndexFile {
+     public static final int INDEX_FILE_BEGIN_MAGIC_CODE = 0xCCDDEEFF ^ 1880681586 + 4;
+     public static final int INDEX_FILE_END_MAGIC_CODE = 0xCCDDEEFF ^ 1880681586 + 8;
+     private static final int INDEX_FILE_HEADER_SIZE = 28;
+-    private static final int INDEX_FILE_HASH_SLOT_SIZE = 8;
+-    private static final int INDEX_FILE_HASH_ORIGIN_INDEX_SIZE = 32;
++    public static final int INDEX_FILE_HASH_SLOT_SIZE = 8;
++    public static final int INDEX_FILE_HASH_ORIGIN_INDEX_SIZE = 32;
+     public static final int INDEX_FILE_HASH_COMPACT_INDEX_SIZE = 28;
+ 
+     public static final int INDEX_FILE_HEADER_MAGIC_CODE_POSITION = 0;
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataManager.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataManager.java
+index 1e7aea5e3..2fe964b3a 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataManager.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataManager.java
+@@ -16,6 +16,8 @@
+  */
+ package org.apache.rocketmq.tieredstore.metadata;
+ 
++import com.alibaba.fastjson.JSON;
++import com.alibaba.fastjson.serializer.SerializerFeature;
+ import java.io.File;
+ import java.util.HashMap;
+ import java.util.concurrent.ConcurrentHashMap;
+@@ -53,7 +55,13 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+         dataWrapper.setMaxTopicId(maxTopicId);
+         dataWrapper.setTopicMetadataTable(topicMetadataTable);
+         dataWrapper.setQueueMetadataTable(new HashMap<>(queueMetadataTable));
+-        return dataWrapper.toJson(false);
++        dataWrapper.setCommitLogFileSegmentTable(new HashMap<>(commitLogFileSegmentTable));
++        dataWrapper.setConsumeQueueFileSegmentTable(new HashMap<>(consumeQueueFileSegmentTable));
++        dataWrapper.setIndexFileSegmentTable(new HashMap<>(indexFileSegmentTable));
++        if (prettyFormat) {
++            JSON.toJSONString(dataWrapper, SerializerFeature.DisableCircularReferenceDetect, SerializerFeature.PrettyFormat);
++        }
++        return JSON.toJSONString(dataWrapper, SerializerFeature.DisableCircularReferenceDetect);
+     }
+ 
+     @Override
+@@ -71,6 +79,12 @@ public class TieredMetadataManager extends ConfigManager implements TieredMetada
+                 topicMetadataTable.putAll(dataWrapper.getTopicMetadataTable());
+                 dataWrapper.getQueueMetadataTable()
+                     .forEach((topic, map) -> queueMetadataTable.put(topic, new ConcurrentHashMap<>(map)));
++                dataWrapper.getCommitLogFileSegmentTable()
++                    .forEach((mq, map) -> commitLogFileSegmentTable.put(mq, new ConcurrentHashMap<>(map)));
++                dataWrapper.getConsumeQueueFileSegmentTable()
++                    .forEach((mq, map) -> consumeQueueFileSegmentTable.put(mq, new ConcurrentHashMap<>(map)));
++                dataWrapper.getIndexFileSegmentTable()
++                    .forEach((mq, map) -> indexFileSegmentTable.put(mq, new ConcurrentHashMap<>(map)));
+             }
+         }
+     }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataSerializeWrapper.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataSerializeWrapper.java
+index 24352743f..ad058ab8e 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataSerializeWrapper.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metadata/TieredMetadataSerializeWrapper.java
+@@ -18,13 +18,16 @@ package org.apache.rocketmq.tieredstore.metadata;
+ 
+ import java.util.Map;
+ import java.util.concurrent.atomic.AtomicInteger;
++import org.apache.rocketmq.common.message.MessageQueue;
+ import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
+ 
+ public class TieredMetadataSerializeWrapper extends RemotingSerializable {
+     private AtomicInteger maxTopicId;
+     private Map<String /*topic*/, TopicMetadata> topicMetadataTable;
+     private Map<String /*topic*/, Map<Integer /*queueId*/, QueueMetadata>> queueMetadataTable;
+-
++    private Map<MessageQueue, Map<Long /*baseOffset*/, FileSegmentMetadata>> commitLogFileSegmentTable;
++    private Map<MessageQueue, Map<Long /*baseOffset*/, FileSegmentMetadata>> consumeQueueFileSegmentTable;
++    private Map<MessageQueue, Map<Long /*baseOffset*/, FileSegmentMetadata>> indexFileSegmentTable;
+ 
+     public AtomicInteger getMaxTopicId() {
+         return maxTopicId;
+@@ -51,4 +54,31 @@ public class TieredMetadataSerializeWrapper extends RemotingSerializable {
+         Map<String, Map<Integer, QueueMetadata>> queueMetadataTable) {
+         this.queueMetadataTable = queueMetadataTable;
+     }
++
++    public Map<MessageQueue, Map<Long, FileSegmentMetadata>> getCommitLogFileSegmentTable() {
++        return commitLogFileSegmentTable;
++    }
++
++    public void setCommitLogFileSegmentTable(
++        Map<MessageQueue, Map<Long, FileSegmentMetadata>> commitLogFileSegmentTable) {
++        this.commitLogFileSegmentTable = commitLogFileSegmentTable;
++    }
++
++    public Map<MessageQueue, Map<Long, FileSegmentMetadata>> getConsumeQueueFileSegmentTable() {
++        return consumeQueueFileSegmentTable;
++    }
++
++    public void setConsumeQueueFileSegmentTable(
++        Map<MessageQueue, Map<Long, FileSegmentMetadata>> consumeQueueFileSegmentTable) {
++        this.consumeQueueFileSegmentTable = consumeQueueFileSegmentTable;
++    }
++
++    public Map<MessageQueue, Map<Long, FileSegmentMetadata>> getIndexFileSegmentTable() {
++        return indexFileSegmentTable;
++    }
++
++    public void setIndexFileSegmentTable(
++        Map<MessageQueue, Map<Long, FileSegmentMetadata>> indexFileSegmentTable) {
++        this.indexFileSegmentTable = indexFileSegmentTable;
++    }
+ }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsConstant.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsConstant.java
+index d9a10d15c..3029d5dd5 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsConstant.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/metrics/TieredStoreMetricsConstant.java
+@@ -36,6 +36,8 @@ public class TieredStoreMetricsConstant {
+     public static final String GAUGE_STORAGE_MESSAGE_RESERVE_TIME = "rocketmq_storage_message_reserve_time";
+ 
+     public static final String LABEL_OPERATION = "operation";
++    public static final String LABEL_SUCCESS = "success";
++
+     public static final String LABEL_TOPIC = "topic";
+     public static final String LABEL_GROUP = "group";
+     public static final String LABEL_QUEUE = "queue";
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java
+index 5a86db6dd..2712e84c0 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java
+@@ -38,7 +38,7 @@ import org.apache.rocketmq.tieredstore.exception.TieredStoreException;
+ import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
+ import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
+ 
+-public abstract class TieredFileSegment implements Comparable<TieredFileSegment>, TieredStoreBackendProvider {
++public abstract class TieredFileSegment implements Comparable<TieredFileSegment>, TieredStoreProvider {
+     private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
+     private volatile boolean closed = false;
+     private final ReentrantLock bufferLock = new ReentrantLock();
+@@ -271,6 +271,11 @@ public abstract class TieredFileSegment implements Comparable<TieredFileSegment>
+                 new TieredStoreException(TieredStoreErrorCode.ILLEGAL_PARAM, "length is zero"));
+             return future;
+         }
++        if (position >= commitPosition) {
++            future.completeExceptionally(
++                new TieredStoreException(TieredStoreErrorCode.ILLEGAL_PARAM, "position is illegal"));
++            return future;
++        }
+         if (position + length > commitPosition) {
+             logger.warn("TieredFileSegment#readAsync request position + length is greater than commit position," +
+                     " correct length using commit position, file: {}, request position: {}, commit position:{}, change length from {} to {}",
+@@ -523,26 +528,4 @@ public abstract class TieredFileSegment implements Comparable<TieredFileSegment>
+             return codaBuffer.get() & 0xff;
+         }
+     }
+-
+-    @Override
+-    public abstract String getPath();
+-
+-    @Override
+-    public abstract long getSize();
+-
+-    @Override
+-    public abstract boolean exists();
+-
+-    @Override
+-    public abstract void createFile();
+-
+-    @Override
+-    public abstract void destroyFile();
+-
+-    @Override
+-    public abstract CompletableFuture<ByteBuffer> read0(long position, int length);
+-
+-    @Override
+-    public abstract CompletableFuture<Boolean> commit0(TieredFileSegmentInputStream inputStream, long position,
+-        int length, boolean append);
+ }
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreBackendProvider.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreProvider.java
+similarity index 98%
+rename from tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreBackendProvider.java
+rename to tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreProvider.java
+index cda701026..081143ce8 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreBackendProvider.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredStoreProvider.java
+@@ -19,7 +19,7 @@ package org.apache.rocketmq.tieredstore.provider;
+ import java.nio.ByteBuffer;
+ import java.util.concurrent.CompletableFuture;
+ 
+-public interface TieredStoreBackendProvider {
++public interface TieredStoreProvider {
+     /**
+      * Get file path in backend file system
+      *
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/posix/PosixFileSegment.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/posix/PosixFileSegment.java
+new file mode 100644
+index 000000000..9def6bd29
+--- /dev/null
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/posix/PosixFileSegment.java
+@@ -0,0 +1,237 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tieredstore.provider.posix;
++
++import com.google.common.base.Stopwatch;
++import com.google.common.io.ByteStreams;
++import io.opentelemetry.api.common.Attributes;
++import io.opentelemetry.api.common.AttributesBuilder;
++import java.io.File;
++import java.io.IOException;
++import java.io.RandomAccessFile;
++import java.nio.ByteBuffer;
++import java.nio.channels.FileChannel;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.TimeUnit;
++import org.apache.commons.lang3.StringUtils;
++import org.apache.rocketmq.common.message.MessageQueue;
++import org.apache.rocketmq.logging.org.slf4j.Logger;
++import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
++import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
++import org.apache.rocketmq.tieredstore.common.TieredStoreExecutor;
++import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManager;
++import org.apache.rocketmq.tieredstore.provider.TieredFileSegment;
++import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
++
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_FILE_TYPE;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_OPERATION;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_SUCCESS;
++import static org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant.LABEL_TOPIC;
++
++/**
++ * this class is experimental and may change without notice.
++ */
++public class PosixFileSegment extends TieredFileSegment {
++    private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);
++
++    private static final String OPERATION_POSIX_READ = "read";
++    private static final String OPERATION_POSIX_WRITE = "write";
++
++    private final String basePath;
++    private final String filepath;
++
++    private volatile File file;
++    private volatile FileChannel readFileChannel;
++    private volatile FileChannel writeFileChannel;
++
++    public PosixFileSegment(FileSegmentType fileType, MessageQueue messageQueue,
++        long baseOffset, TieredMessageStoreConfig storeConfig) {
++        super(fileType, messageQueue, baseOffset, storeConfig);
++
++        String basePath = storeConfig.getTieredStoreFilepath();
++        if (StringUtils.isBlank(basePath) || basePath.endsWith(File.separator)) {
++            this.basePath = basePath;
++        } else {
++            this.basePath = basePath + File.separator;
++        }
++        this.filepath = this.basePath
++            + TieredStoreUtil.getHash(storeConfig.getBrokerClusterName()) + "_" + storeConfig.getBrokerClusterName() + File.separator
++            + messageQueue.getBrokerName() + File.separator
++            + messageQueue.getTopic() + File.separator
++            + messageQueue.getQueueId() + File.separator
++            + fileType + File.separator
++            + TieredStoreUtil.offset2FileName(baseOffset);
++        createFile();
++    }
++
++    protected AttributesBuilder newAttributesBuilder() {
++        return TieredStoreMetricsManager.newAttributesBuilder()
++            .put(LABEL_TOPIC, messageQueue.getTopic())
++            .put(LABEL_FILE_TYPE, fileType.name().toLowerCase());
++    }
++
++    @Override
++    public String getPath() {
++        return filepath;
++    }
++
++    @Override
++    public long getSize() {
++        if (exists()) {
++            return file.length();
++        }
++        return -1;
++    }
++
++    @Override
++    public boolean exists() {
++        return file != null && file.exists();
++    }
++
++    @Override
++    public void createFile() {
++        if (file == null) {
++            synchronized (this) {
++                if (file == null) {
++                    File file = new File(filepath);
++                    try {
++                        File dir = file.getParentFile();
++                        if (!dir.exists()) {
++                            dir.mkdirs();
++                        }
++
++                        // TODO use direct IO to avoid polluting the page cache
++                        file.createNewFile();
++                        this.readFileChannel = new RandomAccessFile(file, "r").getChannel();
++                        this.writeFileChannel = new RandomAccessFile(file, "rwd").getChannel();
++                        this.file = file;
++                    } catch (Exception e) {
++                        logger.error("PosixFileSegment#createFile: create file {} failed: ", filepath, e);
++                    }
++                }
++            }
++        }
++    }
++
++    @Override
++    public void destroyFile() {
++        if (file.exists()) {
++            file.delete();
++        }
++
++        try {
++            if (readFileChannel != null && readFileChannel.isOpen()) {
++                readFileChannel.close();
++            }
++            if (writeFileChannel != null && writeFileChannel.isOpen()) {
++                writeFileChannel.close();
++            }
++        } catch (IOException e) {
++            logger.error("PosixFileSegment#destroyFile: destroy file {} failed: ", filepath, e);
++        }
++    }
++
++    @Override
++    public CompletableFuture<ByteBuffer> read0(long position, int length) {
++        Stopwatch stopwatch = Stopwatch.createStarted();
++        AttributesBuilder attributesBuilder = newAttributesBuilder()
++            .put(LABEL_OPERATION, OPERATION_POSIX_READ);
++
++        CompletableFuture<ByteBuffer> future = new CompletableFuture<>();
++        ByteBuffer byteBuffer = ByteBuffer.allocate(length);
++        try {
++            readFileChannel.position(position);
++            readFileChannel.read(byteBuffer);
++            byteBuffer.flip();
++
++            attributesBuilder.put(LABEL_SUCCESS, true);
++            long costTime = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
++            TieredStoreMetricsManager.providerRpcLatency.record(costTime, attributesBuilder.build());
++
++            Attributes metricsAttributes = newAttributesBuilder()
++                .put(LABEL_OPERATION, OPERATION_POSIX_READ)
++                .build();
++            int downloadedBytes = byteBuffer.remaining();
++            TieredStoreMetricsManager.downloadBytes.record(downloadedBytes, metricsAttributes);
++
++            future.complete(byteBuffer);
++        } catch (IOException e) {
++            long costTime = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
++            attributesBuilder.put(LABEL_SUCCESS, false);
++            TieredStoreMetricsManager.providerRpcLatency.record(costTime, attributesBuilder.build());
++            logger.error("PosixFileSegment#read0: read file {} failed: position: {}, length: {}",
++                filepath, position, length, e);
++            future.completeExceptionally(e);
++        }
++        return future;
++    }
++
++    @Override
++    public CompletableFuture<Boolean> commit0(TieredFileSegmentInputStream inputStream, long position, int length,
++        boolean append) {
++        Stopwatch stopwatch = Stopwatch.createStarted();
++        AttributesBuilder attributesBuilder = newAttributesBuilder()
++            .put(LABEL_OPERATION, OPERATION_POSIX_WRITE);
++
++        CompletableFuture<Boolean> future = new CompletableFuture<>();
++        try {
++            TieredStoreExecutor.COMMIT_EXECUTOR.execute(() -> {
++                try {
++                    byte[] byteArray = ByteStreams.toByteArray(inputStream);
++                    if (byteArray.length != length) {
++                        logger.error("PosixFileSegment#commit0: append file {} failed: real data size: {}, is not equal to length: {}",
++                            filepath, byteArray.length, length);
++                        future.complete(false);
++                        return;
++                    }
++                    writeFileChannel.position(position);
++                    ByteBuffer buffer = ByteBuffer.wrap(byteArray);
++                    while (buffer.hasRemaining()) {
++                        writeFileChannel.write(buffer);
++                    }
++
++                    attributesBuilder.put(LABEL_SUCCESS, true);
++                    long costTime = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
++                    TieredStoreMetricsManager.providerRpcLatency.record(costTime, attributesBuilder.build());
++
++                    Attributes metricsAttributes = newAttributesBuilder()
++                        .put(LABEL_OPERATION, OPERATION_POSIX_WRITE)
++                        .build();
++                    TieredStoreMetricsManager.uploadBytes.record(length, metricsAttributes);
++
++                    future.complete(true);
++                } catch (Exception e) {
++                    long costTime = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
++                    attributesBuilder.put(LABEL_SUCCESS, false);
++                    TieredStoreMetricsManager.providerRpcLatency.record(costTime, attributesBuilder.build());
++
++                    logger.error("PosixFileSegment#commit0: append file {} failed: position: {}, length: {}",
++                        filepath, position, length, e);
++                    future.completeExceptionally(e);
++                }
++            });
++        } catch (Exception e) {
++            // commit task cannot be executed
++            long costTime = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
++            attributesBuilder.put(LABEL_SUCCESS, false);
++            TieredStoreMetricsManager.providerRpcLatency.record(costTime, attributesBuilder.build());
++
++            future.completeExceptionally(e);
++        }
++        return future;
++    }
++}
+diff --git a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/TieredStoreUtil.java b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/TieredStoreUtil.java
+index 54e0a0ee4..c41e5a48e 100644
+--- a/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/TieredStoreUtil.java
++++ b/tieredstore/src/main/java/org/apache/rocketmq/tieredstore/util/TieredStoreUtil.java
+@@ -42,7 +42,7 @@ public class TieredStoreUtil {
+     public static final long PB = TB << 10;
+     public static final long EB = PB << 10;
+ 
+-    public static final String TIERED_STORE_LOGGER_NAME = "RocketMQTieredStore";
++    public static final String TIERED_STORE_LOGGER_NAME = "RocketmqTieredStore";
+     public static final String RMQ_SYS_TIERED_STORE_INDEX_TOPIC = "rmq_sys_INDEX";
+     public final static int MSG_ID_LENGTH = 8 + 8;
+ 

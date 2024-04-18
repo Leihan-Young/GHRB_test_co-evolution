@@ -1,0 +1,490 @@
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/ContextNodeTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/ContextNodeTest.java
+new file mode 100644
+index 000000000..19cf179c3
+--- /dev/null
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/ContextNodeTest.java
+@@ -0,0 +1,69 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.proxy;
++
++import org.apache.rocketmq.proxy.common.context.ContextNode;
++import org.junit.Test;
++
++import static org.assertj.core.api.Assertions.assertThat;
++
++public class ContextNodeTest {
++    private ContextNode contextNode;
++
++    @Test
++    public void testWithValue() {
++        String key = "key";
++        String value = "value";
++        contextNode = new ContextNode();
++        ContextNode newContextNode = contextNode.withValue(key, value);
++        assertThat(newContextNode.getValue(key, String.class)).isEqualTo(value);
++        assertThat(newContextNode.getValue(key)).isEqualTo(value);
++
++        assertThat(contextNode.getValue(key, String.class)).isNull();
++    }
++
++    @Test
++    public void testRepeatedKeyForTwoContext() {
++        String key1 = "key1";
++        String value1 = "value1";
++        String value2 = "value2";
++        contextNode = new ContextNode();
++        ContextNode newContextNode1 = contextNode.withValue(key1, value1);
++        ContextNode newContextNode2 = contextNode.withValue(key1, value2);
++        assertThat(newContextNode1.getValue(key1, String.class)).isEqualTo(value1);
++        assertThat(newContextNode1.getValue(key1)).isEqualTo(value1);
++        assertThat(newContextNode2.getValue(key1, String.class)).isEqualTo(value2);
++        assertThat(newContextNode2.getValue(key1)).isEqualTo(value2);
++
++        assertThat(contextNode.getValue(key1, String.class)).isNull();
++    }
++
++    @Test
++    public void testRepeatedKeyForContextChain() {
++        String key1 = "key1";
++        String value1 = "value1";
++        String value2 = "value2";
++        contextNode = new ContextNode();
++        ContextNode newContextNode1 = contextNode.withValue(key1, value1);
++        ContextNode newContextNode2 = newContextNode1.withValue(key1, value2);
++        assertThat(newContextNode1.getValue(key1, String.class)).isEqualTo(value1);
++        assertThat(newContextNode2.getValue(key1, String.class)).isEqualTo(value2);
++
++        assertThat(contextNode.getValue(key1, String.class)).isNull();
++    }
++}
+\ No newline at end of file
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/common/ProxyContextTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/common/ProxyContextTest.java
+new file mode 100644
+index 000000000..0999440cd
+--- /dev/null
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/common/ProxyContextTest.java
+@@ -0,0 +1,48 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.proxy.common;
++
++import org.junit.Test;
++
++import static org.assertj.core.api.Assertions.assertThat;
++
++public class ProxyContextTest {
++    private ProxyContext proxyContext;
++
++    @Test
++    public void testWithValue() {
++        String key = "key";
++        String value = "value";
++        proxyContext = ProxyContext.create();
++        ProxyContext newContext = proxyContext.withValue(key, value);
++        assertThat(newContext.getValue(key, String.class)).isEqualTo(value);
++        String actualValue = newContext.getValue(key);
++        assertThat(actualValue).isEqualTo(value);
++
++        assertThat(proxyContext.getValue(key, String.class)).isNull();
++    }
++
++    @Test
++    public void testSetLocalAddress() {
++        String address = "address";
++        proxyContext = ProxyContext.create();
++        ProxyContext newProxyContext = proxyContext.withLocalAddress(address);
++        assertThat(proxyContext.getLocalAddress()).isNull();
++        assertThat(newProxyContext.getLocalAddress()).isEqualTo(address);
++    }
++}
+\ No newline at end of file
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/BaseActivityTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/BaseActivityTest.java
+index 524945bd6..f29d59fe4 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/BaseActivityTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/BaseActivityTest.java
+@@ -21,7 +21,7 @@ import io.grpc.Metadata;
+ import java.time.Duration;
+ import java.util.Random;
+ import java.util.UUID;
+-import org.apache.rocketmq.proxy.common.ContextVariable;
++import org.apache.rocketmq.proxy.common.context.ContextVariable;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.config.InitConfigTest;
+ import org.apache.rocketmq.proxy.grpc.interceptor.InterceptorConstants;
+@@ -76,11 +76,11 @@ public class BaseActivityTest extends InitConfigTest {
+ 
+     protected ProxyContext createContext() {
+         return ProxyContext.create()
+-            .withVal(ContextVariable.CLIENT_ID, CLIENT_ID)
+-            .withVal(ContextVariable.LANGUAGE, JAVA)
+-            .withVal(ContextVariable.REMOTE_ADDRESS, REMOTE_ADDR)
+-            .withVal(ContextVariable.LOCAL_ADDRESS, LOCAL_ADDR)
+-            .withVal(ContextVariable.REMAINING_MS, Duration.ofSeconds(10).toMillis());
++            .withValue(ContextVariable.CLIENT_ID, CLIENT_ID)
++            .withValue(ContextVariable.LANGUAGE, JAVA)
++            .withValue(ContextVariable.REMOTE_ADDRESS, REMOTE_ADDR)
++            .withValue(ContextVariable.LOCAL_ADDRESS, LOCAL_ADDR)
++            .withValue(ContextVariable.REMAINING_MS, Duration.ofSeconds(10).toMillis());
+     }
+ 
+     protected static String buildReceiptHandle(String topic, long popTime, long invisibleTime) {
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/channel/GrpcClientChannelTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/channel/GrpcClientChannelTest.java
+index 1bdbdd9be..af5e3e10d 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/channel/GrpcClientChannelTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/channel/GrpcClientChannelTest.java
+@@ -58,7 +58,7 @@ public class GrpcClientChannelTest extends InitConfigTest {
+         super.before();
+         this.clientId = RandomStringUtils.randomAlphabetic(10);
+         this.grpcClientChannel = new GrpcClientChannel(proxyRelayService, grpcClientSettingsManager, grpcChannelManager,
+-            ProxyContext.create().setRemoteAddress("10.152.39.53:9768").setLocalAddress("11.193.0.1:1210"),
++            ProxyContext.create().withRemoteAddress("10.152.39.53:9768").withLocalAddress("11.193.0.1:1210"),
+             this.clientId);
+     }
+ 
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManagerTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManagerTest.java
+index 6742f094c..3c3f5bf28 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManagerTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManagerTest.java
+@@ -25,7 +25,7 @@ import apache.rocketmq.v2.RetryPolicy;
+ import apache.rocketmq.v2.Settings;
+ import apache.rocketmq.v2.Subscription;
+ import com.google.protobuf.util.Durations;
+-import org.apache.rocketmq.proxy.common.ContextVariable;
++import org.apache.rocketmq.proxy.common.context.ContextVariable;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.grpc.v2.BaseActivityTest;
+ import org.apache.rocketmq.remoting.protocol.subscription.CustomizedRetryPolicy;
+@@ -52,7 +52,7 @@ public class GrpcClientSettingsManagerTest extends BaseActivityTest {
+ 
+     @Test
+     public void testGetProducerData() {
+-        ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_ID, CLIENT_ID);
++        ProxyContext context = ProxyContext.create().withValue(ContextVariable.CLIENT_ID, CLIENT_ID);
+ 
+         this.grpcClientSettingsManager.updateClientSettings(context, CLIENT_ID, Settings.newBuilder()
+             .setBackoffPolicy(RetryPolicy.getDefaultInstance())
+@@ -65,7 +65,7 @@ public class GrpcClientSettingsManagerTest extends BaseActivityTest {
+ 
+     @Test
+     public void testGetSubscriptionData() {
+-        ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_ID, CLIENT_ID);
++        ProxyContext context = ProxyContext.create().withValue(ContextVariable.CLIENT_ID, CLIENT_ID);
+ 
+         SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig();
+         when(this.messagingProcessor.getSubscriptionGroupConfig(any(), any()))
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivityTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivityTest.java
+index 77ae5e4d1..70460a941 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivityTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivityTest.java
+@@ -94,9 +94,8 @@ public class ReceiveMessageActivityTest extends BaseActivityTest {
+             .thenReturn(CompletableFuture.completedFuture(new PopResult(PopStatus.NO_NEW_MSG, Collections.emptyList())));
+ 
+         ProxyContext context = createContext();
+-        context.setRemainingMs(1L);
+         this.receiveMessageActivity.receiveMessage(
+-            context,
++            context.withRemainingMs(1L),
+             ReceiveMessageRequest.newBuilder()
+                 .setGroup(Resource.newBuilder().setName(CONSUMER_GROUP).build())
+                 .setMessageQueue(MessageQueue.newBuilder().setTopic(Resource.newBuilder().setName(TOPIC).build()).build())
+@@ -121,9 +120,9 @@ public class ReceiveMessageActivityTest extends BaseActivityTest {
+ 
+         when(this.grpcClientSettingsManager.getClientSettings(any())).thenReturn(Settings.newBuilder().getDefaultInstanceForType());
+ 
+-        final ProxyContext context = createContext();
+-        context.setClientVersion("5.0.2");
+-        context.setRemainingMs(-1L);
++        final ProxyContext context = createContext()
++            .withClientVersion("5.0.2")
++            .withRemainingMs(-1L);
+         final ReceiveMessageRequest request = ReceiveMessageRequest.newBuilder()
+             .setGroup(Resource.newBuilder().setName(CONSUMER_GROUP).build())
+             .setMessageQueue(MessageQueue.newBuilder().setTopic(Resource.newBuilder().setName(TOPIC).build()).build())
+@@ -144,9 +143,8 @@ public class ReceiveMessageActivityTest extends BaseActivityTest {
+         ArgumentCaptor<ReceiveMessageResponse> responseArgumentCaptor1 =
+             ArgumentCaptor.forClass(ReceiveMessageResponse.class);
+         doNothing().when(receiveStreamObserver).onNext(responseArgumentCaptor1.capture());
+-        context.setClientVersion("5.0.3");
+         this.receiveMessageActivity.receiveMessage(
+-            context,
++            context.withClientVersion("5.0.3"),
+             request,
+             receiveStreamObserver
+         );
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/service/message/LocalMessageServiceTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/service/message/LocalMessageServiceTest.java
+index 84fc6499c..51fea167d 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/service/message/LocalMessageServiceTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/service/message/LocalMessageServiceTest.java
+@@ -46,7 +46,7 @@ import org.apache.rocketmq.common.message.MessageClientIDSetter;
+ import org.apache.rocketmq.common.message.MessageDecoder;
+ import org.apache.rocketmq.common.message.MessageExt;
+ import org.apache.rocketmq.common.message.MessageQueue;
+-import org.apache.rocketmq.proxy.common.ContextVariable;
++import org.apache.rocketmq.proxy.common.context.ContextVariable;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.common.ProxyException;
+ import org.apache.rocketmq.proxy.common.ProxyExceptionCode;
+@@ -123,8 +123,8 @@ public class LocalMessageServiceTest extends InitConfigTest {
+         Mockito.when(brokerControllerMock.getEndTransactionProcessor()).thenReturn(endTransactionProcessorMock);
+         Mockito.when(brokerControllerMock.getBrokerConfig()).thenReturn(new BrokerConfig());
+         localMessageService = new LocalMessageService(brokerControllerMock, channelManager, null);
+-        proxyContext = ProxyContext.create().withVal(ContextVariable.REMOTE_ADDRESS, "0.0.0.1")
+-            .withVal(ContextVariable.LOCAL_ADDRESS, "0.0.0.2");
++        proxyContext = ProxyContext.create().withValue(ContextVariable.REMOTE_ADDRESS, "0.0.0.1")
++            .withValue(ContextVariable.LOCAL_ADDRESS, "0.0.0.2");
+     }
+ 
+     @Test
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessorTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessorTest.java
+index a6d807937..7ebad9372 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessorTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/service/mqclient/ProxyClientRemotingProcessorTest.java
+@@ -79,7 +79,7 @@ public class ProxyClientRemotingProcessorTest {
+                 proxyRelayResultFuture));
+ 
+         GrpcClientChannel grpcClientChannel = new GrpcClientChannel(proxyRelayService, grpcClientSettingsManager, null,
+-            ProxyContext.create().setRemoteAddress("127.0.0.1:8888").setLocalAddress("127.0.0.1:10911"), "clientId");
++            ProxyContext.create().withRemoteAddress("127.0.0.1:8888").withLocalAddress("127.0.0.1:10911"), "clientId");
+         when(producerManager.getAvailableChannel(anyString()))
+             .thenReturn(grpcClientChannel);
+ 
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManagerTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManagerTest.java
+index 25ae1509a..86a529178 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManagerTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManagerTest.java
+@@ -35,7 +35,7 @@ import org.apache.rocketmq.common.consumer.ReceiptHandle;
+ import org.apache.rocketmq.common.message.MessageClientIDSetter;
+ import org.apache.rocketmq.common.state.StateEventListener;
+ import org.apache.rocketmq.proxy.common.RenewEvent;
+-import org.apache.rocketmq.proxy.common.ContextVariable;
++import org.apache.rocketmq.proxy.common.context.ContextVariable;
+ import org.apache.rocketmq.proxy.common.MessageReceiptHandle;
+ import org.apache.rocketmq.proxy.common.ProxyContext;
+ import org.apache.rocketmq.proxy.common.ProxyException;
+@@ -71,7 +71,7 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+     @Mock
+     protected ConsumerManager consumerManager;
+ 
+-    private static final ProxyContext PROXY_CONTEXT = ProxyContext.create();
++    private static ProxyContext proxyContext = ProxyContext.create();
+     private static final String GROUP = "group";
+     private static final String TOPIC = "topic";
+     private static final String BROKER_NAME = "broker";
+@@ -92,7 +92,7 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+             public void fireEvent(RenewEvent event) {
+                 MessageReceiptHandle messageReceiptHandle = event.getMessageReceiptHandle();
+                 ReceiptHandle handle = ReceiptHandle.decode(messageReceiptHandle.getReceiptHandleStr());
+-                messagingProcessor.changeInvisibleTime(PROXY_CONTEXT, handle, messageReceiptHandle.getMessageId(),
++                messagingProcessor.changeInvisibleTime(proxyContext, handle, messageReceiptHandle.getMessageId(),
+                         messageReceiptHandle.getGroup(), messageReceiptHandle.getTopic(), event.getRenewTime())
+                     .whenComplete((v, t) -> {
+                         if (t != null) {
+@@ -115,8 +115,8 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+             .offset(OFFSET)
+             .commitLogOffset(0L)
+             .build().encode();
+-        PROXY_CONTEXT.withVal(ContextVariable.CLIENT_ID, "channel-id");
+-        PROXY_CONTEXT.withVal(ContextVariable.CHANNEL, new LocalChannel());
++        proxyContext = proxyContext.withValue(ContextVariable.CLIENT_ID, "channel-id");
++        proxyContext = proxyContext.withValue(ContextVariable.CHANNEL, new LocalChannel());
+         Mockito.doNothing().when(consumerManager).appendConsumerIdsChangeListener(Mockito.any(ConsumerIdsChangeListener.class));
+         messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, QUEUE_ID, receiptHandle, MESSAGE_ID, OFFSET,
+             RECONSUME_TIMES);
+@@ -125,7 +125,7 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+     @Test
+     public void testAddReceiptHandle() {
+         Channel channel = new LocalChannel();
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+         Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(new SubscriptionGroupConfig());
+         Mockito.when(consumerManager.findChannel(Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));
+         receiptHandleManager.scheduleRenewTask();
+@@ -137,7 +137,7 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+     @Test
+     public void testAddDuplicationMessage() {
+         ProxyConfig config = ConfigurationManager.getProxyConfig();
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
+         {
+             String receiptHandle = ReceiptHandle.builder()
+                 .startOffset(0L)
+@@ -152,9 +152,9 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+                 .build().encode();
+             MessageReceiptHandle messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, QUEUE_ID, receiptHandle, MESSAGE_ID, OFFSET,
+                 RECONSUME_TIMES);
+-            receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++            receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+         }
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+         Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(new SubscriptionGroupConfig());
+         Mockito.when(consumerManager.findChannel(Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));
+         receiptHandleManager.scheduleRenewTask();
+@@ -169,8 +169,8 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+     @Test
+     public void testRenewReceiptHandle() {
+         ProxyConfig config = ConfigurationManager.getProxyConfig();
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+         SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();
+         Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);
+         Mockito.when(consumerManager.findChannel(Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));
+@@ -214,9 +214,9 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+ 
+     @Test
+     public void testRenewExceedMaxRenewTimes() {
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
+         Mockito.when(consumerManager.findChannel(Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+ 
+         CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();
+         ackResultFuture.completeExceptionally(new MQClientException(0, "error"));
+@@ -244,9 +244,9 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+ 
+     @Test
+     public void testRenewWithInvalidHandle() {
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
+         Mockito.when(consumerManager.findChannel(Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+ 
+         CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();
+         ackResultFuture.completeExceptionally(new ProxyException(ProxyExceptionCode.INVALID_RECEIPT_HANDLE, "error"));
+@@ -268,9 +268,9 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+     @Test
+     public void testRenewWithErrorThenOK() {
+         ProxyConfig config = ConfigurationManager.getProxyConfig();
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
+         Mockito.when(consumerManager.findChannel(Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+ 
+         AtomicInteger count = new AtomicInteger(0);
+         List<CompletableFuture<AckResult>> futureList = new ArrayList<>();
+@@ -347,8 +347,8 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+             .build().encode();
+         messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, QUEUE_ID, newReceiptHandle, MESSAGE_ID, OFFSET,
+             RECONSUME_TIMES);
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+         Mockito.when(consumerManager.findChannel(Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));
+         SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();
+         Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);
+@@ -381,8 +381,8 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+             .build().encode();
+         messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, QUEUE_ID, newReceiptHandle, MESSAGE_ID, OFFSET,
+             RECONSUME_TIMES);
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+         Mockito.when(consumerManager.findChannel(Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));
+         Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(null);
+         Mockito.when(messagingProcessor.changeInvisibleTime(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyLong()))
+@@ -417,8 +417,8 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+             .build().encode();
+         messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, QUEUE_ID, newReceiptHandle, MESSAGE_ID, OFFSET,
+             RECONSUME_TIMES);
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+         SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();
+         Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);
+         Mockito.when(consumerManager.findChannel(Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));
+@@ -430,9 +430,9 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+ 
+     @Test
+     public void testRemoveReceiptHandle() {
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
+-        receiptHandleManager.removeReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
++        receiptHandleManager.removeReceiptHandle(proxyContext, channel, GROUP, MSG_ID, receiptHandle);
+         SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();
+         Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);
+         receiptHandleManager.scheduleRenewTask();
+@@ -443,8 +443,8 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+ 
+     @Test
+     public void testClearGroup() {
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+         receiptHandleManager.clearGroup(new ReceiptHandleGroupKey(channel, GROUP));
+         SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();
+         Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);
+@@ -458,8 +458,8 @@ public class DefaultReceiptHandleManagerTest extends BaseServiceTest {
+     public void testClientOffline() {
+         ArgumentCaptor<ConsumerIdsChangeListener> listenerArgumentCaptor = ArgumentCaptor.forClass(ConsumerIdsChangeListener.class);
+         Mockito.verify(consumerManager, Mockito.times(1)).appendConsumerIdsChangeListener(listenerArgumentCaptor.capture());
+-        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);
+-        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);
++        Channel channel = proxyContext.getValue(ContextVariable.CHANNEL);
++        receiptHandleManager.addReceiptHandle(proxyContext, channel, GROUP, MSG_ID, messageReceiptHandle);
+         listenerArgumentCaptor.getValue().handle(ConsumerGroupEvent.CLIENT_UNREGISTER, GROUP, new ClientChannelInfo(channel, "", LanguageCode.JAVA, 0));
+         assertTrue(receiptHandleManager.receiptHandleGroupMap.isEmpty());
+     }
+diff --git a/proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java b/proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java
+index 9a2c5e343..7e4df145d 100644
+--- a/proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java
++++ b/proxy/src/test/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncerTest.java
+@@ -146,7 +146,7 @@ public class HeartbeatSyncerTest extends InitConfigTest {
+         GrpcChannelManager grpcChannelManager = mock(GrpcChannelManager.class);
+         GrpcClientChannel grpcClientChannel = new GrpcClientChannel(
+             proxyRelayService, grpcClientSettingsManager, grpcChannelManager,
+-            ProxyContext.create().setRemoteAddress(remoteAddress).setLocalAddress(localAddress),
++            ProxyContext.create().withRemoteAddress(remoteAddress).withLocalAddress(localAddress),
+             clientId);
+         ClientChannelInfo clientChannelInfo = new ClientChannelInfo(
+             grpcClientChannel,
+@@ -345,7 +345,7 @@ public class HeartbeatSyncerTest extends InitConfigTest {
+         GrpcChannelManager grpcChannelManager = mock(GrpcChannelManager.class);
+         GrpcClientChannel grpcClientChannel = new GrpcClientChannel(
+             proxyRelayService, grpcClientSettingsManager, grpcChannelManager,
+-            ProxyContext.create().setRemoteAddress(remoteAddress).setLocalAddress(localAddress),
++            ProxyContext.create().withRemoteAddress(remoteAddress).withLocalAddress(localAddress),
+             clientId);
+         ClientChannelInfo clientChannelInfo = new ClientChannelInfo(
+             grpcClientChannel,

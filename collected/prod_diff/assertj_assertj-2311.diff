@@ -1,0 +1,278 @@
+diff --git a/src/main/java/org/assertj/core/api/AbstractThrowableAssert.java b/src/main/java/org/assertj/core/api/AbstractThrowableAssert.java
+index b9b347627..e6842627d 100644
+--- a/src/main/java/org/assertj/core/api/AbstractThrowableAssert.java
++++ b/src/main/java/org/assertj/core/api/AbstractThrowableAssert.java
+@@ -177,7 +177,7 @@ public abstract class AbstractThrowableAssert<SELF extends AbstractThrowableAsse
+    */
+   public AbstractThrowableAssert<?, ?> getCause() {
+     throwables.assertHasCause(info, actual);
+-    return new ThrowableAssert(actual.getCause());
++    return new ThrowableAssert<>(actual.getCause());
+   }
+ 
+   /**
+@@ -200,7 +200,7 @@ public abstract class AbstractThrowableAssert<SELF extends AbstractThrowableAsse
+    */
+   public AbstractThrowableAssert<?, ?> getRootCause() {
+     throwables.assertHasRootCause(info, actual);
+-    return new ThrowableAssert(org.assertj.core.util.Throwables.getRootCause(actual));
++    return new ThrowableAssert<>(org.assertj.core.util.Throwables.getRootCause(actual));
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/api/Assertions.java b/src/main/java/org/assertj/core/api/Assertions.java
+index c692844be..5fd0e846d 100644
+--- a/src/main/java/org/assertj/core/api/Assertions.java
++++ b/src/main/java/org/assertj/core/api/Assertions.java
+@@ -1144,7 +1144,7 @@ public class Assertions implements InstanceOfAssertFactories {
+    * @param actual the actual value.
+    * @return the created {@link ThrowableAssert}.
+    */
+-  public static AbstractThrowableAssert<?, ? extends Throwable> assertThat(Throwable actual) {
++  public static <T extends Throwable> AbstractThrowableAssert<?, T> assertThat(T actual) {
+     return AssertionsForClassTypes.assertThat(actual);
+   }
+ 
+diff --git a/src/main/java/org/assertj/core/api/AssertionsForClassTypes.java b/src/main/java/org/assertj/core/api/AssertionsForClassTypes.java
+index f900e90f2..a6d7ec4f6 100644
+--- a/src/main/java/org/assertj/core/api/AssertionsForClassTypes.java
++++ b/src/main/java/org/assertj/core/api/AssertionsForClassTypes.java
+@@ -694,8 +694,8 @@ public class AssertionsForClassTypes {
+    * @param actual the actual value.
+    * @return the created {@link ThrowableAssert}.
+    */
+-  public static AbstractThrowableAssert<?, ? extends Throwable> assertThat(Throwable actual) {
+-    return new ThrowableAssert(actual);
++  public static <T extends Throwable> AbstractThrowableAssert<?, T> assertThat(T actual) {
++    return new ThrowableAssert<>(actual);
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/api/Assumptions.java b/src/main/java/org/assertj/core/api/Assumptions.java
+index 5b5e23a48..767ea6c88 100644
+--- a/src/main/java/org/assertj/core/api/Assumptions.java
++++ b/src/main/java/org/assertj/core/api/Assumptions.java
+@@ -903,7 +903,8 @@ public class Assumptions {
+    * @return the created assumption for assertion object.
+    * @since 2.9.0 / 3.9.0
+    */
+-  public static AbstractThrowableAssert<?, ? extends Throwable> assumeThat(Throwable actual) {
++  @SuppressWarnings("unchecked")
++  public static <T extends Throwable> AbstractThrowableAssert<?, T> assumeThat(T actual) {
+     return asAssumption(ThrowableAssert.class, Throwable.class, actual);
+   }
+ 
+@@ -921,6 +922,7 @@ public class Assumptions {
+    * @return the created assumption for assertion object.
+    * @since 2.9.0 / 3.9.0
+    */
++  @SuppressWarnings("unchecked")
+   public static AbstractThrowableAssert<?, ? extends Throwable> assumeThatThrownBy(ThrowingCallable shouldRaiseThrowable) {
+     return asAssumption(ThrowableAssert.class, Throwable.class, catchThrowable(shouldRaiseThrowable));
+   }
+diff --git a/src/main/java/org/assertj/core/api/BDDAssertions.java b/src/main/java/org/assertj/core/api/BDDAssertions.java
+index e075264e5..be6a7ec3e 100644
+--- a/src/main/java/org/assertj/core/api/BDDAssertions.java
++++ b/src/main/java/org/assertj/core/api/BDDAssertions.java
+@@ -1148,7 +1148,7 @@ public class BDDAssertions extends Assertions {
+    * @param actual the actual value.
+    * @return the created assertion Throwable.
+    */
+-  public static AbstractThrowableAssert<?, ? extends Throwable> then(Throwable actual) {
++  public static <T extends Throwable> AbstractThrowableAssert<?, T> then(T actual) {
+     return assertThat(actual);
+   }
+ 
+diff --git a/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java b/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java
+index f269e49d0..d83c1d4f9 100644
+--- a/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java
++++ b/src/main/java/org/assertj/core/api/InstanceOfAssertFactories.java
+@@ -528,7 +528,8 @@ public interface InstanceOfAssertFactories {
+    *
+    * @since 3.17.0
+    */
+-  InstanceOfAssertFactory<Period, AbstractPeriodAssert<?>> PERIOD = new InstanceOfAssertFactory<>(Period.class, Assertions::assertThat);
++  InstanceOfAssertFactory<Period, AbstractPeriodAssert<?>> PERIOD = new InstanceOfAssertFactory<>(Period.class,
++                                                                                                  Assertions::assertThat);
+ 
+   /**
+    * {@link InstanceOfAssertFactory} for an {@link AtomicBoolean}.
+@@ -727,8 +728,22 @@ public interface InstanceOfAssertFactories {
+   /**
+    * {@link InstanceOfAssertFactory} for a {@link Throwable}.
+    */
+-  InstanceOfAssertFactory<Throwable, AbstractThrowableAssert<?, ? extends Throwable>> THROWABLE = new InstanceOfAssertFactory<>(Throwable.class,
+-                                                                                                                                Assertions::assertThat);
++  InstanceOfAssertFactory<Throwable, AbstractThrowableAssert<?, Throwable>> THROWABLE = new InstanceOfAssertFactory<>(Throwable.class,
++                                                                                                                      Assertions::assertThat);
++
++  /**
++   * {@link InstanceOfAssertFactory} for a {@link Throwable}.
++   *
++   * @param <T>  the {@code Throwable} type.
++   * @param type the element type instance.
++   * @return the factory instance.
++   *
++   * @see #THROWABLE
++   * @since 3.21.0
++   */
++  static <T extends Throwable> InstanceOfAssertFactory<T, AbstractThrowableAssert<?, T>> throwable(Class<T> type) {
++    return new InstanceOfAssertFactory<>(type, Assertions::assertThat);
++  }
+ 
+   /**
+    * {@link InstanceOfAssertFactory} for a {@link CharSequence}.
+diff --git a/src/main/java/org/assertj/core/api/Java6Assertions.java b/src/main/java/org/assertj/core/api/Java6Assertions.java
+index a551c1ab9..1c035eb01 100644
+--- a/src/main/java/org/assertj/core/api/Java6Assertions.java
++++ b/src/main/java/org/assertj/core/api/Java6Assertions.java
+@@ -1036,8 +1036,8 @@ public class Java6Assertions {
+    * @param actual the actual value.
+    * @return the created {@link ThrowableAssert}.
+    */
+-  public static AbstractThrowableAssert<?, ? extends Throwable> assertThat(Throwable actual) {
+-    return new ThrowableAssert(actual);
++  public static <T extends Throwable> AbstractThrowableAssert<?, T> assertThat(T actual) {
++    return new ThrowableAssert<>(actual);
+   }
+ 
+   /**
+@@ -1080,7 +1080,7 @@ public class Java6Assertions {
+    */
+   @CanIgnoreReturnValue
+   public static AbstractThrowableAssert<?, ? extends Throwable> assertThatThrownBy(ThrowingCallable shouldRaiseThrowable) {
+-    return new ThrowableAssert(catchThrowable(shouldRaiseThrowable)).hasBeenThrown();
++    return new ThrowableAssert<>(catchThrowable(shouldRaiseThrowable)).hasBeenThrown();
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/api/Java6BDDAssertions.java b/src/main/java/org/assertj/core/api/Java6BDDAssertions.java
+index e98daad82..c0e13b2f6 100644
+--- a/src/main/java/org/assertj/core/api/Java6BDDAssertions.java
++++ b/src/main/java/org/assertj/core/api/Java6BDDAssertions.java
+@@ -901,12 +901,12 @@ public class Java6BDDAssertions {
+   }
+ 
+   /**
+-   * Creates a new instance of <code>{@link org.assertj.core.api.ThrowableAssert}</code>.
++   * Creates a new instance of <code>{@link ThrowableAssert}</code>.
+    *
+    * @param actual the actual value.
+    * @return the created assertion Throwable.
+    */
+-  public static AbstractThrowableAssert<?, ? extends Throwable> then(Throwable actual) {
++  public static <T extends Throwable> AbstractThrowableAssert<?, T> then(T actual) {
+     return assertThat(actual);
+   }
+ 
+diff --git a/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java b/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java
+index 941ef7a96..cc379b6b3 100644
+--- a/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java
++++ b/src/main/java/org/assertj/core/api/Java6BDDSoftAssertionsProvider.java
+@@ -755,7 +755,8 @@ public interface Java6BDDSoftAssertionsProvider extends SoftAssertionsProvider {
+    * @param actual the actual value.
+    * @return the created assertion Throwable.
+    */
+-  default ThrowableAssert then(Throwable actual) {
++  @SuppressWarnings("unchecked")
++  default <T extends Throwable> ThrowableAssert<T> then(T actual) {
+     return proxy(ThrowableAssert.class, Throwable.class, actual);
+   }
+ 
+diff --git a/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java b/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java
+index 4fd967465..4d220806a 100644
+--- a/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java
++++ b/src/main/java/org/assertj/core/api/Java6StandardSoftAssertionsProvider.java
+@@ -753,7 +753,8 @@ public interface Java6StandardSoftAssertionsProvider extends SoftAssertionsProvi
+    * @param actual the actual value.
+    * @return the created assertion Throwable.
+    */
+-  default ThrowableAssert assertThat(Throwable actual) {
++  @SuppressWarnings("unchecked")
++  default <T extends Throwable> ThrowableAssert<T> assertThat(T actual) {
+     return proxy(ThrowableAssert.class, Throwable.class, actual);
+   }
+ 
+diff --git a/src/main/java/org/assertj/core/api/ThrowableAssert.java b/src/main/java/org/assertj/core/api/ThrowableAssert.java
+index 45c535a01..3eba102c5 100644
+--- a/src/main/java/org/assertj/core/api/ThrowableAssert.java
++++ b/src/main/java/org/assertj/core/api/ThrowableAssert.java
+@@ -27,13 +27,13 @@ import java.util.concurrent.Callable;
+  * @author Joel Costigliola
+  * @author Mikhail Mazursky
+  */
+-public class ThrowableAssert extends AbstractThrowableAssert<ThrowableAssert, Throwable> {
++public class ThrowableAssert<ACTUAL extends Throwable> extends AbstractThrowableAssert<ThrowableAssert<ACTUAL>, ACTUAL> {
+ 
+   public interface ThrowingCallable {
+     void call() throws Throwable;
+   }
+ 
+-  public ThrowableAssert(Throwable actual) {
++  public ThrowableAssert(ACTUAL actual) {
+     super(actual, ThrowableAssert.class);
+   }
+ 
+@@ -41,7 +41,8 @@ public class ThrowableAssert extends AbstractThrowableAssert<ThrowableAssert, Th
+     super(buildThrowableAssertFromCallable(runnable), ThrowableAssert.class);
+   }
+ 
+-  private static <V> Throwable buildThrowableAssertFromCallable(Callable<V> callable) throws AssertionError {
++  @SuppressWarnings("unchecked")
++  private static <V, THROWABLE extends Throwable> THROWABLE buildThrowableAssertFromCallable(Callable<V> callable) throws AssertionError {
+     try {
+       callable.call();
+       // fail if the expected exception was *not* thrown
+@@ -53,7 +54,7 @@ public class ThrowableAssert extends AbstractThrowableAssert<ThrowableAssert, Th
+       throw e;
+     } catch (Throwable throwable) {
+       // the throwable we will check
+-      return throwable;
++      return (THROWABLE) throwable;
+     }
+   }
+ 
+diff --git a/src/main/java/org/assertj/core/api/ThrowableAssertAlternative.java b/src/main/java/org/assertj/core/api/ThrowableAssertAlternative.java
+index 067f190ef..1eaa6b62d 100644
+--- a/src/main/java/org/assertj/core/api/ThrowableAssertAlternative.java
++++ b/src/main/java/org/assertj/core/api/ThrowableAssertAlternative.java
+@@ -29,11 +29,11 @@ import org.assertj.core.util.CheckReturnValue;
+ public class ThrowableAssertAlternative<ACTUAL extends Throwable>
+     extends AbstractObjectAssert<ThrowableAssertAlternative<ACTUAL>, ACTUAL> {
+ 
+-  private ThrowableAssert delegate;
++  private final ThrowableAssert<ACTUAL> delegate;
+ 
+   public ThrowableAssertAlternative(final ACTUAL actual) {
+     super(actual, ThrowableAssertAlternative.class);
+-    delegate = new ThrowableAssert(actual);
++    delegate = new ThrowableAssert<>(actual);
+   }
+ 
+   /**
+diff --git a/src/main/java/org/assertj/core/api/WithAssertions.java b/src/main/java/org/assertj/core/api/WithAssertions.java
+index bdb1cccad..888a85145 100644
+--- a/src/main/java/org/assertj/core/api/WithAssertions.java
++++ b/src/main/java/org/assertj/core/api/WithAssertions.java
+@@ -416,7 +416,7 @@ public interface WithAssertions extends InstanceOfAssertFactories {
+    * @param actual the actual value.
+    * @return the created {@link ThrowableAssert}.
+    */
+-  default AbstractThrowableAssert<?, ? extends Throwable> assertThat(final Throwable actual) {
++  default <T extends Throwable> AbstractThrowableAssert<?, T> assertThat(final T actual) {
+     return Assertions.assertThat(actual);
+   }
+ 
+diff --git a/src/main/java/org/assertj/core/api/WithAssumptions.java b/src/main/java/org/assertj/core/api/WithAssumptions.java
+index 00a646d7b..3e7214966 100644
+--- a/src/main/java/org/assertj/core/api/WithAssumptions.java
++++ b/src/main/java/org/assertj/core/api/WithAssumptions.java
+@@ -210,7 +210,7 @@ public interface WithAssumptions {
+    * @return the created assumption for assertion object.
+    * @since 2.9.0 / 3.9.0
+    */
+-  default AbstractThrowableAssert<?, ? extends Throwable> assumeThat(final Throwable actual) {
++  default <T extends Throwable> AbstractThrowableAssert<?, T> assumeThat(final T actual) {
+     return Assumptions.assumeThat(actual);
+   }
+ 

@@ -1,0 +1,35 @@
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTypeCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTypeCheckTest.java
+index 795129604..f006b0e72 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTypeCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/IllegalTypeCheckTest.java
+@@ -389,6 +389,14 @@ public class IllegalTypeCheckTest extends AbstractModuleTestSupport {
+                 expected);
+     }
+ 
++    @Test
++    public void testTrailingWhitespaceInConfig() throws Exception {
++        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
++        verifyWithInlineConfigParser(
++                getPath("InputIllegalTypeWhitespaceInConfig.java"),
++                expected);
++    }
++
+     @Test
+     public void testTokensNotNull() {
+         final IllegalTypeCheck check = new IllegalTypeCheck();
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/naming/ParameterNameCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/naming/ParameterNameCheckTest.java
+index bcc678dc2..42bd84853 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/naming/ParameterNameCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/naming/ParameterNameCheckTest.java
+@@ -178,4 +178,11 @@ public class ParameterNameCheckTest
+                 getPath("InputParameterNameLambda.java"), expected);
+     }
+ 
++    @Test
++    public void testWhitespaceInConfig() throws Exception {
++        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
++        verifyWithInlineConfigParser(
++                getPath("InputParameterNameWhitespaceInConfig.java"), expected);
++    }
++
+ }

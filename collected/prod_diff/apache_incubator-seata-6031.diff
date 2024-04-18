@@ -1,0 +1,136 @@
+diff --git a/core/src/main/java/io/seata/core/constants/DBType.java b/core/src/main/java/io/seata/core/constants/DBType.java
+index 49063bb80..a01714740 100644
+--- a/core/src/main/java/io/seata/core/constants/DBType.java
++++ b/core/src/main/java/io/seata/core/constants/DBType.java
+@@ -208,5 +208,4 @@ public enum DBType {
+         }
+         throw new IllegalArgumentException("unknown dbtype:" + dbType);
+     }
+-
+ }
+diff --git a/rm-datasource/src/main/java/io/seata/rm/RMHandlerAT.java b/rm-datasource/src/main/java/io/seata/rm/RMHandlerAT.java
+index 333a121a2..cc9d19718 100644
+--- a/rm-datasource/src/main/java/io/seata/rm/RMHandlerAT.java
++++ b/rm-datasource/src/main/java/io/seata/rm/RMHandlerAT.java
+@@ -19,8 +19,6 @@ import java.sql.Connection;
+ import java.sql.SQLException;
+ import java.text.ParseException;
+ import java.util.Date;
+-import java.util.Map;
+-import java.util.concurrent.ConcurrentHashMap;
+ 
+ import io.seata.common.util.DateUtil;
+ import io.seata.core.model.BranchType;
+@@ -44,8 +42,6 @@ public class RMHandlerAT extends AbstractRMHandler {
+ 
+     private static final int LIMIT_ROWS = 3000;
+ 
+-    private final Map<String, Boolean> undoLogTableExistRecord = new ConcurrentHashMap<>();
+-
+     @Override
+     public void handle(UndoLogDeleteRequest request) {
+         String resourceId = request.getResourceId();
+@@ -56,12 +52,6 @@ public class RMHandlerAT extends AbstractRMHandler {
+             return;
+         }
+ 
+-        boolean hasUndoLogTable = undoLogTableExistRecord.computeIfAbsent(resourceId, id -> checkUndoLogTableExist(dataSourceProxy));
+-        if (!hasUndoLogTable) {
+-            LOGGER.debug("resource({}) has no undo_log table, UndoLogDeleteRequest will be ignored", resourceId);
+-            return;
+-        }
+-
+         Date division = getLogCreated(request.getSaveDays());
+ 
+         UndoLogManager manager = getUndoLogManager(dataSourceProxy);
+@@ -80,19 +70,6 @@ public class RMHandlerAT extends AbstractRMHandler {
+         }
+     }
+ 
+-    boolean checkUndoLogTableExist(DataSourceProxy dataSourceProxy) {
+-        UndoLogManager manager = getUndoLogManager(dataSourceProxy);
+-        try (Connection connection = getConnection(dataSourceProxy)) {
+-            if (connection == null) {
+-                return false;
+-            }
+-            return manager.hasUndoLogTable(connection);
+-        } catch (Exception e) {
+-            // should never happen, hasUndoLogTable method had catch all Exception
+-            return false;
+-        }
+-    }
+-
+     Connection getConnection(DataSourceProxy dataSourceProxy) {
+         try {
+             return dataSourceProxy.getPlainConnection();
+diff --git a/rm-datasource/src/main/java/io/seata/rm/datasource/DataSourceProxy.java b/rm-datasource/src/main/java/io/seata/rm/datasource/DataSourceProxy.java
+index 6d930ea40..295a22e77 100644
+--- a/rm-datasource/src/main/java/io/seata/rm/datasource/DataSourceProxy.java
++++ b/rm-datasource/src/main/java/io/seata/rm/datasource/DataSourceProxy.java
+@@ -22,18 +22,25 @@ import java.sql.SQLException;
+ 
+ import javax.sql.DataSource;
+ 
++import io.seata.common.ConfigurationKeys;
+ import io.seata.common.Constants;
++import io.seata.common.loader.EnhancedServiceNotFoundException;
++import io.seata.config.ConfigurationFactory;
+ import io.seata.core.context.RootContext;
+ import io.seata.core.model.BranchType;
+ import io.seata.core.model.Resource;
+ import io.seata.rm.DefaultResourceManager;
+ import io.seata.rm.datasource.sql.struct.TableMetaCacheFactory;
++import io.seata.rm.datasource.undo.UndoLogManager;
++import io.seata.rm.datasource.undo.UndoLogManagerFactory;
+ import io.seata.rm.datasource.util.JdbcUtils;
+ import io.seata.sqlparser.util.JdbcConstants;
+ import org.apache.commons.lang.StringUtils;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
++import static io.seata.common.DefaultValues.DEFAULT_TRANSACTION_UNDO_LOG_TABLE;
++
+ /**
+  * The type Data source proxy.
+  *
+@@ -101,6 +108,8 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
+                 validMySQLVersion(connection);
+                 checkDerivativeProduct();
+             }
++            checkUndoLogTableExist(connection);
++
+         } catch (SQLException e) {
+             throw new IllegalStateException("can not init dataSource", e);
+         }
+@@ -143,6 +152,31 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
+         return false;
+     }
+ 
++    /**
++     * check existence of undolog table
++     *
++     * if the table not exist fast fail, or else keep silence
++     *
++     * @param conn db connection
++     */
++    private void checkUndoLogTableExist(Connection conn) {
++        UndoLogManager undoLogManager;
++        try {
++            undoLogManager = UndoLogManagerFactory.getUndoLogManager(dbType);
++        } catch (EnhancedServiceNotFoundException e) {
++            String errMsg = String.format("AT mode don't support the the dbtype: %s", dbType);
++            throw new IllegalStateException(errMsg, e);
++        }
++
++        boolean undoLogTableExist = undoLogManager.hasUndoLogTable(conn);
++        if (!undoLogTableExist) {
++            String undoLogTableName = ConfigurationFactory.getInstance()
++                    .getConfig(ConfigurationKeys.TRANSACTION_UNDO_LOG_TABLE, DEFAULT_TRANSACTION_UNDO_LOG_TABLE);
++            String errMsg = String.format("in AT mode, %s table not exist", undoLogTableName);
++            throw new IllegalStateException(errMsg);
++        }
++    }
++
+     /**
+      * publish tableMeta refresh event
+      */

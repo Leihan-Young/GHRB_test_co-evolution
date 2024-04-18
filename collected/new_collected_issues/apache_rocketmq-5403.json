@@ -1,0 +1,7 @@
+{
+  "issue_id": 5402,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5402",
+  "title": "The retry messages should not be decompressed in PopReviveService",
+  "description": "<p dir=\"auto\">The steps to reproduce</p>\n<ol dir=\"auto\">\n<li>Send a large message</li>\n<li>Pop this message from broker but not ack</li>\n</ol>\n<p dir=\"auto\">We will see, the large message will be decompressed in PopReviveService<br>\nAnd this will lead to the decompressed message maybe cannot put into MessageStore, because the size of the message may exceed the maxMessageSize</p>",
+  "description_text": "The steps to reproduce\n\nSend a large message\nPop this message from broker but not ack\n\nWe will see, the large message will be decompressed in PopReviveService\nAnd this will lead to the decompressed message maybe cannot put into MessageStore, because the size of the message may exceed the maxMessageSize"
+}

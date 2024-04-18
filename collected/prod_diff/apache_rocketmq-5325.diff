@@ -1,0 +1,274 @@
+diff --git a/controller/src/main/java/org/apache/rocketmq/controller/ControllerStartup.java b/controller/src/main/java/org/apache/rocketmq/controller/ControllerStartup.java
+index a72c05a1b..e27ee68ab 100644
+--- a/controller/src/main/java/org/apache/rocketmq/controller/ControllerStartup.java
++++ b/controller/src/main/java/org/apache/rocketmq/controller/ControllerStartup.java
+@@ -26,13 +26,13 @@ import java.io.InputStream;
+ import java.util.Properties;
+ import java.util.concurrent.Callable;
+ import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Option;
+ import org.apache.commons.cli.Options;
+-import org.apache.commons.cli.PosixParser;
+ import org.apache.commons.lang3.StringUtils;
++import org.apache.rocketmq.common.ControllerConfig;
+ import org.apache.rocketmq.common.MixAll;
+ import org.apache.rocketmq.common.constant.LoggerName;
+-import org.apache.rocketmq.common.ControllerConfig;
+ import org.apache.rocketmq.logging.InternalLogger;
+ import org.apache.rocketmq.logging.InternalLoggerFactory;
+ import org.apache.rocketmq.remoting.netty.NettyClientConfig;
+@@ -71,7 +71,7 @@ public class ControllerStartup {
+ 
+     public static ControllerManager createControllerManager(String[] args) throws IOException, JoranException {
+         Options options = ServerUtil.buildCommandlineOptions(new Options());
+-        commandLine = ServerUtil.parseCmdLine("mqcontroller", args, buildCommandlineOptions(options), new PosixParser());
++        commandLine = ServerUtil.parseCmdLine("mqcontroller", args, buildCommandlineOptions(options), new DefaultParser());
+         if (null == commandLine) {
+             System.exit(-1);
+             return null;
+diff --git a/example/src/main/java/org/apache/rocketmq/example/benchmark/BatchProducer.java b/example/src/main/java/org/apache/rocketmq/example/benchmark/BatchProducer.java
+index 51be4dabe..098dc11bb 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/benchmark/BatchProducer.java
++++ b/example/src/main/java/org/apache/rocketmq/example/benchmark/BatchProducer.java
+@@ -28,9 +28,9 @@ import java.util.concurrent.TimeUnit;
+ import java.util.concurrent.atomic.AtomicLong;
+ import java.util.concurrent.atomic.LongAdder;
+ import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Option;
+ import org.apache.commons.cli.Options;
+-import org.apache.commons.cli.PosixParser;
+ import org.apache.commons.collections.CollectionUtils;
+ import org.apache.commons.lang3.RandomStringUtils;
+ import org.apache.rocketmq.client.exception.MQBrokerException;
+@@ -56,7 +56,7 @@ public class BatchProducer {
+         System.setProperty(RemotingCommand.SERIALIZE_TYPE_PROPERTY, SerializeType.ROCKETMQ.name());
+ 
+         Options options = ServerUtil.buildCommandlineOptions(new Options());
+-        CommandLine commandLine = ServerUtil.parseCmdLine("benchmarkBatchProducer", args, buildCommandlineOptions(options), new PosixParser());
++        CommandLine commandLine = ServerUtil.parseCmdLine("benchmarkBatchProducer", args, buildCommandlineOptions(options), new DefaultParser());
+         if (null == commandLine) {
+             System.exit(-1);
+         }
+diff --git a/example/src/main/java/org/apache/rocketmq/example/benchmark/Consumer.java b/example/src/main/java/org/apache/rocketmq/example/benchmark/Consumer.java
+index ef7bd4dc6..23a272bfc 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/benchmark/Consumer.java
++++ b/example/src/main/java/org/apache/rocketmq/example/benchmark/Consumer.java
+@@ -17,11 +17,20 @@
+ 
+ package org.apache.rocketmq.example.benchmark;
+ 
++import java.io.IOException;
++import java.util.LinkedList;
++import java.util.List;
++import java.util.TimerTask;
++import java.util.concurrent.ScheduledExecutorService;
++import java.util.concurrent.ScheduledThreadPoolExecutor;
++import java.util.concurrent.ThreadLocalRandom;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.atomic.AtomicLong;
+ import java.util.concurrent.atomic.LongAdder;
+ import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Option;
+ import org.apache.commons.cli.Options;
+-import org.apache.commons.cli.PosixParser;
+ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+ import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+ import org.apache.rocketmq.client.consumer.MessageSelector;
+@@ -38,22 +47,12 @@ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
+ import org.apache.rocketmq.remoting.protocol.SerializeType;
+ import org.apache.rocketmq.srvutil.ServerUtil;
+ 
+-import java.io.IOException;
+-import java.util.LinkedList;
+-import java.util.List;
+-import java.util.TimerTask;
+-import java.util.concurrent.ScheduledExecutorService;
+-import java.util.concurrent.ScheduledThreadPoolExecutor;
+-import java.util.concurrent.ThreadLocalRandom;
+-import java.util.concurrent.TimeUnit;
+-import java.util.concurrent.atomic.AtomicLong;
+-
+ public class Consumer {
+ 
+     public static void main(String[] args) throws MQClientException, IOException {
+         System.setProperty(RemotingCommand.SERIALIZE_TYPE_PROPERTY, SerializeType.ROCKETMQ.name());
+         Options options = ServerUtil.buildCommandlineOptions(new Options());
+-        CommandLine commandLine = ServerUtil.parseCmdLine("benchmarkConsumer", args, buildCommandlineOptions(options), new PosixParser());
++        CommandLine commandLine = ServerUtil.parseCmdLine("benchmarkConsumer", args, buildCommandlineOptions(options), new DefaultParser());
+         if (null == commandLine) {
+             System.exit(-1);
+         }
+diff --git a/example/src/main/java/org/apache/rocketmq/example/benchmark/Producer.java b/example/src/main/java/org/apache/rocketmq/example/benchmark/Producer.java
+index ac164a081..7112c89a1 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/benchmark/Producer.java
++++ b/example/src/main/java/org/apache/rocketmq/example/benchmark/Producer.java
+@@ -20,9 +20,9 @@ import java.nio.charset.StandardCharsets;
+ import java.util.concurrent.ThreadPoolExecutor;
+ import java.util.concurrent.atomic.LongAdder;
+ import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Option;
+ import org.apache.commons.cli.Options;
+-import org.apache.commons.cli.PosixParser;
+ import org.apache.commons.lang3.RandomStringUtils;
+ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+ import org.apache.rocketmq.client.exception.MQBrokerException;
+@@ -61,7 +61,7 @@ public class Producer {
+         System.setProperty(RemotingCommand.SERIALIZE_TYPE_PROPERTY, SerializeType.ROCKETMQ.name());
+ 
+         Options options = ServerUtil.buildCommandlineOptions(new Options());
+-        CommandLine commandLine = ServerUtil.parseCmdLine("benchmarkProducer", args, buildCommandlineOptions(options), new PosixParser());
++        CommandLine commandLine = ServerUtil.parseCmdLine("benchmarkProducer", args, buildCommandlineOptions(options), new DefaultParser());
+         if (null == commandLine) {
+             System.exit(-1);
+         }
+diff --git a/example/src/main/java/org/apache/rocketmq/example/benchmark/TransactionProducer.java b/example/src/main/java/org/apache/rocketmq/example/benchmark/TransactionProducer.java
+index be5ccf2ef..993224e3d 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/benchmark/TransactionProducer.java
++++ b/example/src/main/java/org/apache/rocketmq/example/benchmark/TransactionProducer.java
+@@ -18,9 +18,9 @@
+ package org.apache.rocketmq.example.benchmark;
+ 
+ import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Option;
+ import org.apache.commons.cli.Options;
+-import org.apache.commons.cli.PosixParser;
+ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+ import org.apache.rocketmq.client.exception.MQClientException;
+ import org.apache.rocketmq.client.producer.LocalTransactionState;
+@@ -65,7 +65,7 @@ public class TransactionProducer {
+     public static void main(String[] args) throws MQClientException, UnsupportedEncodingException {
+         System.setProperty(RemotingCommand.SERIALIZE_TYPE_PROPERTY, SerializeType.ROCKETMQ.name());
+         Options options = ServerUtil.buildCommandlineOptions(new Options());
+-        CommandLine commandLine = ServerUtil.parseCmdLine("TransactionProducer", args, buildCommandlineOptions(options), new PosixParser());
++        CommandLine commandLine = ServerUtil.parseCmdLine("TransactionProducer", args, buildCommandlineOptions(options), new DefaultParser());
+         TxSendConfig config = new TxSendConfig();
+         config.topic = commandLine.hasOption('t') ? commandLine.getOptionValue('t').trim() : "BenchmarkTest";
+         config.threadCount = commandLine.hasOption('w') ? Integer.parseInt(commandLine.getOptionValue('w')) : 32;
+diff --git a/example/src/main/java/org/apache/rocketmq/example/operation/Consumer.java b/example/src/main/java/org/apache/rocketmq/example/operation/Consumer.java
+index 74b9f99f3..90f2e133a 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/operation/Consumer.java
++++ b/example/src/main/java/org/apache/rocketmq/example/operation/Consumer.java
+@@ -19,11 +19,11 @@ package org.apache.rocketmq.example.operation;
+ import java.util.List;
+ import java.util.concurrent.atomic.AtomicLong;
+ import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.HelpFormatter;
+ import org.apache.commons.cli.Option;
+ import org.apache.commons.cli.Options;
+ import org.apache.commons.cli.ParseException;
+-import org.apache.commons.cli.PosixParser;
+ import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
+ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+@@ -91,7 +91,7 @@ public class Consumer {
+         opt.setRequired(true);
+         options.addOption(opt);
+ 
+-        PosixParser parser = new PosixParser();
++        DefaultParser parser = new DefaultParser();
+         HelpFormatter hf = new HelpFormatter();
+         hf.setWidth(110);
+         CommandLine commandLine = null;
+diff --git a/example/src/main/java/org/apache/rocketmq/example/operation/Producer.java b/example/src/main/java/org/apache/rocketmq/example/operation/Producer.java
+index 1d4336d7f..0cf260ddb 100644
+--- a/example/src/main/java/org/apache/rocketmq/example/operation/Producer.java
++++ b/example/src/main/java/org/apache/rocketmq/example/operation/Producer.java
+@@ -17,11 +17,11 @@
+ package org.apache.rocketmq.example.operation;
+ 
+ import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.HelpFormatter;
+ import org.apache.commons.cli.Option;
+ import org.apache.commons.cli.Options;
+ import org.apache.commons.cli.ParseException;
+-import org.apache.commons.cli.PosixParser;
+ import org.apache.rocketmq.client.exception.MQClientException;
+ import org.apache.rocketmq.client.producer.DefaultMQProducer;
+ import org.apache.rocketmq.client.producer.SendResult;
+@@ -89,7 +89,7 @@ public class Producer {
+         opt.setRequired(true);
+         options.addOption(opt);
+ 
+-        PosixParser parser = new PosixParser();
++        DefaultParser parser = new DefaultParser();
+         HelpFormatter hf = new HelpFormatter();
+         hf.setWidth(110);
+         CommandLine commandLine = null;
+diff --git a/namesrv/src/main/java/org/apache/rocketmq/namesrv/NamesrvStartup.java b/namesrv/src/main/java/org/apache/rocketmq/namesrv/NamesrvStartup.java
+index 078d6db07..9ccf023fc 100644
+--- a/namesrv/src/main/java/org/apache/rocketmq/namesrv/NamesrvStartup.java
++++ b/namesrv/src/main/java/org/apache/rocketmq/namesrv/NamesrvStartup.java
+@@ -25,9 +25,9 @@ import java.nio.file.Paths;
+ import java.util.Properties;
+ import java.util.concurrent.Callable;
+ import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Option;
+ import org.apache.commons.cli.Options;
+-import org.apache.commons.cli.PosixParser;
+ import org.apache.rocketmq.common.MQVersion;
+ import org.apache.rocketmq.common.MixAll;
+ import org.apache.rocketmq.common.constant.LoggerName;
+@@ -86,7 +86,7 @@ public class NamesrvStartup {
+         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
+ 
+         Options options = ServerUtil.buildCommandlineOptions(new Options());
+-        CommandLine commandLine = ServerUtil.parseCmdLine("mqnamesrv", args, buildCommandlineOptions(options), new PosixParser());
++        CommandLine commandLine = ServerUtil.parseCmdLine("mqnamesrv", args, buildCommandlineOptions(options), new DefaultParser());
+         if (null == commandLine) {
+             System.exit(-1);
+             return;
+diff --git a/tools/src/main/java/org/apache/rocketmq/tools/command/MQAdminStartup.java b/tools/src/main/java/org/apache/rocketmq/tools/command/MQAdminStartup.java
+index c718680b8..363e7baa7 100644
+--- a/tools/src/main/java/org/apache/rocketmq/tools/command/MQAdminStartup.java
++++ b/tools/src/main/java/org/apache/rocketmq/tools/command/MQAdminStartup.java
+@@ -23,8 +23,8 @@ import java.nio.file.Paths;
+ import java.util.ArrayList;
+ import java.util.List;
+ import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Options;
+-import org.apache.commons.cli.PosixParser;
+ import org.apache.rocketmq.acl.common.AclUtils;
+ import org.apache.rocketmq.common.MQVersion;
+ import org.apache.rocketmq.common.MixAll;
+@@ -150,7 +150,7 @@ public class MQAdminStartup {
+                         Options options = ServerUtil.buildCommandlineOptions(new Options());
+                         final CommandLine commandLine =
+                             ServerUtil.parseCmdLine("mqadmin " + cmd.commandName(), subargs, cmd.buildCommandlineOptions(options),
+-                                new PosixParser());
++                                new DefaultParser());
+                         if (null == commandLine) {
+                             return;
+                         }
+diff --git a/tools/src/main/java/org/apache/rocketmq/tools/command/queue/QueryConsumeQueueCommand.java b/tools/src/main/java/org/apache/rocketmq/tools/command/queue/QueryConsumeQueueCommand.java
+index 32055cdc3..5ce0e22d0 100644
+--- a/tools/src/main/java/org/apache/rocketmq/tools/command/queue/QueryConsumeQueueCommand.java
++++ b/tools/src/main/java/org/apache/rocketmq/tools/command/queue/QueryConsumeQueueCommand.java
+@@ -19,9 +19,9 @@ package org.apache.rocketmq.tools.command.queue;
+ 
+ import com.alibaba.fastjson.JSON;
+ import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.DefaultParser;
+ import org.apache.commons.cli.Option;
+ import org.apache.commons.cli.Options;
+-import org.apache.commons.cli.PosixParser;
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.rocketmq.common.protocol.body.ConsumeQueueData;
+ import org.apache.rocketmq.common.protocol.body.QueryConsumeQueueResponseBody;
+@@ -40,7 +40,7 @@ public class QueryConsumeQueueCommand implements SubCommand {
+         String[] subargs = new String[] {"-t TopicTest", "-q 0", "-i 6447", "-b 100.81.165.119:10911"};
+         final CommandLine commandLine =
+             ServerUtil.parseCmdLine("mqadmin " + cmd.commandName(), subargs, cmd.buildCommandlineOptions(options),
+-                new PosixParser());
++                new DefaultParser());
+         cmd.execute(commandLine, options, null);
+     }
+ 

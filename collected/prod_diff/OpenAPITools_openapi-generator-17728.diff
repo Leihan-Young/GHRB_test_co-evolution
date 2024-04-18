@@ -1,0 +1,30 @@
+diff --git a/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java b/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
+index e175b9d33ae..f17a36c3d03 100644
+--- a/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
++++ b/modules/openapi-generator/src/main/java/org/openapitools/codegen/OpenAPINormalizer.java
+@@ -738,11 +738,15 @@ public class OpenAPINormalizer {
+      *
+      * @param schema Schema
+      */
+-    private boolean isNullTypeSchema(Schema schema) {
++    public boolean isNullTypeSchema(Schema schema) {
+         if (schema == null) {
+             return true;
+         }
+ 
++        if (ModelUtils.hasAllOf(schema) || ModelUtils.hasOneOf(schema) || ModelUtils.hasAnyOf(schema)) {
++            return false;
++        }
++
+         if (schema.getTypes() != null && !schema.getTypes().isEmpty()) {
+             // 3.1 spec
+             if (schema.getTypes().size() ==1) { // 1 type only
+@@ -753,7 +757,7 @@ public class OpenAPINormalizer {
+             }
+         }
+ 
+-        if ((schema.getType() == null || schema.getType().equals("null")) && schema.get$ref() == null) {
++        if (!(schema instanceof JsonSchema) && (schema.getType() == null || schema.getType().equals("null")) && schema.get$ref() == null) {
+             return true;
+         }
+ 

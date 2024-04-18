@@ -1,0 +1,30 @@
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/blocks/RightCurlyCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/blocks/RightCurlyCheckTest.java
+index 5f0e46009..668a38a9d 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/blocks/RightCurlyCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/blocks/RightCurlyCheckTest.java
+@@ -306,6 +306,13 @@ public class RightCurlyCheckTest extends AbstractModuleTestSupport {
+                 getPath("InputRightCurlyTestAloneOrSingleline.java"), expected);
+     }
+ 
++    @Test
++    public void testAloneOrSingleLineTryCatchBlock() throws Exception {
++        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
++        verifyWithInlineConfigParser(
++                getPath("InputRightCurlyTestAloneOrSinglelineTryCatchBlock.java"), expected);
++    }
++
+     @Test
+     public void testCatchWithoutFinally() throws Exception {
+         final String[] expected = {
+@@ -387,9 +394,8 @@ public class RightCurlyCheckTest extends AbstractModuleTestSupport {
+     public void testTryWithResourceAloneSingle() throws Exception {
+         final String[] expected = {
+             "27:9: " + getCheckMessage(MSG_KEY_LINE_ALONE, "}", 9),
+-            "36:64: " + getCheckMessage(MSG_KEY_LINE_ALONE, "}", 64),
+-            "44:15: " + getCheckMessage(MSG_KEY_LINE_ALONE, "}", 15),
+-            "46:13: " + getCheckMessage(MSG_KEY_LINE_ALONE, "}", 13),
++            "43:15: " + getCheckMessage(MSG_KEY_LINE_ALONE, "}", 15),
++            "45:13: " + getCheckMessage(MSG_KEY_LINE_ALONE, "}", 13),
+         };
+         verifyWithInlineConfigParser(
+                 getPath("InputRightCurlyTryWithResourceAloneSingle.java"), expected);

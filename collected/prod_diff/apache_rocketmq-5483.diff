@@ -1,0 +1,50 @@
+diff --git a/client/src/main/java/org/apache/rocketmq/client/impl/consumer/ConsumeMessageConcurrentlyService.java b/client/src/main/java/org/apache/rocketmq/client/impl/consumer/ConsumeMessageConcurrentlyService.java
+index 0fbdc5ced..aee699ea2 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/impl/consumer/ConsumeMessageConcurrentlyService.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/consumer/ConsumeMessageConcurrentlyService.java
+@@ -284,6 +284,13 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService
+                 List<MessageExt> msgBackFailed = new ArrayList<>(consumeRequest.getMsgs().size());
+                 for (int i = ackIndex + 1; i < consumeRequest.getMsgs().size(); i++) {
+                     MessageExt msg = consumeRequest.getMsgs().get(i);
++                    // Maybe message is expired and cleaned, just ignore it.
++                    if (!consumeRequest.getProcessQueue().containsMessage(msg)) {
++                        log.info("Message is not found in its process queue; skip send-back-procedure, topic={}, "
++                                + "brokerName={}, queueId={}, queueOffset={}", msg.getTopic(), msg.getBrokerName(),
++                            msg.getQueueId(), msg.getQueueOffset());
++                        continue;
++                    }
+                     boolean result = this.sendMessageBack(msg, context);
+                     if (!result) {
+                         msg.setReconsumeTimes(msg.getReconsumeTimes() + 1);
+diff --git a/client/src/main/java/org/apache/rocketmq/client/impl/consumer/ProcessQueue.java b/client/src/main/java/org/apache/rocketmq/client/impl/consumer/ProcessQueue.java
+index 9ffab3cba..0fdec4737 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/impl/consumer/ProcessQueue.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/consumer/ProcessQueue.java
+@@ -334,6 +334,27 @@ public class ProcessQueue {
+         return result;
+     }
+ 
++    /**
++     * Return the result that whether current message is exist in the process queue or not.
++     */
++    public boolean containsMessage(MessageExt message) {
++        if (message == null) {
++            // should never reach here.
++            return false;
++        }
++        try {
++            this.treeMapLock.readLock().lockInterruptibly();
++            try {
++                return this.msgTreeMap.containsKey(message.getQueueOffset());
++            } finally {
++                this.treeMapLock.readLock().unlock();
++            }
++        } catch (Throwable t) {
++            log.error("Failed to check message's existence in process queue, message={}", message, t);
++        }
++        return false;
++    }
++
+     public boolean hasTempMessage() {
+         try {
+             this.treeMapLock.readLock().lockInterruptibly();

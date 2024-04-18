@@ -1,0 +1,20 @@
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/imports/ImportControlCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/imports/ImportControlCheckTest.java
+index 07fd1f81e..350bb1a55 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/imports/ImportControlCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/imports/ImportControlCheckTest.java
+@@ -229,6 +229,15 @@ public class ImportControlCheckTest extends AbstractModuleTestSupport {
+                 getPath("InputImportControl15.java"), expected);
+     }
+ 
++    @Test
++    public void testWithoutRegexAndWithStrategyOnMismatch() throws Exception {
++        final String[] expected = CommonUtil.EMPTY_STRING_ARRAY;
++
++        verifyWithInlineConfigParser(
++            getPath("InputImportControlWithoutRegexAndWithStrategyOnMismatch.java"),
++            expected);
++    }
++
+     @Test
+     public void testPkgRegExpInParent() throws Exception {
+         final String[] expected = {"13:1: " + getCheckMessage(MSG_DISALLOWED, "java.io.File")};

@@ -1,0 +1,45 @@
+diff --git a/assertj-core/src/test/java/org/assertj/core/internal/booleans/Booleans_assertEqual_Test.java b/assertj-core/src/test/java/org/assertj/core/internal/booleans/Booleans_assertEqual_Test.java
+index 6a57b681c..c95760295 100644
+--- a/assertj-core/src/test/java/org/assertj/core/internal/booleans/Booleans_assertEqual_Test.java
++++ b/assertj-core/src/test/java/org/assertj/core/internal/booleans/Booleans_assertEqual_Test.java
+@@ -36,8 +36,21 @@ class Booleans_assertEqual_Test extends BooleansBaseTest {
+ 
+   @Test
+   void should_fail_if_actual_is_null() {
+-    assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> booleans.assertEqual(someInfo(), null, true))
+-                                                   .withMessage(actualIsNull());
++    AssertionInfo info = someInfo();
++    boolean expectedFalse = false;
++    Boolean actual = null;
++
++    Throwable errorOnExpectingFalse = catchThrowable(() -> booleans.assertEqual(someInfo(), actual, expectedFalse));
++
++    assertThat(errorOnExpectingFalse).isInstanceOf(AssertionError.class);
++    verify(failures).failure(info, shouldBeEqual(actual, expectedFalse, info.representation()));
++
++    boolean expectedTrue = true;
++
++    Throwable errorOnExpectingTrue = catchThrowable(() -> booleans.assertEqual(someInfo(), actual, expectedTrue));
++
++    assertThat(errorOnExpectingTrue).isInstanceOf(AssertionError.class);
++    verify(failures).failure(info, shouldBeEqual(actual, expectedTrue, info.representation()));
+   }
+ 
+   @Test
+diff --git a/assertj-core/src/test/java/org/assertj/core/internal/booleans/Booleans_assertNotEqual_Test.java b/assertj-core/src/test/java/org/assertj/core/internal/booleans/Booleans_assertNotEqual_Test.java
+index b2b37da2a..5c612eee2 100644
+--- a/assertj-core/src/test/java/org/assertj/core/internal/booleans/Booleans_assertNotEqual_Test.java
++++ b/assertj-core/src/test/java/org/assertj/core/internal/booleans/Booleans_assertNotEqual_Test.java
+@@ -35,9 +35,9 @@ import org.junit.jupiter.api.Test;
+ class Booleans_assertNotEqual_Test extends BooleansBaseTest {
+ 
+   @Test
+-  void should_fail_if_actual_is_null() {
+-    assertThatExceptionOfType(AssertionError.class).isThrownBy(() -> booleans.assertNotEqual(someInfo(), null, false))
+-                                                   .withMessage(actualIsNull());
++  void should_pass_if_actual_is_null() {
++    booleans.assertNotEqual(someInfo(), null, false);
++    booleans.assertNotEqual(someInfo(), null, true);
+   }
+ 
+   @Test

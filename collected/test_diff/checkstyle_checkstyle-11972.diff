@@ -1,0 +1,28 @@
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheckTest.java
+index bf2f3250d..eb9e37e05 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheckTest.java
+@@ -91,6 +91,23 @@ public class VariableDeclarationUsageDistanceCheckTest extends
+                 getPath("InputVariableDeclarationUsageDistanceGeneral2.java"), expected);
+     }
+ 
++    @Test
++    public void testIfStatements() throws Exception {
++        final String[] expected = {
++            "18:9: " + getCheckMessage(MSG_KEY, "a", 4, 1),
++            "28:9: " + getCheckMessage(MSG_KEY, "a", 2, 1),
++            "32:9: " + getCheckMessage(MSG_KEY, "b", 2, 1),
++            "38:9: " + getCheckMessage(MSG_KEY, "c", 3, 1),
++            "49:9: " + getCheckMessage(MSG_KEY, "b", 2, 1),
++            "50:9: " + getCheckMessage(MSG_KEY, "c", 3, 1),
++            "51:9: " + getCheckMessage(MSG_KEY, "d", 4, 1),
++            "63:9: " + getCheckMessage(MSG_KEY, "a", 4, 1),
++
++        };
++        verifyWithInlineConfigParser(
++            getPath("InputVariableDeclarationUsageDistanceIfStatements.java"), expected);
++    }
++
+     @Test
+     public void testDistance() throws Exception {
+         final String[] expected = {

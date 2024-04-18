@@ -1,0 +1,7 @@
+{
+  "issue_id": 6956,
+  "issue_url": "https://github.com/apache/rocketmq/issues/6956",
+  "title": "[Enhancement] Add removeOne method for ReceiptHandleGroup",
+  "description": "<h3 dir=\"auto\">Before Creating the Enhancement Request</h3>\n<ul class=\"contains-task-list\">\n<li class=\"task-list-item\"><input type=\"checkbox\" id=\"\" disabled=\"\" class=\"task-list-item-checkbox\" checked=\"\"> I have confirmed that this should be classified as an enhancement rather than a bug/feature.</li>\n</ul>\n<h3 dir=\"auto\">Summary</h3>\n<p dir=\"auto\">Add removeOne method for ReceiptHandleGroup.</p>\n<h3 dir=\"auto\">Motivation</h3>\n<p dir=\"auto\">Add removeOne method for ReceiptHandleGroup, so that we can remove handle by messageID.</p>\n<h3 dir=\"auto\">Describe the Solution You'd Like</h3>\n<p dir=\"auto\">Add removeOne method for ReceiptHandleGroup.</p>\n<h3 dir=\"auto\">Describe Alternatives You've Considered</h3>\n<p dir=\"auto\">None.</p>\n<h3 dir=\"auto\">Additional Context</h3>\n<p dir=\"auto\"><em>No response</em></p>",
+  "description_text": "Before Creating the Enhancement Request\n\n I have confirmed that this should be classified as an enhancement rather than a bug/feature.\n\nSummary\nAdd removeOne method for ReceiptHandleGroup.\nMotivation\nAdd removeOne method for ReceiptHandleGroup, so that we can remove handle by messageID.\nDescribe the Solution You'd Like\nAdd removeOne method for ReceiptHandleGroup.\nDescribe Alternatives You've Considered\nNone.\nAdditional Context\nNo response"
+}

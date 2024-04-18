@@ -1,0 +1,62 @@
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/GenericWhitespaceCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/GenericWhitespaceCheck.java
+index e873e2b22..7106012dc 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/GenericWhitespaceCheck.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/checks/whitespace/GenericWhitespaceCheck.java
+@@ -51,7 +51,8 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
+  * <ul>
+  * <li> should not be preceded with whitespace in all cases.</li>
+  * <li> should be followed with whitespace in almost all cases,
+- *   except diamond operators and when preceding method name or constructor.</li></ul>
++ *   except diamond operators and when preceding a method name, constructor, or record header.</li>
++ * </ul>
+  * <p>
+  * Parent is {@code com.puppycrawl.tools.checkstyle.TreeWalker}
+  * </p>
+@@ -219,7 +220,9 @@ public class GenericWhitespaceCheck extends AbstractCheck {
+      */
+     private void processSingleGeneric(DetailAST ast, int[] line, int after) {
+         final char charAfter = Character.toChars(line[after])[0];
+-        if (isGenericBeforeMethod(ast) || isGenericBeforeCtorInvocation(ast)) {
++        if (isGenericBeforeMethod(ast)
++                || isGenericBeforeCtorInvocation(ast)
++                || isGenericBeforeRecordHeader(ast)) {
+             if (Character.isWhitespace(charAfter)) {
+                 log(ast, MSG_WS_FOLLOWED, CLOSE_ANGLE_BRACKET);
+             }
+@@ -229,6 +232,22 @@ public class GenericWhitespaceCheck extends AbstractCheck {
+         }
+     }
+ 
++    /**
++     * Checks if generic is before record header. Identifies two cases:
++     * <ol>
++     *     <li>In record def, eg: {@code record Session<T>()}</li>
++     *     <li>In record pattern def, eg: {@code o instanceof Session<String>(var s)}</li>
++     * </ol>
++     *
++     * @param ast ast
++     * @return true if generic is before record header
++     */
++    private static boolean isGenericBeforeRecordHeader(DetailAST ast) {
++        final DetailAST grandParent = ast.getParent().getParent();
++        return grandParent.getType() == TokenTypes.RECORD_DEF
++                || grandParent.getParent().getType() == TokenTypes.RECORD_PATTERN_DEF;
++    }
++
+     /**
+      * Checks if generic is before constructor invocation. Identifies two cases:
+      * <ol>
+@@ -370,10 +389,9 @@ public class GenericWhitespaceCheck extends AbstractCheck {
+      * @return checks if given character is valid
+      */
+     private static boolean isCharacterValidAfterGenericEnd(char charAfter) {
+-        return charAfter == '(' || charAfter == ')'
+-            || charAfter == ',' || charAfter == '['
+-            || charAfter == '.' || charAfter == ':'
+-            || charAfter == ';'
++        return charAfter == ')' || charAfter == ','
++            || charAfter == '[' || charAfter == '.'
++            || charAfter == ':' || charAfter == ';'
+             || Character.isWhitespace(charAfter);
+     }
+ 

@@ -1,0 +1,7 @@
+{
+  "issue_id": 5149,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5149",
+  "title": "remove useless producer example file.",
+  "description": "<p dir=\"auto\">remove useless example file.<br>\n<a href=\"https://github.com/apache/rocketmq/blob/develop/example/src/main/java/org/apache/rocketmq/example/simple/TestProducer.java\">https://github.com/apache/rocketmq/blob/develop/example/src/main/java/org/apache/rocketmq/example/simple/TestProducer.java</a></p>",
+  "description_text": "remove useless example file.\nhttps://github.com/apache/rocketmq/blob/develop/example/src/main/java/org/apache/rocketmq/example/simple/TestProducer.java"
+}

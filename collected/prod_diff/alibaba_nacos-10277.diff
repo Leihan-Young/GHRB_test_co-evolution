@@ -1,0 +1,566 @@
+diff --git a/auth/src/main/java/com/alibaba/nacos/auth/config/AuthConfigs.java b/auth/src/main/java/com/alibaba/nacos/auth/config/AuthConfigs.java
+index 7c9460b990..594feab5d4 100644
+--- a/auth/src/main/java/com/alibaba/nacos/auth/config/AuthConfigs.java
++++ b/auth/src/main/java/com/alibaba/nacos/auth/config/AuthConfigs.java
+@@ -26,6 +26,8 @@ import com.alibaba.nacos.common.utils.ConvertUtils;
+ import com.alibaba.nacos.common.utils.StringUtils;
+ import com.alibaba.nacos.plugin.auth.constant.Constants;
+ import com.alibaba.nacos.sys.env.EnvUtil;
++import com.alibaba.nacos.sys.module.ModuleState;
++import com.alibaba.nacos.sys.module.ModuleStateHolder;
+ import com.alibaba.nacos.sys.utils.PropertiesUtil;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+@@ -179,6 +181,11 @@ public class AuthConfigs extends Subscriber<ServerConfigChangeEvent> {
+                     .getProperty(Constants.Auth.NACOS_CORE_AUTH_ENABLE_USER_AGENT_AUTH_WHITE, Boolean.class, false);
+             nacosAuthSystemType = EnvUtil.getProperty(Constants.Auth.NACOS_CORE_AUTH_SYSTEM_TYPE, "");
+             refreshPluginProperties();
++            ModuleStateHolder.getInstance().getModuleState(AuthModuleStateBuilder.AUTH_MODULE)
++                    .ifPresent(moduleState -> {
++                        ModuleState temp = new AuthModuleStateBuilder().build();
++                        moduleState.getStates().putAll(temp.getStates());
++                    });
+         } catch (Exception e) {
+             LOGGER.warn("Upgrade auth config from env failed, use old value", e);
+         }
+diff --git a/auth/src/main/java/com/alibaba/nacos/auth/config/AuthModuleStateBuilder.java b/auth/src/main/java/com/alibaba/nacos/auth/config/AuthModuleStateBuilder.java
+new file mode 100644
+index 0000000000..dd83d1329a
+--- /dev/null
++++ b/auth/src/main/java/com/alibaba/nacos/auth/config/AuthModuleStateBuilder.java
+@@ -0,0 +1,57 @@
++/*
++ * Copyright 1999-2023 Alibaba Group Holding Ltd.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.alibaba.nacos.auth.config;
++
++import com.alibaba.nacos.plugin.auth.spi.server.AuthPluginManager;
++import com.alibaba.nacos.plugin.auth.spi.server.AuthPluginService;
++import com.alibaba.nacos.sys.module.ModuleState;
++import com.alibaba.nacos.sys.module.ModuleStateBuilder;
++import com.alibaba.nacos.sys.utils.ApplicationUtils;
++
++import java.util.Optional;
++
++/**
++ * Module state builder for auth module.
++ *
++ * @author xiweng.yy
++ */
++public class AuthModuleStateBuilder implements ModuleStateBuilder {
++    
++    public static final String AUTH_MODULE = "auth";
++    
++    public static final String AUTH_ENABLED = "auth_enabled";
++    
++    public static final String LOGIN_PAGE_ENABLED = "login_page_enabled";
++    
++    public static final String AUTH_SYSTEM_TYPE = "auth_system_type";
++    
++    @Override
++    public ModuleState build() {
++        ModuleState result = new ModuleState(AUTH_MODULE);
++        AuthConfigs authConfigs = ApplicationUtils.getBean(AuthConfigs.class);
++        result.newState(AUTH_ENABLED, authConfigs.isAuthEnabled());
++        result.newState(LOGIN_PAGE_ENABLED, isLoginPageEnabled(authConfigs));
++        result.newState(AUTH_SYSTEM_TYPE, authConfigs.getNacosAuthSystemType());
++        return result;
++    }
++    
++    private Boolean isLoginPageEnabled(AuthConfigs authConfigs) {
++        Optional<AuthPluginService> authPluginService = AuthPluginManager.getInstance()
++                .findAuthServiceSpiImpl(authConfigs.getNacosAuthSystemType());
++        return authPluginService.map(AuthPluginService::isLoginEnabled).orElse(false);
++    }
++}
+diff --git a/console/src/main/java/com/alibaba/nacos/console/controller/ServerStateController.java b/console/src/main/java/com/alibaba/nacos/console/controller/ServerStateController.java
+index aa5ead4b1c..75056bf09f 100644
+--- a/console/src/main/java/com/alibaba/nacos/console/controller/ServerStateController.java
++++ b/console/src/main/java/com/alibaba/nacos/console/controller/ServerStateController.java
+@@ -16,13 +16,18 @@
+ 
+ package com.alibaba.nacos.console.controller;
+ 
+-import com.alibaba.nacos.common.utils.VersionUtils;
++import com.alibaba.nacos.common.model.RestResult;
++import com.alibaba.nacos.common.model.RestResultUtils;
+ import com.alibaba.nacos.sys.env.EnvUtil;
++import com.alibaba.nacos.sys.module.ModuleState;
++import com.alibaba.nacos.sys.module.ModuleStateHolder;
++import com.alibaba.nacos.sys.utils.DiskUtils;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.GetMapping;
+ import org.springframework.web.bind.annotation.RequestMapping;
+ import org.springframework.web.bind.annotation.RestController;
+ 
++import java.io.File;
+ import java.util.HashMap;
+ import java.util.Map;
+ 
+@@ -35,6 +40,8 @@ import java.util.Map;
+ @RequestMapping("/v1/console/server")
+ public class ServerStateController {
+     
++    private static final String ANNOUNCEMENT_FILE = "announcement.conf";
++    
+     /**
+      * Get server state of current server.
+      *
+@@ -43,13 +50,19 @@ public class ServerStateController {
+     @GetMapping("/state")
+     public ResponseEntity<Map<String, String>> serverState() {
+         Map<String, String> serverState = new HashMap<>(4);
+-        serverState.put("standalone_mode",
+-                EnvUtil.getStandaloneMode() ? EnvUtil.STANDALONE_MODE_ALONE : EnvUtil.STANDALONE_MODE_CLUSTER);
+-        
+-        serverState.put("function_mode", EnvUtil.getFunctionMode());
+-        serverState.put("version", VersionUtils.version);
+-        
++        for (ModuleState each : ModuleStateHolder.getInstance().getAllModuleStates()) {
++            each.getStates().forEach((s, o) -> serverState.put(s, null == o ? null : o.toString()));
++        }
+         return ResponseEntity.ok().body(serverState);
+     }
+     
++    @GetMapping("/announcement")
++    public RestResult<String> getAnnouncement() {
++        File announcementFile = new File(EnvUtil.getConfPath(), ANNOUNCEMENT_FILE);
++        String announcement = null;
++        if (announcementFile.exists() && announcementFile.isFile()) {
++            announcement = DiskUtils.readFile(announcementFile);
++        }
++        return RestResultUtils.success(announcement);
++    }
+ }
+diff --git a/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/NacosAuthPluginService.java b/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/NacosAuthPluginService.java
+index 5ec9200ee4..4902e66529 100644
+--- a/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/NacosAuthPluginService.java
++++ b/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/NacosAuthPluginService.java
+@@ -17,6 +17,7 @@
+ package com.alibaba.nacos.plugin.auth.impl;
+ 
+ import com.alibaba.nacos.api.common.Constants;
++import com.alibaba.nacos.auth.config.AuthConfigs;
+ import com.alibaba.nacos.common.utils.StringUtils;
+ import com.alibaba.nacos.plugin.auth.api.IdentityContext;
+ import com.alibaba.nacos.plugin.auth.api.Permission;
+@@ -107,6 +108,11 @@ public class NacosAuthPluginService implements AuthPluginService {
+         return AuthConstants.AUTH_PLUGIN_TYPE;
+     }
+     
++    @Override
++    public boolean isLoginEnabled() {
++        return ApplicationUtils.getBean(AuthConfigs.class).isAuthEnabled();
++    }
++    
+     protected void checkNacosAuthManager() {
+         if (null == authenticationManager) {
+             authenticationManager = ApplicationUtils.getBean(DefaultAuthenticationManager.class);
+diff --git a/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/authenticate/AbstractAuthenticationManager.java b/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/authenticate/AbstractAuthenticationManager.java
+index e9966982ef..576d466d60 100644
+--- a/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/authenticate/AbstractAuthenticationManager.java
++++ b/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/authenticate/AbstractAuthenticationManager.java
+@@ -70,7 +70,6 @@ public class AbstractAuthenticationManager implements IAuthenticationManager {
+         if (StringUtils.isBlank(token)) {
+             throw new AccessException("user not found!");
+         }
+-        
+         return jwtTokenManager.parseToken(token);
+     }
+     
+diff --git a/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/token/impl/JwtTokenManager.java b/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/token/impl/JwtTokenManager.java
+index fda3b5c8e8..cd068c9a30 100644
+--- a/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/token/impl/JwtTokenManager.java
++++ b/plugin-default-impl/src/main/java/com/alibaba/nacos/plugin/auth/impl/token/impl/JwtTokenManager.java
+@@ -16,6 +16,9 @@
+ 
+ package com.alibaba.nacos.plugin.auth.impl.token.impl;
+ 
++import com.alibaba.nacos.api.exception.NacosException;
++import com.alibaba.nacos.api.exception.runtime.NacosRuntimeException;
++import com.alibaba.nacos.auth.config.AuthConfigs;
+ import com.alibaba.nacos.common.event.ServerConfigChangeEvent;
+ import com.alibaba.nacos.common.notify.Event;
+ import com.alibaba.nacos.common.notify.NotifyCenter;
+@@ -56,7 +59,10 @@ public class JwtTokenManager extends Subscriber<ServerConfigChangeEvent> impleme
+     
+     private volatile NacosJwtParser jwtParser;
+     
+-    public JwtTokenManager() {
++    private final AuthConfigs authConfigs;
++    
++    public JwtTokenManager(AuthConfigs authConfigs) {
++        this.authConfigs = authConfigs;
+         NotifyCenter.registerSubscriber(this);
+         processProperties();
+     }
+@@ -70,9 +76,11 @@ public class JwtTokenManager extends Subscriber<ServerConfigChangeEvent> impleme
+         try {
+             this.jwtParser = new NacosJwtParser(encodedSecretKey);
+         } catch (Exception e) {
+-            throw new IllegalArgumentException(
+-                    "the length of secret key must great than or equal 32 bytes; And the secret key  must be encoded by base64."
+-                            + "Please see https://nacos.io/zh-cn/docs/v2/guide/user/auth.html", e);
++            if (authConfigs.isAuthEnabled()) {
++                throw new IllegalArgumentException(
++                        "the length of secret key must great than or equal 32 bytes; And the secret key  must be encoded by base64."
++                                + "Please see https://nacos.io/zh-cn/docs/v2/guide/user/auth.html", e);
++            }
+         }
+         
+     }
+@@ -95,6 +103,10 @@ public class JwtTokenManager extends Subscriber<ServerConfigChangeEvent> impleme
+      * @return token
+      */
+     public String createToken(String userName) {
++        if (!authConfigs.isAuthEnabled()) {
++            return StringUtils.EMPTY;
++        }
++        checkJwtParser();
+         return jwtParser.jwtBuilder().setUserName(userName).setExpiredTime(this.tokenValidityInSeconds).compact();
+     }
+     
+@@ -124,6 +136,7 @@ public class JwtTokenManager extends Subscriber<ServerConfigChangeEvent> impleme
+     }
+     
+     public NacosUser parseToken(String token) throws AccessException {
++        checkJwtParser();
+         return jwtParser.parse(token);
+     }
+     
+@@ -149,4 +162,11 @@ public class JwtTokenManager extends Subscriber<ServerConfigChangeEvent> impleme
+     public Class<? extends Event> subscribeType() {
+         return ServerConfigChangeEvent.class;
+     }
++    
++    private void checkJwtParser() {
++        if (null == jwtParser) {
++            throw new NacosRuntimeException(NacosException.INVALID_PARAM,
++                    "Please config `nacos.core.auth.plugin.nacos.token.secret.key`, detail see https://nacos.io/zh-cn/docs/v2/guide/user/auth.html");
++        }
++    }
+ }
+diff --git a/plugin/auth/src/main/java/com/alibaba/nacos/plugin/auth/spi/server/AuthPluginService.java b/plugin/auth/src/main/java/com/alibaba/nacos/plugin/auth/spi/server/AuthPluginService.java
+index a4ba323efe..f08dd3b1b4 100644
+--- a/plugin/auth/src/main/java/com/alibaba/nacos/plugin/auth/spi/server/AuthPluginService.java
++++ b/plugin/auth/src/main/java/com/alibaba/nacos/plugin/auth/spi/server/AuthPluginService.java
+@@ -75,4 +75,13 @@ public interface AuthPluginService {
+      */
+     String getAuthServiceName();
+     
++    /**
++     * Is the plugin enable login.
++     *
++     * @return {@code true} if plugin need login, otherwise {@code false}
++     * @since 2.2.2
++     */
++    default boolean isLoginEnabled() {
++        return false;
++    }
+ }
+diff --git a/sys/src/main/java/com/alibaba/nacos/sys/env/Constants.java b/sys/src/main/java/com/alibaba/nacos/sys/env/Constants.java
+index 6c42d7faf1..1e07f6a6b3 100644
+--- a/sys/src/main/java/com/alibaba/nacos/sys/env/Constants.java
++++ b/sys/src/main/java/com/alibaba/nacos/sys/env/Constants.java
+@@ -24,6 +24,8 @@ package com.alibaba.nacos.sys.env;
+  */
+ public interface Constants {
+     
++    String SYS_MODULE = "sys";
++    
+     /**
+      * Spring Profile : "standalone".
+      */
+@@ -34,11 +36,15 @@ public interface Constants {
+      */
+     String STANDALONE_MODE_PROPERTY_NAME = "nacos.standalone";
+     
++    String STANDALONE_MODE_STATE = "standalone_mode";
++    
+     /**
+      * The System property name of  Function mode.
+      */
+     String FUNCTION_MODE_PROPERTY_NAME = "nacos.functionMode";
+     
++    String FUNCTION_MODE_STATE = "function_mode";
++    
+     /**
+      * The System property name of prefer hostname over ip.
+      */
+@@ -49,6 +55,8 @@ public interface Constants {
+      */
+     String ROOT_WEB_CONTEXT_PATH = "/";
+     
++    String NACOS_VERSION = "version";
++    
+     String NACOS_SERVER_IP = "nacos.server.ip";
+     
+     String USE_ONLY_SITE_INTERFACES = "nacos.inetutils.use-only-site-local-interfaces";
+diff --git a/sys/src/main/java/com/alibaba/nacos/sys/env/EnvModuleStateBuilder.java b/sys/src/main/java/com/alibaba/nacos/sys/env/EnvModuleStateBuilder.java
+new file mode 100644
+index 0000000000..b4e55c98db
+--- /dev/null
++++ b/sys/src/main/java/com/alibaba/nacos/sys/env/EnvModuleStateBuilder.java
+@@ -0,0 +1,39 @@
++/*
++ * Copyright 1999-2023 Alibaba Group Holding Ltd.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.alibaba.nacos.sys.env;
++
++import com.alibaba.nacos.common.utils.VersionUtils;
++import com.alibaba.nacos.sys.module.ModuleState;
++import com.alibaba.nacos.sys.module.ModuleStateBuilder;
++
++/**
++ * Module state builder for env module.
++ *
++ * @author xiweng.yy
++ */
++public class EnvModuleStateBuilder implements ModuleStateBuilder {
++    
++    @Override
++    public ModuleState build() {
++        ModuleState result = new ModuleState(Constants.SYS_MODULE);
++        result.newState(Constants.STANDALONE_MODE_STATE,
++                EnvUtil.getStandaloneMode() ? EnvUtil.STANDALONE_MODE_ALONE : EnvUtil.STANDALONE_MODE_CLUSTER);
++        result.newState(Constants.FUNCTION_MODE_STATE, EnvUtil.getFunctionMode());
++        result.newState(Constants.NACOS_VERSION, VersionUtils.version);
++        return result;
++    }
++}
+diff --git a/sys/src/main/java/com/alibaba/nacos/sys/module/ModuleState.java b/sys/src/main/java/com/alibaba/nacos/sys/module/ModuleState.java
+new file mode 100644
+index 0000000000..4e5145af48
+--- /dev/null
++++ b/sys/src/main/java/com/alibaba/nacos/sys/module/ModuleState.java
+@@ -0,0 +1,55 @@
++/*
++ * Copyright 1999-2021 Alibaba Group Holding Ltd.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.alibaba.nacos.sys.module;
++
++import java.util.HashMap;
++import java.util.Map;
++
++/**
++ * Module state.
++ *
++ * @author xiweng.yy
++ */
++public class ModuleState {
++    
++    private final String moduleName;
++    
++    private final Map<String, Object> states;
++    
++    public ModuleState(String moduleName) {
++        this.moduleName = moduleName;
++        this.states = new HashMap<>();
++    }
++    
++    public String getModuleName() {
++        return moduleName;
++    }
++    
++    public ModuleState newState(String stateName, Object stateValue) {
++        this.states.put(stateName, stateValue);
++        return this;
++    }
++    
++    public Map<String, Object> getStates() {
++        return states;
++    }
++    
++    @SuppressWarnings("all")
++    public <T> T getState(String stateName, T defaultValue) {
++        return (T) states.getOrDefault(stateName, defaultValue);
++    }
++}
+diff --git a/sys/src/main/java/com/alibaba/nacos/sys/module/ModuleStateBuilder.java b/sys/src/main/java/com/alibaba/nacos/sys/module/ModuleStateBuilder.java
+new file mode 100644
+index 0000000000..f79e1324aa
+--- /dev/null
++++ b/sys/src/main/java/com/alibaba/nacos/sys/module/ModuleStateBuilder.java
+@@ -0,0 +1,32 @@
++/*
++ * Copyright 1999-2023 Alibaba Group Holding Ltd.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.alibaba.nacos.sys.module;
++
++/**
++ * Module state builder.
++ *
++ * @author xiweng.yy
++ */
++public interface ModuleStateBuilder {
++    
++    /**
++     * Build module state.
++     *
++     * @return ModuleState
++     */
++    ModuleState build();
++}
+diff --git a/sys/src/main/java/com/alibaba/nacos/sys/module/ModuleStateHolder.java b/sys/src/main/java/com/alibaba/nacos/sys/module/ModuleStateHolder.java
+new file mode 100644
+index 0000000000..eeeee68496
+--- /dev/null
++++ b/sys/src/main/java/com/alibaba/nacos/sys/module/ModuleStateHolder.java
+@@ -0,0 +1,105 @@
++/*
++ * Copyright 1999-2021 Alibaba Group Holding Ltd.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.alibaba.nacos.sys.module;
++
++import com.alibaba.nacos.common.spi.NacosServiceLoader;
++import com.alibaba.nacos.common.utils.StringUtils;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.Map;
++import java.util.Optional;
++import java.util.Set;
++
++/**
++ * Module State Holder.
++ *
++ * @author xiweng.yy
++ */
++public class ModuleStateHolder {
++    
++    private static final Logger LOGGER = LoggerFactory.getLogger(ModuleStateHolder.class);
++    
++    private static final ModuleStateHolder INSTANCE = new ModuleStateHolder();
++    
++    private final Map<String, ModuleState> moduleStates;
++    
++    private ModuleStateHolder() {
++        this.moduleStates = new HashMap<>();
++        for (ModuleStateBuilder each : NacosServiceLoader.load(ModuleStateBuilder.class)) {
++            try {
++                ModuleState moduleState = each.build();
++                moduleStates.put(moduleState.getModuleName(), moduleState);
++            } catch (Exception e) {
++                LOGGER.warn("Build ModuleState failed in builder:{}", each.getClass().getCanonicalName(), e);
++            }
++        }
++    }
++    
++    public static ModuleStateHolder getInstance() {
++        return INSTANCE;
++    }
++    
++    public Optional<ModuleState> getModuleState(String moduleName) {
++        return Optional.ofNullable(moduleStates.get(moduleName));
++    }
++    
++    public Set<ModuleState> getAllModuleStates() {
++        return new HashSet<>(moduleStates.values());
++    }
++    
++    public String getStateValueByName(String moduleName, String stateName) {
++        return getStateValueByName(moduleName, stateName, StringUtils.EMPTY);
++    }
++    
++    /**
++     * Get State Value by module name and state name.
++     *
++     * @param moduleName   module name of state
++     * @param stateName    state name
++     * @param defaultValue default value when can't find module or state
++     * @return state value
++     */
++    public <T> T getStateValueByName(String moduleName, String stateName, T defaultValue) {
++        Optional<ModuleState> moduleState = getModuleState(moduleName);
++        if (!moduleState.isPresent()) {
++            return defaultValue;
++        }
++        return moduleState.get().getState(stateName, defaultValue);
++    }
++    
++    /**
++     * Search State Value by state name one by one.
++     *
++     * @param stateName    state name
++     * @param defaultValue default value when can't find module or state
++     * @return state value
++     */
++    @SuppressWarnings("all")
++    public <T> T searchStateValue(String stateName, T defaultValue) {
++        T result = null;
++        for (ModuleState each : getAllModuleStates()) {
++            if (each.getStates().containsKey(stateName)) {
++                result = (T) each.getStates().get(stateName);
++                break;
++            }
++        }
++        return null == result ? defaultValue : result;
++    }
++}

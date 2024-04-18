@@ -1,0 +1,181 @@
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/DetailNodeTreeStringPrinter.java b/src/main/java/com/puppycrawl/tools/checkstyle/DetailNodeTreeStringPrinter.java
+index e365d0147..de390a42c 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/DetailNodeTreeStringPrinter.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/DetailNodeTreeStringPrinter.java
+@@ -29,7 +29,6 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
+ import com.puppycrawl.tools.checkstyle.api.DetailNode;
+ import com.puppycrawl.tools.checkstyle.api.FileText;
+ import com.puppycrawl.tools.checkstyle.api.JavadocTokenTypes;
+-import com.puppycrawl.tools.checkstyle.api.Violation;
+ import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
+ import com.puppycrawl.tools.checkstyle.utils.ParserUtil;
+ 
+@@ -91,15 +90,12 @@ public final class DetailNodeTreeStringPrinter {
+      * @return error violation
+      */
+     private static String getParseErrorMessage(ParseErrorMessage parseErrorMessage) {
+-        final Violation lmessage = new Violation(
+-                parseErrorMessage.getLineNumber(),
++        final LocalizedMessage message = new LocalizedMessage(
+                 "com.puppycrawl.tools.checkstyle.checks.javadoc.messages",
+-                parseErrorMessage.getMessageKey(),
+-                parseErrorMessage.getMessageArguments(),
+-                "",
+                 DetailNodeTreeStringPrinter.class,
+-                null);
+-        return "[ERROR:" + parseErrorMessage.getLineNumber() + "] " + lmessage.getViolation();
++                parseErrorMessage.getMessageKey(),
++                parseErrorMessage.getMessageArguments());
++        return "[ERROR:" + parseErrorMessage.getLineNumber() + "] " + message.getMessage();
+     }
+ 
+     /**
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/Main.java b/src/main/java/com/puppycrawl/tools/checkstyle/Main.java
+index 03f815c9f..d8e7a9d02 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/Main.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/Main.java
+@@ -48,7 +48,6 @@ import com.puppycrawl.tools.checkstyle.api.AutomaticBean;
+ import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
+ import com.puppycrawl.tools.checkstyle.api.Configuration;
+ import com.puppycrawl.tools.checkstyle.api.RootModule;
+-import com.puppycrawl.tools.checkstyle.api.Violation;
+ import com.puppycrawl.tools.checkstyle.utils.ChainedPropertyUtil;
+ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
+ import com.puppycrawl.tools.checkstyle.utils.XpathUtil;
+@@ -146,12 +145,12 @@ public final class Main {
+         finally {
+             // return exit code base on validation of Checker
+             if (errorCounter > 0) {
+-                final Violation errorCounterViolation = new Violation(1,
+-                        Definitions.CHECKSTYLE_BUNDLE, ERROR_COUNTER,
+-                        new String[] {String.valueOf(errorCounter)}, null, Main.class, null);
++                final LocalizedMessage errorCounterViolation = new LocalizedMessage(
++                        Definitions.CHECKSTYLE_BUNDLE, Main.class,
++                        ERROR_COUNTER, String.valueOf(errorCounter));
+                 // print error count statistic to error output stream,
+                 // output stream might be used by validation report content
+-                System.err.println(errorCounterViolation.getViolation());
++                System.err.println(errorCounterViolation.getMessage());
+             }
+         }
+         Runtime.getRuntime().exit(exitStatus);
+@@ -439,10 +438,10 @@ public final class Main {
+             properties.load(stream);
+         }
+         catch (final IOException ex) {
+-            final Violation loadPropertiesExceptionMessage = new Violation(1,
+-                    Definitions.CHECKSTYLE_BUNDLE, LOAD_PROPERTIES_EXCEPTION,
+-                    new String[] {file.getAbsolutePath()}, null, Main.class, null);
+-            throw new CheckstyleException(loadPropertiesExceptionMessage.getViolation(), ex);
++            final LocalizedMessage loadPropertiesExceptionMessage = new LocalizedMessage(
++                    Definitions.CHECKSTYLE_BUNDLE, Main.class,
++                    LOAD_PROPERTIES_EXCEPTION, file.getAbsolutePath());
++            throw new CheckstyleException(loadPropertiesExceptionMessage.getMessage(), ex);
+         }
+ 
+         return ChainedPropertyUtil.getResolvedProperties(properties);
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/PackageObjectFactory.java b/src/main/java/com/puppycrawl/tools/checkstyle/PackageObjectFactory.java
+index 568abdb44..bec9669bf 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/PackageObjectFactory.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/PackageObjectFactory.java
+@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
+ import java.util.stream.Stream;
+ 
+ import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
+-import com.puppycrawl.tools.checkstyle.api.Violation;
+ import com.puppycrawl.tools.checkstyle.utils.ModuleReflectionUtil;
+ 
+ /**
+@@ -209,10 +208,10 @@ public class PackageObjectFactory implements ModuleFactory {
+                         + STRING_SEPARATOR + nameCheck + STRING_SEPARATOR
+                         + joinPackageNamesWithClassName(nameCheck, packages);
+             }
+-            final Violation exceptionMessage = new Violation(1,
+-                Definitions.CHECKSTYLE_BUNDLE, UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE,
+-                new String[] {name, attemptedNames}, null, getClass(), null);
+-            throw new CheckstyleException(exceptionMessage.getViolation());
++            final LocalizedMessage exceptionMessage = new LocalizedMessage(
++                Definitions.CHECKSTYLE_BUNDLE, getClass(),
++                UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE, name, attemptedNames);
++            throw new CheckstyleException(exceptionMessage.getMessage());
+         }
+         return instance;
+     }
+@@ -285,10 +284,10 @@ public class PackageObjectFactory implements ModuleFactory {
+             final String optionalNames = fullModuleNames.stream()
+                     .sorted()
+                     .collect(Collectors.joining(STRING_SEPARATOR));
+-            final Violation exceptionMessage = new Violation(1,
+-                    Definitions.CHECKSTYLE_BUNDLE, AMBIGUOUS_MODULE_NAME_EXCEPTION_MESSAGE,
+-                    new String[] {name, optionalNames}, null, getClass(), null);
+-            throw new CheckstyleException(exceptionMessage.getViolation());
++            final LocalizedMessage exceptionMessage = new LocalizedMessage(
++                    Definitions.CHECKSTYLE_BUNDLE, getClass(),
++                    AMBIGUOUS_MODULE_NAME_EXCEPTION_MESSAGE, name, optionalNames);
++            throw new CheckstyleException(exceptionMessage.getMessage());
+         }
+         return returnValue;
+     }
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/api/Violation.java b/src/main/java/com/puppycrawl/tools/checkstyle/api/Violation.java
+index ff8131664..3fb0e8e9c 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/api/Violation.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/api/Violation.java
+@@ -431,26 +431,15 @@ public final class Violation
+      * @return the translated violation
+      */
+     public String getViolation() {
+-        String violation = getCustomViolation();
++        final String violation;
+ 
+-        if (violation == null) {
++        if (customMessage != null) {
++            violation = new MessageFormat(customMessage, Locale.ROOT).format(args);
++        }
++        else {
+             violation = new LocalizedMessage(bundle, sourceClass, key, args).getMessage();
+         }
+-        return violation;
+-    }
+ 
+-    /**
+-     * Returns the formatted custom violation if one is configured.
+-     *
+-     * @return the formatted custom violation or {@code null}
+-     *          if there is no custom violation
+-     */
+-    private String getCustomViolation() {
+-        String violation = null;
+-        if (customMessage != null) {
+-            final MessageFormat formatter = new MessageFormat(customMessage, Locale.ROOT);
+-            violation = formatter.format(args);
+-        }
+         return violation;
+     }
+ 
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/TranslationCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/TranslationCheck.java
+index e62292518..c10c588aa 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/TranslationCheck.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/checks/TranslationCheck.java
+@@ -45,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
+ 
+ import com.puppycrawl.tools.checkstyle.Definitions;
+ import com.puppycrawl.tools.checkstyle.GlobalStatefulCheck;
++import com.puppycrawl.tools.checkstyle.LocalizedMessage;
+ import com.puppycrawl.tools.checkstyle.api.AbstractFileSetCheck;
+ import com.puppycrawl.tools.checkstyle.api.FileText;
+ import com.puppycrawl.tools.checkstyle.api.MessageDispatcher;
+@@ -318,11 +319,9 @@ public class TranslationCheck extends AbstractFileSetCheck {
+     private void validateUserSpecifiedLanguageCodes(Set<String> languageCodes) {
+         for (String code : languageCodes) {
+             if (!isValidLanguageCode(code)) {
+-                final Violation msg = new Violation(1, TRANSLATION_BUNDLE,
+-                        WRONG_LANGUAGE_CODE_KEY, new Object[] {code}, getId(), getClass(), null);
+-                final String exceptionMessage = String.format(Locale.ROOT,
+-                        "%s [%s]", msg.getViolation(), TranslationCheck.class.getSimpleName());
+-                throw new IllegalArgumentException(exceptionMessage);
++                final LocalizedMessage msg = new LocalizedMessage(TRANSLATION_BUNDLE,
++                        getClass(), WRONG_LANGUAGE_CODE_KEY, code);
++                throw new IllegalArgumentException(msg.getMessage());
+             }
+         }
+     }

@@ -1,0 +1,17 @@
+diff --git a/client/src/test/java/org/apache/rocketmq/client/common/ThreadLocalIndexTest.java b/client/src/test/java/org/apache/rocketmq/client/common/ThreadLocalIndexTest.java
+index 94f02abaa..87a71df92 100644
+--- a/client/src/test/java/org/apache/rocketmq/client/common/ThreadLocalIndexTest.java
++++ b/client/src/test/java/org/apache/rocketmq/client/common/ThreadLocalIndexTest.java
+@@ -51,4 +51,11 @@ public class ThreadLocalIndexTest {
+         assertThat(initialVal >= 0).isTrue();
+     }
+ 
++    @Test
++    public void testResultOfResetIsGreaterThanOrEqualToZero() {
++        ThreadLocalIndex localIndex = new ThreadLocalIndex();
++        localIndex.reset();
++        assertThat(localIndex.incrementAndGet() > 0).isTrue();
++    }
++
+ }
+\ No newline at end of file

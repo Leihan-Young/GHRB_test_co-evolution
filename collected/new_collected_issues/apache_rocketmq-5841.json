@@ -1,0 +1,7 @@
+{
+  "issue_id": 5839,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5839",
+  "title": "Code.ILLEGAL_POLLING_TIME is not compatible with gRPC Client <=5.0.2",
+  "description": "<p dir=\"auto\"><code class=\"notranslate\">Code.ILLEGAL_PILLING_TIME</code> is introduced in <code class=\"notranslate\">rocketmq-proto</code> 2.0.1, which is integrated by <a href=\"https://github.com/apache/rocketmq-clients/releases/tag/java-5.0.3\">gRPC client 5.0.3</a>, so it is not compatible with the older client.</p>",
+  "description_text": "Code.ILLEGAL_PILLING_TIME is introduced in rocketmq-proto 2.0.1, which is integrated by gRPC client 5.0.3, so it is not compatible with the older client."
+}

@@ -1,0 +1,70 @@
+{
+  "1": {
+    "commit_src": "9d5ff402d3b25f7e360cb6ebae40148d23dfdf72",
+    "commit_tgt": "177502221625e0165147f6bcb3cfc7e7ca89e976",
+    "changed_tests": [
+      "common/src/test/java/io/seata/common/util/DurationUtilTest.java"
+    ],
+    "refer_PR": "apache_incubator-seata-4056",
+    "test_src": ".io.seata.common.util.DurationUtilTest#testParse",
+    "test_tgt": [
+      ".io.seata.common.util.DurationUtilTest#testParse",
+      ".io.seata.common.util.DurationUtilTest#testParseThrowException"
+    ],
+    "focal_path": "common/src/main/java/io/seata/common/util/DurationUtil.java#parse",
+    "focal_src": "    public static Duration parse(String str) {\n        if (StringUtils.isBlank(str)) {\n            return DEFAULT_DURATION;\n        }\n\n        if (str.contains(MILLIS_SECOND_UNIT)) {\n            Long value = doParse(MILLIS_SECOND_UNIT, str);\n            return value == null ? null : Duration.ofMillis(value);\n        } else if (str.contains(DAY_UNIT)) {\n            Long value = doParse(DAY_UNIT, str);\n            return value == null ? null : Duration.ofDays(value);\n        } else if (str.contains(HOUR_UNIT)) {\n            Long value = doParse(HOUR_UNIT, str);\n            return value == null ? null : Duration.ofHours(value);\n        } else if (str.contains(MINUTE_UNIT)) {\n            Long value = doParse(MINUTE_UNIT, str);\n            return value == null ? null : Duration.ofMinutes(value);\n        } else if (str.contains(SECOND_UNIT)) {\n            Long value = doParse(SECOND_UNIT, str);\n            return value == null ? null : Duration.ofSeconds(value);\n        }\n        try {\n            int millis = Integer.parseInt(str);\n            return Duration.ofMillis(millis);\n        } catch (Exception e) {\n            throw new UnsupportedOperationException(str + \" can't parse to duration\", e);\n        }\n    }\n",
+    "focal_tgt": "    public static Duration parse(String str) {\n        if (StringUtils.isBlank(str)) {\n            return DEFAULT_DURATION;\n        }\n\n        if (SIMPLE.matcher(str).matches()) {\n            if (str.contains(MILLIS_SECOND_UNIT)) {\n                long value = doParse(MILLIS_SECOND_UNIT, str);\n                return Duration.ofMillis(value);\n            } else if (str.contains(DAY_UNIT)) {\n                long value = doParse(DAY_UNIT, str);\n                return Duration.ofDays(value);\n            } else if (str.contains(HOUR_UNIT)) {\n                long value = doParse(HOUR_UNIT, str);\n                return Duration.ofHours(value);\n            } else if (str.contains(MINUTE_UNIT)) {\n                long value = doParse(MINUTE_UNIT, str);\n                return Duration.ofMinutes(value);\n            } else if (str.contains(SECOND_UNIT)) {\n                long value = doParse(SECOND_UNIT, str);\n                return Duration.ofSeconds(value);\n            } else {\n                throw new UnsupportedOperationException(\"\\\"\" + str + \"\\\" can't parse to Duration\");\n            }\n        }\n\n        try {\n            if (ISO8601.matcher(str).matches()) {\n                return Duration.parse(str);\n            }\n        } catch (DateTimeParseException e) {\n            throw new UnsupportedOperationException(\"\\\"\" + str + \"\\\" can't parse to Duration\", e);\n        }\n\n        try {\n            int millis = Integer.parseInt(str);\n            return Duration.ofMillis(millis);\n        } catch (Exception e) {\n            throw new UnsupportedOperationException(\"\\\"\" + str + \"\\\" can't parse to Duration\", e);\n        }\n    }\n",
+    "test_id": 1
+  },
+  "2": {
+    "commit_src": "9d5ff402d3b25f7e360cb6ebae40148d23dfdf72",
+    "commit_tgt": "177502221625e0165147f6bcb3cfc7e7ca89e976",
+    "changed_tests": [
+      "common/src/test/java/io/seata/common/util/DurationUtilTest.java"
+    ],
+    "refer_PR": "apache_incubator-seata-4056",
+    "test_src": ".io.seata.common.util.DurationUtilTest#testParseThrowException",
+    "test_tgt": [
+      ".io.seata.common.util.DurationUtilTest#testParse",
+      ".io.seata.common.util.DurationUtilTest#testParseThrowException"
+    ],
+    "focal_path": "common/src/main/java/io/seata/common/util/DurationUtil.java#parse",
+    "focal_src": "    public static Duration parse(String str) {\n        if (StringUtils.isBlank(str)) {\n            return DEFAULT_DURATION;\n        }\n\n        if (str.contains(MILLIS_SECOND_UNIT)) {\n            Long value = doParse(MILLIS_SECOND_UNIT, str);\n            return value == null ? null : Duration.ofMillis(value);\n        } else if (str.contains(DAY_UNIT)) {\n            Long value = doParse(DAY_UNIT, str);\n            return value == null ? null : Duration.ofDays(value);\n        } else if (str.contains(HOUR_UNIT)) {\n            Long value = doParse(HOUR_UNIT, str);\n            return value == null ? null : Duration.ofHours(value);\n        } else if (str.contains(MINUTE_UNIT)) {\n            Long value = doParse(MINUTE_UNIT, str);\n            return value == null ? null : Duration.ofMinutes(value);\n        } else if (str.contains(SECOND_UNIT)) {\n            Long value = doParse(SECOND_UNIT, str);\n            return value == null ? null : Duration.ofSeconds(value);\n        }\n        try {\n            int millis = Integer.parseInt(str);\n            return Duration.ofMillis(millis);\n        } catch (Exception e) {\n            throw new UnsupportedOperationException(str + \" can't parse to duration\", e);\n        }\n    }\n",
+    "focal_tgt": "    public static Duration parse(String str) {\n        if (StringUtils.isBlank(str)) {\n            return DEFAULT_DURATION;\n        }\n\n        if (SIMPLE.matcher(str).matches()) {\n            if (str.contains(MILLIS_SECOND_UNIT)) {\n                long value = doParse(MILLIS_SECOND_UNIT, str);\n                return Duration.ofMillis(value);\n            } else if (str.contains(DAY_UNIT)) {\n                long value = doParse(DAY_UNIT, str);\n                return Duration.ofDays(value);\n            } else if (str.contains(HOUR_UNIT)) {\n                long value = doParse(HOUR_UNIT, str);\n                return Duration.ofHours(value);\n            } else if (str.contains(MINUTE_UNIT)) {\n                long value = doParse(MINUTE_UNIT, str);\n                return Duration.ofMinutes(value);\n            } else if (str.contains(SECOND_UNIT)) {\n                long value = doParse(SECOND_UNIT, str);\n                return Duration.ofSeconds(value);\n            } else {\n                throw new UnsupportedOperationException(\"\\\"\" + str + \"\\\" can't parse to Duration\");\n            }\n        }\n\n        try {\n            if (ISO8601.matcher(str).matches()) {\n                return Duration.parse(str);\n            }\n        } catch (DateTimeParseException e) {\n            throw new UnsupportedOperationException(\"\\\"\" + str + \"\\\" can't parse to Duration\", e);\n        }\n\n        try {\n            int millis = Integer.parseInt(str);\n            return Duration.ofMillis(millis);\n        } catch (Exception e) {\n            throw new UnsupportedOperationException(\"\\\"\" + str + \"\\\" can't parse to Duration\", e);\n        }\n    }\n",
+    "test_id": 2
+  },
+  "3": {
+    "commit_src": "f1be649562e8cf5edf9b5bf911a528187f7e439a",
+    "commit_tgt": "e4ae6b7020d39cde9057028f12b95b3e489946ad",
+    "changed_tests": [
+      "server/src/test/java/io/seata/server/coordinator/DefaultCoordinatorTest.java",
+      "server/src/test/java/io/seata/server/coordinator/DefaultCoreTest.java"
+    ],
+    "refer_PR": "apache_incubator-seata-4086",
+    "test_src": ".io.seata.server.coordinator.DefaultCoordinatorTest#test_handleRetryRollbacking",
+    "test_tgt": [
+      ".io.seata.server.coordinator.DefaultCoordinatorTest#test_handleRetryRollbacking"
+    ],
+    "focal_path": "server/src/main/java/io/seata/server/coordinator/DefaultCoordinator.java#handleRetryRollbacking",
+    "focal_src": "    /**\n     * Handle retry rollbacking.\n     */\n    protected void handleRetryRollbacking() {\n        Collection<GlobalSession> rollbackingSessions = SessionHolder.getRetryRollbackingSessionManager().allSessions();\n        if (CollectionUtils.isEmpty(rollbackingSessions)) {\n            return;\n        }\n        long now = System.currentTimeMillis();\n        SessionHelper.forEach(rollbackingSessions, rollbackingSession -> {\n            try {\n                // prevent repeated rollback\n                if (rollbackingSession.getStatus().equals(GlobalStatus.Rollbacking) && !rollbackingSession.isDeadSession()) {\n                    //The function of this 'return' is 'continue'.\n                    return;\n                }\n                if (isRetryTimeout(now, MAX_ROLLBACK_RETRY_TIMEOUT.toMillis(), rollbackingSession.getBeginTime())) {\n                    if (ROLLBACK_RETRY_TIMEOUT_UNLOCK_ENABLE) {\n                        rollbackingSession.clean();\n                    }\n                    // Prevent thread safety issues\n                    SessionHolder.getRetryRollbackingSessionManager().removeGlobalSession(rollbackingSession);\n                    LOGGER.info(\"Global transaction rollback retry timeout and has removed [{}]\", rollbackingSession.getXid());\n                    //The function of this 'return' is 'continue'.\n                    return;\n                }\n                rollbackingSession.addSessionLifecycleListener(SessionHolder.getRootSessionManager());\n                core.doGlobalRollback(rollbackingSession, true);\n            } catch (TransactionException ex) {\n                LOGGER.info(\"Failed to retry rollbacking [{}] {} {}\", rollbackingSession.getXid(), ex.getCode(), ex.getMessage());\n            }\n        });\n    }\n",
+    "focal_tgt": "    /**\n     * Handle retry rollbacking.\n     */\n    @Deprecated\n    protected void handleRetryRollbacking() {\n        SessionCondition sessionCondition =\n                new SessionCondition(rollbackingStatuses.toArray(new GlobalStatus[0]));\n        Collection<GlobalSession> rollbackingSessions =\n                SessionHolder.getRetryRollbackingSessionManager().findGlobalSessions(sessionCondition);\n        handleRetryRollbacking(rollbackingSessions);\n    }\n",
+    "test_id": 3
+  },
+  "4": {
+    "commit_src": "bbbbec7d74148fbe87ac7556293e100d35e81c9d",
+    "commit_tgt": "abfafc31e26bef41fc45b8e6dd991f36a43126da",
+    "changed_tests": [
+      "integration-tx-api/src/test/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParserTest.java",
+      "tcc/src/test/java/io/seata/rm/tcc/interceptor/parser/TccActionInterceptorParserTest.java"
+    ],
+    "refer_PR": "apache_incubator-seata-6015",
+    "test_src": ".io.seata.integration.tx.api.interceptor.parser.GlobalTransactionalInterceptorParserTest#parserInterfaceToProxy",
+    "test_tgt": [
+      ".io.seata.integration.tx.api.interceptor.parser.GlobalTransactionalInterceptorParserTest#parserInterfaceToProxy"
+    ],
+    "focal_path": "integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParser.java#parserInterfaceToProxy",
+    "focal_src": "    /**\n     * @param target\n     * @return\n     * @throws Exception\n     * @see GlobalTransactional // TM annotation\n     * <p>\n     * GlobalLock:\n     * @see GlobalLock // GlobalLock annotation\n     */\n    @Override\n    public ProxyInvocationHandler parserInterfaceToProxy(Object target) throws Exception {\n        Class<?> serviceInterface = DefaultTargetClassParser.get().findTargetClass(target);\n        Class<?>[] interfacesIfJdk = DefaultTargetClassParser.get().findInterfaces(target);\n\n        if (existsAnnotation(serviceInterface) || existsAnnotation(interfacesIfJdk)) {\n            ProxyInvocationHandler proxyInvocationHandler = new GlobalTransactionalInterceptorHandler(FailureHandlerHolder.getFailureHandler(), methodsToProxy);\n            ConfigurationCache.addConfigListener(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION, (ConfigurationChangeListener) proxyInvocationHandler);\n            return proxyInvocationHandler;\n        }\n\n        return null;\n    }\n",
+    "focal_tgt": "    /**\n     * @param target\n     * @return\n     * @throws Exception\n     * @see GlobalTransactional // TM annotation\n     * <p>\n     * GlobalLock:\n     * @see GlobalLock // GlobalLock annotation\n     */\n    @Override\n    public ProxyInvocationHandler parserInterfaceToProxy(Object target, String objectName) throws Exception {\n        Class<?> serviceInterface = DefaultTargetClassParser.get().findTargetClass(target);\n        Class<?>[] interfacesIfJdk = DefaultTargetClassParser.get().findInterfaces(target);\n\n        if (existsAnnotation(serviceInterface) || existsAnnotation(interfacesIfJdk)) {\n            ProxyInvocationHandler proxyInvocationHandler = new GlobalTransactionalInterceptorHandler(FailureHandlerHolder.getFailureHandler(), methodsToProxy);\n            ConfigurationCache.addConfigListener(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION, (ConfigurationChangeListener) proxyInvocationHandler);\n            return proxyInvocationHandler;\n        }\n\n        return null;\n    }\n",
+    "test_id": 4
+  }
+}

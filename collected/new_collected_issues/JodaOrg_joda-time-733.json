@@ -1,0 +1,7 @@
+{
+  "issue_id": 717,
+  "issue_url": "https://github.com/JodaOrg/joda-time/issues/717",
+  "title": "DateTimeZone#forID throws exception for ZoneOffset.UTC.getId()",
+  "description": "<p dir=\"auto\">The Java Time API uses Zone ID \"Z\" for ZoneOffset.UTC. This ID value is not supported by Joda-Time so a simple conversion like the following throws an IllegalArgumentException stating that \"The datetime zone id 'Z' is not recognised\".</p>\n<p dir=\"auto\"><code class=\"notranslate\">DateTimeZone.forID(ZoneOffset.UTC.getId())</code></p>\n<p dir=\"auto\">Ideally DateTimeZone.UTC would be returned in this case.</p>\n<p dir=\"auto\">I am using joda-time 2.12.5 with OpenJDK 17.0.5.</p>",
+  "description_text": "The Java Time API uses Zone ID \"Z\" for ZoneOffset.UTC. This ID value is not supported by Joda-Time so a simple conversion like the following throws an IllegalArgumentException stating that \"The datetime zone id 'Z' is not recognised\".\nDateTimeZone.forID(ZoneOffset.UTC.getId())\nIdeally DateTimeZone.UTC would be returned in this case.\nI am using joda-time 2.12.5 with OpenJDK 17.0.5."
+}

@@ -1,0 +1,719 @@
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/DeleteExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/DeleteExecutorTest.java
+index b3b5ed105..21ea5851f 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/DeleteExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/DeleteExecutorTest.java
+@@ -87,7 +87,7 @@ public class DeleteExecutorTest {
+         } catch (Exception e) {
+             throw new RuntimeException("init failed");
+         }
+-        String sql = "delete from t where id = 1";
++        String sql = "delete from table_delete_executor_test where id = 1";
+         List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
+         MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
+         deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> {
+@@ -96,20 +96,146 @@ public class DeleteExecutorTest {
+     }
+ 
+     @Test
+-    public void testBeforeImage() throws SQLException {
+-        Assertions.assertNotNull(deleteExecutor.beforeImage());
++    public void testBeforeAndAfterImage() throws SQLException {
++        String sql = "delete from table_delete_executor_test";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
++        deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableAlias() throws SQLException {
++        String sql = "delete from table_delete_executor_test t where t.id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
++        deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableSchema() throws SQLException {
++        String sql = "delete from seata.table_delete_executor_test where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
++        deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
+ 
+-        String sql = "delete from t";
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableSchemaAndTableAlias() throws SQLException {
++        String sql = "delete from seata.table_delete_executor_test t where t.id = 1";
+         List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
+         MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
+         deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
+-        Assertions.assertNotNull(deleteExecutor.beforeImage());
++
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
+     }
+ 
+     @Test
+-    public void testAfterImage() throws SQLException {
+-        TableRecords tableRecords = deleteExecutor.beforeImage();
+-        Assertions.assertEquals(0, deleteExecutor.afterImage(tableRecords).size());
++    public void testBeforeAndAfterImageWithTableSchemaQuote() throws SQLException {
++        String sql = "delete from `seata`.table_delete_executor_test where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
++        deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableSchemaAndTableNameQuote() throws SQLException {
++        String sql = "delete from seata.`table_delete_executor_test` where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
++        deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableSchemaQuoteAndTableNameQuote() throws SQLException {
++        String sql = "delete from `seata`.`table_delete_executor_test` where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
++        deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithColumnQuote() throws SQLException {
++        String sql = "delete from table_delete_executor_test where `id` = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
++        deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithUpperColumn() throws SQLException {
++        String sql = "delete from table_delete_executor_test where ID = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
++        deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableAliasAndUpperColumn() throws SQLException {
++        String sql = "delete from table_delete_executor_test t where t.ID = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
++        deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithKeyword() throws SQLException {
++        String sql = "delete from table_delete_executor_test where `or` = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLDeleteRecognizer recognizer = new MySQLDeleteRecognizer(sql, asts.get(0));
++        deleteExecutor = new DeleteExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = deleteExecutor.beforeImage();
++        TableRecords afterImage = deleteExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
+     }
+ 
+ }
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MariadbInsertExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MariadbInsertExecutorTest.java
+index a83f2efd5..36fc4fbb7 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MariadbInsertExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MariadbInsertExecutorTest.java
+@@ -15,13 +15,24 @@
+  */
+ package io.seata.rm.datasource.exec;
+ 
++import java.lang.reflect.Field;
+ import java.sql.SQLException;
++import java.sql.Types;
+ import java.util.Arrays;
+ import java.util.HashMap;
++import java.util.List;
++
++import com.alibaba.druid.mock.MockStatement;
++import com.alibaba.druid.mock.MockStatementBase;
++import com.alibaba.druid.pool.DruidDataSource;
++import com.google.common.collect.Lists;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.PreparedStatementProxy;
++import io.seata.rm.datasource.StatementProxy;
+ import io.seata.rm.datasource.exec.mysql.MySQLInsertExecutor;
++import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.mock.MockMariadbDataSource;
+ import io.seata.rm.datasource.mock.MockResultSet;
+ import io.seata.sqlparser.struct.TableMeta;
+@@ -66,5 +77,42 @@ public class MariadbInsertExecutorTest extends MySQLInsertExecutorTest {
+                 put(ID_COLUMN, pkIndex);
+             }
+         };
++
++        // new test init property
++        List<String> returnValueColumnLabels = Lists.newArrayList("id", "user_id", "name", "sex", "update_time");
++        Object[][] returnValue = new Object[][] {
++                new Object[] {1, 1, "will", 1, 0},
++        };
++        Object[][] columnMetas = new Object[][] {
++                new Object[] {"", "", "table_insert_executor_test", "id", Types.INTEGER, "INTEGER", 64, 0, 10, 1, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "user_id", Types.INTEGER, "INTEGER", 64, 0, 10, 1, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "name", Types.VARCHAR, "VARCHAR", 64, 0, 10, 0, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "sex", Types.INTEGER, "INTEGER", 64, 0, 10, 0, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "update_time", Types.INTEGER, "INTEGER", 64, 0, 10, 0, "", "", 0, 0, 64, 2, "YES", "NO"},
++        };
++        Object[][] indexMetas = new Object[][] {
++                new Object[] {"PRIMARY", "id", false, "", 3, 1, "A", 34},
++                new Object[] {"PRIMARY", "user_id", false, "", 3, 1, "A", 34},
++        };
++        Object[][] onUpdateColumnsReturnValue = new Object[][] {
++                new Object[]{0, "update_time", Types.INTEGER, "INTEGER", 64, 10, 0, 0}
++        };
++
++        MockDriver mockDriver = new MockDriver(returnValueColumnLabels, returnValue, columnMetas, indexMetas, null, onUpdateColumnsReturnValue);
++        DruidDataSource dataSource = new DruidDataSource();
++        dataSource.setUrl("jdbc:mock:xxx");
++        dataSource.setDriver(mockDriver);
++
++        DataSourceProxy newDataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
++        try {
++            Field field = dataSourceProxy.getClass().getDeclaredField("dbType");
++            field.setAccessible(true);
++            field.set(newDataSourceProxy, "mysql");
++            ConnectionProxy newConnectionProxy = new ConnectionProxy(newDataSourceProxy, dataSource.getConnection().getConnection());
++            MockStatementBase mockStatement = new MockStatement(dataSource.getConnection().getConnection());
++            newStatementProxy = new StatementProxy(newConnectionProxy, mockStatement);
++        } catch (Exception e) {
++            throw new RuntimeException("init failed");
++        }
+     }
+ }
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MySQLInsertExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MySQLInsertExecutorTest.java
+index b7ba7ccfd..7010f71ac 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MySQLInsertExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/MySQLInsertExecutorTest.java
+@@ -15,27 +15,38 @@
+  */
+ package io.seata.rm.datasource.exec;
+ 
++import java.lang.reflect.Field;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
+ import java.math.BigDecimal;
+ import java.sql.PreparedStatement;
+ import java.sql.ResultSet;
+ import java.sql.SQLException;
++import java.sql.Types;
+ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
++
++import com.alibaba.druid.mock.MockStatement;
++import com.alibaba.druid.mock.MockStatementBase;
++import com.alibaba.druid.pool.DruidDataSource;
++import com.alibaba.druid.sql.SQLUtils;
++import com.alibaba.druid.sql.ast.SQLStatement;
++import com.google.common.collect.Lists;
+ import io.seata.common.exception.ShouldNeverHappenException;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.PreparedStatementProxy;
+ import io.seata.rm.datasource.StatementProxy;
+ import io.seata.rm.datasource.exec.mysql.MySQLInsertExecutor;
+ import io.seata.rm.datasource.mock.MockDataSource;
++import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.mock.MockResultSet;
++import io.seata.sqlparser.druid.mysql.MySQLInsertRecognizer;
+ import io.seata.sqlparser.struct.ColumnMeta;
+-import io.seata.rm.datasource.sql.struct.Row;
+ import io.seata.sqlparser.struct.TableMeta;
+ import io.seata.rm.datasource.sql.struct.TableRecords;
+ import io.seata.sqlparser.SQLInsertRecognizer;
+@@ -69,12 +80,16 @@ public class MySQLInsertExecutorTest {
+ 
+     protected StatementProxy statementProxy;
+ 
++    protected StatementProxy newStatementProxy;
++
+     protected SQLInsertRecognizer sqlInsertRecognizer;
+ 
+     protected TableMeta tableMeta;
+ 
+     protected MySQLInsertExecutor insertExecutor;
+ 
++    protected MySQLInsertExecutor newInsertExecutor;
++
+     protected final int pkIndex = 0;
+     protected HashMap<String,Integer> pkIndexMap;
+ 
+@@ -103,25 +118,123 @@ public class MySQLInsertExecutorTest {
+                 put(ID_COLUMN, pkIndex);
+             }
+         };
+-    }
+ 
+-    @Test
+-    public void testBeforeImage() throws SQLException {
+-        doReturn(tableMeta).when(insertExecutor).getTableMeta();
+-        TableRecords tableRecords = insertExecutor.beforeImage();
+-        Assertions.assertEquals(tableRecords.size(), 0);
+-        try {
+-            tableRecords.add(new Row());
+-        } catch (Exception e) {
+-            Assertions.assertTrue(e instanceof UnsupportedOperationException);
+-        }
++        // new test init property
++        List<String> returnValueColumnLabels = Lists.newArrayList("id", "user_id", "name", "sex", "update_time");
++        Object[][] returnValue = new Object[][] {
++                new Object[] {1, 1, "will", 1, 0},
++        };
++        Object[][] columnMetas = new Object[][] {
++                new Object[] {"", "", "table_insert_executor_test", "id", Types.INTEGER, "INTEGER", 64, 0, 10, 1, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "user_id", Types.INTEGER, "INTEGER", 64, 0, 10, 1, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "name", Types.VARCHAR, "VARCHAR", 64, 0, 10, 0, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "sex", Types.INTEGER, "INTEGER", 64, 0, 10, 0, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "update_time", Types.INTEGER, "INTEGER", 64, 0, 10, 0, "", "", 0, 0, 64, 2, "YES", "NO"},
++        };
++        Object[][] indexMetas = new Object[][] {
++                new Object[] {"PRIMARY", "id", false, "", 3, 1, "A", 34},
++                new Object[] {"PRIMARY", "user_id", false, "", 3, 1, "A", 34},
++        };
++        Object[][] onUpdateColumnsReturnValue = new Object[][] {
++                new Object[]{0, "update_time", Types.INTEGER, "INTEGER", 64, 10, 0, 0}
++        };
++
++        MockDriver mockDriver = new MockDriver(returnValueColumnLabels, returnValue, columnMetas, indexMetas, null, onUpdateColumnsReturnValue);
++        DruidDataSource dataSource = new DruidDataSource();
++        dataSource.setUrl("jdbc:mock:xxx");
++        dataSource.setDriver(mockDriver);
++
++        DataSourceProxy newDataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
+         try {
+-            tableRecords.getTableMeta();
++            Field field = dataSourceProxy.getClass().getDeclaredField("dbType");
++            field.setAccessible(true);
++            field.set(newDataSourceProxy, "mysql");
++            ConnectionProxy newConnectionProxy = new ConnectionProxy(newDataSourceProxy, dataSource.getConnection().getConnection());
++            MockStatementBase mockStatement = new MockStatement(dataSource.getConnection().getConnection());
++            newStatementProxy = new StatementProxy(newConnectionProxy, mockStatement);
+         } catch (Exception e) {
+-            Assertions.assertTrue(e instanceof UnsupportedOperationException);
++            throw new RuntimeException("init failed");
+         }
+     }
+ 
++    @Test
++    public void testBeforeAndAfterImage() throws SQLException {
++        String sql = "insert into table_insert_executor_test(id, user_id, name, sex) values (1, 1, 'will', 1)";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLInsertRecognizer recognizer = new MySQLInsertRecognizer(sql, asts.get(0));
++        newInsertExecutor = new MySQLInsertExecutor(newStatementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = newInsertExecutor.beforeImage();
++        TableRecords afterImage = newInsertExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageTableSchemaAndTableName() throws SQLException {
++        String sql = "insert into seata.table_insert_executor_test(id, user_id, name, sex) values (1, 1, 'will', 1)";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLInsertRecognizer recognizer = new MySQLInsertRecognizer(sql, asts.get(0));
++        newInsertExecutor = new MySQLInsertExecutor(newStatementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = newInsertExecutor.beforeImage();
++        TableRecords afterImage = newInsertExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageTableSchemaWithQuoteAndTableName() throws SQLException {
++        String sql = "insert into `seata`.table_insert_executor_test(id, user_id, name, sex) values (1, 1, 'will', 1)";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLInsertRecognizer recognizer = new MySQLInsertRecognizer(sql, asts.get(0));
++        newInsertExecutor = new MySQLInsertExecutor(newStatementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = newInsertExecutor.beforeImage();
++        TableRecords afterImage = newInsertExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageTableSchemaWithQuoteAndTableNameWithQuote() throws SQLException {
++        String sql = "insert into `seata`.`table_insert_executor_test`(id, user_id, name, sex) values (1, 1, 'will', 1)";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLInsertRecognizer recognizer = new MySQLInsertRecognizer(sql, asts.get(0));
++        newInsertExecutor = new MySQLInsertExecutor(newStatementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = newInsertExecutor.beforeImage();
++        TableRecords afterImage = newInsertExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageColumnWithQuote() throws SQLException {
++        String sql = "insert into table_insert_executor_test(`id`, `user_id`, `name`, `sex`) values (1, 1, 'will', 1)";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLInsertRecognizer recognizer = new MySQLInsertRecognizer(sql, asts.get(0));
++        newInsertExecutor = new MySQLInsertExecutor(newStatementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = newInsertExecutor.beforeImage();
++        TableRecords afterImage = newInsertExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageUpperColumn() throws SQLException {
++        String sql = "insert into table_insert_executor_test(ID, USER_ID, NMAE, SEX) values (1, 1, 'will', 1)";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLInsertRecognizer recognizer = new MySQLInsertRecognizer(sql, asts.get(0));
++        newInsertExecutor = new MySQLInsertExecutor(newStatementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = newInsertExecutor.beforeImage();
++        TableRecords afterImage = newInsertExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
+     @Test
+     public void testAfterImage_ByColumn() throws SQLException {
+         doReturn(true).when(insertExecutor).containsPK();
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/PolarDBXInsertExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/PolarDBXInsertExecutorTest.java
+index 18d9dfec7..9a594204d 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/PolarDBXInsertExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/PolarDBXInsertExecutorTest.java
+@@ -15,14 +15,24 @@
+  */
+ package io.seata.rm.datasource.exec;
+ 
++import java.lang.reflect.Field;
+ import java.sql.SQLException;
++import java.sql.Types;
+ import java.util.Arrays;
+ import java.util.HashMap;
++import java.util.List;
+ 
++import com.alibaba.druid.mock.MockStatement;
++import com.alibaba.druid.mock.MockStatementBase;
++import com.alibaba.druid.pool.DruidDataSource;
++import com.google.common.collect.Lists;
+ import io.seata.rm.datasource.ConnectionProxy;
+ import io.seata.rm.datasource.DataSourceProxy;
++import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.PreparedStatementProxy;
++import io.seata.rm.datasource.StatementProxy;
+ import io.seata.rm.datasource.exec.polardbx.PolarDBXInsertExecutor;
++import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.mock.MockResultSet;
+ import io.seata.sqlparser.SQLInsertRecognizer;
+ import io.seata.sqlparser.struct.TableMeta;
+@@ -69,5 +79,42 @@ public class PolarDBXInsertExecutorTest extends MySQLInsertExecutorTest {
+                 put(ID_COLUMN, pkIndex);
+             }
+         };
++
++        // new test init property
++        List<String> returnValueColumnLabels = Lists.newArrayList("id", "user_id", "name", "sex", "update_time");
++        Object[][] returnValue = new Object[][] {
++                new Object[] {1, 1, "will", 1, 0},
++        };
++        Object[][] columnMetas = new Object[][] {
++                new Object[] {"", "", "table_insert_executor_test", "id", Types.INTEGER, "INTEGER", 64, 0, 10, 1, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "user_id", Types.INTEGER, "INTEGER", 64, 0, 10, 1, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "name", Types.VARCHAR, "VARCHAR", 64, 0, 10, 0, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "sex", Types.INTEGER, "INTEGER", 64, 0, 10, 0, "", "", 0, 0, 64, 2, "NO", "NO"},
++                new Object[] {"", "", "table_insert_executor_test", "update_time", Types.INTEGER, "INTEGER", 64, 0, 10, 0, "", "", 0, 0, 64, 2, "YES", "NO"},
++        };
++        Object[][] indexMetas = new Object[][] {
++                new Object[] {"PRIMARY", "id", false, "", 3, 1, "A", 34},
++                new Object[] {"PRIMARY", "user_id", false, "", 3, 1, "A", 34},
++        };
++        Object[][] onUpdateColumnsReturnValue = new Object[][] {
++                new Object[]{0, "update_time", Types.INTEGER, "INTEGER", 64, 10, 0, 0}
++        };
++
++        MockDriver mockDriver = new MockDriver(returnValueColumnLabels, returnValue, columnMetas, indexMetas, null, onUpdateColumnsReturnValue);
++        DruidDataSource dataSource = new DruidDataSource();
++        dataSource.setUrl("jdbc:mock:xxx");
++        dataSource.setDriver(mockDriver);
++
++        DataSourceProxy newDataSourceProxy = DataSourceProxyTest.getDataSourceProxy(dataSource);
++        try {
++            Field field = dataSourceProxy.getClass().getDeclaredField("dbType");
++            field.setAccessible(true);
++            field.set(newDataSourceProxy, "mysql");
++            ConnectionProxy newConnectionProxy = new ConnectionProxy(newDataSourceProxy, dataSource.getConnection().getConnection());
++            MockStatementBase mockStatement = new MockStatement(dataSource.getConnection().getConnection());
++            newStatementProxy = new StatementProxy(newConnectionProxy, mockStatement);
++        } catch (Exception e) {
++            throw new RuntimeException("init failed");
++        }
+     }
+ }
+diff --git a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateExecutorTest.java b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateExecutorTest.java
+index a25fdfa7f..482ce56af 100644
+--- a/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateExecutorTest.java
++++ b/rm-datasource/src/test/java/io/seata/rm/datasource/exec/UpdateExecutorTest.java
+@@ -35,18 +35,10 @@ import io.seata.rm.datasource.DataSourceProxyTest;
+ import io.seata.rm.datasource.StatementProxy;
+ import io.seata.rm.datasource.mock.MockDriver;
+ import io.seata.rm.datasource.sql.struct.TableRecords;
+-import io.seata.rm.datasource.undo.UndoLogManagerFactory;
+-import io.seata.rm.datasource.undo.mysql.MySQLUndoLogManager;
+ import io.seata.sqlparser.druid.mysql.MySQLUpdateRecognizer;
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.BeforeAll;
+ import org.junit.jupiter.api.Test;
+-import org.mockito.MockedStatic;
+-import org.mockito.Mockito;
+-
+-import javax.sql.DataSource;
+-
+-import static org.mockito.ArgumentMatchers.anyString;
+ 
+ /**
+  * @author will
+@@ -103,49 +95,175 @@ public class UpdateExecutorTest {
+     }
+ 
+     @Test
+-    public void testBeforeImage() throws SQLException {
++    public void testBeforeAndAfterImage() throws SQLException {
+         Assertions.assertNotNull(updateExecutor.beforeImage());
+ 
+         String sql = "update table_update_executor_test set name = 'WILL' where id = 1";
+         List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
+         MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
+         updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
+-        Assertions.assertNotNull(updateExecutor.beforeImage());
++
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
+     }
+ 
+     @Test
+-    public void testBeforeImageWithTableAlias() throws SQLException {
++    public void testBeforeAndAfterImageWithTableAlias() throws SQLException {
+         Assertions.assertNotNull(updateExecutor.beforeImage());
+ 
+         String sql = "update table_update_executor_test t set t.name = 'WILL' where t.id = 1";
+         List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
+         MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
+         updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
+-        String builtSql = updateExecutor.buildBeforeImageSQL(updateExecutor.getTableMeta(), new ArrayList<>());
+-        Assertions.assertTrue(builtSql.contains("t.updated"));
++
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableSchema() throws SQLException {
++        String sql = "update seata.table_update_executor_test set name = 'WILL' where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
++        updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableSchemaAndTableAlias() throws SQLException {
++        String sql = "update seata.table_update_executor_test t set t.name = 'WILL' where t.id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
++        updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableSchemaQuote() throws SQLException {
++        String sql = "update `seata`.table_update_executor_test set name = 'WILL' where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
++        updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableSchemaAndTableNameQuote() throws SQLException {
++        String sql = "update seata.`table_update_executor_test` set name = 'WILL' where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
++        updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithTableSchemaQuoteAndTableNameQuote() throws SQLException {
++        String sql = "update `seata`.`table_update_executor_test` set name = 'WILL' where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
++        updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithColumnQuote() throws SQLException {
++        String sql = "update table_update_executor_test set `name` = 'WILL' where `id` = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
++        updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithUpperColumn() throws SQLException {
++        String sql = "update table_update_executor_test set NAME = 'WILL', UPDATED = `567` where ID = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
++        updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
++        Assertions.assertNotNull(afterImage);
+     }
+ 
+     @Test
+-    public void testKeyword() throws SQLException {
+-        String sql = "update table_update_executor_test set `all` = '1234' where id = 1";
++    public void testBeforeAndAfterImageWithTableAliasAndUpperColumn() throws SQLException {
++        String sql = "update table_update_executor_test t set t.NAME = 'WILL', t.UPDATED = `567` where t.ID = 1";
+         List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
+         MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
+         updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
++
+         TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
+         Assertions.assertNotNull(beforeImage);
+-        Assertions.assertNotNull(updateExecutor.afterImage(beforeImage));
++        Assertions.assertNotNull(afterImage);
+     }
+ 
+     @Test
+-    public void testAfterImage() throws SQLException {
++    public void testBeforeAndAfterImageWithKeywordQuote() throws SQLException {
++        String sql = "update table_update_executor_test set `all` = '1234', `updated` = `567` where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
++        updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
++
+         TableRecords beforeImage = updateExecutor.beforeImage();
+         TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
+         Assertions.assertNotNull(afterImage);
++    }
+ 
+-        afterImage = updateExecutor.afterImage(new TableRecords());
++    @Test
++    public void testBeforeAndAfterImageWithOnUpdateColumn() throws SQLException {
++        String sql = "update table_update_executor_test set updated = 1 where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
++        updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
++
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
+         Assertions.assertNotNull(afterImage);
++    }
++
++    @Test
++    public void testBeforeAndAfterImageWithOnUpdateUpperColumn() throws SQLException {
++        String sql = "update table_update_executor_test set UPDATED = 1 where id = 1";
++        List<SQLStatement> asts = SQLUtils.parseStatements(sql, JdbcConstants.MYSQL);
++        MySQLUpdateRecognizer recognizer = new MySQLUpdateRecognizer(sql, asts.get(0));
++        updateExecutor = new UpdateExecutor(statementProxy, (statement, args) -> null, recognizer);
+ 
+-        afterImage = updateExecutor.afterImage(null);
++        TableRecords beforeImage = updateExecutor.beforeImage();
++        TableRecords afterImage = updateExecutor.afterImage(beforeImage);
++        Assertions.assertNotNull(beforeImage);
+         Assertions.assertNotNull(afterImage);
+     }
+ }

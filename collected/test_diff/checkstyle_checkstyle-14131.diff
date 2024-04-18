@@ -1,0 +1,13 @@
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/checks/modifier/RedundantModifierCheckTest.java b/src/test/java/com/puppycrawl/tools/checkstyle/checks/modifier/RedundantModifierCheckTest.java
+index af4601e7f..c7a01f7c6 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/checks/modifier/RedundantModifierCheckTest.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/checks/modifier/RedundantModifierCheckTest.java
+@@ -135,7 +135,7 @@ public class RedundantModifierCheckTest
+         };
+ 
+         verifyWithInlineConfigParser(
+-            getPath("InputRedundantModifierNestedClassInPublicInterfaceRedundantModifiers.java"),
++            getPath("InputRedundantModifierNestedClassInInt.java"),
+             expected);
+     }
+ 

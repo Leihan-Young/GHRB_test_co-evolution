@@ -1,0 +1,229 @@
+{
+  "OpenAPITools_openapi-generator-15647": {
+    "bug_id": "OpenAPITools_openapi-generator-15647",
+    "PR_number": 15647,
+    "PR_createdAt": "2023-05-25T19:54:43Z",
+    "merge_commit": "1f4cbb8f00d360e6ab9b2712ba33990e986a3a48",
+    "buggy_commits": [
+      {
+        "oid": "3db7169959aba4b8a35c216df396b491a430fc4a",
+        "message": "[python-fastapi] Added a base class for the actual implementation (#14470)\n\nIt is very difficult to \"merge\" the changes, made by code generation,\r\nand the changes, made by developers. It would be very useful to\r\nseparate the generated code and the code written by developers. In\r\naddition this would remove the necessity to track the generated code.\r\nPyhton (since 3.6) has a hook, __init_subclasses__, that could be used\r\nto solve exactly this problem.\r\nThe classes from *_base.py should be implemented in an ns package that is specified\r\nby the additional parameter (\"-p fastapiImplementationPackage=example_name\").\r\n\r\nSigned-off-by: Nikita Vakula <programmistov.programmist@gmail.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/15645",
+      "createdAt": "2023-05-25T19:48:36Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-15647.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/15647",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/1f4cbb8f00d360e6ab9b2712ba33990e986a3a48",
+    "buggy_commit": "3db7169959aba4b8a35c216df396b491a430fc4a",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.DefaultCodegenTest#testExample1"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.DefaultCodegenTest#testExample1"
+      ]
+    }
+  },
+  "OpenAPITools_openapi-generator-16050": {
+    "bug_id": "OpenAPITools_openapi-generator-16050",
+    "PR_number": 16050,
+    "PR_createdAt": "2023-07-10T10:25:36Z",
+    "merge_commit": "1531ad48d0f5ed03036d5253e60cd5077d0d90ad",
+    "buggy_commits": [
+      {
+        "oid": "7f480cb9360e98308a16d0adae1f8a2d8fad2ae6",
+        "message": "[C++][Pistache] Serialize integer enums if possible (#16080)\n\nIn OpenAPI it is possible to define an enum schema containing integers\r\nonly.\r\n\r\nSimilar to the following JSON snippet:\r\n```\r\n...\r\n  \"components\": {\r\n    \"schemas\": {\r\n      \"size\": {\r\n        \"type\": \"integer\",\r\n        \"description\": \"Container size\",\r\n        \"enum\": [\r\n          10000,\r\n          20000,\r\n          100000,\r\n          200000,\r\n          300000,\r\n          1000000,\r\n          1200000,\r\n          2500000,\r\n          5000000,\r\n          10000000\r\n        ]\r\n      }\r\n    }\r\n  }\r\n...\r\n```\r\n\r\nTo correctly serialize this we need to convert to JSON integers. We can\r\nachieve this by feeding nlohmann JSON objects directly with integers\r\ninstead of strings.\r\n\r\nFor the C++ pistache server adapt the enum models to serialize integer\r\nvalues if possible."
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/15476",
+      "createdAt": "2023-05-11T07:36:41Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-16050.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/16050",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/1531ad48d0f5ed03036d5253e60cd5077d0d90ad",
+    "buggy_commit": "7f480cb9360e98308a16d0adae1f8a2d8fad2ae6",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.DefaultCodegenTest#testInlineEnumType"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.DefaultCodegenTest#testInlineEnumType"
+      ]
+    }
+  },
+  "OpenAPITools_openapi-generator-17056": {
+    "bug_id": "OpenAPITools_openapi-generator-17056",
+    "PR_number": 17056,
+    "PR_createdAt": "2023-11-13T16:07:55Z",
+    "merge_commit": "322afeacd498443766898835ae5f042a12d5b1c1",
+    "buggy_commits": [
+      {
+        "oid": "c8b3da738858852de4310392231be01617e5a660",
+        "message": "[Java][okhttp-gson] remove unreachable code from templates (#17057)\n\n* Remove checks for jackson and jsonb from okhttp-gson templates\r\n\r\n* regenerate samples"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/17048",
+      "createdAt": "2023-11-13T07:08:02Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-17056.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/17056",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/322afeacd498443766898835ae5f042a12d5b1c1",
+    "buggy_commit": "c8b3da738858852de4310392231be01617e5a660",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.DefaultCodegenTest#testAllOfDefaultEnumType"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.DefaultCodegenTest#testAllOfDefaultEnumType"
+      ]
+    }
+  },
+  "OpenAPITools_openapi-generator-17278": {
+    "bug_id": "OpenAPITools_openapi-generator-17278",
+    "PR_number": 17278,
+    "PR_createdAt": "2023-12-01T14:57:43Z",
+    "merge_commit": "4b2c045a53576c05d791e924fe0bfebc85484a03",
+    "buggy_commits": [
+      {
+        "oid": "2934f5ac511261e4499ff5681e0dde1ac55ea97f",
+        "message": "add logic to simplify any type represented with oneof/anyof (#18268)"
+      },
+      {
+        "oid": "8431712a604cf1fe0d42d38c8e52fcd903c414a3",
+        "message": "#17276 \"==\" enum value generates \"_\" in Java which is invalid since Java 9"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/17276",
+      "createdAt": "2023-12-01T14:43:42Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-17278.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/java/AbstractJavaCodegenTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/17278",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/4b2c045a53576c05d791e924fe0bfebc85484a03",
+    "buggy_commit": "2934f5ac511261e4499ff5681e0dde1ac55ea97f",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.java.AbstractJavaCodegenTest#toEnumVarNameShouldNotResultInSingleUnderscore"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.java.AbstractJavaCodegenTest#toEnumVarNameShouldNotResultInSingleUnderscore"
+      ]
+    }
+  },
+  "OpenAPITools_openapi-generator-17426": {
+    "bug_id": "OpenAPITools_openapi-generator-17426",
+    "PR_number": 17426,
+    "PR_createdAt": "2023-12-19T02:51:29Z",
+    "merge_commit": "473c3508ff5b2f92fdb03c1ebed2cd24336e7ee3",
+    "buggy_commits": [
+      {
+        "oid": "5435b44e40b0bce99089ff2cdf234e89bc8832ae",
+        "message": "Fix missing convertor for jackson in retrofit (#17418)\n\n* Add missing Jackson converter for Retrofit\r\n\r\nThis commit adds the missing configuration for a ApiClient so all Jackson serializations will start to work correctly.\r\n\r\n* Add sample project code for Retrofit Jackson"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/17425",
+      "createdAt": "2023-12-19T01:10:37Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-17426.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/java/JavaClientCodegenTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/17426",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/473c3508ff5b2f92fdb03c1ebed2cd24336e7ee3",
+    "buggy_commit": "5435b44e40b0bce99089ff2cdf234e89bc8832ae",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.java.JavaClientCodegenTest#testJdkHttpClientWithAndWithoutParentExtension"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.java.JavaClientCodegenTest#testJdkHttpClientWithAndWithoutParentExtension"
+      ]
+    }
+  },
+  "OpenAPITools_openapi-generator-17728": {
+    "bug_id": "OpenAPITools_openapi-generator-17728",
+    "PR_number": 17728,
+    "PR_createdAt": "2024-01-28T10:04:22Z",
+    "merge_commit": "301f25a3068db6dd17ab930f72975b235664f172",
+    "buggy_commits": [
+      {
+        "oid": "9afea50cab72a3ff4d67c7cf0526c6c566773f47",
+        "message": "use map/array model class only if it is generated (#17612)\n\n* fix\r\n\r\n* tests\r\n\r\n* generate samples\r\n\r\n* refactor"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/17523",
+      "createdAt": "2024-01-03T13:28:42Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-17728.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/OpenAPINormalizerTest.java",
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/utils/ModelUtilsTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/17728",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/301f25a3068db6dd17ab930f72975b235664f172",
+    "buggy_commit": "9afea50cab72a3ff4d67c7cf0526c6c566773f47",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.OpenAPINormalizerTest#testOpenAPINormalizerSimplifyOneOfAnyOf",
+        ".org.openapitools.codegen.utils.ModelUtilsTest#testIsMapSchema"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.OpenAPINormalizerTest#isNullTypeSchemaTest",
+        ".org.openapitools.codegen.OpenAPINormalizerTest#testOpenAPINormalizerSimplifyOneOfAnyOf",
+        ".org.openapitools.codegen.utils.ModelUtilsTest#test30Schemas",
+        ".org.openapitools.codegen.utils.ModelUtilsTest#test31Schemas"
+      ]
+    }
+  },
+  "OpenAPITools_openapi-generator-17759": {
+    "bug_id": "OpenAPITools_openapi-generator-17759",
+    "PR_number": 17759,
+    "PR_createdAt": "2024-02-01T00:03:28Z",
+    "merge_commit": "cbc345308a76adcf7a7b1ca77ae71a3318e31551",
+    "buggy_commits": [
+      {
+        "oid": "5a7f05088992b7fcf0b74f6b422127f74b7e8ad9",
+        "message": "[PowerShell] Support multiple types in Accept header (#17765)\n\n* Update api_client.mustache\r\n\r\nAllow Accept header to contain multiple MIME types\r\n\r\n* Changes after build\r\n\r\n* Update api_client.mustache\r\n\r\nReturn JSON MIME first on -Multiple -JsonFirst\r\n\r\n* updated PetStore files"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/17757",
+      "createdAt": "2024-01-31T22:45:33Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-17759.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/java/JavaValidationArrayPrimitivesTest.java",
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/java/spring/SpringCodegenTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/17759",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/cbc345308a76adcf7a7b1ca77ae71a3318e31551",
+    "buggy_commit": "5a7f05088992b7fcf0b74f6b422127f74b7e8ad9",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.java.spring.SpringCodegenTest#shouldAddValidAnnotationIntoCollectionWhenBeanValidationIsEnabled_issue17150"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.java.spring.SpringCodegenTest#shouldAddValidAnnotationIntoCollectionWhenBeanValidationIsEnabled_issue17150"
+      ]
+    }
+  }
+}

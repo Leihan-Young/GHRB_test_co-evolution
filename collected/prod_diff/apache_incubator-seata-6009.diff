@@ -1,0 +1,73 @@
+diff --git a/server/src/main/java/io/seata/server/cluster/raft/RaftServerFactory.java b/server/src/main/java/io/seata/server/cluster/raft/RaftServerFactory.java
+index 245dd07d0..a5b74d251 100644
+--- a/server/src/main/java/io/seata/server/cluster/raft/RaftServerFactory.java
++++ b/server/src/main/java/io/seata/server/cluster/raft/RaftServerFactory.java
+@@ -89,14 +89,7 @@ public class RaftServerFactory implements Disposable, Closeable {
+     public void init() {
+         String initConfStr = CONFIG.getConfig(ConfigurationKeys.SERVER_RAFT_SERVER_ADDR);
+         StoreConfig.SessionMode storeMode = StoreConfig.getSessionMode();
+-        if (storeMode.equals(StoreConfig.SessionMode.RAFT)) {
+-            for (RegistryService<?> instance : MultiRegistryFactory.getInstances()) {
+-                if (!(instance instanceof FileRegistryServiceImpl)) {
+-                    throw new IllegalArgumentException("Raft store mode not support other Registration Center");
+-                }
+-            }
+-            raftMode = true;
+-        }
++        raftMode = storeMode.equals(StoreConfig.SessionMode.RAFT);
+         if (StringUtils.isBlank(initConfStr)) {
+             if (raftMode) {
+                 throw new IllegalArgumentException(
+@@ -104,6 +97,13 @@ public class RaftServerFactory implements Disposable, Closeable {
+             }
+             return;
+         } else {
++            if (raftMode) {
++                for (RegistryService<?> instance : MultiRegistryFactory.getInstances()) {
++                    if (!(instance instanceof FileRegistryServiceImpl)) {
++                        throw new IllegalArgumentException("Raft store mode not support other Registration Center");
++                    }
++                }
++            }
+             LOGGER.warn("raft mode and raft cluster is an experimental feature");
+         }
+         final Configuration initConf = new Configuration();
+@@ -161,7 +161,7 @@ public class RaftServerFactory implements Disposable, Closeable {
+     public void destroy() {
+         this.close();
+         rpcServer = null;
+-        RAFT_SERVER_MAP.clear();
++        raftMode = false;
+     }
+ 
+     @Override
+@@ -171,6 +171,7 @@ public class RaftServerFactory implements Disposable, Closeable {
+             LOGGER.info("closed seata server raft cluster, group: {} ", group);
+         });
+         Optional.ofNullable(rpcServer).ifPresent(RpcServer::shutdown);
++        RAFT_SERVER_MAP.clear();
+     }
+ 
+     public RaftServer getRaftServer(String group) {
+diff --git a/server/src/main/java/io/seata/server/cluster/raft/RaftStateMachine.java b/server/src/main/java/io/seata/server/cluster/raft/RaftStateMachine.java
+index d99c75b26..6c6114cb0 100644
+--- a/server/src/main/java/io/seata/server/cluster/raft/RaftStateMachine.java
++++ b/server/src/main/java/io/seata/server/cluster/raft/RaftStateMachine.java
+@@ -39,8 +39,6 @@ import io.seata.common.metadata.ClusterRole;
+ import io.seata.common.metadata.Node;
+ import io.seata.common.store.StoreMode;
+ import io.seata.common.util.StringUtils;
+-import io.seata.config.ConfigurationFactory;
+-import io.seata.common.ConfigurationKeys;
+ import io.seata.server.cluster.raft.context.SeataClusterContext;
+ import io.seata.server.cluster.raft.snapshot.metadata.LeaderMetadataSnapshotFile;
+ import io.seata.server.cluster.raft.snapshot.session.SessionSnapshotFile;
+@@ -114,7 +112,7 @@ public class RaftStateMachine extends StateMachineAdapter {
+ 
+     public RaftStateMachine(String group) {
+         this.group = group;
+-        mode = ConfigurationFactory.getInstance().getConfig(ConfigurationKeys.STORE_MODE);
++        mode = StoreConfig.getSessionMode().getName();
+         EXECUTES.put(REFRESH_CLUSTER_METADATA, syncMsg -> {
+             refreshClusterMetadata(syncMsg);
+             return null;

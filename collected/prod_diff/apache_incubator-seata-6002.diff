@@ -1,0 +1,364 @@
+diff --git a/core/src/main/java/io/seata/core/serializer/SerializerType.java b/core/src/main/java/io/seata/core/serializer/SerializerType.java
+index b5f468f9e..292c0f042 100644
+--- a/core/src/main/java/io/seata/core/serializer/SerializerType.java
++++ b/core/src/main/java/io/seata/core/serializer/SerializerType.java
+@@ -44,7 +44,7 @@ public enum SerializerType {
+     KRYO((byte)0x4),
+ 
+     /**
+-     * The fst.
++     * The fst but it's been removed.
+      * <p>
+      * Math.pow(2, 3)
+      */
+@@ -56,8 +56,9 @@ public enum SerializerType {
+      * Math.pow(2, 4)
+      */
+     HESSIAN((byte)0x16),
++
+     /**
+-     * The hessian.
++     * The jackson.
+      * <p>
+      * Math.pow(2, 5)
+      */
+@@ -82,6 +83,10 @@ public enum SerializerType {
+                 return b;
+             }
+         }
++        if (code == SerializerType.FST.getCode()) {
++            throw new IllegalArgumentException(
++                "Since fst is no longer maintained, this serialization extension has been removed from version 2.0 for security and stability reasons.");
++        }
+         throw new IllegalArgumentException("unknown codec:" + code);
+     }
+ 
+diff --git a/rm-datasource/src/main/java/io/seata/rm/datasource/undo/UndoLogParserFactory.java b/rm-datasource/src/main/java/io/seata/rm/datasource/undo/UndoLogParserFactory.java
+index 1dbbf6cde..b70fc1140 100644
+--- a/rm-datasource/src/main/java/io/seata/rm/datasource/undo/UndoLogParserFactory.java
++++ b/rm-datasource/src/main/java/io/seata/rm/datasource/undo/UndoLogParserFactory.java
+@@ -17,6 +17,7 @@ package io.seata.rm.datasource.undo;
+ 
+ import io.seata.common.loader.EnhancedServiceLoader;
+ import io.seata.common.util.CollectionUtils;
++import io.seata.common.util.StringUtils;
+ 
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.ConcurrentMap;
+@@ -58,6 +59,10 @@ public class UndoLogParserFactory {
+      * @return the UndoLogParser
+      */
+     public static UndoLogParser getInstance(String name) {
++        if (StringUtils.equalsIgnoreCase("fst", name)) {
++            throw new IllegalArgumentException(
++                "Since fst is no longer maintained, this serialization extension has been removed from version 2.0 for security and stability reasons.");
++        }
+         return CollectionUtils.computeIfAbsent(INSTANCES, name,
+             key -> EnhancedServiceLoader.load(UndoLogParser.class, name));
+     }
+diff --git a/rm-datasource/src/main/java/io/seata/rm/datasource/undo/parser/FstSerializerFactory.java b/rm-datasource/src/main/java/io/seata/rm/datasource/undo/parser/FstSerializerFactory.java
+deleted file mode 100644
+index 5006ec1cc..000000000
+--- a/rm-datasource/src/main/java/io/seata/rm/datasource/undo/parser/FstSerializerFactory.java
++++ /dev/null
+@@ -1,55 +0,0 @@
+-/*
+- *  Copyright 1999-2019 Seata.io Group.
+- *
+- *  Licensed under the Apache License, Version 2.0 (the "License");
+- *  you may not use this file except in compliance with the License.
+- *  You may obtain a copy of the License at
+- *
+- *       http://www.apache.org/licenses/LICENSE-2.0
+- *
+- *  Unless required by applicable law or agreed to in writing, software
+- *  distributed under the License is distributed on an "AS IS" BASIS,
+- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- *  See the License for the specific language governing permissions and
+- *  limitations under the License.
+- */
+-package io.seata.rm.datasource.undo.parser;
+-
+-import java.sql.Timestamp;
+-import javax.sql.rowset.serial.SerialBlob;
+-import javax.sql.rowset.serial.SerialClob;
+-import org.nustaq.serialization.FSTConfiguration;
+-import org.nustaq.serialization.FSTObjectSerializer;
+-
+-/**
+- * @author funkye
+- */
+-public class FstSerializerFactory {
+-
+-    private static final FstSerializerFactory FACTORY = new FstSerializerFactory();
+-
+-    private final FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
+-
+-    public static FstSerializerFactory getDefaultFactory() {
+-        return FACTORY;
+-    }
+-
+-    public FstSerializerFactory() {
+-        // support clob and blob sql type
+-        conf.registerClass(SerialBlob.class, SerialClob.class, Timestamp.class);
+-        UndoLogSerializerClassRegistry.getRegisteredClasses().keySet().forEach(conf::registerClass);
+-    }
+-
+-    public void registerSerializer(Class type, FSTObjectSerializer ser, boolean alsoForAllSubclasses) {
+-        conf.registerSerializer(type, ser, alsoForAllSubclasses);
+-    }
+-
+-    public <T> byte[] serialize(T t) {
+-        return conf.asByteArray(t);
+-    }
+-
+-    public <T> T deserialize(byte[] bytes) {
+-        return (T)conf.asObject(bytes);
+-    }
+-
+-}
+diff --git a/rm-datasource/src/main/java/io/seata/rm/datasource/undo/parser/FstUndoLogParser.java b/rm-datasource/src/main/java/io/seata/rm/datasource/undo/parser/FstUndoLogParser.java
+deleted file mode 100644
+index 0231db221..000000000
+--- a/rm-datasource/src/main/java/io/seata/rm/datasource/undo/parser/FstUndoLogParser.java
++++ /dev/null
+@@ -1,87 +0,0 @@
+-/*
+- *  Copyright 1999-2019 Seata.io Group.
+- *
+- *  Licensed under the Apache License, Version 2.0 (the "License");
+- *  you may not use this file except in compliance with the License.
+- *  You may obtain a copy of the License at
+- *
+- *       http://www.apache.org/licenses/LICENSE-2.0
+- *
+- *  Unless required by applicable law or agreed to in writing, software
+- *  distributed under the License is distributed on an "AS IS" BASIS,
+- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- *  See the License for the specific language governing permissions and
+- *  limitations under the License.
+- */
+-package io.seata.rm.datasource.undo.parser;
+-
+-import io.seata.common.executor.Initialize;
+-import io.seata.common.loader.EnhancedServiceLoader;
+-import io.seata.common.loader.EnhancedServiceNotFoundException;
+-import io.seata.common.loader.LoadLevel;
+-import io.seata.common.util.CollectionUtils;
+-import io.seata.rm.datasource.undo.BranchUndoLog;
+-import io.seata.rm.datasource.undo.UndoLogParser;
+-import io.seata.rm.datasource.undo.parser.spi.FstSerializer;
+-import org.nustaq.serialization.FSTObjectSerializer;
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+-
+-import java.util.List;
+-
+-/**
+- * fst serializer
+- * @author funkye
+- */
+-@LoadLevel(name = FstUndoLogParser.NAME)
+-public class FstUndoLogParser implements UndoLogParser, Initialize {
+-
+-    private static final Logger LOGGER = LoggerFactory.getLogger(FstUndoLogParser.class);
+-
+-    public static final String NAME = "fst";
+-
+-    private FstSerializerFactory fstFactory = FstSerializerFactory.getDefaultFactory();
+-
+-    @Override
+-    public void init() {
+-        try {
+-            List<FstSerializer> serializers = EnhancedServiceLoader.loadAll(FstSerializer.class);
+-            if (CollectionUtils.isNotEmpty(serializers)) {
+-                for (FstSerializer serializer : serializers) {
+-                    if (serializer != null) {
+-                        Class type = serializer.type();
+-                        FSTObjectSerializer ser = serializer.ser();
+-                        boolean alsoForAllSubclasses = serializer.alsoForAllSubclasses();
+-                        if (type != null && ser != null) {
+-                            fstFactory.registerSerializer(type, ser, alsoForAllSubclasses);
+-                            LOGGER.info("fst undo log parser load [{}].", serializer.getClass().getName());
+-                        }
+-                    }
+-                }
+-            }
+-        } catch (EnhancedServiceNotFoundException e) {
+-            LOGGER.warn("FstSerializer not found children class.", e);
+-        }
+-    }
+-
+-    @Override
+-    public String getName() {
+-        return NAME;
+-    }
+-
+-    @Override
+-    public byte[] getDefaultContent() {
+-        return fstFactory.serialize(new BranchUndoLog());
+-    }
+-
+-    @Override
+-    public byte[] encode(BranchUndoLog branchUndoLog) {
+-        return fstFactory.serialize(branchUndoLog);
+-    }
+-
+-    @Override
+-    public BranchUndoLog decode(byte[] bytes) {
+-        return fstFactory.deserialize(bytes);
+-    }
+-
+-}
+diff --git a/rm-datasource/src/main/java/io/seata/rm/datasource/undo/parser/spi/FstSerializer.java b/rm-datasource/src/main/java/io/seata/rm/datasource/undo/parser/spi/FstSerializer.java
+deleted file mode 100644
+index 1721c80e3..000000000
+--- a/rm-datasource/src/main/java/io/seata/rm/datasource/undo/parser/spi/FstSerializer.java
++++ /dev/null
+@@ -1,48 +0,0 @@
+-/*
+- *  Copyright 1999-2019 Seata.io Group.
+- *
+- *  Licensed under the Apache License, Version 2.0 (the "License");
+- *  you may not use this file except in compliance with the License.
+- *  You may obtain a copy of the License at
+- *
+- *       http://www.apache.org/licenses/LICENSE-2.0
+- *
+- *  Unless required by applicable law or agreed to in writing, software
+- *  distributed under the License is distributed on an "AS IS" BASIS,
+- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- *  See the License for the specific language governing permissions and
+- *  limitations under the License.
+- */
+-package io.seata.rm.datasource.undo.parser.spi;
+-
+-import org.nustaq.serialization.FSTObjectSerializer;
+-
+-/**
+- * The interface Fst serializer.
+- *
+- * @author jsbxyyx
+- */
+-public interface FstSerializer {
+-
+-    /**
+-     * fst serializer class type
+-     *
+-     * @return class
+-     */
+-    Class type();
+-
+-    /**
+-     * FSTObjectSerializer custom serializer
+-     *
+-     * @return fst object serializer
+-     */
+-    FSTObjectSerializer ser();
+-
+-    /**
+-     * for sub classes
+-     *
+-     * @return boolean
+-     */
+-    boolean alsoForAllSubclasses();
+-
+-}
+diff --git a/serializer/seata-serializer-fst/src/main/java/io/seata/serializer/fst/FstSerializer.java b/serializer/seata-serializer-fst/src/main/java/io/seata/serializer/fst/FstSerializer.java
+deleted file mode 100644
+index acaf1a1de..000000000
+--- a/serializer/seata-serializer-fst/src/main/java/io/seata/serializer/fst/FstSerializer.java
++++ /dev/null
+@@ -1,39 +0,0 @@
+-/*
+- *  Copyright 1999-2019 Seata.io Group.
+- *
+- *  Licensed under the Apache License, Version 2.0 (the "License");
+- *  you may not use this file except in compliance with the License.
+- *  You may obtain a copy of the License at
+- *
+- *       http://www.apache.org/licenses/LICENSE-2.0
+- *
+- *  Unless required by applicable law or agreed to in writing, software
+- *  distributed under the License is distributed on an "AS IS" BASIS,
+- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- *  See the License for the specific language governing permissions and
+- *  limitations under the License.
+- */
+-package io.seata.serializer.fst;
+-
+-import io.seata.common.loader.LoadLevel;
+-import io.seata.core.serializer.Serializer;
+-
+-/**
+- * @author funkye
+- */
+-@LoadLevel(name = "FST")
+-public class FstSerializer implements Serializer {
+-
+-    private FstSerializerFactory fstFactory = FstSerializerFactory.getDefaultFactory();
+-
+-    @Override
+-    public <T> byte[] serialize(T t) {
+-        return fstFactory.serialize(t);
+-    }
+-
+-    @Override
+-    public <T> T deserialize(byte[] bytes) {
+-        return (T)fstFactory.deserialize(bytes);
+-    }
+-
+-}
+diff --git a/serializer/seata-serializer-fst/src/main/java/io/seata/serializer/fst/FstSerializerFactory.java b/serializer/seata-serializer-fst/src/main/java/io/seata/serializer/fst/FstSerializerFactory.java
+deleted file mode 100644
+index 8c1739d1e..000000000
+--- a/serializer/seata-serializer-fst/src/main/java/io/seata/serializer/fst/FstSerializerFactory.java
++++ /dev/null
+@@ -1,47 +0,0 @@
+-/*
+- *  Copyright 1999-2019 Seata.io Group.
+- *
+- *  Licensed under the Apache License, Version 2.0 (the "License");
+- *  you may not use this file except in compliance with the License.
+- *  You may obtain a copy of the License at
+- *
+- *       http://www.apache.org/licenses/LICENSE-2.0
+- *
+- *  Unless required by applicable law or agreed to in writing, software
+- *  distributed under the License is distributed on an "AS IS" BASIS,
+- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- *  See the License for the specific language governing permissions and
+- *  limitations under the License.
+- */
+-package io.seata.serializer.fst;
+-
+-import io.seata.core.serializer.SerializerSecurityRegistry;
+-import org.nustaq.serialization.FSTConfiguration;
+-
+-/**
+- * @author funkye
+- */
+-public class FstSerializerFactory {
+-
+-    private static final FstSerializerFactory FACTORY = new FstSerializerFactory();
+-
+-    private final FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
+-
+-
+-    public static FstSerializerFactory getDefaultFactory() {
+-        return FACTORY;
+-    }
+-
+-    public FstSerializerFactory() {
+-        SerializerSecurityRegistry.getAllowClassType().forEach(conf::registerClass);
+-    }
+-
+-    public <T> byte[] serialize(T t) {
+-        return conf.asByteArray(t);
+-    }
+-
+-    public <T> T deserialize(byte[] bytes) {
+-        return (T)conf.asObject(bytes);
+-    }
+-
+-}

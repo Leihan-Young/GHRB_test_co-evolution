@@ -1,0 +1,7 @@
+{
+  "issue_id": 5502,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5502",
+  "title": "Invert dependency between remoting and common module",
+  "description": "<p dir=\"auto\">It is usually understood that the <code class=\"notranslate\">common</code> module is the fundamental dependency for other modules and should not depend on other modules in the project. But in RocketMQ <code class=\"notranslate\">common</code> module depends on <code class=\"notranslate\">remoting</code> module, which looks weird and is an obstacle to the expansion of remoting. So I want to invert the dependency between <code class=\"notranslate\">remoting</code> and <code class=\"notranslate\">common</code> module to make <code class=\"notranslate\">common</code> module really common.</p>",
+  "description_text": "It is usually understood that the common module is the fundamental dependency for other modules and should not depend on other modules in the project. But in RocketMQ common module depends on remoting module, which looks weird and is an obstacle to the expansion of remoting. So I want to invert the dependency between remoting and common module to make common module really common."
+}

@@ -1,0 +1,3997 @@
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/BrokerController.java b/broker/src/main/java/org/apache/rocketmq/broker/BrokerController.java
+index ebb34e8a8..6a450b7aa 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/BrokerController.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/BrokerController.java
+@@ -1788,6 +1788,7 @@ public class BrokerController {
+             if (registerBrokerResult != null) {
+                 if (this.updateMasterHAServerAddrPeriodically && registerBrokerResult.getHaServerAddr() != null) {
+                     this.messageStore.updateHaMasterAddress(registerBrokerResult.getHaServerAddr());
++                    this.messageStore.updateMasterAddress(registerBrokerResult.getMasterAddr());
+                 }
+ 
+                 this.slaveSynchronize.setMasterAddr(registerBrokerResult.getMasterAddr());
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/SendMessageProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/SendMessageProcessor.java
+index c1371988e..267a97b5a 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/SendMessageProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/SendMessageProcessor.java
+@@ -51,7 +51,7 @@ import org.apache.rocketmq.common.protocol.header.SendMessageResponseHeader;
+ import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
+ import org.apache.rocketmq.common.sysflag.MessageSysFlag;
+ import org.apache.rocketmq.common.topic.TopicValidator;
+-import org.apache.rocketmq.common.utils.DeletePolicyUtils;
++import org.apache.rocketmq.common.utils.CleanupPolicyUtils;
+ import org.apache.rocketmq.common.utils.QueueTypeUtils;
+ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
+ import org.apache.rocketmq.remoting.netty.NettyRequestProcessor;
+@@ -250,7 +250,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
+ 
+         MessageAccessor.setProperties(msgInner, oriProps);
+ 
+-        CleanupPolicy cleanupPolicy = DeletePolicyUtils.getDeletePolicy(Optional.of(topicConfig));
++        CleanupPolicy cleanupPolicy = CleanupPolicyUtils.getDeletePolicy(Optional.of(topicConfig));
+         if (Objects.equals(cleanupPolicy, CleanupPolicy.COMPACTION)) {
+             if (StringUtils.isBlank(msgInner.getKeys())) {
+                 response.setCode(ResponseCode.MESSAGE_ILLEGAL);
+diff --git a/common/src/main/java/org/apache/rocketmq/common/TopicAttributes.java b/common/src/main/java/org/apache/rocketmq/common/TopicAttributes.java
+index 1dbba62c6..1f26866e5 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/TopicAttributes.java
++++ b/common/src/main/java/org/apache/rocketmq/common/TopicAttributes.java
+@@ -31,8 +31,8 @@ public class TopicAttributes {
+         newHashSet("BatchCQ", "SimpleCQ"),
+         "SimpleCQ"
+     );
+-    public static final EnumAttribute DELETE_POLICY_ATTRIBUTE = new EnumAttribute(
+-        "delete.policy",
++    public static final EnumAttribute CLEANUP_POLICY_ATTRIBUTE = new EnumAttribute(
++        "cleanup.policy",
+         false,
+         newHashSet("DELETE", "COMPACTION"),
+         "DELETE"
+@@ -49,7 +49,7 @@ public class TopicAttributes {
+     static {
+         ALL = new HashMap<>();
+         ALL.put(QUEUE_TYPE_ATTRIBUTE.getName(), QUEUE_TYPE_ATTRIBUTE);
+-        ALL.put(DELETE_POLICY_ATTRIBUTE.getName(), DELETE_POLICY_ATTRIBUTE);
++        ALL.put(CLEANUP_POLICY_ATTRIBUTE.getName(), CLEANUP_POLICY_ATTRIBUTE);
+         ALL.put(TOPIC_MESSAGE_TYPE_ATTRIBUTE.getName(), TOPIC_MESSAGE_TYPE_ATTRIBUTE);
+     }
+ }
+diff --git a/common/src/main/java/org/apache/rocketmq/common/message/MessageDecoder.java b/common/src/main/java/org/apache/rocketmq/common/message/MessageDecoder.java
+index 9b20593e5..6068a104e 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/message/MessageDecoder.java
++++ b/common/src/main/java/org/apache/rocketmq/common/message/MessageDecoder.java
+@@ -43,6 +43,8 @@ public class MessageDecoder {
+     public final static int MESSAGE_PHYSIC_OFFSET_POSITION = 28;
+     public final static int MESSAGE_STORE_TIMESTAMP_POSITION = 56;
+     public final static int MESSAGE_MAGIC_CODE = -626843481;
++    // End of file empty MAGIC CODE cbd43194
++    public final static int BLANK_MAGIC_CODE = -875286124;
+     public static final char NAME_VALUE_SEPARATOR = 1;
+     public static final char PROPERTY_SEPARATOR = 2;
+     public static final int PHY_POS_POSITION = 4 + 4 + 4 + 4 + 4 + 8;
+diff --git a/common/src/main/java/org/apache/rocketmq/common/utils/DeletePolicyUtils.java b/common/src/main/java/org/apache/rocketmq/common/utils/CleanupPolicyUtils.java
+similarity index 80%
+rename from common/src/main/java/org/apache/rocketmq/common/utils/DeletePolicyUtils.java
+rename to common/src/main/java/org/apache/rocketmq/common/utils/CleanupPolicyUtils.java
+index 0639244d9..b73ece4f2 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/utils/DeletePolicyUtils.java
++++ b/common/src/main/java/org/apache/rocketmq/common/utils/CleanupPolicyUtils.java
+@@ -24,27 +24,27 @@ import java.util.Map;
+ import java.util.Objects;
+ import java.util.Optional;
+ 
+-public class DeletePolicyUtils {
++public class CleanupPolicyUtils {
+     public static boolean isCompaction(Optional<TopicConfig> topicConfig) {
+         return Objects.equals(CleanupPolicy.COMPACTION, getDeletePolicy(topicConfig));
+     }
+ 
+     public static CleanupPolicy getDeletePolicy(Optional<TopicConfig> topicConfig) {
+         if (!topicConfig.isPresent()) {
+-            return CleanupPolicy.valueOf(TopicAttributes.DELETE_POLICY_ATTRIBUTE.getDefaultValue());
++            return CleanupPolicy.valueOf(TopicAttributes.CLEANUP_POLICY_ATTRIBUTE.getDefaultValue());
+         }
+ 
+-        String attributeName = TopicAttributes.DELETE_POLICY_ATTRIBUTE.getName();
++        String attributeName = TopicAttributes.CLEANUP_POLICY_ATTRIBUTE.getName();
+ 
+         Map<String, String> attributes = topicConfig.get().getAttributes();
+         if (attributes == null || attributes.size() == 0) {
+-            return CleanupPolicy.valueOf(TopicAttributes.DELETE_POLICY_ATTRIBUTE.getDefaultValue());
++            return CleanupPolicy.valueOf(TopicAttributes.CLEANUP_POLICY_ATTRIBUTE.getDefaultValue());
+         }
+ 
+         if (attributes.containsKey(attributeName)) {
+             return CleanupPolicy.valueOf(attributes.get(attributeName));
+         } else {
+-            return CleanupPolicy.valueOf(TopicAttributes.DELETE_POLICY_ATTRIBUTE.getDefaultValue());
++            return CleanupPolicy.valueOf(TopicAttributes.CLEANUP_POLICY_ATTRIBUTE.getDefaultValue());
+         }
+     }
+ }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/AppendMessageResult.java b/store/src/main/java/org/apache/rocketmq/store/AppendMessageResult.java
+index 3cfb85f13..98bf203ad 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/AppendMessageResult.java
++++ b/store/src/main/java/org/apache/rocketmq/store/AppendMessageResult.java
+@@ -54,6 +54,13 @@ public class AppendMessageResult {
+         this.pagecacheRT = pagecacheRT;
+     }
+ 
++    public AppendMessageResult(AppendMessageStatus status, long wroteOffset, int wroteBytes, long storeTimestamp) {
++        this.status = status;
++        this.wroteOffset = wroteOffset;
++        this.wroteBytes = wroteBytes;
++        this.storeTimestamp = storeTimestamp;
++    }
++
+     public AppendMessageResult(AppendMessageStatus status, long wroteOffset, int wroteBytes, Supplier<String> msgIdSupplier,
+             long storeTimestamp, long logicsOffset, long pagecacheRT) {
+         this.status = status;
+diff --git a/store/src/main/java/org/apache/rocketmq/store/CommitLog.java b/store/src/main/java/org/apache/rocketmq/store/CommitLog.java
+index c60303dce..6d2e9862c 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/CommitLog.java
++++ b/store/src/main/java/org/apache/rocketmq/store/CommitLog.java
+@@ -16,9 +16,6 @@
+  */
+ package org.apache.rocketmq.store;
+ 
+-import io.netty.buffer.ByteBuf;
+-import io.netty.buffer.ByteBufAllocator;
+-import io.netty.buffer.UnpooledByteBufAllocator;
+ import java.net.Inet6Address;
+ import java.net.InetSocketAddress;
+ import java.nio.ByteBuffer;
+@@ -50,13 +47,13 @@ import org.apache.rocketmq.common.topic.TopicValidator;
+ import org.apache.rocketmq.common.utils.QueueTypeUtils;
+ import org.apache.rocketmq.logging.InternalLogger;
+ import org.apache.rocketmq.logging.InternalLoggerFactory;
++import org.apache.rocketmq.store.MessageExtEncoder.PutMessageThreadLocal;
+ import org.apache.rocketmq.store.config.BrokerRole;
+ import org.apache.rocketmq.store.config.FlushDiskType;
+ import org.apache.rocketmq.store.ha.HAService;
+ import org.apache.rocketmq.store.logfile.MappedFile;
+ import org.apache.rocketmq.common.attribute.CQType;
+ 
+-
+ /**
+  * Store all metadata downtime for recovery, data protection reliability
+  */
+@@ -353,7 +350,6 @@ public class CommitLog implements Swappable {
+                 log.warn("maxPhyOffsetOfConsumeQueue({}) >= processOffset({}), truncate dirty logic files", maxPhyOffsetOfConsumeQueue, processOffset);
+                 this.defaultMessageStore.truncateDirtyLogicFiles(processOffset);
+             }
+-
+         } else {
+             // Commitlog case files are deleted
+             log.warn("The commitlog files are deleted, and delete the consume queue files");
+@@ -500,7 +496,7 @@ public class CommitLog implements Swappable {
+                 }
+             }
+ 
+-            int readLength = calMsgLength(sysFlag, bodyLen, topicLen, propertiesLength);
++            int readLength = MessageExtEncoder.calMsgLength(sysFlag, bodyLen, topicLen, propertiesLength);
+             if (totalSize != readLength) {
+                 doNothingForDeadCode(reconsumeTimes);
+                 doNothingForDeadCode(flag);
+@@ -544,30 +540,6 @@ public class CommitLog implements Swappable {
+         }
+     }
+ 
+-    protected static int calMsgLength(int sysFlag, int bodyLength, int topicLength, int propertiesLength) {
+-        int bornhostLength = (sysFlag & MessageSysFlag.BORNHOST_V6_FLAG) == 0 ? 8 : 20;
+-        int storehostAddressLength = (sysFlag & MessageSysFlag.STOREHOSTADDRESS_V6_FLAG) == 0 ? 8 : 20;
+-        final int msgLen = 4 //TOTALSIZE
+-            + 4 //MAGICCODE
+-            + 4 //BODYCRC
+-            + 4 //QUEUEID
+-            + 4 //FLAG
+-            + 8 //QUEUEOFFSET
+-            + 8 //PHYSICALOFFSET
+-            + 4 //SYSFLAG
+-            + 8 //BORNTIMESTAMP
+-            + bornhostLength //BORNHOST
+-            + 8 //STORETIMESTAMP
+-            + storehostAddressLength //STOREHOSTADDRESS
+-            + 4 //RECONSUMETIMES
+-            + 8 //Prepared Transaction Offset
+-            + 4 + (bodyLength > 0 ? bodyLength : 0) //BODY
+-            + 1 + topicLength //TOPIC
+-            + 2 + (propertiesLength > 0 ? propertiesLength : 0) //propertiesLength
+-            + 0;
+-        return msgLen;
+-    }
+-
+     public long getConfirmOffset() {
+         if (this.defaultMessageStore.getMessageStoreConfig().isDuplicationEnable()) {
+             return this.confirmOffset;
+@@ -1832,237 +1804,6 @@ public class CommitLog implements Swappable {
+ 
+     }
+ 
+-    public static class MessageExtEncoder {
+-        private ByteBuf byteBuf;
+-        // The maximum length of the message body.
+-        private int maxMessageBodySize;
+-        // The maximum length of the full message.
+-        private int maxMessageSize;
+-        MessageExtEncoder(final int maxMessageBodySize) {
+-            ByteBufAllocator alloc = UnpooledByteBufAllocator.DEFAULT;
+-            //Reserve 64kb for encoding buffer outside body
+-            int maxMessageSize = Integer.MAX_VALUE - maxMessageBodySize >= 64 * 1024 ?
+-                    maxMessageBodySize + 64 * 1024 : Integer.MAX_VALUE;
+-            byteBuf = alloc.directBuffer(maxMessageSize);
+-            this.maxMessageBodySize = maxMessageBodySize;
+-            this.maxMessageSize = maxMessageSize;
+-        }
+-
+-        protected PutMessageResult encode(MessageExtBrokerInner msgInner) {
+-            this.byteBuf.clear();
+-            /**
+-             * Serialize message
+-             */
+-            final byte[] propertiesData =
+-                msgInner.getPropertiesString() == null ? null : msgInner.getPropertiesString().getBytes(MessageDecoder.CHARSET_UTF8);
+-
+-            final int propertiesLength = propertiesData == null ? 0 : propertiesData.length;
+-
+-            if (propertiesLength > Short.MAX_VALUE) {
+-                log.warn("putMessage message properties length too long. length={}", propertiesData.length);
+-                return new PutMessageResult(PutMessageStatus.PROPERTIES_SIZE_EXCEEDED, null);
+-            }
+-
+-            final byte[] topicData = msgInner.getTopic().getBytes(MessageDecoder.CHARSET_UTF8);
+-            final int topicLength = topicData.length;
+-
+-            final int bodyLength = msgInner.getBody() == null ? 0 : msgInner.getBody().length;
+-
+-            final int msgLen = calMsgLength(msgInner.getSysFlag(), bodyLength, topicLength, propertiesLength);
+-
+-            // Exceeds the maximum message body
+-            if (bodyLength > this.maxMessageBodySize) {
+-                CommitLog.log.warn("message body size exceeded, msg total size: " + msgLen + ", msg body size: " + bodyLength
+-                    + ", maxMessageSize: " + this.maxMessageBodySize);
+-                return new PutMessageResult(PutMessageStatus.MESSAGE_ILLEGAL, null);
+-            }
+-
+-            final long queueOffset = msgInner.getQueueOffset();
+-
+-            // Exceeds the maximum message
+-            if (msgLen > this.maxMessageSize) {
+-                CommitLog.log.warn("message size exceeded, msg total size: " + msgLen + ", msg body size: " + bodyLength
+-                    + ", maxMessageSize: " + this.maxMessageSize);
+-                return new PutMessageResult(PutMessageStatus.MESSAGE_ILLEGAL, null);
+-            }
+-
+-            // 1 TOTALSIZE
+-            this.byteBuf.writeInt(msgLen);
+-            // 2 MAGICCODE
+-            this.byteBuf.writeInt(CommitLog.MESSAGE_MAGIC_CODE);
+-            // 3 BODYCRC
+-            this.byteBuf.writeInt(msgInner.getBodyCRC());
+-            // 4 QUEUEID
+-            this.byteBuf.writeInt(msgInner.getQueueId());
+-            // 5 FLAG
+-            this.byteBuf.writeInt(msgInner.getFlag());
+-            // 6 QUEUEOFFSET
+-            this.byteBuf.writeLong(queueOffset);
+-            // 7 PHYSICALOFFSET, need update later
+-            this.byteBuf.writeLong(0);
+-            // 8 SYSFLAG
+-            this.byteBuf.writeInt(msgInner.getSysFlag());
+-            // 9 BORNTIMESTAMP
+-            this.byteBuf.writeLong(msgInner.getBornTimestamp());
+-
+-            // 10 BORNHOST
+-            ByteBuffer bornHostBytes = msgInner.getBornHostBytes();
+-            this.byteBuf.writeBytes(bornHostBytes.array());
+-
+-            // 11 STORETIMESTAMP
+-            this.byteBuf.writeLong(msgInner.getStoreTimestamp());
+-
+-            // 12 STOREHOSTADDRESS
+-            ByteBuffer storeHostBytes = msgInner.getStoreHostBytes();
+-            this.byteBuf.writeBytes(storeHostBytes.array());
+-
+-            // 13 RECONSUMETIMES
+-            this.byteBuf.writeInt(msgInner.getReconsumeTimes());
+-            // 14 Prepared Transaction Offset
+-            this.byteBuf.writeLong(msgInner.getPreparedTransactionOffset());
+-            // 15 BODY
+-            this.byteBuf.writeInt(bodyLength);
+-            if (bodyLength > 0)
+-                this.byteBuf.writeBytes(msgInner.getBody());
+-            // 16 TOPIC
+-            this.byteBuf.writeByte((byte) topicLength);
+-            this.byteBuf.writeBytes(topicData);
+-            // 17 PROPERTIES
+-            this.byteBuf.writeShort((short) propertiesLength);
+-            if (propertiesLength > 0)
+-                this.byteBuf.writeBytes(propertiesData);
+-
+-            return null;
+-        }
+-
+-        protected ByteBuffer encode(final MessageExtBatch messageExtBatch, PutMessageContext putMessageContext) {
+-            this.byteBuf.clear();
+-
+-            ByteBuffer messagesByteBuff = messageExtBatch.wrap();
+-
+-            int totalLength = messagesByteBuff.limit();
+-            if (totalLength > this.maxMessageBodySize) {
+-                CommitLog.log.warn("message body size exceeded, msg body size: " + totalLength + ", maxMessageSize: " + this.maxMessageBodySize);
+-                throw new RuntimeException("message body size exceeded");
+-            }
+-
+-            // properties from MessageExtBatch
+-            String batchPropStr = MessageDecoder.messageProperties2String(messageExtBatch.getProperties());
+-            final byte[] batchPropData = batchPropStr.getBytes(MessageDecoder.CHARSET_UTF8);
+-            int batchPropDataLen = batchPropData.length;
+-            if (batchPropDataLen > Short.MAX_VALUE) {
+-                CommitLog.log.warn("Properties size of messageExtBatch exceeded, properties size: {}, maxSize: {}.", batchPropDataLen, Short.MAX_VALUE);
+-                throw new RuntimeException("Properties size of messageExtBatch exceeded!");
+-            }
+-            final short batchPropLen = (short) batchPropDataLen;
+-
+-            int batchSize = 0;
+-            while (messagesByteBuff.hasRemaining()) {
+-                batchSize++;
+-                // 1 TOTALSIZE
+-                messagesByteBuff.getInt();
+-                // 2 MAGICCODE
+-                messagesByteBuff.getInt();
+-                // 3 BODYCRC
+-                messagesByteBuff.getInt();
+-                // 4 FLAG
+-                int flag = messagesByteBuff.getInt();
+-                // 5 BODY
+-                int bodyLen = messagesByteBuff.getInt();
+-                int bodyPos = messagesByteBuff.position();
+-                int bodyCrc = UtilAll.crc32(messagesByteBuff.array(), bodyPos, bodyLen);
+-                messagesByteBuff.position(bodyPos + bodyLen);
+-                // 6 properties
+-                short propertiesLen = messagesByteBuff.getShort();
+-                int propertiesPos = messagesByteBuff.position();
+-                messagesByteBuff.position(propertiesPos + propertiesLen);
+-                boolean needAppendLastPropertySeparator = propertiesLen > 0 && batchPropLen > 0
+-                    && messagesByteBuff.get(messagesByteBuff.position() - 1) != MessageDecoder.PROPERTY_SEPARATOR;
+-
+-                final byte[] topicData = messageExtBatch.getTopic().getBytes(MessageDecoder.CHARSET_UTF8);
+-
+-                final int topicLength = topicData.length;
+-
+-                int totalPropLen = needAppendLastPropertySeparator ? propertiesLen + batchPropLen + 1
+-                    : propertiesLen + batchPropLen;
+-                final int msgLen = calMsgLength(messageExtBatch.getSysFlag(), bodyLen, topicLength, totalPropLen);
+-
+-                // 1 TOTALSIZE
+-                this.byteBuf.writeInt(msgLen);
+-                // 2 MAGICCODE
+-                this.byteBuf.writeInt(CommitLog.MESSAGE_MAGIC_CODE);
+-                // 3 BODYCRC
+-                this.byteBuf.writeInt(bodyCrc);
+-                // 4 QUEUEID
+-                this.byteBuf.writeInt(messageExtBatch.getQueueId());
+-                // 5 FLAG
+-                this.byteBuf.writeInt(flag);
+-                // 6 QUEUEOFFSET
+-                this.byteBuf.writeLong(0);
+-                // 7 PHYSICALOFFSET
+-                this.byteBuf.writeLong(0);
+-                // 8 SYSFLAG
+-                this.byteBuf.writeInt(messageExtBatch.getSysFlag());
+-                // 9 BORNTIMESTAMP
+-                this.byteBuf.writeLong(messageExtBatch.getBornTimestamp());
+-
+-                // 10 BORNHOST
+-                ByteBuffer bornHostBytes = messageExtBatch.getBornHostBytes();
+-                this.byteBuf.writeBytes(bornHostBytes.array());
+-
+-                // 11 STORETIMESTAMP
+-                this.byteBuf.writeLong(messageExtBatch.getStoreTimestamp());
+-
+-                // 12 STOREHOSTADDRESS
+-                ByteBuffer storeHostBytes = messageExtBatch.getStoreHostBytes();
+-                this.byteBuf.writeBytes(storeHostBytes.array());
+-
+-                // 13 RECONSUMETIMES
+-                this.byteBuf.writeInt(messageExtBatch.getReconsumeTimes());
+-                // 14 Prepared Transaction Offset, batch does not support transaction
+-                this.byteBuf.writeLong(0);
+-                // 15 BODY
+-                this.byteBuf.writeInt(bodyLen);
+-                if (bodyLen > 0)
+-                    this.byteBuf.writeBytes(messagesByteBuff.array(), bodyPos, bodyLen);
+-                // 16 TOPIC
+-                this.byteBuf.writeByte((byte) topicLength);
+-                this.byteBuf.writeBytes(topicData);
+-                // 17 PROPERTIES
+-                this.byteBuf.writeShort((short) totalPropLen);
+-                if (propertiesLen > 0) {
+-                    this.byteBuf.writeBytes(messagesByteBuff.array(), propertiesPos, propertiesLen);
+-                }
+-                if (batchPropLen > 0) {
+-                    if (needAppendLastPropertySeparator) {
+-                        this.byteBuf.writeByte((byte) MessageDecoder.PROPERTY_SEPARATOR);
+-                    }
+-                    this.byteBuf.writeBytes(batchPropData, 0, batchPropLen);
+-                }
+-            }
+-            putMessageContext.setBatchSize(batchSize);
+-            putMessageContext.setPhyPos(new long[batchSize]);
+-
+-            return this.byteBuf.nioBuffer();
+-        }
+-
+-        public ByteBuffer getEncoderBuffer() {
+-            return this.byteBuf.nioBuffer();
+-        }
+-
+-        public int getMaxMessageBodySize() {
+-            return this.maxMessageBodySize;
+-        }
+-
+-        public void updateEncoderBufferCapacity(int newMaxMessageBodySize) {
+-            this.maxMessageBodySize = newMaxMessageBodySize;
+-            //Reserve 64kb for encoding buffer outside body
+-            this.maxMessageSize = Integer.MAX_VALUE - newMaxMessageBodySize >= 64 * 1024 ?
+-                    this.maxMessageBodySize + 64 * 1024 : Integer.MAX_VALUE;
+-            this.byteBuf.capacity(this.maxMessageSize);
+-        }
+-    }
+-
+     interface FlushManager {
+         void start();
+ 
+@@ -2205,21 +1946,4 @@ public class CommitLog implements Swappable {
+         this.getMappedFileQueue().cleanSwappedMap(forceCleanSwapIntervalMs);
+     }
+ 
+-    static class PutMessageThreadLocal {
+-        private MessageExtEncoder encoder;
+-        private StringBuilder keyBuilder;
+-
+-        PutMessageThreadLocal(int maxMessageBodySize) {
+-            encoder = new MessageExtEncoder(maxMessageBodySize);
+-            keyBuilder = new StringBuilder();
+-        }
+-
+-        public MessageExtEncoder getEncoder() {
+-            return encoder;
+-        }
+-
+-        public StringBuilder getKeyBuilder() {
+-            return keyBuilder;
+-        }
+-    }
+ }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/CompactionAppendMsgCallback.java b/store/src/main/java/org/apache/rocketmq/store/CompactionAppendMsgCallback.java
+new file mode 100644
+index 000000000..166714440
+--- /dev/null
++++ b/store/src/main/java/org/apache/rocketmq/store/CompactionAppendMsgCallback.java
+@@ -0,0 +1,23 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store;
++
++import java.nio.ByteBuffer;
++
++public interface CompactionAppendMsgCallback {
++    AppendMessageResult doAppend(ByteBuffer bbDest, long fileFromOffset, int maxBlank, ByteBuffer bbSrc);
++}
+diff --git a/store/src/main/java/org/apache/rocketmq/store/DefaultMessageStore.java b/store/src/main/java/org/apache/rocketmq/store/DefaultMessageStore.java
+index 531069b6d..5af653d32 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/DefaultMessageStore.java
++++ b/store/src/main/java/org/apache/rocketmq/store/DefaultMessageStore.java
+@@ -58,6 +58,7 @@ import org.apache.rocketmq.common.ThreadFactoryImpl;
+ import org.apache.rocketmq.common.TopicConfig;
+ import org.apache.rocketmq.common.UtilAll;
+ import org.apache.rocketmq.common.attribute.CQType;
++import org.apache.rocketmq.common.attribute.CleanupPolicy;
+ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.common.message.MessageConst;
+ import org.apache.rocketmq.common.message.MessageDecoder;
+@@ -68,6 +69,7 @@ import org.apache.rocketmq.common.protocol.body.HARuntimeInfo;
+ import org.apache.rocketmq.common.running.RunningStats;
+ import org.apache.rocketmq.common.sysflag.MessageSysFlag;
+ import org.apache.rocketmq.common.topic.TopicValidator;
++import org.apache.rocketmq.common.utils.CleanupPolicyUtils;
+ import org.apache.rocketmq.common.utils.QueueTypeUtils;
+ import org.apache.rocketmq.common.utils.ServiceProvider;
+ import org.apache.rocketmq.logging.InternalLogger;
+@@ -84,6 +86,9 @@ import org.apache.rocketmq.store.hook.PutMessageHook;
+ import org.apache.rocketmq.store.hook.SendMessageBackHook;
+ import org.apache.rocketmq.store.index.IndexService;
+ import org.apache.rocketmq.store.index.QueryOffsetResult;
++import org.apache.rocketmq.store.kv.CommitLogDispatcherCompaction;
++import org.apache.rocketmq.store.kv.CompactionService;
++import org.apache.rocketmq.store.kv.CompactionStore;
+ import org.apache.rocketmq.store.logfile.MappedFile;
+ import org.apache.rocketmq.store.queue.ConsumeQueueInterface;
+ import org.apache.rocketmq.store.queue.ConsumeQueueStore;
+@@ -120,6 +125,11 @@ public class DefaultMessageStore implements MessageStore {
+ 
+     private HAService haService;
+ 
++    // CompactionLog
++    private CompactionStore compactionStore;
++
++    private CompactionService compactionService;
++
+     private final StoreStatsService storeStatsService;
+ 
+     private final TransientStorePool transientStorePool;
+@@ -181,6 +191,7 @@ public class DefaultMessageStore implements MessageStore {
+         } else {
+             this.commitLog = new CommitLog(this);
+         }
++
+         this.consumeQueueStore = new ConsumeQueueStore(this, this.messageStoreConfig);
+ 
+         this.flushConsumeQueueService = new FlushConsumeQueueService();
+@@ -213,6 +224,11 @@ public class DefaultMessageStore implements MessageStore {
+         this.dispatcherList = new LinkedList<>();
+         this.dispatcherList.addLast(new CommitLogDispatcherBuildConsumeQueue());
+         this.dispatcherList.addLast(new CommitLogDispatcherBuildIndex());
++        if (messageStoreConfig.isEnableCompaction()) {
++            this.compactionStore = new CompactionStore(this);
++            this.compactionService = new CompactionService(commitLog, this, compactionStore);
++            this.dispatcherList.addLast(new CommitLogDispatcherCompaction(compactionService));
++        }
+ 
+         File file = new File(StorePathConfigHelper.getLockFile(messageStoreConfig.getStorePathRootDir()));
+         UtilAll.ensureDirOK(file.getParent());
+@@ -278,6 +294,10 @@ public class DefaultMessageStore implements MessageStore {
+             // load Consume Queue
+             result = result && this.consumeQueueStore.load();
+ 
++            if (messageStoreConfig.isEnableCompaction()) {
++                result = result && this.compactionService.load(lastExitOK);
++            }
++
+             if (result) {
+                 this.storeCheckpoint =
+                     new StoreCheckpoint(
+@@ -342,6 +362,9 @@ public class DefaultMessageStore implements MessageStore {
+ 
+         this.flushConsumeQueueService.start();
+         this.commitLog.start();
++        if (messageStoreConfig.isEnableCompaction() && this.compactionService != null) {
++            this.compactionService.start();
++        }
+         this.storeStatsService.start();
+ 
+         if (this.haService != null) {
+@@ -425,6 +448,9 @@ public class DefaultMessageStore implements MessageStore {
+ 
+             this.storeStatsService.shutdown();
+             this.indexService.shutdown();
++            if (this.compactionService != null) {
++                this.compactionService.shutdown();
++            }
+             this.commitLog.shutdown();
+             this.reputMessageService.shutdown();
+             this.flushConsumeQueueService.shutdown();
+@@ -684,9 +710,7 @@ public class DefaultMessageStore implements MessageStore {
+ 
+     @Override
+     public GetMessageResult getMessage(final String group, final String topic, final int queueId, final long offset,
+-        final int maxMsgNums,
+-        final int maxTotalMsgSize,
+-        final MessageFilter messageFilter) {
++        final int maxMsgNums, final int maxTotalMsgSize, final MessageFilter messageFilter) {
+         if (this.shutdown) {
+             LOGGER.warn("message store has shutdown, so getMessage is forbidden");
+             return null;
+@@ -697,6 +721,13 @@ public class DefaultMessageStore implements MessageStore {
+             return null;
+         }
+ 
++        Optional<TopicConfig> topicConfig = getTopicConfig(topic);
++        CleanupPolicy policy = CleanupPolicyUtils.getDeletePolicy(topicConfig);
++        //check request topic flag
++        if (Objects.equals(policy, CleanupPolicy.COMPACTION) && messageStoreConfig.isEnableCompaction()) {
++            return compactionStore.getMessage(group, topic, queueId, offset, maxMsgNums, maxTotalMsgSize);
++        } // else skip
++
+         long beginTime = this.getSystemClock().now();
+ 
+         GetMessageStatus status = GetMessageStatus.NO_MESSAGE_IN_QUEUE;
+@@ -1198,6 +1229,9 @@ public class DefaultMessageStore implements MessageStore {
+         if (this.haService != null) {
+             this.haService.updateMasterAddress(newAddr);
+         }
++        if (this.compactionService != null) {
++            this.compactionService.updateMasterAddress(newAddr);
++        }
+     }
+ 
+     @Override
+@@ -2377,6 +2411,10 @@ public class DefaultMessageStore implements MessageStore {
+                 }
+             }
+ 
++            if (messageStoreConfig.isEnableCompaction()) {
++                compactionStore.flushCQ(flushConsumeQueueLeastPages);
++            }
++
+             if (0 == flushConsumeQueueLeastPages) {
+                 if (logicsMsgTimestamp > 0) {
+                     DefaultMessageStore.this.getStoreCheckpoint().setLogicsMsgTimestamp(logicsMsgTimestamp);
+diff --git a/store/src/main/java/org/apache/rocketmq/store/GetMessageResult.java b/store/src/main/java/org/apache/rocketmq/store/GetMessageResult.java
+index 0f75a4888..812395c2f 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/GetMessageResult.java
++++ b/store/src/main/java/org/apache/rocketmq/store/GetMessageResult.java
+@@ -18,6 +18,7 @@ package org.apache.rocketmq.store;
+ 
+ import java.nio.ByteBuffer;
+ import java.util.ArrayList;
++import java.util.Collections;
+ import java.util.List;
+ 
+ public class GetMessageResult {
+@@ -40,6 +41,10 @@ public class GetMessageResult {
+     private int msgCount4Commercial = 0;
+     private int commercialSizePerMsg = 4 * 1024;
+ 
++    public static final GetMessageResult NO_MATCH_LOGIC_QUEUE =
++        new GetMessageResult(GetMessageStatus.NO_MATCHED_LOGIC_QUEUE, 0, 0, 0, Collections.emptyList(),
++            Collections.emptyList(), Collections.emptyList());
++
+     public GetMessageResult() {
+         messageMapedList = new ArrayList<>(100);
+         messageBufferList = new ArrayList<>(100);
+@@ -52,6 +57,17 @@ public class GetMessageResult {
+         messageQueueOffset = new ArrayList<>(resultSize);
+     }
+ 
++    private GetMessageResult(GetMessageStatus status, long nextBeginOffset, long minOffset, long maxOffset,
++        List<SelectMappedBufferResult> messageMapedList, List<ByteBuffer> messageBufferList, List<Long> messageQueueOffset) {
++        this.status = status;
++        this.nextBeginOffset = nextBeginOffset;
++        this.minOffset = minOffset;
++        this.maxOffset = maxOffset;
++        this.messageMapedList = messageMapedList;
++        this.messageBufferList = messageBufferList;
++        this.messageQueueOffset = messageQueueOffset;
++    }
++
+     public GetMessageStatus getStatus() {
+         return status;
+     }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/MappedFileQueue.java b/store/src/main/java/org/apache/rocketmq/store/MappedFileQueue.java
+index 995145fb1..ff5705ac1 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/MappedFileQueue.java
++++ b/store/src/main/java/org/apache/rocketmq/store/MappedFileQueue.java
+@@ -164,6 +164,10 @@ public class MappedFileQueue implements Swappable {
+         files.sort(Comparator.comparing(File::getName));
+ 
+         for (File file : files) {
++            if (file.isDirectory()) {
++                continue;
++            }
++
+             if (file.length() != this.mappedFileSize) {
+                 log.warn(file + "\t" + file.length()
+                         + " length not matched message store config value, please check it manually");
+@@ -224,7 +228,29 @@ public class MappedFileQueue implements Swappable {
+         return this.mappedFiles.isEmpty();
+     }
+ 
+-    protected MappedFile tryCreateMappedFile(long createOffset) {
++    public boolean isEmptyOrCurrentFileFull() {
++        MappedFile mappedFileLast = getLastMappedFile();
++        if (mappedFileLast == null) {
++            return true;
++        }
++        if (mappedFileLast.isFull()) {
++            return true;
++        }
++        return false;
++    }
++
++    public boolean shouldRoll(final int msgSize) {
++        if (isEmptyOrCurrentFileFull()) {
++            return true;
++        }
++        MappedFile mappedFileLast = getLastMappedFile();
++        if (mappedFileLast.getWrotePosition() + msgSize > mappedFileLast.getFileSize()) {
++            return true;
++        }
++        return false;
++    }
++
++    public MappedFile tryCreateMappedFile(long createOffset) {
+         String nextFilePath = this.storePath + File.separator + UtilAll.offset2FileName(createOffset);
+         String nextNextFilePath = this.storePath + File.separator + UtilAll.offset2FileName(createOffset
+                 + this.mappedFileSize);
+@@ -750,4 +776,8 @@ public class MappedFileQueue implements Swappable {
+     public long getTotalFileSize() {
+         return (long) mappedFileSize * mappedFiles.size();
+     }
++
++    public String getStorePath() {
++        return storePath;
++    }
+ }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/MessageExtEncoder.java b/store/src/main/java/org/apache/rocketmq/store/MessageExtEncoder.java
+new file mode 100644
+index 000000000..4af220f7e
+--- /dev/null
++++ b/store/src/main/java/org/apache/rocketmq/store/MessageExtEncoder.java
+@@ -0,0 +1,304 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store;
++
++import io.netty.buffer.ByteBuf;
++import io.netty.buffer.ByteBufAllocator;
++import io.netty.buffer.UnpooledByteBufAllocator;
++import org.apache.rocketmq.common.UtilAll;
++import org.apache.rocketmq.common.constant.LoggerName;
++import org.apache.rocketmq.common.message.MessageDecoder;
++import org.apache.rocketmq.common.message.MessageExtBatch;
++import org.apache.rocketmq.common.message.MessageExtBrokerInner;
++import org.apache.rocketmq.common.sysflag.MessageSysFlag;
++import org.apache.rocketmq.logging.InternalLogger;
++import org.apache.rocketmq.logging.InternalLoggerFactory;
++
++import java.nio.ByteBuffer;
++
++public class MessageExtEncoder {
++    protected static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
++    private ByteBuf byteBuf;
++    // The maximum length of the message body.
++    private int maxMessageBodySize;
++    // The maximum length of the full message.
++    private int maxMessageSize;
++    public MessageExtEncoder(final int maxMessageBodySize) {
++        ByteBufAllocator alloc = UnpooledByteBufAllocator.DEFAULT;
++        //Reserve 64kb for encoding buffer outside body
++        int maxMessageSize = Integer.MAX_VALUE - maxMessageBodySize >= 64 * 1024 ?
++            maxMessageBodySize + 64 * 1024 : Integer.MAX_VALUE;
++        byteBuf = alloc.directBuffer(maxMessageSize);
++        this.maxMessageBodySize = maxMessageBodySize;
++        this.maxMessageSize = maxMessageSize;
++    }
++
++    public static int calMsgLength(int sysFlag, int bodyLength, int topicLength, int propertiesLength) {
++        int bornhostLength = (sysFlag & MessageSysFlag.BORNHOST_V6_FLAG) == 0 ? 8 : 20;
++        int storehostAddressLength = (sysFlag & MessageSysFlag.STOREHOSTADDRESS_V6_FLAG) == 0 ? 8 : 20;
++        final int msgLen = 4 //TOTALSIZE
++            + 4 //MAGICCODE
++            + 4 //BODYCRC
++            + 4 //QUEUEID
++            + 4 //FLAG
++            + 8 //QUEUEOFFSET
++            + 8 //PHYSICALOFFSET
++            + 4 //SYSFLAG
++            + 8 //BORNTIMESTAMP
++            + bornhostLength //BORNHOST
++            + 8 //STORETIMESTAMP
++            + storehostAddressLength //STOREHOSTADDRESS
++            + 4 //RECONSUMETIMES
++            + 8 //Prepared Transaction Offset
++            + 4 + (Math.max(bodyLength, 0)) //BODY
++            + 1 + topicLength //TOPIC
++            + 2 + (Math.max(propertiesLength, 0)); //propertiesLength
++        return msgLen;
++    }
++
++    public PutMessageResult encode(MessageExtBrokerInner msgInner) {
++        this.byteBuf.clear();
++        /**
++         * Serialize message
++         */
++        final byte[] propertiesData =
++            msgInner.getPropertiesString() == null ? null : msgInner.getPropertiesString().getBytes(MessageDecoder.CHARSET_UTF8);
++
++        final int propertiesLength = propertiesData == null ? 0 : propertiesData.length;
++
++        if (propertiesLength > Short.MAX_VALUE) {
++            log.warn("putMessage message properties length too long. length={}", propertiesData.length);
++            return new PutMessageResult(PutMessageStatus.PROPERTIES_SIZE_EXCEEDED, null);
++        }
++
++        final byte[] topicData = msgInner.getTopic().getBytes(MessageDecoder.CHARSET_UTF8);
++        final int topicLength = topicData.length;
++
++        final int bodyLength = msgInner.getBody() == null ? 0 : msgInner.getBody().length;
++
++        final int msgLen = calMsgLength(msgInner.getSysFlag(), bodyLength, topicLength, propertiesLength);
++
++        // Exceeds the maximum message body
++        if (bodyLength > this.maxMessageBodySize) {
++            CommitLog.log.warn("message body size exceeded, msg total size: " + msgLen + ", msg body size: " + bodyLength
++                + ", maxMessageSize: " + this.maxMessageBodySize);
++            return new PutMessageResult(PutMessageStatus.MESSAGE_ILLEGAL, null);
++        }
++
++        final long queueOffset = msgInner.getQueueOffset();
++
++        // Exceeds the maximum message
++        if (msgLen > this.maxMessageSize) {
++            CommitLog.log.warn("message size exceeded, msg total size: " + msgLen + ", msg body size: " + bodyLength
++                + ", maxMessageSize: " + this.maxMessageSize);
++            return new PutMessageResult(PutMessageStatus.MESSAGE_ILLEGAL, null);
++        }
++
++        // 1 TOTALSIZE
++        this.byteBuf.writeInt(msgLen);
++        // 2 MAGICCODE
++        this.byteBuf.writeInt(CommitLog.MESSAGE_MAGIC_CODE);
++        // 3 BODYCRC
++        this.byteBuf.writeInt(msgInner.getBodyCRC());
++        // 4 QUEUEID
++        this.byteBuf.writeInt(msgInner.getQueueId());
++        // 5 FLAG
++        this.byteBuf.writeInt(msgInner.getFlag());
++        // 6 QUEUEOFFSET
++        this.byteBuf.writeLong(queueOffset);
++        // 7 PHYSICALOFFSET, need update later
++        this.byteBuf.writeLong(0);
++        // 8 SYSFLAG
++        this.byteBuf.writeInt(msgInner.getSysFlag());
++        // 9 BORNTIMESTAMP
++        this.byteBuf.writeLong(msgInner.getBornTimestamp());
++
++        // 10 BORNHOST
++        ByteBuffer bornHostBytes = msgInner.getBornHostBytes();
++        this.byteBuf.writeBytes(bornHostBytes.array());
++
++        // 11 STORETIMESTAMP
++        this.byteBuf.writeLong(msgInner.getStoreTimestamp());
++
++        // 12 STOREHOSTADDRESS
++        ByteBuffer storeHostBytes = msgInner.getStoreHostBytes();
++        this.byteBuf.writeBytes(storeHostBytes.array());
++
++        // 13 RECONSUMETIMES
++        this.byteBuf.writeInt(msgInner.getReconsumeTimes());
++        // 14 Prepared Transaction Offset
++        this.byteBuf.writeLong(msgInner.getPreparedTransactionOffset());
++        // 15 BODY
++        this.byteBuf.writeInt(bodyLength);
++        if (bodyLength > 0)
++            this.byteBuf.writeBytes(msgInner.getBody());
++        // 16 TOPIC
++        this.byteBuf.writeByte((byte) topicLength);
++        this.byteBuf.writeBytes(topicData);
++        // 17 PROPERTIES
++        this.byteBuf.writeShort((short) propertiesLength);
++        if (propertiesLength > 0)
++            this.byteBuf.writeBytes(propertiesData);
++
++        return null;
++    }
++
++    public ByteBuffer encode(final MessageExtBatch messageExtBatch, PutMessageContext putMessageContext) {
++        this.byteBuf.clear();
++
++        ByteBuffer messagesByteBuff = messageExtBatch.wrap();
++
++        int totalLength = messagesByteBuff.limit();
++        if (totalLength > this.maxMessageBodySize) {
++            CommitLog.log.warn("message body size exceeded, msg body size: " + totalLength + ", maxMessageSize: " + this.maxMessageBodySize);
++            throw new RuntimeException("message body size exceeded");
++        }
++
++        // properties from MessageExtBatch
++        String batchPropStr = MessageDecoder.messageProperties2String(messageExtBatch.getProperties());
++        final byte[] batchPropData = batchPropStr.getBytes(MessageDecoder.CHARSET_UTF8);
++        int batchPropDataLen = batchPropData.length;
++        if (batchPropDataLen > Short.MAX_VALUE) {
++            CommitLog.log.warn("Properties size of messageExtBatch exceeded, properties size: {}, maxSize: {}.", batchPropDataLen, Short.MAX_VALUE);
++            throw new RuntimeException("Properties size of messageExtBatch exceeded!");
++        }
++        final short batchPropLen = (short) batchPropDataLen;
++
++        int batchSize = 0;
++        while (messagesByteBuff.hasRemaining()) {
++            batchSize++;
++            // 1 TOTALSIZE
++            messagesByteBuff.getInt();
++            // 2 MAGICCODE
++            messagesByteBuff.getInt();
++            // 3 BODYCRC
++            messagesByteBuff.getInt();
++            // 4 FLAG
++            int flag = messagesByteBuff.getInt();
++            // 5 BODY
++            int bodyLen = messagesByteBuff.getInt();
++            int bodyPos = messagesByteBuff.position();
++            int bodyCrc = UtilAll.crc32(messagesByteBuff.array(), bodyPos, bodyLen);
++            messagesByteBuff.position(bodyPos + bodyLen);
++            // 6 properties
++            short propertiesLen = messagesByteBuff.getShort();
++            int propertiesPos = messagesByteBuff.position();
++            messagesByteBuff.position(propertiesPos + propertiesLen);
++            boolean needAppendLastPropertySeparator = propertiesLen > 0 && batchPropLen > 0
++                && messagesByteBuff.get(messagesByteBuff.position() - 1) != MessageDecoder.PROPERTY_SEPARATOR;
++
++            final byte[] topicData = messageExtBatch.getTopic().getBytes(MessageDecoder.CHARSET_UTF8);
++
++            final int topicLength = topicData.length;
++
++            int totalPropLen = needAppendLastPropertySeparator ? propertiesLen + batchPropLen + 1
++                : propertiesLen + batchPropLen;
++            final int msgLen = calMsgLength(messageExtBatch.getSysFlag(), bodyLen, topicLength, totalPropLen);
++
++            // 1 TOTALSIZE
++            this.byteBuf.writeInt(msgLen);
++            // 2 MAGICCODE
++            this.byteBuf.writeInt(CommitLog.MESSAGE_MAGIC_CODE);
++            // 3 BODYCRC
++            this.byteBuf.writeInt(bodyCrc);
++            // 4 QUEUEID
++            this.byteBuf.writeInt(messageExtBatch.getQueueId());
++            // 5 FLAG
++            this.byteBuf.writeInt(flag);
++            // 6 QUEUEOFFSET
++            this.byteBuf.writeLong(0);
++            // 7 PHYSICALOFFSET
++            this.byteBuf.writeLong(0);
++            // 8 SYSFLAG
++            this.byteBuf.writeInt(messageExtBatch.getSysFlag());
++            // 9 BORNTIMESTAMP
++            this.byteBuf.writeLong(messageExtBatch.getBornTimestamp());
++
++            // 10 BORNHOST
++            ByteBuffer bornHostBytes = messageExtBatch.getBornHostBytes();
++            this.byteBuf.writeBytes(bornHostBytes.array());
++
++            // 11 STORETIMESTAMP
++            this.byteBuf.writeLong(messageExtBatch.getStoreTimestamp());
++
++            // 12 STOREHOSTADDRESS
++            ByteBuffer storeHostBytes = messageExtBatch.getStoreHostBytes();
++            this.byteBuf.writeBytes(storeHostBytes.array());
++
++            // 13 RECONSUMETIMES
++            this.byteBuf.writeInt(messageExtBatch.getReconsumeTimes());
++            // 14 Prepared Transaction Offset, batch does not support transaction
++            this.byteBuf.writeLong(0);
++            // 15 BODY
++            this.byteBuf.writeInt(bodyLen);
++            if (bodyLen > 0)
++                this.byteBuf.writeBytes(messagesByteBuff.array(), bodyPos, bodyLen);
++            // 16 TOPIC
++            this.byteBuf.writeByte((byte) topicLength);
++            this.byteBuf.writeBytes(topicData);
++            // 17 PROPERTIES
++            this.byteBuf.writeShort((short) totalPropLen);
++            if (propertiesLen > 0) {
++                this.byteBuf.writeBytes(messagesByteBuff.array(), propertiesPos, propertiesLen);
++            }
++            if (batchPropLen > 0) {
++                if (needAppendLastPropertySeparator) {
++                    this.byteBuf.writeByte((byte) MessageDecoder.PROPERTY_SEPARATOR);
++                }
++                this.byteBuf.writeBytes(batchPropData, 0, batchPropLen);
++            }
++        }
++        putMessageContext.setBatchSize(batchSize);
++        putMessageContext.setPhyPos(new long[batchSize]);
++
++        return this.byteBuf.nioBuffer();
++    }
++
++    public ByteBuffer getEncoderBuffer() {
++        return this.byteBuf.nioBuffer();
++    }
++
++    public int getMaxMessageBodySize() {
++        return this.maxMessageBodySize;
++    }
++
++    public void updateEncoderBufferCapacity(int newMaxMessageBodySize) {
++        this.maxMessageBodySize = newMaxMessageBodySize;
++        //Reserve 64kb for encoding buffer outside body
++        this.maxMessageSize = Integer.MAX_VALUE - newMaxMessageBodySize >= 64 * 1024 ?
++            this.maxMessageBodySize + 64 * 1024 : Integer.MAX_VALUE;
++        this.byteBuf.capacity(this.maxMessageSize);
++    }
++
++    static class PutMessageThreadLocal {
++        private final MessageExtEncoder encoder;
++        private final StringBuilder keyBuilder;
++        PutMessageThreadLocal(int size) {
++            encoder = new MessageExtEncoder(size);
++            keyBuilder = new StringBuilder();
++        }
++
++        public MessageExtEncoder getEncoder() {
++            return encoder;
++        }
++
++        public StringBuilder getKeyBuilder() {
++            return keyBuilder;
++        }
++    }
++
++}
+diff --git a/store/src/main/java/org/apache/rocketmq/store/MultiPathMappedFileQueue.java b/store/src/main/java/org/apache/rocketmq/store/MultiPathMappedFileQueue.java
+index de974feac..8f5af9438 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/MultiPathMappedFileQueue.java
++++ b/store/src/main/java/org/apache/rocketmq/store/MultiPathMappedFileQueue.java
+@@ -77,7 +77,7 @@ public class MultiPathMappedFileQueue extends MappedFileQueue {
+     }
+ 
+     @Override
+-    protected MappedFile tryCreateMappedFile(long createOffset) {
++    public MappedFile tryCreateMappedFile(long createOffset) {
+         long fileIdx = createOffset / this.mappedFileSize;
+         Set<String> storePath = getPaths();
+         Set<String> readonlyPathSet = getReadonlyPaths();
+diff --git a/store/src/main/java/org/apache/rocketmq/store/config/MessageStoreConfig.java b/store/src/main/java/org/apache/rocketmq/store/config/MessageStoreConfig.java
+index 554389e79..c93d3eea5 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/config/MessageStoreConfig.java
++++ b/store/src/main/java/org/apache/rocketmq/store/config/MessageStoreConfig.java
+@@ -47,6 +47,21 @@ public class MessageStoreConfig {
+     // CommitLog file size,default is 1G
+     private int mappedFileSizeCommitLog = 1024 * 1024 * 1024;
+ 
++    // CompactinLog file size, default is 100M
++    private int compactionMappedFileSize = 100 * 1024 * 1024;
++
++    // CompactionLog consumeQueue file size, default is 10M
++    private int compactionCqMappedFileSize = 10 * 1024 * 1024;
++
++    private int compactionScheduleInternal = 15 * 60 * 1000;
++
++    private int maxOffsetMapSize = 100 * 1024 * 1024;
++
++    private int compactionThreadNum = 0;
++
++    private boolean enableCompaction = true;
++
++
+     // TimerLog file size, default is 100M
+     private int mappedFileSizeTimerLog = 100 * 1024 * 1024;
+ 
+@@ -385,6 +400,54 @@ public class MessageStoreConfig {
+         this.warmMapedFileEnable = warmMapedFileEnable;
+     }
+ 
++    public int getCompactionMappedFileSize() {
++        return compactionMappedFileSize;
++    }
++
++    public int getCompactionCqMappedFileSize() {
++        return compactionCqMappedFileSize;
++    }
++
++    public void setCompactionMappedFileSize(int compactionMappedFileSize) {
++        this.compactionMappedFileSize = compactionMappedFileSize;
++    }
++
++    public void setCompactionCqMappedFileSize(int compactionCqMappedFileSize) {
++        this.compactionCqMappedFileSize = compactionCqMappedFileSize;
++    }
++
++    public int getCompactionScheduleInternal() {
++        return compactionScheduleInternal;
++    }
++
++    public void setCompactionScheduleInternal(int compactionScheduleInternal) {
++        this.compactionScheduleInternal = compactionScheduleInternal;
++    }
++
++    public int getMaxOffsetMapSize() {
++        return maxOffsetMapSize;
++    }
++
++    public void setMaxOffsetMapSize(int maxOffsetMapSize) {
++        this.maxOffsetMapSize = maxOffsetMapSize;
++    }
++
++    public int getCompactionThreadNum() {
++        return compactionThreadNum;
++    }
++
++    public void setCompactionThreadNum(int compactionThreadNum) {
++        this.compactionThreadNum = compactionThreadNum;
++    }
++
++    public boolean isEnableCompaction() {
++        return enableCompaction;
++    }
++
++    public void setEnableCompaction(boolean enableCompaction) {
++        this.enableCompaction = enableCompaction;
++    }
++
+     public int getMappedFileSizeCommitLog() {
+         return mappedFileSizeCommitLog;
+     }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/dledger/DLedgerCommitLog.java b/store/src/main/java/org/apache/rocketmq/store/dledger/DLedgerCommitLog.java
+index ac7d31fa3..451931e52 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/dledger/DLedgerCommitLog.java
++++ b/store/src/main/java/org/apache/rocketmq/store/dledger/DLedgerCommitLog.java
+@@ -39,13 +39,14 @@ import java.util.concurrent.CompletableFuture;
+ import org.apache.rocketmq.common.UtilAll;
+ import org.apache.rocketmq.common.message.MessageDecoder;
+ import org.apache.rocketmq.common.message.MessageExtBatch;
++import org.apache.rocketmq.common.message.MessageExtBrokerInner;
+ import org.apache.rocketmq.common.sysflag.MessageSysFlag;
+ import org.apache.rocketmq.store.AppendMessageResult;
+ import org.apache.rocketmq.store.AppendMessageStatus;
+ import org.apache.rocketmq.store.CommitLog;
+ import org.apache.rocketmq.store.DefaultMessageStore;
+ import org.apache.rocketmq.store.DispatchRequest;
+-import org.apache.rocketmq.common.message.MessageExtBrokerInner;
++import org.apache.rocketmq.store.MessageExtEncoder;
+ import org.apache.rocketmq.store.PutMessageResult;
+ import org.apache.rocketmq.store.PutMessageStatus;
+ import org.apache.rocketmq.store.SelectMappedBufferResult;
+@@ -767,7 +768,7 @@ public class DLedgerCommitLog extends CommitLog {
+ 
+             final int bodyLength = msgInner.getBody() == null ? 0 : msgInner.getBody().length;
+ 
+-            final int msgLen = calMsgLength(msgInner.getSysFlag(), bodyLength, topicLength, propertiesLength);
++            final int msgLen = MessageExtEncoder.calMsgLength(msgInner.getSysFlag(), bodyLength, topicLength, propertiesLength);
+ 
+             ByteBuffer msgStoreItemMemory = ByteBuffer.allocate(msgLen);
+ 
+@@ -870,7 +871,7 @@ public class DLedgerCommitLog extends CommitLog {
+ 
+                 final int topicLength = topicData.length;
+ 
+-                final int msgLen = calMsgLength(messageExtBatch.getSysFlag(), bodyLen, topicLength, propertiesLen);
++                final int msgLen = MessageExtEncoder.calMsgLength(messageExtBatch.getSysFlag(), bodyLen, topicLength, propertiesLen);
+                 ByteBuffer msgStoreItemMemory = ByteBuffer.allocate(msgLen);
+ 
+                 totalMsgLen += msgLen;
+diff --git a/store/src/main/java/org/apache/rocketmq/store/kv/CommitLogDispatcherCompaction.java b/store/src/main/java/org/apache/rocketmq/store/kv/CommitLogDispatcherCompaction.java
+new file mode 100644
+index 000000000..5c285b144
+--- /dev/null
++++ b/store/src/main/java/org/apache/rocketmq/store/kv/CommitLogDispatcherCompaction.java
+@@ -0,0 +1,35 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store.kv;
++
++import org.apache.rocketmq.store.CommitLogDispatcher;
++import org.apache.rocketmq.store.DispatchRequest;
++
++public class CommitLogDispatcherCompaction implements CommitLogDispatcher {
++    private final CompactionService cptService;
++
++    public CommitLogDispatcherCompaction(CompactionService srv) {
++        this.cptService = srv;
++    }
++
++    @Override
++    public void dispatch(DispatchRequest request) {
++        if (cptService != null) {
++            cptService.putRequest(request);
++        }
++    }
++}
+diff --git a/store/src/main/java/org/apache/rocketmq/store/kv/CompactionLog.java b/store/src/main/java/org/apache/rocketmq/store/kv/CompactionLog.java
+new file mode 100644
+index 000000000..e826288ce
+--- /dev/null
++++ b/store/src/main/java/org/apache/rocketmq/store/kv/CompactionLog.java
+@@ -0,0 +1,1099 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store.kv;
++
++import com.google.common.collect.Lists;
++import org.apache.commons.collections.CollectionUtils;
++import org.apache.commons.lang3.ArrayUtils;
++import org.apache.commons.lang3.StringUtils;
++import org.apache.rocketmq.common.constant.LoggerName;
++import org.apache.rocketmq.common.message.MessageDecoder;
++import org.apache.rocketmq.common.message.MessageExt;
++import org.apache.rocketmq.logging.InternalLogger;
++import org.apache.rocketmq.logging.InternalLoggerFactory;
++import org.apache.rocketmq.store.AppendMessageResult;
++import org.apache.rocketmq.store.AppendMessageStatus;
++import org.apache.rocketmq.store.CompactionAppendMsgCallback;
++import org.apache.rocketmq.store.GetMessageResult;
++import org.apache.rocketmq.store.GetMessageStatus;
++import org.apache.rocketmq.store.MappedFileQueue;
++import org.apache.rocketmq.common.message.MessageExtBrokerInner;
++import org.apache.rocketmq.store.MessageStore;
++import org.apache.rocketmq.store.PutMessageLock;
++import org.apache.rocketmq.store.PutMessageReentrantLock;
++import org.apache.rocketmq.store.PutMessageResult;
++import org.apache.rocketmq.store.PutMessageSpinLock;
++import org.apache.rocketmq.store.PutMessageStatus;
++import org.apache.rocketmq.store.SelectMappedBufferResult;
++import org.apache.rocketmq.store.StoreUtil;
++import org.apache.rocketmq.store.config.BrokerRole;
++import org.apache.rocketmq.store.config.MessageStoreConfig;
++import org.apache.rocketmq.store.logfile.MappedFile;
++import org.apache.rocketmq.store.queue.BatchConsumeQueue;
++import org.apache.rocketmq.store.queue.CqUnit;
++import org.apache.rocketmq.store.queue.ReferredIterator;
++import org.apache.rocketmq.store.queue.SparseConsumeQueue;
++
++import java.io.File;
++import java.io.IOException;
++import java.nio.ByteBuffer;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Paths;
++import java.security.DigestException;
++import java.security.MessageDigest;
++import java.security.NoSuchAlgorithmException;
++import java.util.Arrays;
++import java.util.Iterator;
++import java.util.List;
++import java.util.Objects;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.atomic.AtomicReference;
++import java.util.stream.Collectors;
++
++import static org.apache.rocketmq.common.message.MessageDecoder.BLANK_MAGIC_CODE;
++
++public class CompactionLog {
++    private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
++
++    private static final int END_FILE_MIN_BLANK_LENGTH = 4 + 4;
++    private static final int MAX_PULL_MSG_SIZE = 128 * 1024 * 1024;
++    public static final String COMPACTING_SUB_FOLDER = "compacting";
++    public static final String REPLICATING_SUB_FOLDER = "replicating";
++
++    private final int compactionLogMappedFileSize;
++    private final int compactionCqMappedFileSize;
++    private final String compactionLogFilePath;
++    private final String compactionCqFilePath;
++    private final MessageStore defaultMessageStore;
++    private final CompactionStore compactionStore;
++    private final MessageStoreConfig messageStoreConfig;
++    private final CompactionAppendMsgCallback endMsgCallback;
++    private final String topic;
++    private final int queueId;
++    private final int offsetMapMemorySize;
++    private final PutMessageLock putMessageLock;
++    private final PutMessageLock readMessageLock;
++    private TopicPartitionLog current;
++    private TopicPartitionLog compacting;
++    private TopicPartitionLog replicating;
++    private CompactionPositionMgr positionMgr;
++    private AtomicReference<State> state;
++
++    public CompactionLog(final MessageStore messageStore, final CompactionStore compactionStore, final String topic, final int queueId)
++        throws IOException {
++        this.topic = topic;
++        this.queueId = queueId;
++        this.defaultMessageStore = messageStore;
++        this.compactionStore = compactionStore;
++        this.messageStoreConfig = messageStore.getMessageStoreConfig();
++        this.offsetMapMemorySize = compactionStore.getOffsetMapSize();
++        this.compactionCqMappedFileSize =
++            messageStoreConfig.getCompactionCqMappedFileSize() / BatchConsumeQueue.CQ_STORE_UNIT_SIZE
++                * BatchConsumeQueue.CQ_STORE_UNIT_SIZE;
++        this.compactionLogMappedFileSize = getCompactionLogSize(compactionCqMappedFileSize,
++            messageStoreConfig.getCompactionMappedFileSize());
++        this.compactionLogFilePath = Paths.get(compactionStore.getCompactionLogPath(),
++            topic, String.valueOf(queueId)).toString();
++        this.compactionCqFilePath = compactionStore.getCompactionCqPath();        // batch consume queue already separated
++        this.positionMgr = compactionStore.getPositionMgr();
++
++        this.putMessageLock =
++            messageStore.getMessageStoreConfig().isUseReentrantLockWhenPutMessage() ? new PutMessageReentrantLock() :
++                new PutMessageSpinLock();
++        this.readMessageLock =
++            messageStore.getMessageStoreConfig().isUseReentrantLockWhenPutMessage() ? new PutMessageReentrantLock() :
++                new PutMessageSpinLock();
++        this.endMsgCallback = new CompactionAppendEndMsgCallback();
++        this.state = new AtomicReference<>(State.INITIALIZING);
++        log.info("CompactionLog {}:{} init completed.", topic, queueId);
++    }
++
++    private int getCompactionLogSize(int cqSize, int origLogSize) {
++        int n = origLogSize / cqSize;
++        if (n < 5) {
++            return cqSize * 5;
++        }
++        int m = origLogSize % cqSize;
++        if (m > 0 && m < (cqSize >> 1)) {
++            return n * cqSize;
++        } else {
++            return (n + 1) * cqSize;
++        }
++    }
++
++    public void load(boolean exitOk) throws IOException, RuntimeException {
++        initLogAndCq(exitOk);
++        if (defaultMessageStore.getMessageStoreConfig().getBrokerRole() == BrokerRole.SLAVE
++            && getLog().isMappedFilesEmpty()) {
++            log.info("{}:{} load compactionLog from remote master", topic, queueId);
++            loadFromRemoteAsync();
++        } else {
++            state.compareAndSet(State.INITIALIZING, State.NORMAL);
++        }
++    }
++
++    private void initLogAndCq(boolean exitOk) throws IOException, RuntimeException {
++        current = new TopicPartitionLog(this);
++        current.init(exitOk);
++    }
++
++
++    private boolean putMessageFromRemote(byte[] bytes) {
++        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
++        // split bytebuffer to avoid encode message again
++        while (byteBuffer.hasRemaining()) {
++            int mark = byteBuffer.position();
++            ByteBuffer bb = byteBuffer.slice();
++            int size = bb.getInt();
++            if (size < 0 || size > byteBuffer.capacity()) {
++                break;
++            } else {
++                bb.limit(size);
++                bb.rewind();
++            }
++
++            MessageExt messageExt = MessageDecoder.decode(bb, false, false);
++            long messageOffset = messageExt.getQueueOffset();
++            long minOffsetInQueue = getCQ().getMinOffsetInQueue();
++            if (getLog().isMappedFilesEmpty() || messageOffset < minOffsetInQueue) {
++                asyncPutMessage(bb, messageExt, replicating);
++            } else {
++                log.info("{}:{} message offset {} >= minOffsetInQueue {}, stop pull...",
++                    topic, queueId, messageOffset, minOffsetInQueue);
++                return false;
++            }
++
++            byteBuffer.position(mark + size);
++        }
++
++        return true;
++
++    }
++
++    private void pullMessageFromMaster() throws Exception {
++
++        if (StringUtils.isBlank(compactionStore.getMasterAddr())) {
++            compactionStore.getCompactionSchedule().schedule(() -> {
++                try {
++                    pullMessageFromMaster();
++                } catch (Exception e) {
++                    log.error("pullMessageFromMaster exception: ", e);
++                }
++            }, 5, TimeUnit.SECONDS);
++            return;
++        }
++
++        replicating = new TopicPartitionLog(this, REPLICATING_SUB_FOLDER);
++        try (MessageFetcher messageFetcher = new MessageFetcher()) {
++            messageFetcher.pullMessageFromMaster(topic, queueId, getCQ().getMinOffsetInQueue(),
++                compactionStore.getMasterAddr(), (currOffset, response) -> {
++                    if (currOffset < 0) {
++                        log.info("{}:{} current offset {}, stop pull...", topic, queueId, currOffset);
++                        return false;
++                    }
++                    return putMessageFromRemote(response.getBody());
++//                    positionMgr.setOffset(topic, queueId, currOffset);
++                });
++        }
++
++        // merge files
++        if (getLog().isMappedFilesEmpty()) {
++            replaceFiles(getLog().getMappedFiles(), current, replicating);
++        } else if (replicating.getLog().isMappedFilesEmpty()) {
++            log.info("replicating message is empty");   //break
++        } else {
++            List<MappedFile> newFiles = Lists.newArrayList();
++            List<MappedFile> toCompactFiles = Lists.newArrayList(replicating.getLog().getMappedFiles());
++            putMessageLock.lock();
++            try {
++                // combine current and replicating to mappedFileList
++                newFiles = Lists.newArrayList(getLog().getMappedFiles());
++                toCompactFiles.addAll(newFiles);  //all from current
++                current.roll(toCompactFiles.size() * compactionLogMappedFileSize);
++            } catch (Throwable e) {
++                log.error("roll log and cq exception: ", e);
++            } finally {
++                putMessageLock.unlock();
++            }
++
++            try {
++                // doCompaction with current and replicating
++                compactAndReplace(new ProcessFileList(toCompactFiles, toCompactFiles));
++            } catch (Throwable e) {
++                log.error("do merge replicating and current exception: ", e);
++            }
++        }
++
++        // cleanReplicatingResource, force clean cq
++        replicating.clean(false, true);
++
++//        positionMgr.setOffset(topic, queueId, currentPullOffset);
++        state.compareAndSet(State.INITIALIZING, State.NORMAL);
++    }
++    private void loadFromRemoteAsync() {
++        compactionStore.getCompactionSchedule().submit(() -> {
++            try {
++                pullMessageFromMaster();
++            } catch (Exception e) {
++                log.error("fetch message from master exception: ", e);
++            }
++        });
++
++        // update (currentStatus) = LOADING
++
++        // request => get (start, end)
++        // pull message => current message offset > end
++        // done
++        // positionMgr.persist();
++
++        // update (currentStatus) = RUNNING
++    }
++
++    private long nextOffsetCorrection(long oldOffset, long newOffset) {
++        long nextOffset = oldOffset;
++        if (messageStoreConfig.getBrokerRole() != BrokerRole.SLAVE || messageStoreConfig.isOffsetCheckInSlave()) {
++            nextOffset = newOffset;
++        }
++        return nextOffset;
++    }
++
++    private boolean checkInDiskByCommitOffset(long offsetPy, long maxOffsetPy) {
++        long memory = (long) (StoreUtil.TOTAL_PHYSICAL_MEMORY_SIZE *
++            (this.messageStoreConfig.getAccessMessageInMemoryMaxRatio() / 100.0));
++        return (maxOffsetPy - offsetPy) > memory;
++    }
++
++    private boolean isTheBatchFull(int sizePy, int unitBatchNum, int maxMsgNums, long maxMsgSize,
++        int bufferTotal, int messageTotal, boolean isInDisk) {
++
++        if (0 == bufferTotal || 0 == messageTotal) {
++            return false;
++        }
++
++        if (messageTotal + unitBatchNum > maxMsgNums) {
++            return true;
++        }
++
++        if (bufferTotal + sizePy > maxMsgSize) {
++            return true;
++        }
++
++        if (isInDisk) {
++            if ((bufferTotal + sizePy) > this.messageStoreConfig.getMaxTransferBytesOnMessageInDisk()) {
++                return true;
++            }
++
++            if (messageTotal > this.messageStoreConfig.getMaxTransferCountOnMessageInDisk() - 1) {
++                return true;
++            }
++        } else {
++            if ((bufferTotal + sizePy) > this.messageStoreConfig.getMaxTransferBytesOnMessageInMemory()) {
++                return true;
++            }
++
++            if (messageTotal > this.messageStoreConfig.getMaxTransferCountOnMessageInMemory() - 1) {
++                return true;
++            }
++        }
++
++        return false;
++    }
++
++    public long rollNextFile(final long offset) {
++        return offset + compactionLogMappedFileSize - offset % compactionLogMappedFileSize;
++    }
++
++    boolean shouldRetainMsg(final MessageExt msgExt, final OffsetMap map) throws DigestException {
++        if (msgExt.getQueueOffset() > map.getLastOffset()) {
++            return true;
++        }
++
++        String key = msgExt.getKeys();
++        if (StringUtils.isNotBlank(key)) {
++            boolean keyNotExistOrOffsetBigger = msgExt.getQueueOffset() >= map.get(key);
++            boolean hasBody = ArrayUtils.isNotEmpty(msgExt.getBody());
++            return keyNotExistOrOffsetBigger && hasBody;
++        } else {
++            log.error("message has no keys");
++            return false;
++        }
++    }
++
++    public void checkAndPutMessage(final SelectMappedBufferResult selectMappedBufferResult, final MessageExt msgExt,
++        final OffsetMap offsetMap, final TopicPartitionLog tpLog)
++        throws DigestException {
++        if (shouldRetainMsg(msgExt, offsetMap)) {
++            asyncPutMessage(selectMappedBufferResult.getByteBuffer(), msgExt, tpLog);
++        }
++    }
++
++    public CompletableFuture<PutMessageResult> asyncPutMessage(final SelectMappedBufferResult selectMappedBufferResult) {
++        return asyncPutMessage(selectMappedBufferResult, current);
++    }
++
++    public CompletableFuture<PutMessageResult> asyncPutMessage(final SelectMappedBufferResult selectMappedBufferResult,
++        final TopicPartitionLog tpLog) {
++        MessageExt msgExt = MessageDecoder.decode(selectMappedBufferResult.getByteBuffer(), false, false);
++        return asyncPutMessage(selectMappedBufferResult.getByteBuffer(), msgExt, tpLog);
++    }
++
++    public CompletableFuture<PutMessageResult> asyncPutMessage(final ByteBuffer msgBuffer,
++        final MessageExt msgExt, final TopicPartitionLog tpLog) {
++
++        // fix duplicate
++        if (tpLog.getCQ().getMaxOffsetInQueue() - 1 >= msgExt.getQueueOffset()) {
++            return CompletableFuture.completedFuture(new PutMessageResult(PutMessageStatus.MESSAGE_ILLEGAL, null));
++        }
++
++        if (StringUtils.isBlank(msgExt.getKeys())) {
++            log.warn("message {}-{}:{} have no key, will not put in compaction log",
++                msgExt.getTopic(), msgExt.getQueueId(), msgExt.getMsgId());
++            return CompletableFuture.completedFuture(new PutMessageResult(PutMessageStatus.MESSAGE_ILLEGAL, null));
++        }
++
++        putMessageLock.lock();
++        try {
++            long beginTime = System.nanoTime();
++
++            if (tpLog.isEmptyOrCurrentFileFull()) {
++                try {
++                    tpLog.roll();
++                } catch (IOException e) {
++                    log.error("create mapped file or consumerQueue exception: ", e);
++                    return CompletableFuture.completedFuture(new PutMessageResult(PutMessageStatus.CREATE_MAPPED_FILE_FAILED, null));
++                }
++            }
++
++            MappedFile mappedFile = tpLog.getLog().getLastMappedFile();
++
++            CompactionAppendMsgCallback callback = new CompactionAppendMessageCallback(msgExt, tpLog.getCQ());
++            AppendMessageResult result = mappedFile.appendMessage(msgBuffer, callback);
++
++            switch (result.getStatus()) {
++                case PUT_OK:
++                    break;
++                case END_OF_FILE:
++                    try {
++                        tpLog.roll();
++                    } catch (IOException e) {
++                        log.error("create mapped file2 error, topic: {}, clientAddr: {}", msgExt.getTopic(), msgExt.getBornHostString());
++                        return CompletableFuture.completedFuture(new PutMessageResult(PutMessageStatus.CREATE_MAPPED_FILE_FAILED, result));
++                    }
++                    mappedFile = tpLog.getLog().getLastMappedFile();
++                    result = mappedFile.appendMessage(msgBuffer, callback);
++                    break;
++                default:
++                    return CompletableFuture.completedFuture(new PutMessageResult(PutMessageStatus.UNKNOWN_ERROR, result));
++            }
++
++            return CompletableFuture.completedFuture(new PutMessageResult(PutMessageStatus.PUT_OK, result));
++        } finally {
++            putMessageLock.unlock();
++        }
++    }
++
++    private SelectMappedBufferResult getMessage(final long offset, final int size) {
++
++        MappedFile mappedFile = this.getLog().findMappedFileByOffset(offset, offset == 0);
++        if (mappedFile != null) {
++            int pos = (int) (offset % compactionLogMappedFileSize);
++            return mappedFile.selectMappedBuffer(pos, size);
++        }
++        return null;
++    }
++
++    private boolean validateCqUnit(CqUnit cqUnit) {
++        return cqUnit.getPos() >= 0
++            && cqUnit.getSize() > 0
++            && cqUnit.getQueueOffset() >= 0
++            && cqUnit.getBatchNum() > 0;
++    }
++
++    public GetMessageResult getMessage(final String group, final String topic, final int queueId, final long offset,
++        final int maxMsgNums, final int maxTotalMsgSize) {
++        readMessageLock.lock();
++        try {
++            long beginTime = System.nanoTime();
++
++            GetMessageStatus status;
++            long nextBeginOffset = offset;
++            long minOffset = 0;
++            long maxOffset = 0;
++
++            GetMessageResult getResult = new GetMessageResult();
++
++            final long maxOffsetPy = getLog().getMaxOffset();
++
++            SparseConsumeQueue consumeQueue = getCQ();
++            if (consumeQueue != null) {
++                minOffset = consumeQueue.getMinOffsetInQueue();
++                maxOffset = consumeQueue.getMaxOffsetInQueue();
++
++                if (maxOffset == 0) {
++                    status = GetMessageStatus.NO_MESSAGE_IN_QUEUE;
++                    nextBeginOffset = nextOffsetCorrection(offset, 0);
++                } else if (offset == maxOffset) {
++                    status = GetMessageStatus.OFFSET_OVERFLOW_ONE;
++                    nextBeginOffset = nextOffsetCorrection(offset, offset);
++                } else if (offset > maxOffset) {
++                    status = GetMessageStatus.OFFSET_OVERFLOW_BADLY;
++                    if (0 == minOffset) {
++                        nextBeginOffset = nextOffsetCorrection(offset, minOffset);
++                    } else {
++                        nextBeginOffset = nextOffsetCorrection(offset, maxOffset);
++                    }
++                } else {
++
++                    long maxPullSize = Math.max(maxTotalMsgSize, 100);
++                    if (maxPullSize > MAX_PULL_MSG_SIZE) {
++                        log.warn("The max pull size is too large maxPullSize={} topic={} queueId={}",
++                            maxPullSize, topic, queueId);
++                        maxPullSize = MAX_PULL_MSG_SIZE;
++                    }
++                    status = GetMessageStatus.NO_MATCHED_MESSAGE;
++                    long maxPhyOffsetPulling = 0;
++                    int cqFileNum = 0;
++
++                    while (getResult.getBufferTotalSize() <= 0 && nextBeginOffset < maxOffset
++                        && cqFileNum++ < this.messageStoreConfig.getTravelCqFileNumWhenGetMessage()) {
++                        ReferredIterator<CqUnit> bufferConsumeQueue = consumeQueue.iterateFromOrNext(nextBeginOffset);
++
++                        if (bufferConsumeQueue == null) {
++                            status = GetMessageStatus.OFFSET_FOUND_NULL;
++                            nextBeginOffset = nextOffsetCorrection(nextBeginOffset, consumeQueue.rollNextFile(nextBeginOffset));
++                            log.warn("consumer request topic:{}, offset:{}, minOffset:{}, maxOffset:{}, "
++                                    + "but access logic queue failed. correct nextBeginOffset to {}",
++                                topic, offset, minOffset, maxOffset, nextBeginOffset);
++                            break;
++                        }
++
++                        try {
++                            long nextPhyFileStartOffset = Long.MIN_VALUE;
++                            while (bufferConsumeQueue.hasNext() && nextBeginOffset < maxOffset) {
++                                CqUnit cqUnit = bufferConsumeQueue.next();
++                                if (!validateCqUnit(cqUnit)) {
++                                    break;
++                                }
++                                long offsetPy = cqUnit.getPos();
++                                int sizePy = cqUnit.getSize();
++
++                                boolean isInDisk = checkInDiskByCommitOffset(offsetPy, maxOffsetPy);
++
++                                if (isTheBatchFull(sizePy, cqUnit.getBatchNum(), maxMsgNums, maxPullSize,
++                                    getResult.getBufferTotalSize(), getResult.getMessageCount(), isInDisk)) {
++                                    break;
++                                }
++
++                                if (getResult.getBufferTotalSize() >= maxPullSize) {
++                                    break;
++                                }
++
++                                maxPhyOffsetPulling = offsetPy;
++
++                                //Be careful, here should before the isTheBatchFull
++                                nextBeginOffset = cqUnit.getQueueOffset() + cqUnit.getBatchNum();
++
++                                if (nextPhyFileStartOffset != Long.MIN_VALUE) {
++                                    if (offsetPy < nextPhyFileStartOffset) {
++                                        continue;
++                                    }
++                                }
++
++                                SelectMappedBufferResult selectResult = getMessage(offsetPy, sizePy);
++                                if (null == selectResult) {
++                                    if (getResult.getBufferTotalSize() == 0) {
++                                        status = GetMessageStatus.MESSAGE_WAS_REMOVING;
++                                    }
++
++                                    // nextPhyFileStartOffset = this.commitLog.rollNextFile(offsetPy);
++                                    nextPhyFileStartOffset = rollNextFile(offsetPy);
++                                    continue;
++                                }
++
++                                getResult.addMessage(selectResult, cqUnit.getQueueOffset(), cqUnit.getBatchNum());
++                                status = GetMessageStatus.FOUND;
++                                nextPhyFileStartOffset = Long.MIN_VALUE;
++                            }
++                        } finally {
++                            bufferConsumeQueue.release();
++                        }
++                    }
++
++                    long diff = maxOffsetPy - maxPhyOffsetPulling;
++                    long memory = (long)(StoreUtil.TOTAL_PHYSICAL_MEMORY_SIZE * (this.messageStoreConfig.getAccessMessageInMemoryMaxRatio() / 100.0));
++                    getResult.setSuggestPullingFromSlave(diff > memory);
++                }
++            } else {
++                status = GetMessageStatus.NO_MATCHED_LOGIC_QUEUE;
++                nextBeginOffset = nextOffsetCorrection(offset, 0);
++            }
++
++            getResult.setStatus(status);
++            getResult.setNextBeginOffset(nextBeginOffset);
++            getResult.setMaxOffset(maxOffset);
++            getResult.setMinOffset(minOffset);
++            return getResult;
++        } finally {
++            readMessageLock.unlock();
++        }
++    }
++
++    ProcessFileList getCompactionFile() {
++        List<MappedFile> mappedFileList = Lists.newArrayList(getLog().getMappedFiles());
++        if (mappedFileList.size() < 2) {
++            return null;
++        }
++
++        List<MappedFile> toCompactFiles = mappedFileList.subList(0, mappedFileList.size() - 1);
++
++        //exclude the last writing file
++        List<MappedFile> newFiles = Lists.newArrayList();
++        for (int i = 0; i < mappedFileList.size() - 1; i++) {
++            MappedFile mf = mappedFileList.get(i);
++            long maxQueueOffsetInFile = getCQ().getMaxMsgOffsetFromFile(mf.getFile().getName());
++            if (maxQueueOffsetInFile > positionMgr.getOffset(topic, queueId)) {
++                newFiles.add(mf);
++            }
++        }
++
++        if (newFiles.isEmpty()) {
++            return null;
++        }
++
++        return new ProcessFileList(toCompactFiles, newFiles);
++    }
++
++    void compactAndReplace(ProcessFileList compactFiles) throws Throwable {
++        if (compactFiles == null || compactFiles.isEmpty()) {
++            return;
++        }
++
++        long startTime = System.nanoTime();
++        OffsetMap offsetMap = getOffsetMap(compactFiles.newFiles);
++        compaction(compactFiles.toCompactFiles, offsetMap);
++        replaceFiles(compactFiles.toCompactFiles, current, compacting);
++        positionMgr.setOffset(topic, queueId, offsetMap.lastOffset);
++        positionMgr.persist();
++        compacting.clean(false, false);
++        log.info("this compaction elapsed {} milliseconds",
++            TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
++
++    }
++
++    void doCompaction() {
++        if (!state.compareAndSet(State.NORMAL, State.COMPACTING)) {
++            log.warn("compactionLog state is {}, skip this time", state.get());
++            return;
++        }
++
++        try {
++            compactAndReplace(getCompactionFile());
++        } catch (Throwable e) {
++            log.error("do compaction exception: ", e);
++        }
++        state.compareAndSet(State.COMPACTING, State.NORMAL);
++    }
++
++    protected OffsetMap getOffsetMap(List<MappedFile> mappedFileList) throws NoSuchAlgorithmException, DigestException {
++        OffsetMap offsetMap = new OffsetMap(offsetMapMemorySize);
++
++        for (MappedFile mappedFile : mappedFileList) {
++            Iterator<SelectMappedBufferResult> iterator = mappedFile.iterator(0);
++            while (iterator.hasNext()) {
++                SelectMappedBufferResult smb = null;
++                try {
++                    smb = iterator.next();
++                    //decode bytebuffer
++                    MessageExt msg = MessageDecoder.decode(smb.getByteBuffer(), true, false);
++                    if (msg != null) {
++                        ////get key & offset and put to offsetMap
++                        if (msg.getQueueOffset() > positionMgr.getOffset(topic, queueId)) {
++                            offsetMap.put(msg.getKeys(), msg.getQueueOffset());
++                        }
++                    } else {
++                        // msg is null indicate that file is end
++                        break;
++                    }
++                } catch (DigestException e) {
++                    log.error("offsetMap put exception: ", e);
++                    throw e;
++                } finally {
++                    if (smb != null) {
++                        smb.release();
++                    }
++                }
++            }
++        }
++        return offsetMap;
++    }
++
++    protected void putEndMessage(MappedFileQueue mappedFileQueue) {
++        MappedFile lastFile = mappedFileQueue.getLastMappedFile();
++        if (!lastFile.isFull()) {
++            lastFile.appendMessage(ByteBuffer.allocate(0), endMsgCallback);
++        }
++    }
++
++    protected void compaction(List<MappedFile> mappedFileList, OffsetMap offsetMap) throws DigestException {
++        compacting = new TopicPartitionLog(this, COMPACTING_SUB_FOLDER);
++
++        for (MappedFile mappedFile : mappedFileList) {
++            Iterator<SelectMappedBufferResult> iterator = mappedFile.iterator(0);
++            while (iterator.hasNext()) {
++                SelectMappedBufferResult smb = null;
++                try {
++                    smb = iterator.next();
++                    MessageExt msgExt = MessageDecoder.decode(smb.getByteBuffer(), true, true);
++                    if (msgExt == null) {
++                        // file end
++                        break;
++                    } else {
++                        checkAndPutMessage(smb, msgExt, offsetMap, compacting);
++                    }
++                } finally {
++                    if (smb != null) {
++                        smb.release();
++                    }
++                }
++            }
++        }
++        putEndMessage(compacting.getLog());
++    }
++
++    protected void replaceFiles(List<MappedFile> mappedFileList, TopicPartitionLog current,
++        TopicPartitionLog newLog) {
++
++        MappedFileQueue dest = current.getLog();
++        MappedFileQueue src = newLog.getLog();
++
++        long beginTime = System.nanoTime();
++//        List<String> fileNameToReplace = mappedFileList.stream()
++//            .map(m -> m.getFile().getName())
++//            .collect(Collectors.toList());
++
++        List<String> fileNameToReplace = dest.getMappedFiles().stream()
++            .filter(mappedFileList::contains)
++            .map(mf -> mf.getFile().getName())
++            .collect(Collectors.toList());
++
++        mappedFileList.forEach(MappedFile::renameToDelete);
++
++        src.getMappedFiles().forEach(mappedFile -> {
++            try {
++                mappedFile.moveToParent();
++            } catch (IOException e) {
++                log.error("move file {} to parent directory exception: ", mappedFile.getFileName());
++            }
++        });
++
++        dest.getMappedFiles().stream()
++            .filter(m -> !mappedFileList.contains(m))
++            .forEach(m -> src.getMappedFiles().add(m));
++
++        readMessageLock.lock();
++        try {
++            mappedFileList.forEach(mappedFile -> mappedFile.destroy(1000));
++
++            dest.getMappedFiles().clear();
++            dest.getMappedFiles().addAll(src.getMappedFiles());
++            src.getMappedFiles().clear();
++
++            replaceCqFiles(getCQ(), newLog.getCQ(), fileNameToReplace);
++
++            log.info("replace file elapsed {} milliseconds",
++                TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - beginTime));
++        } finally {
++            readMessageLock.unlock();
++        }
++    }
++
++    protected void replaceCqFiles(SparseConsumeQueue currentBcq, SparseConsumeQueue compactionBcq,
++        List<String> fileNameToReplace) {
++        long beginTime = System.nanoTime();
++
++        MappedFileQueue currentMq = currentBcq.getMappedFileQueue();
++        MappedFileQueue compactMq = compactionBcq.getMappedFileQueue();
++        List<MappedFile> fileListToDelete = currentMq.getMappedFiles().stream().filter(m ->
++            fileNameToReplace.contains(m.getFile().getName())).collect(Collectors.toList());
++
++        fileListToDelete.forEach(MappedFile::renameToDelete);
++        compactMq.getMappedFiles().forEach(mappedFile -> {
++            try {
++                mappedFile.moveToParent();
++            } catch (IOException e) {
++                log.error("move consume queue file {} to parent directory exception: ", mappedFile.getFileName(), e);
++            }
++        });
++
++        currentMq.getMappedFiles().stream()
++            .filter(m -> !fileListToDelete.contains(m))
++            .forEach(m -> compactMq.getMappedFiles().add(m));
++
++        fileListToDelete.forEach(mappedFile -> mappedFile.destroy(1000));
++
++        currentMq.getMappedFiles().clear();
++        currentMq.getMappedFiles().addAll(compactMq.getMappedFiles());
++        compactMq.getMappedFiles().clear();
++
++        currentBcq.refresh();
++        log.info("replace consume queue file elapsed {} millsecs.",
++            TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - beginTime));
++    }
++
++    public MappedFileQueue getLog() {
++        return current.mappedFileQueue;
++    }
++
++    public SparseConsumeQueue getCQ() {
++        return current.consumeQueue;
++    }
++
++//    public SparseConsumeQueue getCompactionScq() {
++//        return compactionScq;
++//    }
++
++    public void flushCQ(int flushLeastPages) {
++        getCQ().flush(flushLeastPages);
++    }
++
++    static class CompactionAppendEndMsgCallback implements CompactionAppendMsgCallback {
++        @Override
++        public AppendMessageResult doAppend(ByteBuffer bbDest, long fileFromOffset, int maxBlank, ByteBuffer bbSrc) {
++            ByteBuffer endInfo = ByteBuffer.allocate(END_FILE_MIN_BLANK_LENGTH);
++            endInfo.putInt(maxBlank);
++            endInfo.putInt(BLANK_MAGIC_CODE);
++            return new AppendMessageResult(AppendMessageStatus.END_OF_FILE,
++                fileFromOffset + bbDest.position(), maxBlank, System.currentTimeMillis());
++        }
++    }
++
++    static class CompactionAppendMessageCallback implements CompactionAppendMsgCallback {
++        private final MessageExt msgExt;
++        private final SparseConsumeQueue bcq;
++
++        public CompactionAppendMessageCallback(MessageExt msgExt, SparseConsumeQueue bcq) {
++            this.msgExt = msgExt;
++            this.bcq = bcq;
++        }
++
++        @Override
++        public AppendMessageResult doAppend(ByteBuffer bbDest, long fileFromOffset, int maxBlank, ByteBuffer bbSrc) {
++
++            String topic = msgExt.getTopic();
++            int queueId =  msgExt.getQueueId();
++            String tags = msgExt.getTags();
++            long storeTimestamp = msgExt.getStoreTimestamp();
++
++            final int msgLen = bbSrc.getInt(0);
++            MappedFile bcqMappedFile = bcq.getMappedFileQueue().getLastMappedFile();
++            if (bcqMappedFile.getWrotePosition() + BatchConsumeQueue.CQ_STORE_UNIT_SIZE >= bcqMappedFile.getFileSize()
++                || (msgLen + END_FILE_MIN_BLANK_LENGTH) > maxBlank) {      //bcq will full or log will full
++
++                bcq.putEndPositionInfo(bcqMappedFile);
++
++                bbDest.putInt(maxBlank);
++                bbDest.putInt(BLANK_MAGIC_CODE);
++                return new AppendMessageResult(AppendMessageStatus.END_OF_FILE,
++                    fileFromOffset + bbDest.position(), maxBlank, storeTimestamp);
++            }
++
++            //get logic offset and physical offset
++            int logicOffsetPos = 4 + 4 + 4 + 4 + 4;
++            long logicOffset = bbSrc.getLong(logicOffsetPos);
++            int destPos = bbDest.position();
++            long physicalOffset = fileFromOffset + bbDest.position();
++            bbSrc.rewind();
++            bbSrc.limit(msgLen);
++            bbDest.put(bbSrc);
++            bbDest.putLong(destPos + logicOffsetPos + 8, physicalOffset);       //replace physical offset
++
++            boolean result = bcq.putBatchMessagePositionInfo(physicalOffset, msgLen,
++                MessageExtBrokerInner.tagsString2tagsCode(tags), storeTimestamp, logicOffset, (short)1);
++            if (!result) {
++                log.error("put message {}-{} position info failed", topic, queueId);
++            }
++            return new AppendMessageResult(AppendMessageStatus.PUT_OK, physicalOffset, msgLen, storeTimestamp);
++        }
++    }
++
++    static class OffsetMap {
++        private ByteBuffer dataBytes;
++        private int capacity;
++        private int entrySize;
++        private int entryNum;
++        private MessageDigest digest;
++        private int hashSize;
++        private long lastOffset;
++        private byte[] hash1;
++        private byte[] hash2;
++
++        public OffsetMap(int memorySize) throws NoSuchAlgorithmException {
++            this(memorySize, MessageDigest.getInstance("MD5"));
++        }
++
++        public OffsetMap(int memorySize, MessageDigest digest) {
++            this.hashSize = digest.getDigestLength();
++            this.entrySize = hashSize + (Long.SIZE / Byte.SIZE);
++            this.capacity = Math.max(memorySize / entrySize, 100);
++            this.dataBytes = ByteBuffer.allocate(capacity * entrySize);
++            this.hash1 = new byte[hashSize];
++            this.hash2 = new byte[hashSize];
++            this.entryNum = 0;
++            this.digest = digest;
++        }
++
++        public void put(String key, final long offset) throws DigestException {
++            if (entryNum >= capacity) {
++                throw new IllegalArgumentException("offset map is full");
++            }
++            hashInto(key, hash1);
++            int tryNum = 0;
++            int index = indexOf(hash1, tryNum);
++            while (!isEmpty(index)) {
++                dataBytes.position(index);
++                dataBytes.get(hash2);
++                if (Arrays.equals(hash1, hash2)) {
++                    dataBytes.putLong(offset);
++                    lastOffset = offset;
++                    return;
++                }
++                tryNum++;
++                index = indexOf(hash1, tryNum);
++            }
++
++            dataBytes.position(index);
++            dataBytes.put(hash1);
++            dataBytes.putLong(offset);
++            lastOffset = offset;
++            entryNum += 1;
++        }
++
++        public long get(String key) throws DigestException {
++            hashInto(key, hash1);
++            int tryNum = 0;
++            int maxTryNum = entryNum + hashSize - 4;
++            int index = 0;
++            do {
++                if (tryNum >= maxTryNum) {
++                    return -1L;
++                }
++                index = indexOf(hash1, tryNum);
++                dataBytes.position(index);
++                if (isEmpty(index)) {
++                    return -1L;
++                }
++                dataBytes.get(hash2);
++                tryNum++;
++            } while (!Arrays.equals(hash1, hash2));
++            return dataBytes.getLong();
++        }
++
++        public long getLastOffset() {
++            return lastOffset;
++        }
++
++        private boolean isEmpty(int pos) {
++            return dataBytes.getLong(pos) == 0
++                && dataBytes.getLong(pos + 8) == 0
++                && dataBytes.getLong(pos + 16) == 0;
++        }
++
++        private int indexOf(byte[] hash, int tryNum) {
++            int index = readInt(hash, Math.min(tryNum, hashSize - 4)) + Math.max(0, tryNum - hashSize + 4);
++            int entry = Math.abs(index) % capacity;
++            return entry * entrySize;
++        }
++
++        private void hashInto(String key, byte[] buf) throws DigestException {
++            digest.update(key.getBytes(StandardCharsets.UTF_8));
++            digest.digest(buf, 0, hashSize);
++        }
++
++        private int readInt(byte[] buf, int offset) {
++            return ((buf[offset] & 0xFF) << 24) |
++                ((buf[offset + 1] & 0xFF) << 16) |
++                ((buf[offset + 2] & 0xFF) << 8) |
++                ((buf[offset + 3] & 0xFF));
++        }
++    }
++
++    static class TopicPartitionLog {
++        MappedFileQueue mappedFileQueue;
++        SparseConsumeQueue consumeQueue;
++
++        public TopicPartitionLog(CompactionLog compactionLog) {
++            this(compactionLog, null);
++        }
++        public TopicPartitionLog(CompactionLog compactionLog, String subFolder) {
++            if (StringUtils.isBlank(subFolder)) {
++                mappedFileQueue = new MappedFileQueue(compactionLog.compactionLogFilePath,
++                    compactionLog.compactionLogMappedFileSize, null);
++                consumeQueue = new SparseConsumeQueue(compactionLog.topic, compactionLog.queueId,
++                    compactionLog.compactionCqFilePath, compactionLog.compactionCqMappedFileSize,
++                    compactionLog.defaultMessageStore);
++            } else {
++                mappedFileQueue = new MappedFileQueue(compactionLog.compactionLogFilePath + File.separator + subFolder,
++                    compactionLog.compactionLogMappedFileSize, null);
++                consumeQueue = new SparseConsumeQueue(compactionLog.topic, compactionLog.queueId,
++                    compactionLog.compactionCqFilePath, compactionLog.compactionCqMappedFileSize,
++                    compactionLog.defaultMessageStore, subFolder);
++            }
++        }
++
++        public void shutdown() {
++            mappedFileQueue.shutdown(1000 * 30);
++            consumeQueue.getMappedFileQueue().shutdown(1000 * 30);
++        }
++
++        public void init(boolean exitOk) throws IOException, RuntimeException {
++            if (!mappedFileQueue.load()) {
++                shutdown();
++                throw new IOException("load log exception");
++            }
++
++            if (!consumeQueue.load()) {
++                shutdown();
++                throw new IOException("load consume queue exception");
++            }
++
++            try {
++                consumeQueue.recover();
++                recover();
++                sanityCheck();
++            } catch (Exception e) {
++                shutdown();
++                throw e;
++            }
++        }
++
++        private void recover() {
++            long maxCqPhysicOffset = consumeQueue.getMaxPhyOffsetInLog();
++            log.info("{}:{} max physical offset in compaction log is {}",
++                consumeQueue.getTopic(), consumeQueue.getQueueId(), maxCqPhysicOffset);
++            if (maxCqPhysicOffset > 0) {
++                this.mappedFileQueue.setFlushedWhere(maxCqPhysicOffset);
++                this.mappedFileQueue.setCommittedWhere(maxCqPhysicOffset);
++                this.mappedFileQueue.truncateDirtyFiles(maxCqPhysicOffset);
++            }
++        }
++
++        void sanityCheck() throws RuntimeException {
++            List<MappedFile> mappedFileList = mappedFileQueue.getMappedFiles();
++            for (MappedFile file : mappedFileList) {
++                if (!consumeQueue.containsOffsetFile(Long.parseLong(file.getFile().getName()))) {
++                    throw new RuntimeException("log file mismatch with consumeQueue file " + file.getFileName());
++                }
++            }
++
++            List<MappedFile> cqMappedFileList = consumeQueue.getMappedFileQueue().getMappedFiles();
++            for (MappedFile file: cqMappedFileList) {
++                if (mappedFileList.stream().noneMatch(m -> Objects.equals(m.getFile().getName(), file.getFile().getName()))) {
++                    throw new RuntimeException("consumeQueue file mismatch with log file " + file.getFileName());
++                }
++            }
++        }
++
++        public synchronized void roll() throws IOException {
++            MappedFile mappedFile = mappedFileQueue.getLastMappedFile(0);
++            if (mappedFile == null) {
++                throw new IOException("create new file error");
++            }
++            long baseOffset = mappedFile.getFileFromOffset();
++            MappedFile cqFile = consumeQueue.createFile(baseOffset);
++            if (cqFile == null) {
++                mappedFile.destroy(1000);
++                mappedFileQueue.getMappedFiles().remove(mappedFile);
++                throw new IOException("create new consumeQueue file error");
++            }
++        }
++
++        public synchronized void roll(int baseOffset) throws IOException {
++
++            MappedFile mappedFile = mappedFileQueue.tryCreateMappedFile(baseOffset);
++            if (mappedFile == null) {
++                throw new IOException("create new file error");
++            }
++
++            MappedFile cqFile = consumeQueue.createFile(baseOffset);
++            if (cqFile == null) {
++                mappedFile.destroy(1000);
++                mappedFileQueue.getMappedFiles().remove(mappedFile);
++                throw new IOException("create new consumeQueue file error");
++            }
++        }
++
++        public boolean isEmptyOrCurrentFileFull() {
++            return mappedFileQueue.isEmptyOrCurrentFileFull() ||
++                consumeQueue.getMappedFileQueue().isEmptyOrCurrentFileFull();
++        }
++
++        public void clean(MappedFileQueue mappedFileQueue) throws IOException {
++            for (MappedFile mf : mappedFileQueue.getMappedFiles()) {
++                if (mf.getFile().exists()) {
++                    log.error("directory {} with {} not empty.", mappedFileQueue.getStorePath(), mf.getFileName());
++                    throw new IOException("directory " + mappedFileQueue.getStorePath() + " not empty.");
++                }
++            }
++
++            mappedFileQueue.destroy();
++        }
++
++        public void clean(boolean forceCleanLog, boolean forceCleanCq) throws IOException {
++            //clean and delete sub_folder
++            if (forceCleanLog) {
++                mappedFileQueue.destroy();
++            } else {
++                clean(mappedFileQueue);
++            }
++
++            if (forceCleanCq) {
++                consumeQueue.getMappedFileQueue().destroy();
++            } else {
++                clean(consumeQueue.getMappedFileQueue());
++            }
++        }
++
++        public MappedFileQueue getLog() {
++            return mappedFileQueue;
++        }
++
++        public SparseConsumeQueue getCQ() {
++            return consumeQueue;
++        }
++    }
++
++    static enum State {
++        NORMAL,
++        INITIALIZING,
++        COMPACTING,
++    }
++
++    static class ProcessFileList {
++        List<MappedFile> newFiles;
++        List<MappedFile> toCompactFiles;
++        public ProcessFileList(List<MappedFile> toCompactFiles, List<MappedFile> newFiles) {
++            this.toCompactFiles = toCompactFiles;
++            this.newFiles = newFiles;
++        }
++
++        boolean isEmpty() {
++            return CollectionUtils.isEmpty(newFiles) || CollectionUtils.isEmpty(toCompactFiles);
++        }
++    }
++
++}
+diff --git a/store/src/main/java/org/apache/rocketmq/store/kv/CompactionPositionMgr.java b/store/src/main/java/org/apache/rocketmq/store/kv/CompactionPositionMgr.java
+new file mode 100644
+index 000000000..4181b34b8
+--- /dev/null
++++ b/store/src/main/java/org/apache/rocketmq/store/kv/CompactionPositionMgr.java
+@@ -0,0 +1,92 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store.kv;
++
++import org.apache.rocketmq.common.ConfigManager;
++import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
++
++import java.io.File;
++import java.util.concurrent.ConcurrentHashMap;
++
++public class CompactionPositionMgr extends ConfigManager {
++
++    public static final String CHECKPOINT_FILE = "position-checkpoint";
++
++    private transient String compactionPath;
++    private transient String checkpointFileName;
++
++    private ConcurrentHashMap<String, Long> queueOffsetMap = new ConcurrentHashMap<>();
++
++    private CompactionPositionMgr() {
++
++    }
++
++    public CompactionPositionMgr(final String compactionPath) {
++        this.compactionPath = compactionPath;
++        this.checkpointFileName = compactionPath + File.separator + CHECKPOINT_FILE;
++        this.load();
++    }
++
++    public void setOffset(String topic, int queueId, final long offset) {
++        queueOffsetMap.put(topic + "_" + queueId, offset);
++    }
++
++    public long getOffset(String topic, int queueId) {
++        return queueOffsetMap.getOrDefault(topic + "_" + queueId, -1L);
++    }
++
++    public boolean isEmpty() {
++        return queueOffsetMap.isEmpty();
++    }
++
++    public boolean isCompaction(String topic, int queueId, long offset) {
++        return getOffset(topic, queueId) > offset;
++    }
++
++    @Override
++    public String configFilePath() {
++        return checkpointFileName;
++    }
++
++    @Override
++    public String encode() {
++        return this.encode(false);
++    }
++
++    @Override
++    public String encode(boolean prettyFormat) {
++        return RemotingSerializable.toJson(this, prettyFormat);
++    }
++
++    @Override
++    public void decode(String jsonString) {
++        if (jsonString != null) {
++            CompactionPositionMgr obj = RemotingSerializable.fromJson(jsonString, CompactionPositionMgr.class);
++            if (obj != null) {
++                this.queueOffsetMap = obj.queueOffsetMap;
++            }
++        }
++    }
++
++    public ConcurrentHashMap<String, Long> getQueueOffsetMap() {
++        return queueOffsetMap;
++    }
++
++    public void setQueueOffsetMap(ConcurrentHashMap<String, Long> queueOffsetMap) {
++        this.queueOffsetMap = queueOffsetMap;
++    }
++}
+diff --git a/store/src/main/java/org/apache/rocketmq/store/kv/CompactionService.java b/store/src/main/java/org/apache/rocketmq/store/kv/CompactionService.java
+new file mode 100644
+index 000000000..32319a8f5
+--- /dev/null
++++ b/store/src/main/java/org/apache/rocketmq/store/kv/CompactionService.java
+@@ -0,0 +1,172 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store.kv;
++
++import org.apache.rocketmq.common.ServiceThread;
++import org.apache.rocketmq.common.TopicConfig;
++import org.apache.rocketmq.common.attribute.CleanupPolicy;
++import org.apache.rocketmq.common.constant.LoggerName;
++import org.apache.rocketmq.common.utils.CleanupPolicyUtils;
++import org.apache.rocketmq.logging.InternalLogger;
++import org.apache.rocketmq.logging.InternalLoggerFactory;
++import org.apache.rocketmq.store.CommitLog;
++import org.apache.rocketmq.store.DefaultMessageStore;
++import org.apache.rocketmq.store.DispatchRequest;
++import org.apache.rocketmq.store.GetMessageResult;
++import org.apache.rocketmq.store.SelectMappedBufferResult;
++
++import java.util.Objects;
++import java.util.Optional;
++import java.util.concurrent.LinkedBlockingQueue;
++import java.util.concurrent.TimeUnit;
++
++public class CompactionService extends ServiceThread {
++    private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
++
++    private final CompactionStore compactionStore;
++    private final DefaultMessageStore defaultMessageStore;
++    private final CommitLog commitLog;
++    private final LinkedBlockingQueue<TopicPartitionOffset> compactionMsgQ = new LinkedBlockingQueue<>();
++
++    public CompactionService(CommitLog commitLog, DefaultMessageStore messageStore, CompactionStore compactionStore) {
++        this.commitLog = commitLog;
++        this.defaultMessageStore = messageStore;
++        this.compactionStore = compactionStore;
++    }
++
++    public void putRequest(DispatchRequest request) {
++        if (request == null) {
++            return;
++        }
++
++        String topic = request.getTopic();
++        Optional<TopicConfig> topicConfig = defaultMessageStore.getTopicConfig(topic);
++        CleanupPolicy policy = CleanupPolicyUtils.getDeletePolicy(topicConfig);
++        //check request topic flag
++        if (Objects.equals(policy, CleanupPolicy.COMPACTION)) {
++            int queueId = request.getQueueId();
++            long physicalOffset = request.getCommitLogOffset();
++            TopicPartitionOffset tpo = new TopicPartitionOffset(topic, queueId, physicalOffset);
++            compactionMsgQ.offer(tpo);
++            this.wakeup();
++        } // else skip if message isn't compaction
++    }
++
++    public GetMessageResult getMessage(final String group, final String topic, final int queueId,
++        final long offset, final int maxMsgNums, final int maxTotalMsgSize) {
++        return compactionStore.getMessage(group, topic, queueId, offset, maxMsgNums, maxTotalMsgSize);
++    }
++
++    @Override
++    public String getServiceName() {
++        if (defaultMessageStore != null && defaultMessageStore.getBrokerConfig().isInBrokerContainer()) {
++            return defaultMessageStore.getBrokerConfig().getLoggerIdentifier() + CompactionService.class.getSimpleName();
++        }
++        return CompactionService.class.getSimpleName();
++    }
++
++    @Override
++    public void run() {
++        while (!isStopped()) {
++            try {
++                TopicPartitionOffset tpo = compactionMsgQ.poll(1, TimeUnit.MILLISECONDS);
++                if (null != tpo) {
++                    SelectMappedBufferResult smr = null;
++                    try {
++                        smr = commitLog.getData(tpo.physicalOffset);
++                        if (smr != null) {
++                            compactionStore.putMessage(tpo.topic, tpo.queueId, smr);
++                        }
++                    } catch (Exception e) {
++                        log.error("putMessage into {}:{} compactionLog exception: ", tpo.topic, tpo.queueId, e);
++                    } finally {
++                        if (smr != null) {
++                            smr.release();
++                        }
++                    }
++                } else {
++                    waitForRunning(100);
++                }
++            } catch (InterruptedException e) {
++                log.error("poll from compaction pos queue interrupted.");
++            }
++        }
++    }
++
++    public boolean load(boolean exitOK) {
++        try {
++            compactionStore.load(exitOK);
++            return true;
++        } catch (Exception e) {
++            log.error("load compaction store error ", e);
++            return false;
++        }
++    }
++
++//    @Override
++//    public void start() {
++//        compactionStore.load();
++//        super.start();
++//    }
++
++    @Override
++    public void shutdown() {
++        super.shutdown();
++        compactionStore.shutdown();
++    }
++
++    public void updateMasterAddress(String addr) {
++        compactionStore.updateMasterAddress(addr);
++    }
++
++    static class TopicPartitionOffset {
++        String topic;
++        int queueId;
++        long physicalOffset;
++
++        public TopicPartitionOffset(final String topic, final int queueId, final long physicalOffset) {
++            this.topic = topic;
++            this.queueId = queueId;
++            this.physicalOffset = physicalOffset;
++        }
++
++        public String getTopic() {
++            return topic;
++        }
++
++        public void setTopic(String topic) {
++            this.topic = topic;
++        }
++
++        public int getQueueId() {
++            return queueId;
++        }
++
++        public void setQueueId(int queueId) {
++            this.queueId = queueId;
++        }
++
++        public long getPhysicalOffset() {
++            return physicalOffset;
++        }
++
++        public void setPhysicalOffset(long physicalOffset) {
++            this.physicalOffset = physicalOffset;
++        }
++    }
++
++}
+diff --git a/store/src/main/java/org/apache/rocketmq/store/kv/CompactionStore.java b/store/src/main/java/org/apache/rocketmq/store/kv/CompactionStore.java
+new file mode 100644
+index 000000000..9e69505e4
+--- /dev/null
++++ b/store/src/main/java/org/apache/rocketmq/store/kv/CompactionStore.java
+@@ -0,0 +1,195 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store.kv;
++
++import org.apache.rocketmq.common.ThreadFactoryImpl;
++import org.apache.rocketmq.common.constant.LoggerName;
++import org.apache.rocketmq.logging.InternalLogger;
++import org.apache.rocketmq.logging.InternalLoggerFactory;
++import org.apache.rocketmq.store.GetMessageResult;
++import org.apache.rocketmq.store.MessageStore;
++import org.apache.rocketmq.store.SelectMappedBufferResult;
++import org.apache.rocketmq.store.config.MessageStoreConfig;
++
++import java.io.File;
++import java.io.IOException;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++import java.util.List;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.Executors;
++import java.util.concurrent.ScheduledExecutorService;
++import java.util.concurrent.TimeUnit;
++
++public class CompactionStore {
++
++    public static final String COMPACTION_DIR = "compaction";
++    public static final String COMPACTION_LOG_DIR = "compactionLog";
++    public static final String COMPACTION_CQ_DIR = "compactionCq";
++
++    private final String compactionPath;
++    private final String compactionLogPath;
++    private final String compactionCqPath;
++    private final MessageStore defaultMessageStore;
++    private final CompactionPositionMgr positionMgr;
++    private final ConcurrentHashMap<String, CompactionLog> compactionLogTable;
++    private final ScheduledExecutorService compactionSchedule;
++    private final int compactionInterval;
++    private final int compactionThreadNum;
++    private final int offsetMapSize;
++    private String masterAddr;
++
++    private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
++
++    public CompactionStore(MessageStore defaultMessageStore) {
++        this.defaultMessageStore = defaultMessageStore;
++        this.compactionLogTable = new ConcurrentHashMap<>();
++        MessageStoreConfig config = defaultMessageStore.getMessageStoreConfig();
++        String storeRootPath = config.getStorePathRootDir();
++        this.compactionPath = Paths.get(storeRootPath, COMPACTION_DIR).toString();
++        this.compactionLogPath = Paths.get(compactionPath, COMPACTION_LOG_DIR).toString();
++        this.compactionCqPath = Paths.get(compactionPath, COMPACTION_CQ_DIR).toString();
++        this.positionMgr = new CompactionPositionMgr(compactionPath);
++        if (config.getCompactionThreadNum() <= 0) {
++            this.compactionThreadNum = Runtime.getRuntime().availableProcessors();
++        } else {
++            this.compactionThreadNum = config.getCompactionThreadNum();
++        }
++        this.compactionSchedule = Executors.newScheduledThreadPool(this.compactionThreadNum,
++            new ThreadFactoryImpl("compactionSchedule_"));
++        this.offsetMapSize = config.getMaxOffsetMapSize() / compactionThreadNum;
++
++        this.compactionInterval = defaultMessageStore.getMessageStoreConfig().getCompactionScheduleInternal();
++    }
++
++    public void load(boolean exitOk) throws Exception {
++        File logRoot = new File(compactionLogPath);
++        File[] fileTopicList = logRoot.listFiles();
++        if (fileTopicList != null) {
++            for (File fileTopic : fileTopicList) {
++                if (!fileTopic.isDirectory()) {
++                    continue;
++                }
++
++                File[] fileQueueIdList = fileTopic.listFiles();
++                if (fileQueueIdList != null) {
++                    for (File fileQueueId : fileQueueIdList) {
++                        if (!fileQueueId.isDirectory()) {
++                            continue;
++                        }
++                        try {
++                            String topic = fileTopic.getName();
++                            int queueId = Integer.parseInt(fileQueueId.getName());
++
++                            if (Files.isDirectory(Paths.get(compactionCqPath, topic, String.valueOf(queueId)))) {
++                                CompactionLog log = new CompactionLog(defaultMessageStore, this, topic, queueId);
++                                log.load(exitOk);
++                                compactionLogTable.put(topic + "_" + queueId, log);
++                                compactionSchedule.scheduleWithFixedDelay(log::doCompaction, compactionInterval, compactionInterval, TimeUnit.MILLISECONDS);
++                            } else {
++                                log.error("{}:{} compactionLog mismatch with compactionCq", topic, queueId);
++                            }
++                        } catch (Exception e) {
++                            log.error("load compactionLog {}:{} exception: ",
++                                fileTopic.getName(), fileQueueId.getName(), e);
++                            throw new Exception("load compactionLog " + fileTopic.getName()
++                                + ":" + fileQueueId.getName() + " exception: " + e.getMessage());
++                        }
++                    }
++                }
++            }
++        }
++        log.info("compactionStore {}:{} load completed.", compactionLogPath, compactionCqPath);
++    }
++
++    public void putMessage(String topic, int queueId, SelectMappedBufferResult smr) throws Exception {
++        CompactionLog clog = compactionLogTable.compute(topic + "_" + queueId, (k, v) -> {
++            if (v == null) {
++                try {
++                    v = new CompactionLog(defaultMessageStore,this, topic, queueId);
++                    v.load(true);
++                    compactionSchedule.scheduleWithFixedDelay(v::doCompaction, compactionInterval, compactionInterval, TimeUnit.MILLISECONDS);
++                } catch (IOException e) {
++                    log.error("create compactionLog exception: ", e);
++                    return null;
++                }
++            }
++            return v;
++        });
++
++        if (clog != null) {
++            clog.asyncPutMessage(smr);
++        }
++    }
++
++    public GetMessageResult getMessage(final String group, final String topic, final int queueId, final long offset,
++        final int maxMsgNums, final int maxTotalMsgSize) {
++        CompactionLog log = compactionLogTable.get(topic + "_" + queueId);
++        if (log == null) {
++            return GetMessageResult.NO_MATCH_LOGIC_QUEUE;
++        } else {
++            return log.getMessage(group, topic, queueId, offset, maxMsgNums, maxTotalMsgSize);
++        }
++
++    }
++
++    public void flushCQ(int flushLeastPages) {
++        compactionLogTable.values().forEach(log -> log.flushCQ(flushLeastPages));
++    }
++
++    public void updateMasterAddress(String addr) {
++        this.masterAddr = addr;
++    }
++
++    public void shutdown() {
++        positionMgr.persist();
++        compactionSchedule.shutdown();
++        try {
++            if (!compactionSchedule.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
++                List<Runnable> droppedTasks = compactionSchedule.shutdownNow();
++                log.warn("compactionSchedule was abruptly shutdown. {} tasks will not be executed.", droppedTasks.size());
++            }
++        } catch (InterruptedException e) {
++            log.warn("wait compaction schedule shutdown interrupted. ");
++        }
++    }
++
++    public ScheduledExecutorService getCompactionSchedule() {
++        return compactionSchedule;
++    }
++
++    public String getCompactionLogPath() {
++        return compactionLogPath;
++    }
++
++    public String getCompactionCqPath() {
++        return compactionCqPath;
++    }
++
++    public CompactionPositionMgr getPositionMgr() {
++        return positionMgr;
++    }
++
++    public int getOffsetMapSize() {
++        return offsetMapSize;
++    }
++
++    public String getMasterAddr() {
++        return masterAddr;
++    }
++
++}
+diff --git a/store/src/main/java/org/apache/rocketmq/store/kv/MessageFetcher.java b/store/src/main/java/org/apache/rocketmq/store/kv/MessageFetcher.java
+new file mode 100644
+index 000000000..3498cc2c8
+--- /dev/null
++++ b/store/src/main/java/org/apache/rocketmq/store/kv/MessageFetcher.java
+@@ -0,0 +1,206 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.rocketmq.store.kv;
++
++import com.google.common.collect.Lists;
++import com.google.common.collect.Sets;
++import org.apache.rocketmq.common.constant.LoggerName;
++import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
++import org.apache.rocketmq.common.protocol.RequestCode;
++import org.apache.rocketmq.common.protocol.ResponseCode;
++import org.apache.rocketmq.common.protocol.header.PullMessageRequestHeader;
++import org.apache.rocketmq.common.protocol.header.PullMessageResponseHeader;
++import org.apache.rocketmq.common.protocol.header.UnregisterClientRequestHeader;
++import org.apache.rocketmq.common.protocol.heartbeat.ConsumeType;
++import org.apache.rocketmq.common.protocol.heartbeat.ConsumerData;
++import org.apache.rocketmq.common.protocol.heartbeat.HeartbeatData;
++import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
++import org.apache.rocketmq.common.protocol.heartbeat.SubscriptionData;
++import org.apache.rocketmq.common.sysflag.PullSysFlag;
++import org.apache.rocketmq.logging.InternalLogger;
++import org.apache.rocketmq.logging.InternalLoggerFactory;
++import org.apache.rocketmq.remoting.RemotingClient;
++import org.apache.rocketmq.remoting.common.RemotingUtil;
++import org.apache.rocketmq.remoting.exception.RemotingCommandException;
++import org.apache.rocketmq.remoting.exception.RemotingConnectException;
++import org.apache.rocketmq.remoting.exception.RemotingSendRequestException;
++import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
++import org.apache.rocketmq.remoting.netty.NettyClientConfig;
++import org.apache.rocketmq.remoting.netty.NettyRemotingClient;
++import org.apache.rocketmq.remoting.protocol.LanguageCode;
++import org.apache.rocketmq.remoting.protocol.RemotingCommand;
++
++import java.io.IOException;
++import java.util.function.BiFunction;
++
++public class MessageFetcher implements AutoCloseable {
++
++    private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
++    private final RemotingClient client;
++    public MessageFetcher() {
++        NettyClientConfig nettyClientConfig = new NettyClientConfig();
++        nettyClientConfig.setUseTLS(false);
++        this.client = new NettyRemotingClient(nettyClientConfig);
++        this.client.start();
++    }
++
++    @Override
++    public void close() throws IOException {
++        this.client.shutdown();
++    }
++
++    private PullMessageRequestHeader createPullMessageRequest(String topic, int queueId, long queueOffset, long subVersion) {
++        int sysFlag = PullSysFlag.buildSysFlag(false, false, false, false, true);
++
++        PullMessageRequestHeader requestHeader = new PullMessageRequestHeader();
++        requestHeader.setConsumerGroup(getConsumerGroup(topic, queueId));
++        requestHeader.setTopic(topic);
++        requestHeader.setQueueId(queueId);
++        requestHeader.setQueueOffset(queueOffset);
++        requestHeader.setMaxMsgNums(10);
++        requestHeader.setSysFlag(sysFlag);
++        requestHeader.setCommitOffset(0L);
++        requestHeader.setSuspendTimeoutMillis(20_000L);
++//        requestHeader.setSubscription(subExpression);
++        requestHeader.setSubVersion(subVersion);
++        requestHeader.setMaxMsgBytes(Integer.MAX_VALUE);
++//        requestHeader.setExpressionType(expressionType);
++        return requestHeader;
++    }
++
++    private String getConsumerGroup(String topic, int queueId) {
++        return String.join("-", topic, String.valueOf(queueId), "pull", "group");
++    }
++    private String getClientId() {
++        return String.join("@", RemotingUtil.getLocalAddress(), "compactionIns", "compactionUnit");
++    }
++
++    private boolean prepare(String masterAddr, String topic, String groupName, long subVersion)
++        throws RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, InterruptedException {
++        HeartbeatData heartbeatData = new HeartbeatData();
++
++        heartbeatData.setClientID(getClientId());
++
++        ConsumerData consumerData = new ConsumerData();
++        consumerData.setGroupName(groupName);
++        consumerData.setConsumeType(ConsumeType.CONSUME_ACTIVELY);
++        consumerData.setMessageModel(MessageModel.CLUSTERING);
++        consumerData.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
++//        consumerData.setSubscriptionDataSet();
++        SubscriptionData subscriptionData = new SubscriptionData();
++        subscriptionData.setTopic(topic);
++        subscriptionData.setSubString(SubscriptionData.SUB_ALL);
++        subscriptionData.setSubVersion(subVersion);
++        consumerData.setSubscriptionDataSet(Sets.newHashSet(subscriptionData));
++
++        heartbeatData.getConsumerDataSet().add(consumerData);
++
++        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEART_BEAT, null);
++        request.setLanguage(LanguageCode.JAVA);
++        request.setBody(heartbeatData.encode());
++
++        RemotingCommand response = client.invokeSync(masterAddr, request, 1000 * 30L);
++        if (response != null && response.getCode() == ResponseCode.SUCCESS) {
++            return true;
++        }
++        return false;
++    }
++
++    private boolean pullDone(String masterAddr, String groupName)
++        throws RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, InterruptedException {
++        UnregisterClientRequestHeader requestHeader = new UnregisterClientRequestHeader();
++        requestHeader.setClientID(getClientId());
++        requestHeader.setProducerGroup("");
++        requestHeader.setConsumerGroup(groupName);
++        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.UNREGISTER_CLIENT, requestHeader);
++
++        RemotingCommand response = client.invokeSync(masterAddr, request, 1000 * 30L);
++        if (response != null && response.getCode() == ResponseCode.SUCCESS) {
++            return true;
++        }
++        return false;
++    }
++
++    private boolean stopPull(long currPullOffset, long endOffset) {
++        return currPullOffset >= endOffset && endOffset != -1;
++    }
++
++    public void pullMessageFromMaster(String topic, int queueId, long endOffset, String masterAddr,
++        BiFunction<Long, RemotingCommand, Boolean> responseHandler) throws Exception {
++        long currentPullOffset = 0;
++
++        try {
++            long subVersion = System.currentTimeMillis();
++            String groupName = getConsumerGroup(topic, queueId);
++            prepare(masterAddr, topic, groupName, subVersion);
++
++
++            boolean noNewMsg = false;
++            boolean keepPull = true;
++//            PullMessageRequestHeader requestHeader = createPullMessageRequest(topic, queueId, subVersion, currentPullOffset);
++            while (!stopPull(currentPullOffset, endOffset)) {
++//                requestHeader.setQueueOffset(currentPullOffset);
++                PullMessageRequestHeader requestHeader = createPullMessageRequest(topic, queueId, currentPullOffset, subVersion);
++
++                RemotingCommand
++                    request = RemotingCommand.createRequestCommand(RequestCode.LITE_PULL_MESSAGE, requestHeader);
++                RemotingCommand response = client.invokeSync(masterAddr, request, 1000 * 30L);
++
++                PullMessageResponseHeader responseHeader =
++                    (PullMessageResponseHeader)response.decodeCommandCustomHeader(PullMessageResponseHeader.class);
++                if (responseHeader == null) {
++                    log.error("{}:{} pull message responseHeader is null", topic, queueId);
++                    throw new RemotingCommandException(topic + ":" + queueId + " pull message responseHeader is null");
++                }
++
++                switch (response.getCode()) {
++                    case ResponseCode.SUCCESS:
++                        long curOffset = responseHeader.getNextBeginOffset() - 1;
++                        keepPull = responseHandler.apply(curOffset, response);
++                        currentPullOffset = responseHeader.getNextBeginOffset();
++                        break;
++                    case ResponseCode.PULL_NOT_FOUND:       // NO_NEW_MSG, need break loop
++                        log.info("PULL_NOT_FOUND, topic:{}, queueId:{}, pullOffset:{},",
++                            topic, queueId, currentPullOffset);
++                        noNewMsg = true;
++                        break;
++                    case ResponseCode.PULL_RETRY_IMMEDIATELY:
++                        log.info("PULL_RETRY_IMMEDIATE, topic:{}, queueId:{}, pullOffset:{},",
++                            topic, queueId, currentPullOffset);
++                        break;
++                    case ResponseCode.PULL_OFFSET_MOVED:
++                        log.info("PULL_OFFSET_MOVED, topic:{}, queueId:{}, pullOffset:{},",
++                            topic, queueId, currentPullOffset);
++                        break;
++                    default:
++                        log.warn("Pull Message error, response code: {}, remark: {}",
++                            response.getCode(), response.getRemark());
++                }
++
++                if (noNewMsg || !keepPull) {
++                    break;
++                }
++            }
++            pullDone(masterAddr, groupName);
++        } finally {
++            if (client != null) {
++                client.closeChannels(Lists.newArrayList(masterAddr));
++            }
++        }
++    }
++}
+diff --git a/store/src/main/java/org/apache/rocketmq/store/logfile/DefaultMappedFile.java b/store/src/main/java/org/apache/rocketmq/store/logfile/DefaultMappedFile.java
+index 8100f32b7..a33c4e608 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/logfile/DefaultMappedFile.java
++++ b/store/src/main/java/org/apache/rocketmq/store/logfile/DefaultMappedFile.java
+@@ -25,11 +25,17 @@ import java.io.IOException;
+ import java.io.RandomAccessFile;
+ import java.nio.ByteBuffer;
+ import java.nio.MappedByteBuffer;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.nio.file.Paths;
++import java.nio.file.StandardCopyOption;
+ import java.nio.channels.FileChannel;
+ import java.nio.channels.FileChannel.MapMode;
++import java.util.Iterator;
+ import java.util.concurrent.atomic.AtomicInteger;
+ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+ import java.util.concurrent.atomic.AtomicLong;
++import java.util.function.Consumer;
+ 
+ import org.apache.rocketmq.common.UtilAll;
+ import org.apache.rocketmq.common.constant.LoggerName;
+@@ -40,6 +46,7 @@ import org.apache.rocketmq.common.message.MessageExt;
+ import org.apache.rocketmq.store.AppendMessageCallback;
+ import org.apache.rocketmq.store.AppendMessageResult;
+ import org.apache.rocketmq.store.AppendMessageStatus;
++import org.apache.rocketmq.store.CompactionAppendMsgCallback;
+ import org.apache.rocketmq.common.message.MessageExtBrokerInner;
+ import org.apache.rocketmq.store.PutMessageContext;
+ import org.apache.rocketmq.store.SelectMappedBufferResult;
+@@ -189,6 +196,23 @@ public class DefaultMappedFile extends AbstractMappedFile {
+         return fileChannel;
+     }
+ 
++    public AppendMessageResult appendMessage(final ByteBuffer byteBufferMsg, final CompactionAppendMsgCallback cb) {
++        assert byteBufferMsg != null;
++        assert cb != null;
++
++        int currentPos = WROTE_POSITION_UPDATER.get(this);
++        if (currentPos < this.fileSize) {
++            ByteBuffer byteBuffer = appendMessageBuffer().slice();
++            byteBuffer.position(currentPos);
++            AppendMessageResult result = cb.doAppend(byteBuffer, this.fileFromOffset, this.fileSize - currentPos, byteBufferMsg);
++            WROTE_POSITION_UPDATER.addAndGet(this, result.getWroteBytes());
++            this.storeTimestamp = result.getStoreTimestamp();
++            return result;
++        }
++        log.error("MappedFile.appendMessage return null, wrotePosition: {} fileSize: {}", currentPos, this.fileSize);
++        return new AppendMessageResult(AppendMessageStatus.UNKNOWN_ERROR);
++    }
++
+     @Override
+     public AppendMessageResult appendMessage(final MessageExtBrokerInner msg, final AppendMessageCallback cb,
+                                              PutMessageContext putMessageContext) {
+@@ -693,9 +717,89 @@ public class DefaultMappedFile extends AbstractMappedFile {
+         return this.file;
+     }
+ 
++    @Override
++    public void renameToDelete() {
++        //use Files.move
++        if (!fileName.endsWith(".delete")) {
++            String newFileName = this.fileName + ".delete";
++            try {
++                Files.move(Paths.get(fileName), Paths.get(newFileName), StandardCopyOption.ATOMIC_MOVE);
++                this.fileName = newFileName;
++                this.file = new File(newFileName);
++            } catch (IOException e) {
++                log.warn("atomic move file {} failed", fileName, e);
++                try {
++                    Files.move(Paths.get(fileName), Paths.get(newFileName), StandardCopyOption.REPLACE_EXISTING);
++                } catch (IOException e1) {
++                    log.error("move file {} failed", fileName, e1);
++                }
++            }
++        }
++    }
++
++    @Override
++    public void moveToParent() throws IOException {
++        Path currentPath = Paths.get(fileName);
++        String baseName = currentPath.getFileName().toString();
++        Path parentPath = currentPath.getParent().getParent().resolve(baseName);
++        Files.move(currentPath, parentPath, StandardCopyOption.ATOMIC_MOVE);
++        this.file = parentPath.toFile();
++        this.fileName = parentPath.toString();
++    }
++
+     @Override
+     public String toString() {
+         return this.fileName;
+     }
+ 
++    public Iterator<SelectMappedBufferResult> iterator(int startPos) {
++        return new Itr(startPos);
++    }
++
++    private class Itr implements Iterator<SelectMappedBufferResult> {
++        private int start;
++        private int current;
++        private ByteBuffer buf;
++
++        public Itr(int pos) {
++            this.start = pos;
++            this.current = pos;
++            this.buf = mappedByteBuffer.slice();
++            this.buf.position(start);
++        }
++
++        @Override
++        public boolean hasNext() {
++            return current < getReadPosition();
++        }
++
++        @Override
++        public SelectMappedBufferResult next() {
++            int readPosition = getReadPosition();
++            if (current < readPosition && current >= 0) {
++                if (hold()) {
++                    ByteBuffer byteBuffer = buf.slice();
++                    byteBuffer.position(current);
++                    int size = byteBuffer.getInt(current);
++                    ByteBuffer bufferResult = byteBuffer.slice();
++                    bufferResult.limit(size);
++                    current += size;
++                    return new SelectMappedBufferResult(fileFromOffset + current, bufferResult, size,
++                        DefaultMappedFile.this);
++                }
++            }
++            return null;
++        }
++
++        @Override
++        public void forEachRemaining(Consumer<? super SelectMappedBufferResult> action) {
++            Iterator.super.forEachRemaining(action);
++        }
++
++        @Override
++        public void remove() {
++            throw new UnsupportedOperationException();
++        }
++    }
++
+ }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/logfile/MappedFile.java b/store/src/main/java/org/apache/rocketmq/store/logfile/MappedFile.java
+index 630b20227..d4a6f9702 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/logfile/MappedFile.java
++++ b/store/src/main/java/org/apache/rocketmq/store/logfile/MappedFile.java
+@@ -17,9 +17,10 @@
+ package org.apache.rocketmq.store.logfile;
+ 
+ import org.apache.rocketmq.common.message.MessageExtBatch;
++import org.apache.rocketmq.common.message.MessageExtBrokerInner;
+ import org.apache.rocketmq.store.AppendMessageCallback;
+ import org.apache.rocketmq.store.AppendMessageResult;
+-import org.apache.rocketmq.common.message.MessageExtBrokerInner;
++import org.apache.rocketmq.store.CompactionAppendMsgCallback;
+ import org.apache.rocketmq.store.PutMessageContext;
+ import org.apache.rocketmq.store.SelectMappedBufferResult;
+ import org.apache.rocketmq.store.TransientStorePool;
+@@ -30,6 +31,7 @@ import java.io.IOException;
+ import java.nio.ByteBuffer;
+ import java.nio.MappedByteBuffer;
+ import java.nio.channels.FileChannel;
++import java.util.Iterator;
+ 
+ public interface MappedFile {
+     /**
+@@ -89,6 +91,8 @@ public interface MappedFile {
+      */
+     AppendMessageResult appendMessages(MessageExtBatch message, AppendMessageCallback messageCallback, PutMessageContext putMessageContext);
+ 
++    AppendMessageResult appendMessage(final ByteBuffer byteBufferMsg, final CompactionAppendMsgCallback cb);
++
+     /**
+      * Appends a raw message data represents by a byte array to the current {@code MappedFile}.
+      *
+@@ -323,6 +327,17 @@ public interface MappedFile {
+      */
+     File getFile();
+ 
++    /**
++     * rename file to add ".delete" suffix
++     */
++    void renameToDelete();
++
++    /**
++     * move the file to the parent directory
++     * @throws IOException
++     */
++    void moveToParent() throws IOException;
++
+     /**
+      * Get the last flush time
+      * @return
+@@ -337,4 +352,6 @@ public interface MappedFile {
+      * @throws IOException
+      */
+     void init(String fileName, int fileSize, TransientStorePool transientStorePool) throws IOException;
++
++    Iterator<SelectMappedBufferResult> iterator(int pos);
+ }
+diff --git a/store/src/main/java/org/apache/rocketmq/store/queue/BatchConsumeQueue.java b/store/src/main/java/org/apache/rocketmq/store/queue/BatchConsumeQueue.java
+index 99bfa552c..b6ee399d3 100644
+--- a/store/src/main/java/org/apache/rocketmq/store/queue/BatchConsumeQueue.java
++++ b/store/src/main/java/org/apache/rocketmq/store/queue/BatchConsumeQueue.java
+@@ -17,6 +17,7 @@
+ 
+ package org.apache.rocketmq.store.queue;
+ 
++import org.apache.commons.lang3.StringUtils;
+ import org.apache.rocketmq.common.attribute.CQType;
+ import org.apache.rocketmq.common.constant.LoggerName;
+ import org.apache.rocketmq.common.message.MessageAccessor;
+@@ -38,9 +39,10 @@ import java.nio.ByteBuffer;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.concurrent.ConcurrentSkipListMap;
++import java.util.function.Function;
+ 
+ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCycle {
+-    private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
++    protected static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
+ 
+     //position 8, size 4, tagscode 8, storetime 8, msgBaseOffset 8, batchSize 2, compactedOffset 4, reserved 4
+     public static final int CQ_STORE_UNIT_SIZE = 46;
+@@ -50,31 +52,32 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+     public static final int MSG_COMPACT_OFFSET_INDEX = 38;
+     private static final int MSG_COMPACT_OFFSET_LENGTH = 4;
+     public static final int INVALID_POS = -1;
+-    final MappedFileQueue mappedFileQueue;
+-    private final MessageStore messageStore;
+-    private final String topic;
+-    private final int queueId;
+-    private final ByteBuffer byteBufferItem;
++    protected final MappedFileQueue mappedFileQueue;
++    protected MessageStore messageStore;
++    protected final String topic;
++    protected final int queueId;
++    protected final ByteBuffer byteBufferItem;
+ 
+-    private final String storePath;
+-    private final int mappedFileSize;
+-    private volatile long maxMsgPhyOffsetInCommitLog = -1;
++    protected final String storePath;
++    protected final int mappedFileSize;
++    protected volatile long maxMsgPhyOffsetInCommitLog = -1;
+ 
+-    private volatile long minLogicOffset = 0;
++    protected volatile long minLogicOffset = 0;
+ 
+-    private volatile long maxOffsetInQueue = 0;
+-    private volatile long minOffsetInQueue = -1;
+-    private final int commitLogSize;
++    protected volatile long maxOffsetInQueue = 0;
++    protected volatile long minOffsetInQueue = -1;
++    protected final int commitLogSize;
+ 
+-    private ConcurrentSkipListMap<Long, MappedFile> offsetCache = new ConcurrentSkipListMap<>();
+-    private ConcurrentSkipListMap<Long, MappedFile> timeCache = new ConcurrentSkipListMap<>();
++    protected ConcurrentSkipListMap<Long, MappedFile> offsetCache = new ConcurrentSkipListMap<>();
++    protected ConcurrentSkipListMap<Long, MappedFile> timeCache = new ConcurrentSkipListMap<>();
+ 
+     public BatchConsumeQueue(
+         final String topic,
+         final int queueId,
+         final String storePath,
+         final int mappedFileSize,
+-        final MessageStore messageStore) {
++        final MessageStore messageStore,
++        final String subfolder) {
+         this.storePath = storePath;
+         this.mappedFileSize = mappedFileSize;
+         this.messageStore = messageStore;
+@@ -83,15 +86,26 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+         this.topic = topic;
+         this.queueId = queueId;
+ 
+-        String queueDir = this.storePath
+-            + File.separator + topic
+-            + File.separator + queueId;
+-
+-        this.mappedFileQueue = new MappedFileQueue(queueDir, mappedFileSize, null);
++        if (StringUtils.isBlank(subfolder)) {
++            String queueDir = this.storePath + File.separator + topic + File.separator + queueId;
++            this.mappedFileQueue = new MappedFileQueue(queueDir, mappedFileSize, null);
++        } else {
++            String queueDir = this.storePath + File.separator + topic + File.separator + queueId + File.separator + subfolder;
++            this.mappedFileQueue = new MappedFileQueue(queueDir, mappedFileSize, null);
++        }
+ 
+         this.byteBufferItem = ByteBuffer.allocate(CQ_STORE_UNIT_SIZE);
+     }
+ 
++    public BatchConsumeQueue(
++        final String topic,
++        final int queueId,
++        final String storePath,
++        final int mappedFileSize,
++        final MessageStore defaultMessageStore) {
++        this(topic, queueId, storePath, mappedFileSize, defaultMessageStore, StringUtils.EMPTY);
++    }
++
+     @Override
+     public boolean load() {
+         boolean result = this.mappedFileQueue.load();
+@@ -99,9 +113,9 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+         return result;
+     }
+ 
+-    private void refreshCache() {
++    protected void doRefreshCache(Function<MappedFile, BatchOffsetIndex> offsetFunction) {
+         if (!this.messageStore.getMessageStoreConfig().isSearchBcqByCacheEnable()) {
+-            return ;
++            return;
+         }
+         ConcurrentSkipListMap<Long, MappedFile> newOffsetCache = new ConcurrentSkipListMap<>();
+         ConcurrentSkipListMap<Long, MappedFile> newTimeCache = new ConcurrentSkipListMap<>();
+@@ -114,19 +128,26 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+                 continue;
+             }
+ 
+-            BatchOffsetIndex min = getMinMsgOffset(bcq, false, true);
+-            newOffsetCache.put(min.getMsgOffset(), min.getMappedFile());
+-            newTimeCache.put(min.getStoreTimestamp(), min.getMappedFile());
++            BatchOffsetIndex offset = offsetFunction.apply(bcq);
++            if (offset == null) {
++                continue;
++            }
++            newOffsetCache.put(offset.getMsgOffset(), offset.getMappedFile());
++            newTimeCache.put(offset.getStoreTimestamp(), offset.getMappedFile());
+         }
+ 
+         this.offsetCache = newOffsetCache;
+         this.timeCache = newTimeCache;
+ 
+         log.info("refreshCache for BCQ [Topic: {}, QueueId: {}]." +
+-                        "offsetCacheSize: {}, minCachedMsgOffset: {}, maxCachedMsgOffset: {}, " +
+-                        "timeCacheSize: {}, minCachedTime: {}, maxCachedTime: {}", this.topic, this.queueId,
+-                this.offsetCache.size(), this.offsetCache.firstEntry(), this.offsetCache.lastEntry(),
+-                this.timeCache.size(), this.timeCache.firstEntry(), this.timeCache.lastEntry());
++                "offsetCacheSize: {}, minCachedMsgOffset: {}, maxCachedMsgOffset: {}, " +
++                "timeCacheSize: {}, minCachedTime: {}, maxCachedTime: {}", this.topic, this.queueId,
++            this.offsetCache.size(), this.offsetCache.firstEntry(), this.offsetCache.lastEntry(),
++            this.timeCache.size(), this.timeCache.firstEntry(), this.timeCache.lastEntry());
++    }
++
++    protected void refreshCache() {
++        doRefreshCache(m -> getMinMsgOffset(m, false, true));
+     }
+ 
+     private void destroyCache() {
+@@ -136,7 +157,7 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+         log.info("BCQ [Topic: {}, QueueId: {}]. Cache destroyed", this.topic, this.queueId);
+     }
+ 
+-    private void cacheBcq(MappedFile bcq) {
++    protected void cacheBcq(MappedFile bcq) {
+         try {
+             BatchOffsetIndex min = getMinMsgOffset(bcq, false, true);
+             this.offsetCache.put(min.getMsgOffset(), min.getMappedFile());
+@@ -146,11 +167,11 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+         }
+     }
+ 
+-    private boolean isNewFile(MappedFile mappedFile) {
++    protected boolean isNewFile(MappedFile mappedFile) {
+         return mappedFile.getReadPosition() < CQ_STORE_UNIT_SIZE;
+     }
+ 
+-    private MappedFile searchOffsetFromCache(long msgOffset) {
++    protected MappedFile searchOffsetFromCache(long msgOffset) {
+         Map.Entry<Long, MappedFile> floorEntry = this.offsetCache.floorEntry(msgOffset);
+         if (floorEntry == null) {
+             // the offset is too small.
+@@ -492,7 +513,7 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+         msg.setQueueOffset(queueOffset);
+     }
+ 
+-    boolean putBatchMessagePositionInfo(final long offset, final int size, final long tagsCode, final long storeTime,
++    public boolean putBatchMessagePositionInfo(final long offset, final int size, final long tagsCode, final long storeTime,
+         final long msgBaseOffset, final short batchSize) {
+ 
+         if (offset <= this.maxMsgPhyOffsetInCommitLog) {
+@@ -542,14 +563,14 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+         return false;
+     }
+ 
+-    private BatchOffsetIndex getMinMsgOffset(MappedFile mappedFile, boolean getBatchSize, boolean getStoreTime) {
++    protected BatchOffsetIndex getMinMsgOffset(MappedFile mappedFile, boolean getBatchSize, boolean getStoreTime) {
+         if (mappedFile.getReadPosition() < CQ_STORE_UNIT_SIZE) {
+             return null;
+         }
+         return getBatchOffsetIndexByPos(mappedFile, 0, getBatchSize, getStoreTime);
+     }
+ 
+-    private BatchOffsetIndex getBatchOffsetIndexByPos(MappedFile mappedFile, int pos, boolean getBatchSize,
++    protected BatchOffsetIndex getBatchOffsetIndexByPos(MappedFile mappedFile, int pos, boolean getBatchSize,
+         boolean getStoreTime) {
+         SelectMappedBufferResult sbr = mappedFile.selectMappedBuffer(pos);
+         try {
+@@ -557,11 +578,13 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+                 getBatchSize ? sbr.getByteBuffer().getShort(MSG_BATCH_SIZE_INDEX) : 0,
+                 getStoreTime ? sbr.getByteBuffer().getLong(MSG_STORE_TIME_OFFSET_INDEX) : 0);
+         } finally {
+-            sbr.release();
++            if (sbr != null) {
++                sbr.release();
++            }
+         }
+     }
+ 
+-    private BatchOffsetIndex getMaxMsgOffset(MappedFile mappedFile, boolean getBatchSize, boolean getStoreTime) {
++    protected BatchOffsetIndex getMaxMsgOffset(MappedFile mappedFile, boolean getBatchSize, boolean getStoreTime) {
+         if (mappedFile == null || mappedFile.getReadPosition() < CQ_STORE_UNIT_SIZE) {
+             return null;
+         }
+@@ -641,7 +664,7 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+         return null;
+     }
+ 
+-    private MappedFile searchOffsetFromFiles(long msgOffset) {
++    public MappedFile searchOffsetFromFiles(long msgOffset) {
+         MappedFile targetBcq = null;
+         // find the mapped file one by one reversely
+         int mappedFileNum = this.mappedFileQueue.getMappedFiles().size();
+@@ -796,7 +819,7 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+                     left =  mid + unitSize;
+                 }
+             } else {
+-                //mid is actully in the mid
++                //mid is actually in the mid
+                 if (tmpValue < targetValue) {
+                     left = mid + unitSize;
+                 } else {
+@@ -811,7 +834,7 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+      * Here is vulnerable, the min value of the bytebuffer must be smaller or equal then the given value.
+      * Otherwise it may get -1
+      */
+-    private int binarySearch(ByteBuffer byteBuffer, int left, int right, final int unitSize, final int unitShift,
++    protected int binarySearch(ByteBuffer byteBuffer, int left, int right, final int unitSize, final int unitShift,
+         long targetValue) {
+         int maxRight = right;
+         int mid = -1;
+@@ -840,7 +863,7 @@ public class BatchConsumeQueue implements ConsumeQueueInterface, FileQueueLifeCy
+         return -1;
+     }
+ 
+-    private class BatchConsumeQueueIterator implements ReferredIterator<CqUnit> {
++    static class BatchConsumeQueueIterator implements ReferredIterator<CqUnit> {
+         private SelectMappedBufferResult sbr;
+         private int relativePos = 0;
+ 
+diff --git a/store/src/main/java/org/apache/rocketmq/store/queue/SparseConsumeQueue.java b/store/src/main/java/org/apache/rocketmq/store/queue/SparseConsumeQueue.java
+new file mode 100644
+index 000000000..79b745d89
+--- /dev/null
++++ b/store/src/main/java/org/apache/rocketmq/store/queue/SparseConsumeQueue.java
+@@ -0,0 +1,396 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.store.queue;
++
++import org.apache.rocketmq.common.UtilAll;
++import org.apache.rocketmq.store.MessageStore;
++import org.apache.rocketmq.store.SelectMappedBufferResult;
++import org.apache.rocketmq.store.logfile.MappedFile;
++
++import java.io.IOException;
++import java.nio.ByteBuffer;
++import java.util.List;
++import java.util.Map;
++import java.util.Objects;
++import java.util.function.Function;
++
++public class SparseConsumeQueue extends BatchConsumeQueue {
++
++    public SparseConsumeQueue(
++        final String topic,
++        final int queueId,
++        final String storePath,
++        final int mappedFileSize,
++        final MessageStore defaultMessageStore) {
++        super(topic, queueId, storePath, mappedFileSize, defaultMessageStore);
++    }
++
++    public SparseConsumeQueue(
++        final String topic,
++        final int queueId,
++        final String storePath,
++        final int mappedFileSize,
++        final MessageStore defaultMessageStore,
++        final String subfolder) {
++        super(topic, queueId, storePath, mappedFileSize, defaultMessageStore, subfolder);
++    }
++
++    @Override
++    public void recover() {
++        final List<MappedFile> mappedFiles = this.mappedFileQueue.getMappedFiles();
++        if (!mappedFiles.isEmpty()) {
++            int index = mappedFiles.size() - 3;
++            if (index < 0) {
++                index = 0;
++            }
++
++            MappedFile mappedFile = mappedFiles.get(index);
++            ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
++            int mappedFileOffset = 0;
++            long processOffset = mappedFile.getFileFromOffset();
++            while (true) {
++                for (int i = 0; i < mappedFileSize; i += CQ_STORE_UNIT_SIZE) {
++                    byteBuffer.position(i);
++                    long offset = byteBuffer.getLong();
++                    int size = byteBuffer.getInt();
++                    byteBuffer.getLong();   //tagscode
++                    byteBuffer.getLong();   //timestamp
++                    long msgBaseOffset = byteBuffer.getLong();
++                    short batchSize = byteBuffer.getShort();
++                    if (offset >= 0 && size > 0 && msgBaseOffset >= 0 && batchSize > 0) {
++                        mappedFileOffset += CQ_STORE_UNIT_SIZE;
++                        this.maxMsgPhyOffsetInCommitLog = offset;
++                    } else {
++                        log.info("Recover current batch consume queue file over, " + "file:{} offset:{} size:{} msgBaseOffset:{} batchSize:{} mappedFileOffset:{}",
++                            mappedFile.getFileName(), offset, size, msgBaseOffset, batchSize, mappedFileOffset);
++
++                        if (mappedFileOffset != mappedFileSize) {
++                            mappedFile.setWrotePosition(mappedFileOffset);
++                            mappedFile.setFlushedPosition(mappedFileOffset);
++                            mappedFile.setCommittedPosition(mappedFileOffset);
++                        }
++
++                        break;
++                    }
++                }
++
++                index++;
++                if (index >= mappedFiles.size()) {
++                    log.info("Recover last batch consume queue file over, last mapped file:{} ", mappedFile.getFileName());
++                    break;
++                } else {
++                    mappedFile = mappedFiles.get(index);
++                    byteBuffer = mappedFile.sliceByteBuffer();
++                    processOffset = mappedFile.getFileFromOffset();
++                    mappedFileOffset = 0;
++                    log.info("Recover next batch consume queue file: " + mappedFile.getFileName());
++                }
++            }
++
++            processOffset += mappedFileOffset;
++            mappedFileQueue.setFlushedWhere(processOffset);
++            mappedFileQueue.setCommittedWhere(processOffset);
++            mappedFileQueue.truncateDirtyFiles(processOffset);
++            reviseMaxAndMinOffsetInQueue();
++        }
++    }
++
++    public ReferredIterator<CqUnit> iterateFromOrNext(long startOffset) {
++        SelectMappedBufferResult sbr = getBatchMsgIndexOrNextBuffer(startOffset);
++        if (sbr == null) {
++            return null;
++        }
++        return new BatchConsumeQueueIterator(sbr);
++    }
++
++    /**
++     * Gets SelectMappedBufferResult by batch-message offset, if not found will return the next valid offset buffer
++     * Node: the caller is responsible for the release of SelectMappedBufferResult
++     * @param msgOffset
++     * @return SelectMappedBufferResult
++     */
++    public SelectMappedBufferResult getBatchMsgIndexOrNextBuffer(final long msgOffset) {
++
++        MappedFile targetBcq;
++
++        if (msgOffset <= minOffsetInQueue) {
++            targetBcq = mappedFileQueue.getFirstMappedFile();
++        } else {
++            targetBcq = searchFileByOffsetOrRight(msgOffset);
++        }
++
++        if (targetBcq == null) {
++            return null;
++        }
++
++        BatchOffsetIndex minOffset = getMinMsgOffset(targetBcq, false, false);
++        BatchOffsetIndex maxOffset = getMaxMsgOffset(targetBcq, false, false);
++        if (null == minOffset || null == maxOffset) {
++            return null;
++        }
++
++        SelectMappedBufferResult sbr = minOffset.getMappedFile().selectMappedBuffer(0);
++        try {
++            ByteBuffer byteBuffer = sbr.getByteBuffer();
++            int left = minOffset.getIndexPos();
++            int right = maxOffset.getIndexPos();
++            int mid = binarySearchRight(byteBuffer, left, right, CQ_STORE_UNIT_SIZE, MSG_BASE_OFFSET_INDEX, msgOffset);
++            if (mid != -1) {
++                return minOffset.getMappedFile().selectMappedBuffer(mid);
++            }
++        } finally {
++            sbr.release();
++        }
++
++        return null;
++    }
++
++    protected MappedFile searchOffsetFromCacheOrRight(long msgOffset) {
++        Map.Entry<Long, MappedFile> ceilingEntry = this.offsetCache.ceilingEntry(msgOffset);
++        if (ceilingEntry == null) {
++            return null;
++        } else {
++            return ceilingEntry.getValue();
++        }
++    }
++
++    protected MappedFile searchFileByOffsetOrRight(long msgOffset) {
++        MappedFile targetBcq = null;
++        boolean searchBcqByCacheEnable = this.messageStore.getMessageStoreConfig().isSearchBcqByCacheEnable();
++        if (searchBcqByCacheEnable) {
++            // it's not the last BCQ file, so search it through cache.
++            targetBcq = this.searchOffsetFromCacheOrRight(msgOffset);
++            // not found in cache
++            if (targetBcq == null) {
++                MappedFile firstBcq = mappedFileQueue.getFirstMappedFile();
++                BatchOffsetIndex minForFirstBcq = getMinMsgOffset(firstBcq, false, false);
++                if (minForFirstBcq != null && minForFirstBcq.getMsgOffset() <= msgOffset && msgOffset < maxOffsetInQueue) {
++                    // old search logic
++                    targetBcq = this.searchOffsetFromFilesOrRight(msgOffset);
++                }
++                log.warn("cache is not working on BCQ [Topic: {}, QueueId: {}] for msgOffset: {}, targetBcq: {}", this.topic, this.queueId, msgOffset, targetBcq);
++            }
++        } else {
++            // old search logic
++            targetBcq = this.searchOffsetFromFilesOrRight(msgOffset);
++        }
++
++        return targetBcq;
++    }
++
++    public MappedFile searchOffsetFromFilesOrRight(long msgOffset) {
++        MappedFile targetBcq = null;
++        // find the mapped file one by one reversely
++        int mappedFileNum = this.mappedFileQueue.getMappedFiles().size();
++        for (int i = mappedFileNum - 1; i >= 0; i--) {
++            MappedFile mappedFile = mappedFileQueue.getMappedFiles().get(i);
++            BatchOffsetIndex tmpMinMsgOffset = getMinMsgOffset(mappedFile, false, false);
++            BatchOffsetIndex tmpMaxMsgOffset = getMaxMsgOffset(mappedFile, false, false);
++            if (null != tmpMaxMsgOffset && tmpMaxMsgOffset.getMsgOffset() < msgOffset) {
++                if (i != mappedFileNum - 1) {   //not the last mapped file max msg offset
++                    targetBcq = mappedFileQueue.getMappedFiles().get(i + 1);
++                    break;
++                }
++            }
++
++            if (null != tmpMinMsgOffset && tmpMinMsgOffset.getMsgOffset() <= msgOffset
++                && null != tmpMaxMsgOffset && msgOffset <= tmpMaxMsgOffset.getMsgOffset()) {
++                targetBcq = mappedFile;
++                break;
++            }
++        }
++
++        return targetBcq;
++    }
++
++    private MappedFile getPreFile(MappedFile file) {
++        int index = mappedFileQueue.getMappedFiles().indexOf(file);
++        if (index < 1) {
++            // indicate that this is the first file or not found
++            return null;
++        } else {
++            return mappedFileQueue.getMappedFiles().get(index - 1);
++        }
++    }
++
++    private void cacheOffset(MappedFile file, Function<MappedFile, BatchOffsetIndex> offsetGetFunc) {
++        try {
++            BatchOffsetIndex offset = offsetGetFunc.apply(file);
++            if (offset != null) {
++                this.offsetCache.put(offset.getMsgOffset(), offset.getMappedFile());
++                this.timeCache.put(offset.getStoreTimestamp(), offset.getMappedFile());
++            }
++        } catch (Exception e) {
++            log.error("Failed caching offset and time on BCQ [Topic: {}, QueueId: {}, File: {}]",
++                this.topic, this.queueId, file);
++        }
++    }
++
++    @Override
++    protected void cacheBcq(MappedFile bcq) {
++        MappedFile file = getPreFile(bcq);
++        if (file != null) {
++            cacheOffset(file, m -> getMaxMsgOffset(m, false, true));
++        }
++    }
++
++    public void putEndPositionInfo(MappedFile mappedFile) {
++        // cache max offset
++        if (!mappedFile.isFull()) {
++            this.byteBufferItem.flip();
++            this.byteBufferItem.limit(CQ_STORE_UNIT_SIZE);
++            this.byteBufferItem.putLong(-1);
++            this.byteBufferItem.putInt(0);
++            this.byteBufferItem.putLong(0);
++            this.byteBufferItem.putLong(0);
++            this.byteBufferItem.putLong(0);
++            this.byteBufferItem.putShort((short)0);
++            this.byteBufferItem.putInt(INVALID_POS);
++            this.byteBufferItem.putInt(0); // 4 bytes reserved
++            boolean appendRes = mappedFile.appendMessage(this.byteBufferItem.array());
++            if (!appendRes) {
++                log.error("append end position info into {} failed", mappedFile.getFileName());
++            }
++        }
++
++        cacheOffset(mappedFile, m -> getMaxMsgOffset(m, false, true));
++    }
++
++    public MappedFile createFile(final long physicalOffset) throws IOException {
++        // cache max offset
++        return mappedFileQueue.tryCreateMappedFile(physicalOffset);
++    }
++
++    public boolean isLastFileFull() {
++        if (mappedFileQueue.getLastMappedFile() != null) {
++            return mappedFileQueue.getLastMappedFile().isFull();
++        } else {
++            return true;
++        }
++    }
++
++    public boolean shouldRoll() {
++        if (mappedFileQueue.getLastMappedFile() == null) {
++            return true;
++        }
++        if (mappedFileQueue.getLastMappedFile().isFull()) {
++            return true;
++        }
++        if (mappedFileQueue.getLastMappedFile().getWrotePosition() + BatchConsumeQueue.CQ_STORE_UNIT_SIZE
++            > mappedFileQueue.getMappedFileSize()) {
++            return true;
++        }
++
++        return false;
++    }
++
++    public boolean containsOffsetFile(final long physicalOffset) {
++        String fileName = UtilAll.offset2FileName(physicalOffset);
++        return mappedFileQueue.getMappedFiles().stream()
++            .anyMatch(mf -> Objects.equals(mf.getFile().getName(), fileName));
++    }
++
++    public long getMaxPhyOffsetInLog() {
++        MappedFile lastMappedFile = mappedFileQueue.getLastMappedFile();
++        Long maxOffsetInLog = getMax(lastMappedFile, b -> b.getLong(0) + b.getInt(8));
++        if (maxOffsetInLog != null) {
++            return maxOffsetInLog;
++        } else {
++            return -1;
++        }
++    }
++
++    private <T> T getMax(MappedFile mappedFile, Function<ByteBuffer, T> function) {
++        if (mappedFile == null || mappedFile.getReadPosition() < CQ_STORE_UNIT_SIZE) {
++            return null;
++        }
++
++        ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
++        for (int i = mappedFile.getReadPosition() - CQ_STORE_UNIT_SIZE; i >= 0; i -= CQ_STORE_UNIT_SIZE) {
++            byteBuffer.position(i);
++            long offset = byteBuffer.getLong();
++            int size = byteBuffer.getInt();
++            long tagsCode = byteBuffer.getLong();   //tagscode
++            long timestamp = byteBuffer.getLong();  //timestamp
++            long msgBaseOffset = byteBuffer.getLong();
++            short batchSize = byteBuffer.getShort();
++            if (offset >= 0 && size > 0 && msgBaseOffset >= 0 && batchSize > 0) {
++                byteBuffer.position(i);     //reset position
++                return function.apply(byteBuffer);
++            }
++        }
++
++        return null;
++    }
++
++    @Override
++    protected BatchOffsetIndex getMaxMsgOffset(MappedFile mappedFile, boolean getBatchSize, boolean getStoreTime) {
++        if (mappedFile == null || mappedFile.getReadPosition() < CQ_STORE_UNIT_SIZE) {
++            return null;
++        }
++
++        ByteBuffer byteBuffer = mappedFile.sliceByteBuffer();
++        for (int i = mappedFile.getReadPosition() - CQ_STORE_UNIT_SIZE; i >= 0; i -= CQ_STORE_UNIT_SIZE) {
++            byteBuffer.position(i);
++            long offset = byteBuffer.getLong();
++            int size = byteBuffer.getInt();
++            byteBuffer.getLong();   //tagscode
++            long timestamp = byteBuffer.getLong();//timestamp
++            long msgBaseOffset = byteBuffer.getLong();
++            short batchSize = byteBuffer.getShort();
++            if (offset >= 0 && size > 0 && msgBaseOffset >= 0 && batchSize > 0) {
++//                mappedFile.setWrotePosition(i + CQ_STORE_UNIT_SIZE);
++//                mappedFile.setFlushedPosition(i + CQ_STORE_UNIT_SIZE);
++//                mappedFile.setCommittedPosition(i + CQ_STORE_UNIT_SIZE);
++                return new BatchOffsetIndex(mappedFile, i, msgBaseOffset, batchSize, timestamp);
++            }
++        }
++
++        return null;
++    }
++
++    public long getMaxMsgOffsetFromFile(String simpleFileName) {
++        MappedFile mappedFile = mappedFileQueue.getMappedFiles().stream()
++            .filter(m -> Objects.equals(m.getFile().getName(), simpleFileName))
++            .findFirst()
++            .orElse(null);
++
++        if (mappedFile == null) {
++            return -1;
++        }
++
++        BatchOffsetIndex max = getMaxMsgOffset(mappedFile, false, false);
++        if (max == null) {
++            return -1;
++        }
++        return max.getMsgOffset();
++    }
++
++    private void refreshMaxCache() {
++        doRefreshCache(m -> getMaxMsgOffset(m, false, true));
++    }
++
++    @Override
++    protected void refreshCache() {
++        refreshMaxCache();
++    }
++
++    public void refresh() {
++        reviseMaxAndMinOffsetInQueue();
++        refreshCache();
++    }
++}
+diff --git a/tools/src/main/java/org/apache/rocketmq/tools/command/MQAdminStartup.java b/tools/src/main/java/org/apache/rocketmq/tools/command/MQAdminStartup.java
+index 363e7baa7..b98fc3b66 100644
+--- a/tools/src/main/java/org/apache/rocketmq/tools/command/MQAdminStartup.java
++++ b/tools/src/main/java/org/apache/rocketmq/tools/command/MQAdminStartup.java
+@@ -71,6 +71,7 @@ import org.apache.rocketmq.tools.command.ha.GetSyncStateSetSubCommand;
+ import org.apache.rocketmq.tools.command.ha.HAStatusSubCommand;
+ import org.apache.rocketmq.tools.command.message.CheckMsgSendRTCommand;
+ import org.apache.rocketmq.tools.command.message.ConsumeMessageCommand;
++import org.apache.rocketmq.tools.command.message.DumpCompactionLogCommand;
+ import org.apache.rocketmq.tools.command.message.PrintMessageByQueueCommand;
+ import org.apache.rocketmq.tools.command.message.PrintMessageSubCommand;
+ import org.apache.rocketmq.tools.command.message.QueryMsgByIdSubCommand;
+@@ -267,6 +268,7 @@ public class MQAdminStartup {
+         initCommand(new UpdateControllerConfigSubCommand());
+         initCommand(new ReElectMasterSubCommand());
+         initCommand(new CleanControllerBrokerDataSubCommand());
++        initCommand(new DumpCompactionLogCommand());
+     }
+ 
+     private static void initLogback() throws Exception {
+diff --git a/tools/src/main/java/org/apache/rocketmq/tools/command/message/DumpCompactionLogCommand.java b/tools/src/main/java/org/apache/rocketmq/tools/command/message/DumpCompactionLogCommand.java
+new file mode 100644
+index 000000000..b1c8c33cb
+--- /dev/null
++++ b/tools/src/main/java/org/apache/rocketmq/tools/command/message/DumpCompactionLogCommand.java
+@@ -0,0 +1,109 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package org.apache.rocketmq.tools.command.message;
++
++import org.apache.commons.cli.Options;
++import org.apache.commons.cli.CommandLine;
++import org.apache.commons.cli.Option;
++import org.apache.rocketmq.common.UtilAll;
++import org.apache.rocketmq.common.message.MessageDecoder;
++import org.apache.rocketmq.common.message.MessageExt;
++import org.apache.rocketmq.remoting.RPCHook;
++import org.apache.rocketmq.tools.command.SubCommand;
++import org.apache.rocketmq.tools.command.SubCommandException;
++
++import java.io.IOException;
++import java.io.RandomAccessFile;
++import java.nio.ByteBuffer;
++import java.nio.channels.FileChannel;
++import java.nio.channels.FileChannel.MapMode;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.nio.file.Paths;
++
++public class DumpCompactionLogCommand implements SubCommand {
++    @Override
++    public String commandDesc() {
++        return "parse compaction log to message";
++    }
++
++    @Override
++    public String commandName() {
++        return "dumpCompactionLog";
++    }
++
++    @Override
++    public Options buildCommandlineOptions(Options options) {
++        Option opt = new Option("f", "file", true, "to dump file name");
++        opt.setRequired(false);
++        options.addOption(opt);
++
++        return options;
++    }
++
++    @Override
++    public void execute(CommandLine commandLine, Options options, RPCHook rpcHook)
++            throws SubCommandException {
++        if (commandLine.hasOption("f")) {
++            String fileName = commandLine.getOptionValue("f");
++            Path filePath = Paths.get(fileName);
++            if (!Files.exists(filePath)) {
++                throw new SubCommandException("file " + fileName + " not exist.");
++            }
++
++            if (Files.isDirectory(filePath)) {
++                throw new SubCommandException("file " + fileName + " is a directory.");
++            }
++
++            try {
++                long fileSize = Files.size(filePath);
++                FileChannel fileChannel = new RandomAccessFile(fileName, "rw").getChannel();
++                ByteBuffer buf = fileChannel.map(MapMode.READ_WRITE, 0, fileSize);
++
++                int current = 0;
++                while (current < fileSize) {
++                    buf.position(current);
++                    ByteBuffer bb = buf.slice();
++                    int size = bb.getInt();
++                    if (size > buf.capacity() || size < 0) {
++                        break;
++                    } else {
++                        bb.limit(size);
++                        bb.rewind();
++                    }
++
++                    MessageExt messageExt = MessageDecoder.decode(bb, false, false);
++                    if (messageExt == null) {
++                        break;
++                    } else {
++                        current += size;
++                        System.out.printf(messageExt + "\n");
++                    }
++                }
++
++                UtilAll.cleanBuffer(buf);
++            } catch (IOException e) {
++                e.printStackTrace();
++            }
++
++        } else {
++            System.out.print("miss dump log file name\n");
++        }
++
++
++    }
++}

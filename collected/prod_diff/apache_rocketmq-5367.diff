@@ -1,0 +1,837 @@
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java b/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java
+index 68c767fd4..894a6c373 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java
+@@ -17,16 +17,21 @@
+ package org.apache.rocketmq.broker.offset;
+ 
+ import com.alibaba.fastjson.annotation.JSONField;
++import com.google.common.base.MoreObjects;
+ import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
++import java.util.Set;
+ import java.util.concurrent.ConcurrentHashMap;
+ import org.apache.rocketmq.broker.BrokerController;
+ import org.apache.rocketmq.broker.BrokerPathConfigHelper;
+ import org.apache.rocketmq.common.ConfigManager;
+ import org.apache.rocketmq.common.TopicConfig;
+ import org.apache.rocketmq.common.constant.LoggerName;
++import org.apache.rocketmq.common.protocol.header.ExtraInfoUtil;
+ import org.apache.rocketmq.logging.InternalLogger;
+ import org.apache.rocketmq.logging.InternalLoggerFactory;
+ import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
+@@ -57,16 +62,29 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+         this.table = table;
+     }
+ 
++    protected static String buildKey(String topic, String group) {
++        return topic + TOPIC_GROUP_SEPARATOR + group;
++    }
++
++    protected static String[] decodeKey(String key) {
++        return key.split(TOPIC_GROUP_SEPARATOR);
++    }
++
+     /**
+-     * not thread safe.
++     * update the message list received
+      *
+-     * @param topic
+-     * @param group
+-     * @param queueId
+-     * @param msgOffsetList
++     * @param isRetry is retry topic or not
++     * @param topic topic
++     * @param group group
++     * @param queueId queue id of message
++     * @param popTime the time of pop message
++     * @param invisibleTime invisible time
++     * @param msgQueueOffsetList the queue offsets of messages
++     * @param orderInfoBuilder will append order info to this builder
+      */
+-    public int update(String topic, String group, int queueId, List<Long> msgOffsetList) {
+-        String key = topic + TOPIC_GROUP_SEPARATOR + group;
++    public void update(boolean isRetry, String topic, String group, int queueId, long popTime, long invisibleTime,
++        List<Long> msgQueueOffsetList, StringBuilder orderInfoBuilder) {
++        String key = buildKey(topic, group);
+         ConcurrentHashMap<Integer/*queueId*/, OrderInfo> qs = table.get(key);
+         if (qs == null) {
+             qs = new ConcurrentHashMap<>(16);
+@@ -78,33 +96,42 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+ 
+         OrderInfo orderInfo = qs.get(queueId);
+ 
+-        // start is same.
+-        List<Long> simple = OrderInfo.simpleO(msgOffsetList);
+-        if (orderInfo != null && simple.get(0).equals(orderInfo.getOffsetList().get(0))) {
+-            if (simple.equals(orderInfo.getOffsetList())) {
+-                orderInfo.setConsumedCount(orderInfo.getConsumedCount() + 1);
+-            } else {
+-                // reset, because msgs are changed.
+-                orderInfo.setConsumedCount(0);
+-            }
+-            orderInfo.setLastConsumeTimestamp(System.currentTimeMillis());
+-            orderInfo.setOffsetList(simple);
+-            orderInfo.setCommitOffsetBit(0);
++        if (orderInfo != null) {
++            OrderInfo newOrderInfo = new OrderInfo(popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);
++            newOrderInfo.mergeOffsetConsumedCount(orderInfo.offsetList, orderInfo.offsetConsumedCount);
++
++            orderInfo = newOrderInfo;
+         } else {
+-            orderInfo = new OrderInfo();
+-            orderInfo.setOffsetList(simple);
+-            orderInfo.setLastConsumeTimestamp(System.currentTimeMillis());
+-            orderInfo.setConsumedCount(0);
+-            orderInfo.setCommitOffsetBit(0);
++            orderInfo = new OrderInfo(popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);
++        }
++        qs.put(queueId, orderInfo);
++
++        Map<Long, Integer> offsetConsumedCount = orderInfo.offsetConsumedCount;
++        int minConsumedTimes = Integer.MAX_VALUE;
++        if (offsetConsumedCount != null) {
++            Set<Long> offsetSet = offsetConsumedCount.keySet();
++            for (Long offset : offsetSet) {
++                Integer consumedTimes = offsetConsumedCount.getOrDefault(offset, 0);
++                ExtraInfoUtil.buildQueueOffsetOrderCountInfo(orderInfoBuilder, isRetry, queueId, offset, consumedTimes);
++                minConsumedTimes = Math.min(minConsumedTimes, consumedTimes);
++            }
+ 
+-            qs.put(queueId, orderInfo);
++            if (offsetConsumedCount.size() != orderInfo.offsetList.size()) {
++                // offsetConsumedCount only save messages which consumed count is greater than 0
++                // if size not equal, means there are some new messages
++                minConsumedTimes = 0;
++            }
++        } else {
++            minConsumedTimes = 0;
+         }
+ 
+-        return orderInfo.getConsumedCount();
++        // for compatibility
++        // the old pop sdk use queueId to get consumedTimes from orderCountInfo
++        ExtraInfoUtil.buildQueueIdOrderCountInfo(orderInfoBuilder, isRetry, queueId, minConsumedTimes);
+     }
+ 
+     public boolean checkBlock(String topic, String group, int queueId, long invisibleTime) {
+-        String key = topic + TOPIC_GROUP_SEPARATOR + group;
++        String key = buildKey(topic, group);
+         ConcurrentHashMap<Integer/*queueId*/, OrderInfo> qs = table.get(key);
+         if (qs == null) {
+             qs = new ConcurrentHashMap<>(16);
+@@ -119,84 +146,98 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+         if (orderInfo == null) {
+             return false;
+         }
+-
+-        boolean isBlock = System.currentTimeMillis() - orderInfo.getLastConsumeTimestamp() < invisibleTime;
+-
+-        return isBlock && !orderInfo.isDone();
++        return orderInfo.needBlock(invisibleTime);
+     }
+ 
+     /**
+-     * @param topic
+-     * @param group
+-     * @param queueId
+-     * @param offset
++     * mark message is consumed finished. return the consumer offset
++     *
++     * @param topic topic
++     * @param group group
++     * @param queueId queue id of message
++     * @param queueOffset queue offset of message
+      * @return -1 : illegal, -2 : no need commit, >= 0 : commit
+      */
+-    public long commitAndNext(String topic, String group, int queueId, long offset) {
+-        String key = topic + TOPIC_GROUP_SEPARATOR + group;
++    public long commitAndNext(String topic, String group, int queueId, long queueOffset, long popTime) {
++        String key = buildKey(topic, group);
+         ConcurrentHashMap<Integer/*queueId*/, OrderInfo> qs = table.get(key);
+ 
+         if (qs == null) {
+-            return offset + 1;
++            return queueOffset + 1;
+         }
+         OrderInfo orderInfo = qs.get(queueId);
+         if (orderInfo == null) {
+-            log.warn("OrderInfo is null, {}, {}, {}", key, offset, orderInfo);
+-            return offset + 1;
++            log.warn("OrderInfo is null, {}, {}, {}", key, queueOffset, orderInfo);
++            return queueOffset + 1;
+         }
+ 
+-        List<Long> offsetList = orderInfo.getOffsetList();
+-        if (offsetList == null || offsetList.isEmpty()) {
+-            log.warn("OrderInfo is empty, {}, {}, {}", key, offset, orderInfo);
++        List<Long> o = orderInfo.offsetList;
++        if (o == null || o.isEmpty()) {
++            log.warn("OrderInfo is empty, {}, {}, {}", key, queueOffset, orderInfo);
+             return -1;
+         }
+-        Long first = offsetList.get(0);
+-        int i = 0, size = offsetList.size();
++
++        if (popTime != orderInfo.popTime) {
++            log.warn("popTime is not equal to orderInfo saved. key: {}, offset: {}, orderInfo: {}, popTime: {}", key, queueOffset, orderInfo, popTime);
++            return -2;
++        }
++
++        Long first = o.get(0);
++        int i = 0, size = o.size();
+         for (; i < size; i++) {
+             long temp;
+             if (i == 0) {
+                 temp = first;
+             } else {
+-                temp = first + offsetList.get(i);
++                temp = first + o.get(i);
+             }
+-            if (offset == temp) {
++            if (queueOffset == temp) {
+                 break;
+             }
+         }
+         // not found
+         if (i >= size) {
+-            log.warn("OrderInfo not found commit offset, {}, {}, {}", key, offset, orderInfo);
++            log.warn("OrderInfo not found commit offset, {}, {}, {}", key, queueOffset, orderInfo);
+             return -1;
+         }
+         //set bit
+-        orderInfo.setCommitOffsetBit(orderInfo.getCommitOffsetBit() | (1L << i));
+-        if (orderInfo.isDone()) {
+-            if (size == 1) {
+-                return offsetList.get(0) + 1;
+-            } else {
+-                return offsetList.get(size - 1) + first + 1;
+-            }
+-        }
+-        return -2;
++        orderInfo.setCommitOffsetBit(orderInfo.commitOffsetBit | (1L << i));
++        long nextOffset = orderInfo.getNextOffset();
++
++        return nextOffset;
+     }
+ 
+-    public OrderInfo get(String topic, String group, int queueId) {
+-        String key = topic + TOPIC_GROUP_SEPARATOR + group;
++    /**
++     * update next visible time of this message
++     *
++     * @param topic topic
++     * @param group group
++     * @param queueId queue id of message
++     * @param queueOffset queue offset of message
++     * @param nextVisibleTime nex visible time
++     */
++    public void updateNextVisibleTime(String topic, String group, int queueId, long queueOffset, long popTime, long nextVisibleTime) {
++        String key = buildKey(topic, group);
+         ConcurrentHashMap<Integer/*queueId*/, OrderInfo> qs = table.get(key);
+ 
+         if (qs == null) {
+-            return null;
++            log.warn("orderInfo of queueId is null. key: {}, queueOffset: {}, queueId: {}", key, queueOffset, queueId);
++            return;
++        }
++        OrderInfo orderInfo = qs.get(queueId);
++        if (orderInfo == null) {
++            log.warn("orderInfo is null, key: {}, queueOffset: {}, queueId: {}", key, queueOffset, queueId);
++            return;
++        }
++        if (popTime != orderInfo.popTime) {
++            log.warn("popTime is not equal to orderInfo saved. key: {}, queueOffset: {}, orderInfo: {}, popTime: {}", key, queueOffset, orderInfo, popTime);
++            return;
+         }
+ 
+-        return qs.get(queueId);
+-    }
+-
+-    public int getConsumeCount(String topic, String group, int queueId) {
+-        OrderInfo orderInfo = get(topic, group, queueId);
+-        return orderInfo == null ? 0 : orderInfo.getConsumedCount();
++        orderInfo.updateOffsetNextVisibleTime(queueOffset, nextVisibleTime);
+     }
+ 
+-    private void autoClean() {
++    protected void autoClean() {
+         if (brokerController == null) {
+             return;
+         }
+@@ -207,7 +248,7 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+                 iterator.next();
+             String topicAtGroup = entry.getKey();
+             ConcurrentHashMap<Integer/*queueId*/, OrderInfo> qs = entry.getValue();
+-            String[] arrays = topicAtGroup.split(TOPIC_GROUP_SEPARATOR);
++            String[] arrays = decodeKey(topicAtGroup);
+             if (arrays.length != 2) {
+                 continue;
+             }
+@@ -246,7 +287,6 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+                 if (System.currentTimeMillis() - qsEntry.getValue().getLastConsumeTimestamp() > CLEAN_SPAN_FROM_LAST) {
+                     qsIterator.remove();
+                     log.info("Not consume long time, Clean order info, {}:{}, {}", topicAtGroup, entry.getValue(), topicConfig);
+-                    continue;
+                 }
+             }
+         }
+@@ -279,58 +319,58 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+     @Override
+     public String encode(boolean prettyFormat) {
+         this.autoClean();
+-
+-        StringBuilder stringBuilder = new StringBuilder();
+-        stringBuilder.append("{\n").append("\t\"table\":{");
+-        Iterator<Map.Entry<String/* topic@group*/, ConcurrentHashMap<Integer/*queueId*/, OrderInfo>>> iterator =
+-            this.table.entrySet().iterator();
+-        int count1 = 0;
+-        while (iterator.hasNext()) {
+-            Map.Entry<String/* topic@group*/, ConcurrentHashMap<Integer/*queueId*/, OrderInfo>> entry =
+-                iterator.next();
+-            if (count1 > 0) {
+-                stringBuilder.append(",");
+-            }
+-            stringBuilder.append("\n\t\t\"").append(entry.getKey()).append("\":{");
+-            Iterator<Map.Entry<Integer/*queueId*/, OrderInfo>> qsIterator = entry.getValue().entrySet().iterator();
+-            int count2 = 0;
+-            while (qsIterator.hasNext()) {
+-                Map.Entry<Integer/*queueId*/, OrderInfo> qsEntry = qsIterator.next();
+-                if (count2 > 0) {
+-                    stringBuilder.append(",");
+-                }
+-                stringBuilder.append("\n\t\t\t").append(qsEntry.getKey()).append(":")
+-                    .append(qsEntry.getValue().encode());
+-                count2++;
+-            }
+-            stringBuilder.append("\n\t\t}");
+-            count1++;
+-        }
+-        stringBuilder.append("\n\t}").append("\n}");
+-        return stringBuilder.toString();
++        return RemotingSerializable.toJson(this, prettyFormat);
+     }
+ 
+     public static class OrderInfo {
++        private long popTime;
++        /**
++         * the invisibleTime when pop message
++         */
++        @JSONField(name = "i")
++        private Long invisibleTime;
+         /**
+          * offset
++         * offsetList[0] is the queue offset of message
++         * offsetList[i] (i > 0) is the distance between current message and offsetList[0]
+          */
++        @JSONField(name = "o")
+         private List<Long> offsetList;
+         /**
+-         * consumed count
++         * next visible timestamp for message
++         * key: message queue offset
++         */
++        @JSONField(name = "ot")
++        private Map<Long, Long> offsetNextVisibleTime;
++        /**
++         * message consumed count for offset
++         * key: message queue offset
+          */
+-        private int consumedCount;
++        @JSONField(name = "oc")
++        private Map<Long, Integer> offsetConsumedCount;
+         /**
+          * last consume timestamp
+          */
++        @JSONField(name = "l")
+         private long lastConsumeTimestamp;
+         /**
+          * commit offset bit
+          */
++        @JSONField(name = "cm")
+         private long commitOffsetBit;
+ 
+         public OrderInfo() {
+         }
+ 
++        public OrderInfo(long popTime, long invisibleTime, List<Long> queueOffsetList, long lastConsumeTimestamp,
++            long commitOffsetBit) {
++            this.popTime = popTime;
++            this.invisibleTime = invisibleTime;
++            this.offsetList = buildOffsetList(queueOffsetList);
++            this.lastConsumeTimestamp = lastConsumeTimestamp;
++            this.commitOffsetBit = commitOffsetBit;
++        }
++
+         public List<Long> getOffsetList() {
+             return offsetList;
+         }
+@@ -339,28 +379,6 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+             this.offsetList = offsetList;
+         }
+ 
+-        public static List<Long> simpleO(List<Long> offsetList) {
+-            List<Long> simple = new ArrayList<>();
+-            if (offsetList.size() == 1) {
+-                simple.addAll(offsetList);
+-                return simple;
+-            }
+-            Long first = offsetList.get(0);
+-            simple.add(first);
+-            for (int i = 1; i < offsetList.size(); i++) {
+-                simple.add(offsetList.get(i) - first);
+-            }
+-            return simple;
+-        }
+-
+-        public int getConsumedCount() {
+-            return consumedCount;
+-        }
+-
+-        public void setConsumedCount(int consumedCount) {
+-            this.consumedCount = consumedCount;
+-        }
+-
+         public long getLastConsumeTimestamp() {
+             return lastConsumeTimestamp;
+         }
+@@ -377,50 +395,198 @@ public class ConsumerOrderInfoManager extends ConfigManager {
+             this.commitOffsetBit = commitOffsetBit;
+         }
+ 
++        public long getPopTime() {
++            return popTime;
++        }
++
++        public void setPopTime(long popTime) {
++            this.popTime = popTime;
++        }
++
++        public Long getInvisibleTime() {
++            return invisibleTime;
++        }
++
++        public void setInvisibleTime(Long invisibleTime) {
++            this.invisibleTime = invisibleTime;
++        }
++
++        public Map<Long, Long> getOffsetNextVisibleTime() {
++            return offsetNextVisibleTime;
++        }
++
++        public void setOffsetNextVisibleTime(Map<Long, Long> offsetNextVisibleTime) {
++            this.offsetNextVisibleTime = offsetNextVisibleTime;
++        }
++
++        public Map<Long, Integer> getOffsetConsumedCount() {
++            return offsetConsumedCount;
++        }
++
++        public void setOffsetConsumedCount(Map<Long, Integer> offsetConsumedCount) {
++            this.offsetConsumedCount = offsetConsumedCount;
++        }
++
++        public static List<Long> buildOffsetList(List<Long> queueOffsetList) {
++            List<Long> simple = new ArrayList<>();
++            if (queueOffsetList.size() == 1) {
++                simple.addAll(queueOffsetList);
++                return simple;
++            }
++            Long first = queueOffsetList.get(0);
++            simple.add(first);
++            for (int i = 1; i < queueOffsetList.size(); i++) {
++                simple.add(queueOffsetList.get(i) - first);
++            }
++            return simple;
++        }
++
++        @JSONField(serialize = false, deserialize = false)
++        public boolean needBlock(long currentInvisibleTime) {
++            if (offsetList == null || offsetList.isEmpty()) {
++                return false;
++            }
++            int num = offsetList.size();
++            int i = 0;
++            if (this.invisibleTime == null || this.invisibleTime <= 0) {
++                this.invisibleTime = currentInvisibleTime;
++            }
++            long currentTime = System.currentTimeMillis();
++            for (; i < num; i++) {
++                if (isNotAck(i)) {
++                    long nextVisibleTime = popTime + invisibleTime;
++                    if (offsetNextVisibleTime != null) {
++                        Long time = offsetNextVisibleTime.get(this.getQueueOffset(i));
++                        if (time != null) {
++                            nextVisibleTime = time;
++                        }
++                    }
++                    if (currentTime < nextVisibleTime) {
++                        return true;
++                    }
++                }
++            }
++            return false;
++        }
++
+         @JSONField(serialize = false, deserialize = false)
+-        public boolean isDone() {
++        public Long getLockFreeTimestamp() {
+             if (offsetList == null || offsetList.isEmpty()) {
+-                return true;
++                return null;
+             }
+             int num = offsetList.size();
+-            for (byte i = 0; i < num; i++) {
+-                if ((commitOffsetBit & (1L << i)) == 0) {
+-                    return false;
++            int i = 0;
++            long currentTime = System.currentTimeMillis();
++            for (; i < num; i++) {
++                if (isNotAck(i)) {
++                    if (invisibleTime == null || invisibleTime <= 0) {
++                        return null;
++                    }
++                    long nextVisibleTime = popTime + invisibleTime;
++                    if (offsetNextVisibleTime != null) {
++                        Long time = offsetNextVisibleTime.get(this.getQueueOffset(i));
++                        if (time != null) {
++                            nextVisibleTime = time;
++                        }
++                    }
++                    if (currentTime < nextVisibleTime) {
++                        return nextVisibleTime;
++                    }
+                 }
+             }
+-            return true;
++            return currentTime;
++        }
++
++        @JSONField(serialize = false, deserialize = false)
++        public void updateOffsetNextVisibleTime(long queueOffset, long nextVisibleTime) {
++            if (this.offsetNextVisibleTime == null) {
++                this.offsetNextVisibleTime = new HashMap<>();
++            }
++            this.offsetNextVisibleTime.put(queueOffset, nextVisibleTime);
+         }
+ 
+         @JSONField(serialize = false, deserialize = false)
+-        public String encode() {
+-            StringBuilder sb = new StringBuilder();
+-            sb.append("{").append("\"c\":").append(getConsumedCount());
+-            sb.append(",").append("\"cm\":").append(getCommitOffsetBit());
+-            sb.append(",").append("\"l\":").append(getLastConsumeTimestamp());
+-            sb.append(",").append("\"o\":[");
+-            if (getOffsetList() != null) {
+-                for (int i = 0; i < getOffsetList().size(); i++) {
+-                    sb.append(getOffsetList().get(i));
+-                    if (i < getOffsetList().size() - 1) {
+-                        sb.append(",");
++        public long getNextOffset() {
++            if (offsetList == null || offsetList.isEmpty()) {
++                return -2;
++            }
++            int num = offsetList.size();
++            int i = 0;
++            for (; i < num; i++) {
++                if (isNotAck(i)) {
++                    break;
++                }
++            }
++            if (i == num) {
++                // all ack
++                return getQueueOffset(num - 1) + 1;
++            }
++            return getQueueOffset(i);
++        }
++
++        /**
++         * convert the offset at the index of offsetList to queue offset
++         *
++         * @param offsetIndex the index of offsetList
++         * @return queue offset of message
++         */
++        @JSONField(serialize = false, deserialize = false)
++        public long getQueueOffset(int offsetIndex) {
++            return getQueueOffset(this.offsetList, offsetIndex);
++        }
++
++        protected static long getQueueOffset(List<Long> offsetList, int offsetIndex) {
++            if (offsetIndex == 0) {
++                return offsetList.get(0);
++            }
++            return offsetList.get(0) + offsetList.get(offsetIndex);
++        }
++
++        @JSONField(serialize = false, deserialize = false)
++        public boolean isNotAck(int offsetIndex) {
++            return (commitOffsetBit & (1L << offsetIndex)) == 0;
++        }
++
++        /**
++         * calculate message consumed count of each message, and put nonzero value into offsetConsumedCount
++         *
++         * @param prevOffsetConsumedCount the offset list of message
++         */
++        @JSONField(serialize = false, deserialize = false)
++        public void mergeOffsetConsumedCount(List<Long> preOffsetList, Map<Long, Integer> prevOffsetConsumedCount) {
++            Map<Long, Integer> offsetConsumedCount = new HashMap<>();
++            if (prevOffsetConsumedCount == null) {
++                prevOffsetConsumedCount = new HashMap<>();
++            }
++            Set<Long> preQueueOffsetSet = new HashSet<>();
++            for (int i = 0; i < preOffsetList.size(); i++) {
++                preQueueOffsetSet.add(getQueueOffset(preOffsetList, i));
++            }
++            for (int i = 0; i < offsetList.size(); i++) {
++                long queueOffset = this.getQueueOffset(i);
++                if (preQueueOffsetSet.contains(queueOffset)) {
++                    int count = 1;
++                    Integer preCount = prevOffsetConsumedCount.get(queueOffset);
++                    if (preCount != null) {
++                        count = preCount + 1;
+                     }
++                    offsetConsumedCount.put(queueOffset, count);
+                 }
+             }
+-            sb.append("]").append("}");
+-            return sb.toString();
++            this.offsetConsumedCount = offsetConsumedCount;
+         }
+ 
+         @Override
+         public String toString() {
+-            final StringBuilder sb = new StringBuilder("OrderInfo");
+-            sb.append("@").append(this.hashCode());
+-            sb.append("{offsetList=").append(offsetList);
+-            sb.append(", consumedCount=").append(consumedCount);
+-            sb.append(", lastConsumeTimestamp=").append(lastConsumeTimestamp);
+-            sb.append(", commitOffsetBit=").append(commitOffsetBit);
+-            sb.append(", isDone=").append(isDone());
+-            sb.append('}');
+-            return sb.toString();
++            return MoreObjects.toStringHelper(this)
++                .add("popTime", popTime)
++                .add("invisibleTime", invisibleTime)
++                .add("offsetList", offsetList)
++                .add("offsetNextVisibleTime", offsetNextVisibleTime)
++                .add("offsetConsumedCount", offsetConsumedCount)
++                .add("lastConsumeTimestamp", lastConsumeTimestamp)
++                .add("commitOffsetBit", commitOffsetBit)
++                .toString();
+         }
+     }
+ }
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/AckMessageProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/AckMessageProcessor.java
+index 8bd3c613c..9493deab8 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/AckMessageProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/AckMessageProcessor.java
+@@ -164,7 +164,8 @@ public class AckMessageProcessor implements NettyRequestProcessor {
+                 }
+                 long nextOffset = brokerController.getConsumerOrderInfoManager().commitAndNext(
+                     requestHeader.getTopic(), requestHeader.getConsumerGroup(),
+-                    requestHeader.getQueueId(), requestHeader.getOffset());
++                    requestHeader.getQueueId(), requestHeader.getOffset(),
++                    ExtraInfoUtil.getPopTime(extraInfo));
+                 if (nextOffset > -1) {
+                     this.brokerController.getConsumerOffsetManager().commitOffset(channel.remoteAddress().toString(),
+                         requestHeader.getConsumerGroup(), requestHeader.getTopic(),
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/ChangeInvisibleTimeProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/ChangeInvisibleTimeProcessor.java
+index 76c1b908e..b1092db23 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/ChangeInvisibleTimeProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/ChangeInvisibleTimeProcessor.java
+@@ -96,6 +96,10 @@ public class ChangeInvisibleTimeProcessor implements NettyRequestProcessor {
+ 
+         String[] extraInfo = ExtraInfoUtil.split(requestHeader.getExtraInfo());
+ 
++        if (ExtraInfoUtil.isOrder(extraInfo)) {
++            return processChangeInvisibleTimeForOrder(requestHeader, extraInfo, response, responseHeader);
++        }
++
+         // add new ck
+         long now = System.currentTimeMillis();
+         PutMessageResult ckResult = appendCheckPoint(requestHeader, ExtraInfoUtil.getReviveQid(extraInfo), requestHeader.getQueueId(), requestHeader.getOffset(), now, ExtraInfoUtil.getBrokerName(extraInfo));
+@@ -123,6 +127,35 @@ public class ChangeInvisibleTimeProcessor implements NettyRequestProcessor {
+         return response;
+     }
+ 
++    protected RemotingCommand processChangeInvisibleTimeForOrder(ChangeInvisibleTimeRequestHeader requestHeader, String[] extraInfo, RemotingCommand response, ChangeInvisibleTimeResponseHeader responseHeader) {
++        long popTime = ExtraInfoUtil.getPopTime(extraInfo);
++        long oldOffset = this.brokerController.getConsumerOffsetManager().queryOffset(requestHeader.getConsumerGroup(),
++            requestHeader.getTopic(), requestHeader.getQueueId());
++        if (requestHeader.getOffset() < oldOffset) {
++            return response;
++        }
++        while (!this.brokerController.getPopMessageProcessor().getQueueLockManager().tryLock(requestHeader.getTopic(), requestHeader.getConsumerGroup(), requestHeader.getQueueId())) {
++        }
++        try {
++            oldOffset = this.brokerController.getConsumerOffsetManager().queryOffset(requestHeader.getConsumerGroup(),
++                requestHeader.getTopic(), requestHeader.getQueueId());
++            if (requestHeader.getOffset() < oldOffset) {
++                return response;
++            }
++
++            long nextVisibleTime = System.currentTimeMillis() + requestHeader.getInvisibleTime();
++            this.brokerController.getConsumerOrderInfoManager().updateNextVisibleTime(
++                requestHeader.getTopic(), requestHeader.getConsumerGroup(), requestHeader.getQueueId(), requestHeader.getOffset(), popTime, nextVisibleTime);
++
++            responseHeader.setInvisibleTime(nextVisibleTime - popTime);
++            responseHeader.setPopTime(popTime);
++            responseHeader.setReviveQid(ExtraInfoUtil.getReviveQid(extraInfo));
++        } finally {
++            this.brokerController.getPopMessageProcessor().getQueueLockManager().unLock(requestHeader.getTopic(), requestHeader.getConsumerGroup(), requestHeader.getQueueId());
++        }
++        return response;
++    }
++
+     private void ackOrigin(final ChangeInvisibleTimeRequestHeader requestHeader, String[] extraInfo) {
+         MessageExtBrokerInner msgInner = new MessageExtBrokerInner();
+         AckMsg ackMsg = new AckMsg();
+diff --git a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
+index 0d2c5f9b5..df85fc7e9 100644
+--- a/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
++++ b/broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java
+@@ -522,12 +522,12 @@ public class PopMessageProcessor implements NettyRequestProcessor {
+                     getMessageTmpResult.getBufferTotalSize());
+ 
+                 if (isOrder) {
+-                    int count = brokerController.getConsumerOrderInfoManager().update(topic,
++                    this.brokerController.getConsumerOrderInfoManager().update(isRetry, topic,
+                         requestHeader.getConsumerGroup(),
+-                        queueId, getMessageTmpResult.getMessageQueueOffset());
++                        queueId, popTime, requestHeader.getInvisibleTime(), getMessageTmpResult.getMessageQueueOffset(),
++                        orderCountInfo);
+                     this.brokerController.getConsumerOffsetManager().commitOffset(channel.remoteAddress().toString(),
+                         requestHeader.getConsumerGroup(), topic, queueId, offset);
+-                    ExtraInfoUtil.buildOrderCountInfo(orderCountInfo, isRetry, queueId, count);
+                 } else {
+                     appendCheckPoint(requestHeader, topic, reviveQid, queueId, offset, getMessageTmpResult, popTime, this.brokerController.getBrokerConfig().getBrokerName());
+                 }
+@@ -901,6 +901,14 @@ public class PopMessageProcessor implements NettyRequestProcessor {
+     public class QueueLockManager extends ServiceThread {
+         private ConcurrentHashMap<String, TimedLock> expiredLocalCache = new ConcurrentHashMap<>(100000);
+ 
++        public String buildLockKey(String topic, String consumerGroup, int queueId) {
++            return topic + PopAckConstants.SPLIT + consumerGroup + PopAckConstants.SPLIT + queueId;
++        }
++
++        public boolean tryLock(String topic, String consumerGroup, int queueId) {
++            return tryLock(buildLockKey(topic, consumerGroup, queueId));
++        }
++
+         public boolean tryLock(String key) {
+             TimedLock timedLock = expiredLocalCache.get(key);
+ 
+@@ -946,6 +954,10 @@ public class PopMessageProcessor implements NettyRequestProcessor {
+             return total;
+         }
+ 
++        public void unLock(String topic, String consumerGroup, int queueId) {
++            unLock(buildLockKey(topic, consumerGroup, queueId));
++        }
++
+         public void unLock(String key) {
+             TimedLock timedLock = expiredLocalCache.get(key);
+             if (timedLock != null) {
+diff --git a/client/src/main/java/org/apache/rocketmq/client/impl/MQClientAPIImpl.java b/client/src/main/java/org/apache/rocketmq/client/impl/MQClientAPIImpl.java
+index 5f393cb57..854fb73a6 100644
+--- a/client/src/main/java/org/apache/rocketmq/client/impl/MQClientAPIImpl.java
++++ b/client/src/main/java/org/apache/rocketmq/client/impl/MQClientAPIImpl.java
+@@ -1101,19 +1101,23 @@ public class MQClientAPIImpl implements NameServerUpdateCallback {
+                         }
+                         messageExt.getProperties().put(MessageConst.PROPERTY_POP_CK, map.get(key) + MessageConst.KEY_SEPARATOR + messageExt.getQueueOffset());
+                     } else {
+-                        String key = ExtraInfoUtil.getStartOffsetInfoMapKey(messageExt.getTopic(), messageExt.getQueueId());
+-                        int index = sortMap.get(key).indexOf(messageExt.getQueueOffset());
+-                        Long msgQueueOffset = msgOffsetInfo.get(key).get(index);
++                        String queueIdKey = ExtraInfoUtil.getStartOffsetInfoMapKey(messageExt.getTopic(), messageExt.getQueueId());
++                        String queueOffsetKey = ExtraInfoUtil.getQueueOffsetMapKey(messageExt.getTopic(), messageExt.getQueueId(), messageExt.getQueueOffset());
++                        int index = sortMap.get(queueIdKey).indexOf(messageExt.getQueueOffset());
++                        Long msgQueueOffset = msgOffsetInfo.get(queueIdKey).get(index);
+                         if (msgQueueOffset != messageExt.getQueueOffset()) {
+                             log.warn("Queue offset[%d] of msg is strange, not equal to the stored in msg, %s", msgQueueOffset, messageExt);
+                         }
+ 
+                         messageExt.getProperties().put(MessageConst.PROPERTY_POP_CK,
+-                            ExtraInfoUtil.buildExtraInfo(startOffsetInfo.get(key).longValue(), responseHeader.getPopTime(), responseHeader.getInvisibleTime(),
+-                                responseHeader.getReviveQid(), messageExt.getTopic(), brokerName, messageExt.getQueueId(), msgQueueOffset.longValue())
++                            ExtraInfoUtil.buildExtraInfo(startOffsetInfo.get(queueIdKey), responseHeader.getPopTime(), responseHeader.getInvisibleTime(),
++                                responseHeader.getReviveQid(), messageExt.getTopic(), brokerName, messageExt.getQueueId(), msgQueueOffset)
+                         );
+                         if (((PopMessageRequestHeader) requestHeader).isOrder() && orderCountInfo != null) {
+-                            Integer count = orderCountInfo.get(key);
++                            Integer count = orderCountInfo.get(queueOffsetKey);
++                            if (count == null) {
++                                count = orderCountInfo.get(queueIdKey);
++                            }
+                             if (count != null && count > 0) {
+                                 messageExt.setReconsumeTimes(count);
+                             }
+diff --git a/common/src/main/java/org/apache/rocketmq/common/protocol/header/ExtraInfoUtil.java b/common/src/main/java/org/apache/rocketmq/common/protocol/header/ExtraInfoUtil.java
+index 9a777208a..442060456 100644
+--- a/common/src/main/java/org/apache/rocketmq/common/protocol/header/ExtraInfoUtil.java
++++ b/common/src/main/java/org/apache/rocketmq/common/protocol/header/ExtraInfoUtil.java
+@@ -27,6 +27,7 @@ import org.apache.rocketmq.common.message.MessageConst;
+ public class ExtraInfoUtil {
+     private static final String NORMAL_TOPIC = "0";
+     private static final String RETRY_TOPIC = "1";
++    private static final String QUEUE_OFFSET = "qo";
+ 
+     public static String[] split(String extraInfo) {
+         if (extraInfo == null) {
+@@ -131,7 +132,7 @@ public class ExtraInfoUtil {
+             .append(MessageConst.KEY_SEPARATOR).append(startOffset);
+     }
+ 
+-    public static void buildOrderCountInfo(StringBuilder stringBuilder, boolean retry, int queueId, int orderCount) {
++    public static void buildQueueIdOrderCountInfo(StringBuilder stringBuilder, boolean retry, int queueId, int orderCount) {
+         if (stringBuilder == null) {
+             stringBuilder = new StringBuilder(64);
+         }
+@@ -145,6 +146,20 @@ public class ExtraInfoUtil {
+                 .append(MessageConst.KEY_SEPARATOR).append(orderCount);
+     }
+ 
++    public static void buildQueueOffsetOrderCountInfo(StringBuilder stringBuilder, boolean retry, long queueId, long queueOffset, int orderCount) {
++        if (stringBuilder == null) {
++            stringBuilder = new StringBuilder(64);
++        }
++
++        if (stringBuilder.length() > 0) {
++            stringBuilder.append(";");
++        }
++
++        stringBuilder.append(retry ? RETRY_TOPIC : NORMAL_TOPIC)
++            .append(MessageConst.KEY_SEPARATOR).append(getQueueOffsetKeyValueKey(queueId, queueOffset))
++            .append(MessageConst.KEY_SEPARATOR).append(orderCount);
++    }
++
+     public static void buildMsgOffsetInfo(StringBuilder stringBuilder, boolean retry, int queueId, List<Long> msgOffsets) {
+         if (stringBuilder == null) {
+             stringBuilder = new StringBuilder(64);
+@@ -252,7 +267,19 @@ public class ExtraInfoUtil {
+         return startOffsetMap;
+     }
+ 
+-    public static String getStartOffsetInfoMapKey(String topic, int queueId) {
+-        return (topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) ? RETRY_TOPIC : NORMAL_TOPIC) + "@" + queueId;
++    public static String getStartOffsetInfoMapKey(String topic, long key) {
++        return (topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) ? RETRY_TOPIC : NORMAL_TOPIC) + "@" + key;
++    }
++
++    public static String getQueueOffsetKeyValueKey(long queueId, long queueOffset) {
++        return QUEUE_OFFSET + queueId + "%" + queueOffset;
++    }
++
++    public static String getQueueOffsetMapKey(String topic, long queueId, long queueOffset) {
++        return (topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) ? RETRY_TOPIC : NORMAL_TOPIC) + "@" + getQueueOffsetKeyValueKey(queueId, queueOffset);
++    }
++
++    public static boolean isOrder(String[] extraInfo) {
++        return ExtraInfoUtil.getReviveQid(extraInfo) == KeyBuilder.POP_ORDER_REVIVE_QUEUE;
+     }
+ }

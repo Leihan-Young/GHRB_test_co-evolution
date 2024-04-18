@@ -1,0 +1,7 @@
+{
+  "issue_id": 5819,
+  "issue_url": "https://github.com/apache/rocketmq/issues/5819",
+  "title": "PullRequestHoldServiceTest is flaky",
+  "description": "<p dir=\"auto\">See <a href=\"https://github.com/apache/rocketmq/actions/runs/3835921663/jobs/6529572795\">https://github.com/apache/rocketmq/actions/runs/3835921663/jobs/6529572795</a> for more details.</p>",
+  "description_text": "See https://github.com/apache/rocketmq/actions/runs/3835921663/jobs/6529572795 for more details."
+}

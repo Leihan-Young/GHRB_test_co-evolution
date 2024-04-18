@@ -1,0 +1,336 @@
+diff --git a/common/src/main/java/com/alibaba/nacos/common/remote/client/grpc/DefaultGrpcClientConfig.java b/common/src/main/java/com/alibaba/nacos/common/remote/client/grpc/DefaultGrpcClientConfig.java
+index 65519e2925..2b36f70fd1 100644
+--- a/common/src/main/java/com/alibaba/nacos/common/remote/client/grpc/DefaultGrpcClientConfig.java
++++ b/common/src/main/java/com/alibaba/nacos/common/remote/client/grpc/DefaultGrpcClientConfig.java
+@@ -191,7 +191,7 @@ public class DefaultGrpcClientConfig implements GrpcClientConfig {
+         
+         private int channelKeepAlive = 6 * 60 * 1000;
+         
+-        private int healthCheckRetryTimes = 1;
++        private int healthCheckRetryTimes = 3;
+         
+         private long healthCheckTimeOut = 3000L;
+         
+diff --git a/core/src/main/java/com/alibaba/nacos/core/cluster/MemberUtil.java b/core/src/main/java/com/alibaba/nacos/core/cluster/MemberUtil.java
+index 3a81aeb080..8dce8846a1 100644
+--- a/core/src/main/java/com/alibaba/nacos/core/cluster/MemberUtil.java
++++ b/core/src/main/java/com/alibaba/nacos/core/cluster/MemberUtil.java
+@@ -18,9 +18,9 @@ package com.alibaba.nacos.core.cluster;
+ 
+ import com.alibaba.nacos.common.utils.ExceptionUtil;
+ import com.alibaba.nacos.common.utils.InternetAddressUtil;
++import com.alibaba.nacos.common.utils.StringUtils;
+ import com.alibaba.nacos.core.utils.Loggers;
+ import com.alibaba.nacos.sys.env.EnvUtil;
+-import com.alibaba.nacos.common.utils.StringUtils;
+ 
+ import java.time.LocalDateTime;
+ import java.util.ArrayList;
+@@ -31,7 +31,6 @@ import java.util.List;
+ import java.util.Map;
+ import java.util.Objects;
+ import java.util.Set;
+-import java.util.concurrent.ThreadLocalRandom;
+ import java.util.function.Predicate;
+ import java.util.stream.Collectors;
+ 
+@@ -145,6 +144,30 @@ public class MemberUtil {
+         }
+     }
+     
++    /**
++     * Successful processing of the operation on the node and update metadata.
++     *
++     * @param member {@link Member}
++     * @since 2.1.2
++     */
++    public static void onSuccess(final ServerMemberManager manager, final Member member, final Member receivedMember) {
++        if (isMetadataChanged(member, receivedMember)) {
++            manager.getMemberAddressInfos().add(member.getAddress());
++            member.setState(NodeState.UP);
++            member.setFailAccessCnt(0);
++            member.setExtendInfo(receivedMember.getExtendInfo());
++            member.setAbilities(receivedMember.getAbilities());
++            manager.notifyMemberChange(member);
++        } else {
++            onSuccess(manager, member);
++        }
++    }
++    
++    private static boolean isMetadataChanged(Member expected, Member actual) {
++        return !Objects.equals(expected.getAbilities(), actual.getAbilities()) || isBasicInfoChangedInExtendInfo(
++                expected, actual);
++    }
++    
+     public static void onFail(final ServerMemberManager manager, final Member member) {
+         // To avoid null pointer judgments, pass in one NONE_EXCEPTION
+         onFail(manager, member, ExceptionUtil.NONE_EXCEPTION);
+@@ -161,7 +184,8 @@ public class MemberUtil {
+         final NodeState old = member.getState();
+         member.setState(NodeState.SUSPICIOUS);
+         member.setFailAccessCnt(member.getFailAccessCnt() + 1);
+-        int maxFailAccessCnt = EnvUtil.getProperty(MEMBER_FAIL_ACCESS_CNT_PROPERTY, Integer.class, DEFAULT_MEMBER_FAIL_ACCESS_CNT);
++        int maxFailAccessCnt = EnvUtil
++                .getProperty(MEMBER_FAIL_ACCESS_CNT_PROPERTY, Integer.class, DEFAULT_MEMBER_FAIL_ACCESS_CNT);
+         
+         // If the number of consecutive failures to access the target node reaches
+         // a maximum, or the link request is rejected, the state is directly down
+@@ -192,34 +216,6 @@ public class MemberUtil {
+         }
+     }
+     
+-    /**
+-     * We randomly pick k nodes.
+-     *
+-     * @param members member list
+-     * @param filter  filter {@link Predicate}
+-     * @param k       node number
+-     * @return target members
+-     */
+-    @SuppressWarnings("PMD.UndefineMagicConstantRule")
+-    public static Collection<Member> kRandom(Collection<Member> members, Predicate<Member> filter, int k) {
+-        
+-        Set<Member> kMembers = new HashSet<>();
+-        
+-        // Here thinking similar consul gossip protocols random k node
+-        int totalSize = members.size();
+-        Member[] membersArray = members.toArray(new Member[totalSize]);
+-        ThreadLocalRandom threadLocalRandom = ThreadLocalRandom.current();
+-        for (int i = 0; i < 3 * totalSize && kMembers.size() < k; i++) {
+-            int idx = threadLocalRandom.nextInt(totalSize);
+-            Member member = membersArray[idx];
+-            if (filter.test(member)) {
+-                kMembers.add(member);
+-            }
+-        }
+-        
+-        return kMembers;
+-    }
+-    
+     /**
+      * Default configuration format resolution, only NACos-Server IP or IP :port or hostname: Port information.
+      */
+@@ -265,7 +261,7 @@ public class MemberUtil {
+      */
+     public static boolean isBasicInfoChanged(Member actual, Member expected) {
+         if (null == expected) {
+-            return null == actual;
++            return null != actual;
+         }
+         if (!expected.getIp().equals(actual.getIp())) {
+             return true;
+diff --git a/core/src/main/java/com/alibaba/nacos/core/cluster/ServerMemberManager.java b/core/src/main/java/com/alibaba/nacos/core/cluster/ServerMemberManager.java
+index 16c6824a56..4939f169e2 100644
+--- a/core/src/main/java/com/alibaba/nacos/core/cluster/ServerMemberManager.java
++++ b/core/src/main/java/com/alibaba/nacos/core/cluster/ServerMemberManager.java
+@@ -32,6 +32,7 @@ import com.alibaba.nacos.common.notify.NotifyCenter;
+ import com.alibaba.nacos.common.notify.listener.Subscriber;
+ import com.alibaba.nacos.common.utils.ConcurrentHashSet;
+ import com.alibaba.nacos.common.utils.ExceptionUtil;
++import com.alibaba.nacos.common.utils.JacksonUtils;
+ import com.alibaba.nacos.common.utils.StringUtils;
+ import com.alibaba.nacos.common.utils.VersionUtils;
+ import com.alibaba.nacos.core.ability.ServerAbilityInitializer;
+@@ -142,7 +143,6 @@ public class ServerMemberManager implements ApplicationListener<WebServerInitial
+     public ServerMemberManager(ServletContext servletContext) throws Exception {
+         this.serverList = new ConcurrentSkipListMap<>();
+         EnvUtil.setContextPath(servletContext.getContextPath());
+-        
+         init();
+     }
+     
+@@ -179,24 +179,6 @@ public class ServerMemberManager implements ApplicationListener<WebServerInitial
+         return serverAbilities;
+     }
+     
+-    private void initAndStartLookup() throws NacosException {
+-        this.lookup = LookupFactory.createLookUp(this);
+-        isUseAddressServer = this.lookup.useAddressServer();
+-        this.lookup.start();
+-    }
+-    
+-    /**
+-     * switch look up.
+-     *
+-     * @param name look up name.
+-     * @throws NacosException exception.
+-     */
+-    public void switchLookup(String name) throws NacosException {
+-        this.lookup = LookupFactory.switchLookup(name, this);
+-        isUseAddressServer = this.lookup.useAddressServer();
+-        this.lookup.start();
+-    }
+-    
+     private void registerClusterEvent() {
+         // Register node change events
+         NotifyCenter.registerToPublisher(MembersChangeEvent.class,
+@@ -230,6 +212,24 @@ public class ServerMemberManager implements ApplicationListener<WebServerInitial
+         });
+     }
+     
++    private void initAndStartLookup() throws NacosException {
++        this.lookup = LookupFactory.createLookUp(this);
++        isUseAddressServer = this.lookup.useAddressServer();
++        this.lookup.start();
++    }
++    
++    /**
++     * switch look up.
++     *
++     * @param name look up name.
++     * @throws NacosException exception.
++     */
++    public void switchLookup(String name) throws NacosException {
++        this.lookup = LookupFactory.switchLookup(name, this);
++        isUseAddressServer = this.lookup.useAddressServer();
++        this.lookup.start();
++    }
++    
+     public static boolean isUseAddressServer() {
+         return isUseAddressServer;
+     }
+@@ -245,6 +245,7 @@ public class ServerMemberManager implements ApplicationListener<WebServerInitial
+         
+         String address = newMember.getAddress();
+         if (!serverList.containsKey(address)) {
++            Loggers.CLUSTER.warn("address {} want to update Member, but not in member list!", newMember.getAddress());
+             return false;
+         }
+         
+@@ -535,39 +536,11 @@ public class ServerMemberManager implements ApplicationListener<WebServerInitial
+                         .post(url, header, Query.EMPTY, getSelf(), reference.getType(), new Callback<String>() {
+                             @Override
+                             public void onReceive(RestResult<String> result) {
+-                                if (result.getCode() == HttpStatus.NOT_IMPLEMENTED.value()
+-                                        || result.getCode() == HttpStatus.NOT_FOUND.value()) {
+-                                    Loggers.CLUSTER
+-                                            .warn("{} version is too low, it is recommended to upgrade the version : {}",
+-                                                    target, VersionUtils.version);
+-                                    Member memberNew = null;
+-                                    if (target.getExtendVal(MemberMetaDataConstants.VERSION) != null) {
+-                                        memberNew = target.copy();
+-                                        // Clean up remote version info.
+-                                        // This value may still stay in extend info when remote server has been downgraded to old version.
+-                                        memberNew.delExtendVal(MemberMetaDataConstants.VERSION);
+-                                        memberNew.delExtendVal(MemberMetaDataConstants.READY_TO_UPGRADE);
+-                                        Loggers.CLUSTER.warn("{} : Clean up version info,"
+-                                                + " target has been downgrade to old version.", memberNew);
+-                                    }
+-                                    if (target.getAbilities() != null
+-                                            && target.getAbilities().getRemoteAbility() != null && target.getAbilities()
+-                                            .getRemoteAbility().isSupportRemoteConnection()) {
+-                                        if (memberNew == null) {
+-                                            memberNew = target.copy();
+-                                        }
+-                                        memberNew.getAbilities().getRemoteAbility().setSupportRemoteConnection(false);
+-                                        Loggers.CLUSTER
+-                                                .warn("{} : Clear support remote connection flag,target may rollback version ",
+-                                                        memberNew);
+-                                    }
+-                                    if (memberNew != null) {
+-                                        update(memberNew);
+-                                    }
+-                                    return;
++                                if (isBelow13Version(result.getCode())) {
++                                    handleBelow13Version(target);
+                                 }
+                                 if (result.ok()) {
+-                                    MemberUtil.onSuccess(ServerMemberManager.this, target);
++                                    handleReportResult(result.getData(), target);
+                                 } else {
+                                     Loggers.CLUSTER.warn("failed to report new info to target node : {}, result : {}",
+                                             target.getAddress(), result);
+@@ -597,6 +570,68 @@ public class ServerMemberManager implements ApplicationListener<WebServerInitial
+         protected void after() {
+             GlobalExecutor.scheduleByCommon(this, 2_000L);
+         }
++        
++        private void handleReportResult(String reportResult, Member target) {
++            if (isBooleanResult(reportResult)) {
++                MemberUtil.onSuccess(ServerMemberManager.this, target);
++                return;
++            }
++            try {
++                Member member = JacksonUtils.toObj(reportResult, Member.class);
++                MemberUtil.onSuccess(ServerMemberManager.this, target, member);
++            } catch (Exception e) {
++                Loggers.CLUSTER.warn("Receive invalid report result from target {}, context {}", target.getAddress(),
++                        reportResult);
++                MemberUtil.onSuccess(ServerMemberManager.this, target);
++            }
++        }
++        
++        private boolean isBooleanResult(String reportResult) {
++            return Boolean.TRUE.toString().equals(reportResult) || Boolean.FALSE.toString().equals(reportResult);
++        }
++        
++        /**
++         * Judge target version whether below 1.3 version.
++         *
++         * @deprecated Remove after 2.2
++         */
++        @Deprecated
++        private boolean isBelow13Version(int code) {
++            return HttpStatus.NOT_IMPLEMENTED.value() == code || HttpStatus.NOT_FOUND.value() == code;
++        }
++        
++        /**
++         * Handle the result when target is below 1.3 version.
++         *
++         * @deprecated Remove after 2.2
++         */
++        @Deprecated
++        private void handleBelow13Version(Member target) {
++            Loggers.CLUSTER.warn("{} version is too low, it is recommended to upgrade the version : {}", target,
++                    VersionUtils.version);
++            Member memberNew = null;
++            if (target.getExtendVal(MemberMetaDataConstants.VERSION) != null) {
++                memberNew = target.copy();
++                // Clean up remote version info.
++                // This value may still stay in extend info when remote server has been downgraded to old version.
++                memberNew.delExtendVal(MemberMetaDataConstants.VERSION);
++                memberNew.delExtendVal(MemberMetaDataConstants.READY_TO_UPGRADE);
++                Loggers.CLUSTER
++                        .warn("{} : Clean up version info," + " target has been downgrade to old version.", memberNew);
++            }
++            if (target.getAbilities() != null && target.getAbilities().getRemoteAbility() != null && target
++                    .getAbilities().getRemoteAbility().isSupportRemoteConnection()) {
++                if (memberNew == null) {
++                    memberNew = target.copy();
++                }
++                memberNew.getAbilities().getRemoteAbility().setSupportRemoteConnection(false);
++                Loggers.CLUSTER
++                        .warn("{} : Clear support remote connection flag,target may rollback version ", memberNew);
++            }
++            if (memberNew != null) {
++                update(memberNew);
++            }
++        }
+     }
+     
+ }
+diff --git a/core/src/main/java/com/alibaba/nacos/core/controller/NacosClusterController.java b/core/src/main/java/com/alibaba/nacos/core/controller/NacosClusterController.java
+index a17c9621f0..e2567701dd 100644
+--- a/core/src/main/java/com/alibaba/nacos/core/controller/NacosClusterController.java
++++ b/core/src/main/java/com/alibaba/nacos/core/controller/NacosClusterController.java
+@@ -18,6 +18,7 @@ package com.alibaba.nacos.core.controller;
+ 
+ import com.alibaba.nacos.common.model.RestResult;
+ import com.alibaba.nacos.common.model.RestResultUtils;
++import com.alibaba.nacos.common.utils.JacksonUtils;
+ import com.alibaba.nacos.common.utils.LoggerUtils;
+ import com.alibaba.nacos.common.utils.StringUtils;
+ import com.alibaba.nacos.core.cluster.Member;
+@@ -108,10 +109,8 @@ public class NacosClusterController {
+         LoggerUtils.printIfDebugEnabled(Loggers.CLUSTER, "node state report, receive info : {}", node);
+         node.setState(NodeState.UP);
+         node.setFailAccessCnt(0);
+-        
+-        boolean result = memberManager.update(node);
+-        
+-        return RestResultUtils.success(Boolean.toString(result));
++        memberManager.update(node);
++        return RestResultUtils.success(JacksonUtils.toJson(memberManager.getSelf()));
+     }
+     
+     /**

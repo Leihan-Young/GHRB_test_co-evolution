@@ -1,0 +1,58 @@
+diff --git a/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheck.java b/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheck.java
+index 34fb64fe2..893fa3fe3 100644
+--- a/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheck.java
++++ b/src/main/java/com/puppycrawl/tools/checkstyle/checks/coding/VariableDeclarationUsageDistanceCheck.java
+@@ -761,37 +761,26 @@ public class VariableDeclarationUsageDistanceCheck extends AbstractCheck {
+         DetailAST firstNodeInsideBlock = null;
+ 
+         if (!isVariableInOperatorExpr(block, variable)) {
+-            DetailAST currentNode = block.getLastChild();
+-            final List<DetailAST> variableUsageExpressions =
+-                    new ArrayList<>();
+-
+-            while (currentNode != null
+-                    && currentNode.getType() == TokenTypes.LITERAL_ELSE) {
+-                final DetailAST previousNode =
+-                        currentNode.getPreviousSibling();
+-
+-                // Checking variable usage inside IF block.
+-                if (isChild(previousNode, variable)) {
+-                    variableUsageExpressions.add(previousNode);
+-                }
++            final Optional<DetailAST> slistToken = TokenUtil
++                .findFirstTokenByPredicate(block, token -> token.getType() == TokenTypes.SLIST);
++            final DetailAST lastNode = block.getLastChild();
++            DetailAST previousNode = lastNode.getPreviousSibling();
+ 
+-                // Looking into ELSE block, get its first child and analyze it.
+-                currentNode = currentNode.getFirstChild();
++            if (slistToken.isEmpty()
++                && lastNode.getType() == TokenTypes.LITERAL_ELSE) {
+ 
+-                if (currentNode.getType() == TokenTypes.LITERAL_IF) {
+-                    currentNode = currentNode.getLastChild();
+-                }
+-                else if (isChild(currentNode, variable)) {
+-                    variableUsageExpressions.add(currentNode);
+-                    currentNode = null;
+-                }
++                // Is if statement without '{}' and has a following else branch,
++                // then change previousNode to the if statement body.
++                previousNode = previousNode.getPreviousSibling();
++            }
++
++            final List<DetailAST> variableUsageExpressions = new ArrayList<>();
++            if (isChild(previousNode, variable)) {
++                variableUsageExpressions.add(previousNode);
+             }
+ 
+-            // If IF block doesn't include ELSE then analyze variable usage
+-            // only inside IF block.
+-            if (currentNode != null
+-                    && isChild(currentNode, variable)) {
+-                variableUsageExpressions.add(currentNode);
++            if (isChild(lastNode, variable)) {
++                variableUsageExpressions.add(lastNode);
+             }
+ 
+             // If variable usage exists in several related blocks, then

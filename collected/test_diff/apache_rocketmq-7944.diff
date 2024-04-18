@@ -1,0 +1,42 @@
+diff --git a/auth/src/test/java/org/apache/rocketmq/auth/authentication/builder/DefaultAuthenticationContextBuilderTest.java b/auth/src/test/java/org/apache/rocketmq/auth/authentication/builder/DefaultAuthenticationContextBuilderTest.java
+index 00f17c145..e8e0144fc 100644
+--- a/auth/src/test/java/org/apache/rocketmq/auth/authentication/builder/DefaultAuthenticationContextBuilderTest.java
++++ b/auth/src/test/java/org/apache/rocketmq/auth/authentication/builder/DefaultAuthenticationContextBuilderTest.java
+@@ -30,7 +30,6 @@ import org.apache.rocketmq.common.constant.GrpcConstants;
+ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
+ import org.apache.rocketmq.remoting.protocol.RequestCode;
+ import org.apache.rocketmq.remoting.protocol.header.SendMessageRequestHeader;
+-import org.jetbrains.annotations.NotNull;
+ import org.junit.Assert;
+ import org.junit.Before;
+ import org.junit.Test;
+@@ -110,7 +109,7 @@ public class DefaultAuthenticationContextBuilderTest {
+             }
+ 
+             @Override
+-            public int compareTo(@NotNull ChannelId o) {
++            public int compareTo(ChannelId o) {
+                 return 0;
+             }
+         };
+diff --git a/auth/src/test/java/org/apache/rocketmq/auth/authorization/builder/DefaultAuthorizationContextBuilderTest.java b/auth/src/test/java/org/apache/rocketmq/auth/authorization/builder/DefaultAuthorizationContextBuilderTest.java
+index 7ba6c48f5..4ee73f3d7 100644
+--- a/auth/src/test/java/org/apache/rocketmq/auth/authorization/builder/DefaultAuthorizationContextBuilderTest.java
++++ b/auth/src/test/java/org/apache/rocketmq/auth/authorization/builder/DefaultAuthorizationContextBuilderTest.java
+@@ -72,7 +72,6 @@ import org.apache.rocketmq.remoting.protocol.header.UpdateConsumerOffsetRequestH
+ import org.apache.rocketmq.remoting.protocol.heartbeat.ConsumerData;
+ import org.apache.rocketmq.remoting.protocol.heartbeat.HeartbeatData;
+ import org.apache.rocketmq.remoting.protocol.heartbeat.SubscriptionData;
+-import org.jetbrains.annotations.NotNull;
+ import org.junit.Assert;
+ import org.junit.Before;
+ import org.junit.Test;
+@@ -499,7 +498,7 @@ public class DefaultAuthorizationContextBuilderTest {
+             }
+ 
+             @Override
+-            public int compareTo(@NotNull ChannelId o) {
++            public int compareTo(ChannelId o) {
+                 return 0;
+             }
+         };
