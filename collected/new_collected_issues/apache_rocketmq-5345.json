@@ -1,7 +1,0 @@
-{
-  "issue_id": 5344,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5344",
-  "title": "Disable some test cases on Windows to make the CI pipeline pass",
-  "description": "<p dir=\"auto\">The store module assumes Linux as OS. This results in test case failure for the Windows CI pipeline.</p>\n<p dir=\"auto\">Introduce Junit5 and disable test cases that do not work on Windows using <a href=\"https://junit.org/junit5/docs/current/user-guide/#writing-tests-conditional-execution\" rel=\"nofollow\">https://junit.org/junit5/docs/current/user-guide/#writing-tests-conditional-execution</a></p>",
-  "description_text": "The store module assumes Linux as OS. This results in test case failure for the Windows CI pipeline.\nIntroduce Junit5 and disable test cases that do not work on Windows using https://junit.org/junit5/docs/current/user-guide/#writing-tests-conditional-execution"
-}

@@ -1,7 +1,0 @@
-{
-  "issue_id": 384,
-  "issue_url": "https://github.com/FasterXML/jackson-dataformats-text/issues/384",
-  "title": "investigate Toml big string tests ",
-  "description": "<ul dir=\"auto\">\n<li>tests added in <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1583928581\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-dataformats-text/issues/383\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/FasterXML/jackson-dataformats-text/pull/383/hovercard\" href=\"https://github.com/FasterXML/jackson-dataformats-text/pull/383\">#383</a></li>\n<li>testBiggerString indicates that only the TextBuffer.contentAsString() check is catching the issue with the string being too big\n<ul dir=\"auto\">\n<li>no matter how big the len is set to</li>\n<li>this is far from ideal - we should be catching exceptions when the buffer is extended but the toml code has its own logic and somehow bypasses the checks in TextBuffer until the contentAsString() call.</li>\n</ul>\n</li>\n</ul>",
-  "description_text": "\ntests added in #383\ntestBiggerString indicates that only the TextBuffer.contentAsString() check is catching the issue with the string being too big\n\nno matter how big the len is set to\nthis is far from ideal - we should be catching exceptions when the buffer is extended but the toml code has its own logic and somehow bypasses the checks in TextBuffer until the contentAsString() call.\n\n\n"
-}

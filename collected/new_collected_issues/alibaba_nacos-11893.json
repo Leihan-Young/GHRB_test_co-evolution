@@ -1,7 +1,0 @@
-{
-  "issue_id": 11892,
-  "issue_url": "https://github.com/alibaba/nacos/issues/11892",
-  "title": "Response wrong status code for some situation for grpc",
-  "description": "<p dir=\"auto\">ref <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"2191591132\" data-permission-text=\"Title is private\" data-url=\"https://github.com/alibaba/nacos/issues/11842\" data-hovercard-type=\"issue\" data-hovercard-url=\"/alibaba/nacos/issues/11842/hovercard\" href=\"https://github.com/alibaba/nacos/issues/11842\">#11842</a><br>\nThe problem:<br>\nAfter client  register  non-ephemeral, and register ephemeral instance,  client  will receive payload with NacosRuntimeException. grpc response will get 500 as resultcode  and 400 as errorcode\u3002<br>\n400 as errocode is right.<br>\n500 as result is  wrong , this is  not  consistency with the case with OpenAPI.</p>\n<p dir=\"auto\">I expect the  result code  would the same with errocode like http code.</p>",
-  "description_text": "ref #11842\nThe problem:\nAfter client  register  non-ephemeral, and register ephemeral instance,  client  will receive payload with NacosRuntimeException. grpc response will get 500 as resultcode  and 400 as errorcode\u3002\n400 as errocode is right.\n500 as result is  wrong , this is  not  consistency with the case with OpenAPI.\nI expect the  result code  would the same with errocode like http code."
-}

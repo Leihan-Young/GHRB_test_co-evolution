@@ -1,7 +1,0 @@
-{
-  "issue_id": 6644,
-  "issue_url": "https://github.com/apache/rocketmq/issues/6644",
-  "title": "Add admin client future interface",
-  "description": "<p dir=\"auto\">The current admin implements in <code class=\"notranslate\">MQClientAPIImpl</code> are mostly synchronized methods.<br>\nThere should be an asynchronous interface for performance consideration.</p>\n<p dir=\"auto\">The majority of admin methods implemented in MQClientAPIImpl are synchronized. For the purpose of optimizing performance, it would be advantageous to incorporate an asynchronous interface.</p>",
-  "description_text": "The current admin implements in MQClientAPIImpl are mostly synchronized methods.\nThere should be an asynchronous interface for performance consideration.\nThe majority of admin methods implemented in MQClientAPIImpl are synchronized. For the purpose of optimizing performance, it would be advantageous to incorporate an asynchronous interface."
-}

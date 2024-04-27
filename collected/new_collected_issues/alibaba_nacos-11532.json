@@ -1,7 +1,0 @@
-{
-  "issue_id": 11531,
-  "issue_url": "https://github.com/alibaba/nacos/issues/11531",
-  "title": "Add unit tests for package com.alibaba.nacos.config.server.service.dump",
-  "description": "<p dir=\"auto\">Add unit tests for package com.alibaba.nacos.config.server.service.dump</p>",
-  "description_text": "Add unit tests for package com.alibaba.nacos.config.server.service.dump"
-}

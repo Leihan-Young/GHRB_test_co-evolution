@@ -1,7 +1,0 @@
-{
-  "issue_id": 3204,
-  "issue_url": "https://github.com/iBotPeaches/Apktool/issues/3204",
-  "title": "Supress SDK Metadata - aapt2",
-  "description": "<p dir=\"auto\"><a class=\"commit-link\" data-hovercard-type=\"commit\" data-hovercard-url=\"https://github.com/aosp-mirror/platform_frameworks_base/commit/642fdce0ce723bfd2b4ab7cbed11f2c50d1d8ada/hovercard\" href=\"https://github.com/aosp-mirror/platform_frameworks_base/commit/642fdce0ce723bfd2b4ab7cbed11f2c50d1d8ada\">aosp-mirror/platform_frameworks_base@<tt>642fdce</tt></a></p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"--no-compile-sdk-metadata\"><pre class=\"notranslate\"><code class=\"notranslate\">--no-compile-sdk-metadata\n</code></pre></div>\n<p dir=\"auto\">aapt2 only</p>",
-  "description_text": "aosp-mirror/platform_frameworks_base@642fdce\n--no-compile-sdk-metadata\n\naapt2 only"
-}

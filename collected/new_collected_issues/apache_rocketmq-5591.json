@@ -1,7 +1,0 @@
-{
-  "issue_id": 5309,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5309",
-  "title": "NormalMsgDelayIT is flaky",
-  "description": "<p dir=\"auto\">There was 1 failure:</p>\n<ol dir=\"auto\">\n<li>testDelayLevel3(org.apache.rocketmq.test.delay.NormalMsgDelayIT)<br>\njava.lang.AssertionError: Timer is not correct expected: but was:<br>\nat org.junit.Assert.fail(Assert.java:89)<br>\nat org.junit.Assert.failNotEquals(Assert.java:835)<br>\nat org.junit.Assert.assertEquals(Assert.java:120)<br>\nat org.apache.rocketmq.test.delay.NormalMsgDelayIT.testDelayLevel3(NormalMsgDelayIT.java:96)</li>\n</ol>\n<p dir=\"auto\">See full CI log: <a href=\"https://github.com/apache/rocketmq/actions/runs/3235189115/jobs/5299272721\">https://github.com/apache/rocketmq/actions/runs/3235189115/jobs/5299272721</a></p>",
-  "description_text": "There was 1 failure:\n\ntestDelayLevel3(org.apache.rocketmq.test.delay.NormalMsgDelayIT)\njava.lang.AssertionError: Timer is not correct expected: but was:\nat org.junit.Assert.fail(Assert.java:89)\nat org.junit.Assert.failNotEquals(Assert.java:835)\nat org.junit.Assert.assertEquals(Assert.java:120)\nat org.apache.rocketmq.test.delay.NormalMsgDelayIT.testDelayLevel3(NormalMsgDelayIT.java:96)\n\nSee full CI log: https://github.com/apache/rocketmq/actions/runs/3235189115/jobs/5299272721"
-}

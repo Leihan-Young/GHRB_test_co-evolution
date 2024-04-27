@@ -1,7 +1,0 @@
-{
-  "issue_id": 12129,
-  "issue_url": "https://github.com/apache/dubbo/issues/12129",
-  "title": "Collect No Provider Request count",
-  "description": "\n<ul class=\"contains-task-list\">\n<li class=\"task-list-item\"><input type=\"checkbox\" id=\"\" disabled=\"\" class=\"task-list-item-checkbox\"> I have searched the <a href=\"https://github.com/apache/dubbo/issues\">issues</a> of this repository and believe that this is not a duplicate.</li>\n</ul>\n<h2 dir=\"auto\">Describe the proposal</h2>\n\n\n<p dir=\"auto\">We should collect the count of no provider available exception in MetricsFilter.</p>\n<p dir=\"auto\">With: <code class=\"notranslate\">RpcException.isNoInvokerAvailableAfterFilter()</code></p>",
-  "description_text": "\n\n I have searched the issues of this repository and believe that this is not a duplicate.\n\nDescribe the proposal\nWe should collect the count of no provider available exception in MetricsFilter.\nWith: RpcException.isNoInvokerAvailableAfterFilter()"
-}

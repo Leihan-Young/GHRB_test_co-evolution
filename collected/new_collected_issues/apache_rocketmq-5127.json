@@ -1,7 +1,0 @@
-{
-  "issue_id": 5126,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5126",
-  "title": "Make tests in ACL module pass on Windows",
-  "description": "<p dir=\"auto\">We have a few tests that do NOT work on Windows and MacOS. This ticket is used to track fix of Windows compatibility issues</p>",
-  "description_text": "We have a few tests that do NOT work on Windows and MacOS. This ticket is used to track fix of Windows compatibility issues"
-}

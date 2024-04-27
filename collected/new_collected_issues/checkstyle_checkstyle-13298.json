@@ -1,7 +1,0 @@
-{
-  "issue_id": 13244,
-  "issue_url": "https://github.com/checkstyle/checkstyle/issues/13244",
-  "title": "Extend checkstyle-examples-checks",
-  "description": "<p dir=\"auto\">As we progress in xdocs generation project, we are discovering more check modules that need to be added. We can use this issue to track them. Please comment here and I will update list as needed until we send a PR.</p>\n<ul dir=\"auto\">\n<li>enforce newline at end of file</li>\n<li>forbidden regexp in violation messages</li>\n<li>check for compilation comments in non-compilable resource folder</li>\n<li>discourage usage of regexp escaping in violation messages ( we should use java examples code without such symbols)</li>\n<li>Add CommentsIndentation check</li>\n<li>check for presence of xdoc delimiter comments (<code class=\"notranslate\">// xdoc section -- start</code>)</li>\n</ul>",
-  "description_text": "As we progress in xdocs generation project, we are discovering more check modules that need to be added. We can use this issue to track them. Please comment here and I will update list as needed until we send a PR.\n\nenforce newline at end of file\nforbidden regexp in violation messages\ncheck for compilation comments in non-compilable resource folder\ndiscourage usage of regexp escaping in violation messages ( we should use java examples code without such symbols)\nAdd CommentsIndentation check\ncheck for presence of xdoc delimiter comments (// xdoc section -- start)\n"
-}

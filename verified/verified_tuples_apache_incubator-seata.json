@@ -8,8 +8,7 @@
     "refer_PR": "apache_incubator-seata-4056",
     "test_src": ".io.seata.common.util.DurationUtilTest#testParse",
     "test_tgt": [
-      ".io.seata.common.util.DurationUtilTest#testParse",
-      ".io.seata.common.util.DurationUtilTest#testParseThrowException"
+      ".io.seata.common.util.DurationUtilTest#testParse"
     ],
     "focal_path": "common/src/main/java/io/seata/common/util/DurationUtil.java#parse",
     "focal_src": "    public static Duration parse(String str) {\n        if (StringUtils.isBlank(str)) {\n            return DEFAULT_DURATION;\n        }\n\n        if (str.contains(MILLIS_SECOND_UNIT)) {\n            Long value = doParse(MILLIS_SECOND_UNIT, str);\n            return value == null ? null : Duration.ofMillis(value);\n        } else if (str.contains(DAY_UNIT)) {\n            Long value = doParse(DAY_UNIT, str);\n            return value == null ? null : Duration.ofDays(value);\n        } else if (str.contains(HOUR_UNIT)) {\n            Long value = doParse(HOUR_UNIT, str);\n            return value == null ? null : Duration.ofHours(value);\n        } else if (str.contains(MINUTE_UNIT)) {\n            Long value = doParse(MINUTE_UNIT, str);\n            return value == null ? null : Duration.ofMinutes(value);\n        } else if (str.contains(SECOND_UNIT)) {\n            Long value = doParse(SECOND_UNIT, str);\n            return value == null ? null : Duration.ofSeconds(value);\n        }\n        try {\n            int millis = Integer.parseInt(str);\n            return Duration.ofMillis(millis);\n        } catch (Exception e) {\n            throw new UnsupportedOperationException(str + \" can't parse to duration\", e);\n        }\n    }\n",
@@ -25,7 +24,6 @@
     "refer_PR": "apache_incubator-seata-4056",
     "test_src": ".io.seata.common.util.DurationUtilTest#testParseThrowException",
     "test_tgt": [
-      ".io.seata.common.util.DurationUtilTest#testParse",
       ".io.seata.common.util.DurationUtilTest#testParseThrowException"
     ],
     "focal_path": "common/src/main/java/io/seata/common/util/DurationUtil.java#parse",

@@ -30,8 +30,7 @@
     "refer_PR": "apache_rocketmq-5403",
     "test_src": ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#getMessageTest",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#getMessageTest",
-      ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#decodeMsgListTest"
+      ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#getMessageTest"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/failover/EscapeBridge.java#getMessage",
     "focal_src": "    public MessageExt getMessage(String topic, long offset, int queueId, String brokerName) {\n        MessageStore messageStore = brokerController.getMessageStoreByBrokerName(brokerName);\n        if (messageStore != null) {\n            final GetMessageResult getMessageTmpResult = messageStore.getMessage(innerConsumerGroupName, topic, queueId, offset, 1, null);\n            if (getMessageTmpResult == null) {\n                LOG.warn(\"getMessageResult is null , innerConsumerGroupName {}, topic {}, offset {}, queueId {}\", innerConsumerGroupName, topic, offset, queueId);\n                return null;\n            }\n            List<MessageExt> list = decodeMsgList(getMessageTmpResult);\n            if (list == null || list.isEmpty()) {\n                LOG.warn(\"Can not get msg , topic {}, offset {}, queueId {}, result is {}\", topic, offset, queueId, getMessageTmpResult);\n                return null;\n            } else {\n                return list.get(0);\n            }\n        } else {\n            return getMessageFromRemote(topic, offset, queueId, brokerName);\n        }\n    }\n",
@@ -49,7 +48,6 @@
     "refer_PR": "apache_rocketmq-5403",
     "test_src": ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#decodeMsgListTest",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#getMessageTest",
       ".org.apache.rocketmq.broker.failover.EscapeBridgeTest#decodeMsgListTest"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/failover/EscapeBridge.java#decodeMsgList",
@@ -131,9 +129,6 @@
     "test_src": ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_TopicNotExist",
     "test_tgt": [
       ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_TopicNotExist",
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_Found",
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_MsgWasRemoving",
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_NoMsgInQueue",
       ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_whenTimerWheelIsFalse"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest",
@@ -150,10 +145,7 @@
     "refer_PR": "apache_rocketmq-6184",
     "test_src": ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_Found",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_TopicNotExist",
       ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_Found",
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_MsgWasRemoving",
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_NoMsgInQueue",
       ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_whenTimerWheelIsFalse"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest",
@@ -170,10 +162,7 @@
     "refer_PR": "apache_rocketmq-6184",
     "test_src": ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_MsgWasRemoving",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_TopicNotExist",
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_Found",
       ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_MsgWasRemoving",
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_NoMsgInQueue",
       ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_whenTimerWheelIsFalse"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest",
@@ -190,9 +179,6 @@
     "refer_PR": "apache_rocketmq-6184",
     "test_src": ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_NoMsgInQueue",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_TopicNotExist",
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_Found",
-      ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_MsgWasRemoving",
       ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_NoMsgInQueue",
       ".org.apache.rocketmq.broker.processor.PopMessageProcessorTest#testProcessRequest_whenTimerWheelIsFalse"
     ],
@@ -231,11 +217,7 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenNoAck",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenNoAck",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenAck",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleLonger",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleShorter",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testRecover"
+      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenNoAck"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update",
     "focal_src": "    /**\n     * update the message list received\n     *\n     * @param isRetry is retry topic or not\n     * @param topic topic\n     * @param group group\n     * @param queueId queue id of message\n     * @param popTime the time of pop message\n     * @param invisibleTime invisible time\n     * @param msgQueueOffsetList the queue offsets of messages\n     * @param orderInfoBuilder will append order info to this builder\n     */\n    public void update(boolean isRetry, String topic, String group, int queueId, long popTime, long invisibleTime,\n        List<Long> msgQueueOffsetList, StringBuilder orderInfoBuilder) {\n        String key = buildKey(topic, group);\n        ConcurrentHashMap<Integer/*queueId*/, OrderInfo> qs = table.get(key);\n        if (qs == null) {\n            qs = new ConcurrentHashMap<>(16);\n            ConcurrentHashMap<Integer/*queueId*/, OrderInfo> old = table.putIfAbsent(key, qs);\n            if (old != null) {\n                qs = old;\n            }\n        }\n\n        OrderInfo orderInfo = qs.get(queueId);\n\n        if (orderInfo != null) {\n            OrderInfo newOrderInfo = new OrderInfo(popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);\n            newOrderInfo.mergeOffsetConsumedCount(orderInfo.offsetList, orderInfo.offsetConsumedCount);\n\n            orderInfo = newOrderInfo;\n        } else {\n            orderInfo = new OrderInfo(popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);\n        }\n        qs.put(queueId, orderInfo);\n\n        Map<Long, Integer> offsetConsumedCount = orderInfo.offsetConsumedCount;\n        int minConsumedTimes = Integer.MAX_VALUE;\n        if (offsetConsumedCount != null) {\n            Set<Long> offsetSet = offsetConsumedCount.keySet();\n            for (Long offset : offsetSet) {\n                Integer consumedTimes = offsetConsumedCount.getOrDefault(offset, 0);\n                ExtraInfoUtil.buildQueueOffsetOrderCountInfo(orderInfoBuilder, isRetry, queueId, offset, consumedTimes);\n                minConsumedTimes = Math.min(minConsumedTimes, consumedTimes);\n            }\n\n            if (offsetConsumedCount.size() != orderInfo.offsetList.size()) {\n                // offsetConsumedCount only save messages which consumed count is greater than 0\n                // if size not equal, means there are some new messages\n                minConsumedTimes = 0;\n            }\n        } else {\n            minConsumedTimes = 0;\n        }\n\n        // for compatibility\n        // the old pop sdk use queueId to get consumedTimes from orderCountInfo\n        ExtraInfoUtil.buildQueueIdOrderCountInfo(orderInfoBuilder, isRetry, queueId, minConsumedTimes);\n        updateLockFreeTimestamp(topic, group, queueId, orderInfo);\n    }\n",
@@ -256,11 +238,7 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenAck",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenNoAck",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenAck",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleLonger",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleShorter",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testRecover"
+      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenAck"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update",
     "focal_src": "    /**\n     * update the message list received\n     *\n     * @param isRetry is retry topic or not\n     * @param topic topic\n     * @param group group\n     * @param queueId queue id of message\n     * @param popTime the time of pop message\n     * @param invisibleTime invisible time\n     * @param msgQueueOffsetList the queue offsets of messages\n     * @param orderInfoBuilder will append order info to this builder\n     */\n    public void update(boolean isRetry, String topic, String group, int queueId, long popTime, long invisibleTime,\n        List<Long> msgQueueOffsetList, StringBuilder orderInfoBuilder) {\n        String key = buildKey(topic, group);\n        ConcurrentHashMap<Integer/*queueId*/, OrderInfo> qs = table.get(key);\n        if (qs == null) {\n            qs = new ConcurrentHashMap<>(16);\n            ConcurrentHashMap<Integer/*queueId*/, OrderInfo> old = table.putIfAbsent(key, qs);\n            if (old != null) {\n                qs = old;\n            }\n        }\n\n        OrderInfo orderInfo = qs.get(queueId);\n\n        if (orderInfo != null) {\n            OrderInfo newOrderInfo = new OrderInfo(popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);\n            newOrderInfo.mergeOffsetConsumedCount(orderInfo.offsetList, orderInfo.offsetConsumedCount);\n\n            orderInfo = newOrderInfo;\n        } else {\n            orderInfo = new OrderInfo(popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);\n        }\n        qs.put(queueId, orderInfo);\n\n        Map<Long, Integer> offsetConsumedCount = orderInfo.offsetConsumedCount;\n        int minConsumedTimes = Integer.MAX_VALUE;\n        if (offsetConsumedCount != null) {\n            Set<Long> offsetSet = offsetConsumedCount.keySet();\n            for (Long offset : offsetSet) {\n                Integer consumedTimes = offsetConsumedCount.getOrDefault(offset, 0);\n                ExtraInfoUtil.buildQueueOffsetOrderCountInfo(orderInfoBuilder, isRetry, queueId, offset, consumedTimes);\n                minConsumedTimes = Math.min(minConsumedTimes, consumedTimes);\n            }\n\n            if (offsetConsumedCount.size() != orderInfo.offsetList.size()) {\n                // offsetConsumedCount only save messages which consumed count is greater than 0\n                // if size not equal, means there are some new messages\n                minConsumedTimes = 0;\n            }\n        } else {\n            minConsumedTimes = 0;\n        }\n\n        // for compatibility\n        // the old pop sdk use queueId to get consumedTimes from orderCountInfo\n        ExtraInfoUtil.buildQueueIdOrderCountInfo(orderInfoBuilder, isRetry, queueId, minConsumedTimes);\n        updateLockFreeTimestamp(topic, group, queueId, orderInfo);\n    }\n",
@@ -281,11 +259,7 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleLonger",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenNoAck",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenAck",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleLonger",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleShorter",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testRecover"
+      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleLonger"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update",
     "focal_src": "    /**\n     * update the message list received\n     *\n     * @param isRetry is retry topic or not\n     * @param topic topic\n     * @param group group\n     * @param queueId queue id of message\n     * @param popTime the time of pop message\n     * @param invisibleTime invisible time\n     * @param msgQueueOffsetList the queue offsets of messages\n     * @param orderInfoBuilder will append order info to this builder\n     */\n    public void update(boolean isRetry, String topic, String group, int queueId, long popTime, long invisibleTime,\n        List<Long> msgQueueOffsetList, StringBuilder orderInfoBuilder) {\n        String key = buildKey(topic, group);\n        ConcurrentHashMap<Integer/*queueId*/, OrderInfo> qs = table.get(key);\n        if (qs == null) {\n            qs = new ConcurrentHashMap<>(16);\n            ConcurrentHashMap<Integer/*queueId*/, OrderInfo> old = table.putIfAbsent(key, qs);\n            if (old != null) {\n                qs = old;\n            }\n        }\n\n        OrderInfo orderInfo = qs.get(queueId);\n\n        if (orderInfo != null) {\n            OrderInfo newOrderInfo = new OrderInfo(popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);\n            newOrderInfo.mergeOffsetConsumedCount(orderInfo.offsetList, orderInfo.offsetConsumedCount);\n\n            orderInfo = newOrderInfo;\n        } else {\n            orderInfo = new OrderInfo(popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);\n        }\n        qs.put(queueId, orderInfo);\n\n        Map<Long, Integer> offsetConsumedCount = orderInfo.offsetConsumedCount;\n        int minConsumedTimes = Integer.MAX_VALUE;\n        if (offsetConsumedCount != null) {\n            Set<Long> offsetSet = offsetConsumedCount.keySet();\n            for (Long offset : offsetSet) {\n                Integer consumedTimes = offsetConsumedCount.getOrDefault(offset, 0);\n                ExtraInfoUtil.buildQueueOffsetOrderCountInfo(orderInfoBuilder, isRetry, queueId, offset, consumedTimes);\n                minConsumedTimes = Math.min(minConsumedTimes, consumedTimes);\n            }\n\n            if (offsetConsumedCount.size() != orderInfo.offsetList.size()) {\n                // offsetConsumedCount only save messages which consumed count is greater than 0\n                // if size not equal, means there are some new messages\n                minConsumedTimes = 0;\n            }\n        } else {\n            minConsumedTimes = 0;\n        }\n\n        // for compatibility\n        // the old pop sdk use queueId to get consumedTimes from orderCountInfo\n        ExtraInfoUtil.buildQueueIdOrderCountInfo(orderInfoBuilder, isRetry, queueId, minConsumedTimes);\n        updateLockFreeTimestamp(topic, group, queueId, orderInfo);\n    }\n",
@@ -306,11 +280,7 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleShorter",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenNoAck",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenAck",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleLonger",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleShorter",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testRecover"
+      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleShorter"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update",
     "focal_src": "    /**\n     * update the message list received\n     *\n     * @param isRetry is retry topic or not\n     * @param topic topic\n     * @param group group\n     * @param queueId queue id of message\n     * @param popTime the time of pop message\n     * @param invisibleTime invisible time\n     * @param msgQueueOffsetList the queue offsets of messages\n     * @param orderInfoBuilder will append order info to this builder\n     */\n    public void update(boolean isRetry, String topic, String group, int queueId, long popTime, long invisibleTime,\n        List<Long> msgQueueOffsetList, StringBuilder orderInfoBuilder) {\n        String key = buildKey(topic, group);\n        ConcurrentHashMap<Integer/*queueId*/, OrderInfo> qs = table.get(key);\n        if (qs == null) {\n            qs = new ConcurrentHashMap<>(16);\n            ConcurrentHashMap<Integer/*queueId*/, OrderInfo> old = table.putIfAbsent(key, qs);\n            if (old != null) {\n                qs = old;\n            }\n        }\n\n        OrderInfo orderInfo = qs.get(queueId);\n\n        if (orderInfo != null) {\n            OrderInfo newOrderInfo = new OrderInfo(popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);\n            newOrderInfo.mergeOffsetConsumedCount(orderInfo.offsetList, orderInfo.offsetConsumedCount);\n\n            orderInfo = newOrderInfo;\n        } else {\n            orderInfo = new OrderInfo(popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);\n        }\n        qs.put(queueId, orderInfo);\n\n        Map<Long, Integer> offsetConsumedCount = orderInfo.offsetConsumedCount;\n        int minConsumedTimes = Integer.MAX_VALUE;\n        if (offsetConsumedCount != null) {\n            Set<Long> offsetSet = offsetConsumedCount.keySet();\n            for (Long offset : offsetSet) {\n                Integer consumedTimes = offsetConsumedCount.getOrDefault(offset, 0);\n                ExtraInfoUtil.buildQueueOffsetOrderCountInfo(orderInfoBuilder, isRetry, queueId, offset, consumedTimes);\n                minConsumedTimes = Math.min(minConsumedTimes, consumedTimes);\n            }\n\n            if (offsetConsumedCount.size() != orderInfo.offsetList.size()) {\n                // offsetConsumedCount only save messages which consumed count is greater than 0\n                // if size not equal, means there are some new messages\n                minConsumedTimes = 0;\n            }\n        } else {\n            minConsumedTimes = 0;\n        }\n\n        // for compatibility\n        // the old pop sdk use queueId to get consumedTimes from orderCountInfo\n        ExtraInfoUtil.buildQueueIdOrderCountInfo(orderInfoBuilder, isRetry, queueId, minConsumedTimes);\n        updateLockFreeTimestamp(topic, group, queueId, orderInfo);\n    }\n",
@@ -331,10 +301,6 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testRecover",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenNoAck",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeMessageThenAck",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleLonger",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testConsumeTheChangeInvisibleShorter",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerLockFreeNotifyTest#testRecover"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update",
@@ -357,11 +323,6 @@
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
     "test_tgt": [
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testReentrant"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update",
@@ -384,11 +345,6 @@
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
     "test_tgt": [
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testReentrant"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#checkBlock",
@@ -410,12 +366,7 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testReentrant"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update",
@@ -437,12 +388,7 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testReentrant"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update",
@@ -464,12 +410,7 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testReentrant"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update",
@@ -491,12 +432,7 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testReentrant"
     ],
     "focal_path": "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update",
@@ -518,11 +454,6 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testReentrant"
     ],
@@ -545,11 +476,6 @@
     "refer_PR": "apache_rocketmq-6692",
     "test_src": ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
     "test_tgt": [
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testCommitAndNext",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCount",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testConsumedCountForMultiQueue",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testUpdateNextVisibleTime",
-      ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testAutoCleanAndEncode",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testLoadFromOldVersionOrderInfoData",
       ".org.apache.rocketmq.broker.offset.ConsumerOrderInfoManagerTest#testReentrant"
     ],
@@ -571,11 +497,7 @@
     "test_src": ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresent",
     "test_tgt": [
       ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testAddDuplicationHandle",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresent",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresentReturnNull",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresent",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresentReturnNull",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveMultiThread"
+      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresent"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent",
     "focal_src": "    public void computeIfPresent(String msgID, String handle,\n        Function<MessageReceiptHandle, CompletableFuture<MessageReceiptHandle>> function) {\n        Map<String, HandleData> handleMap = this.receiptHandleMap.get(msgID);\n        if (handleMap == null) {\n            return;\n        }\n        long timeout = ConfigurationManager.getProxyConfig().getLockTimeoutMsInHandleGroup();\n        handleMap.computeIfPresent(handle, (handleKey, handleData) -> {\n            if (!handleData.lock(timeout)) {\n                throw new ProxyException(ProxyExceptionCode.INTERNAL_SERVER_ERROR, \"try to compute failed\");\n            }\n            CompletableFuture<MessageReceiptHandle> future = function.apply(handleData.messageReceiptHandle);\n            future.whenComplete((messageReceiptHandle, throwable) -> {\n                try {\n                    if (throwable != null) {\n                        return;\n                    }\n                    if (messageReceiptHandle == null) {\n                        handleData.needRemove = true;\n                    } else {\n                        handleData.messageReceiptHandle = messageReceiptHandle;\n                    }\n                } finally {\n                    handleData.unlock();\n                }\n                if (handleData.needRemove) {\n                    handleMap.remove(handleKey, handleData);\n                }\n                removeHandleMapKeyIfNeed(msgID);\n            });\n            return handleData;\n        });\n    }\n",
@@ -595,11 +517,7 @@
     "test_src": ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresentReturnNull",
     "test_tgt": [
       ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testAddDuplicationHandle",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresent",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresentReturnNull",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresent",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresentReturnNull",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveMultiThread"
+      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresentReturnNull"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent",
     "focal_src": "    public void computeIfPresent(String msgID, String handle,\n        Function<MessageReceiptHandle, CompletableFuture<MessageReceiptHandle>> function) {\n        Map<String, HandleData> handleMap = this.receiptHandleMap.get(msgID);\n        if (handleMap == null) {\n            return;\n        }\n        long timeout = ConfigurationManager.getProxyConfig().getLockTimeoutMsInHandleGroup();\n        handleMap.computeIfPresent(handle, (handleKey, handleData) -> {\n            if (!handleData.lock(timeout)) {\n                throw new ProxyException(ProxyExceptionCode.INTERNAL_SERVER_ERROR, \"try to compute failed\");\n            }\n            CompletableFuture<MessageReceiptHandle> future = function.apply(handleData.messageReceiptHandle);\n            future.whenComplete((messageReceiptHandle, throwable) -> {\n                try {\n                    if (throwable != null) {\n                        return;\n                    }\n                    if (messageReceiptHandle == null) {\n                        handleData.needRemove = true;\n                    } else {\n                        handleData.messageReceiptHandle = messageReceiptHandle;\n                    }\n                } finally {\n                    handleData.unlock();\n                }\n                if (handleData.needRemove) {\n                    handleMap.remove(handleKey, handleData);\n                }\n                removeHandleMapKeyIfNeed(msgID);\n            });\n            return handleData;\n        });\n    }\n",
@@ -619,11 +537,7 @@
     "test_src": ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresent",
     "test_tgt": [
       ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testAddDuplicationHandle",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresent",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresentReturnNull",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresent",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresentReturnNull",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveMultiThread"
+      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresent"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent",
     "focal_src": "    public void computeIfPresent(String msgID, String handle,\n        Function<MessageReceiptHandle, CompletableFuture<MessageReceiptHandle>> function) {\n        Map<String, HandleData> handleMap = this.receiptHandleMap.get(msgID);\n        if (handleMap == null) {\n            return;\n        }\n        long timeout = ConfigurationManager.getProxyConfig().getLockTimeoutMsInHandleGroup();\n        handleMap.computeIfPresent(handle, (handleKey, handleData) -> {\n            if (!handleData.lock(timeout)) {\n                throw new ProxyException(ProxyExceptionCode.INTERNAL_SERVER_ERROR, \"try to compute failed\");\n            }\n            CompletableFuture<MessageReceiptHandle> future = function.apply(handleData.messageReceiptHandle);\n            future.whenComplete((messageReceiptHandle, throwable) -> {\n                try {\n                    if (throwable != null) {\n                        return;\n                    }\n                    if (messageReceiptHandle == null) {\n                        handleData.needRemove = true;\n                    } else {\n                        handleData.messageReceiptHandle = messageReceiptHandle;\n                    }\n                } finally {\n                    handleData.unlock();\n                }\n                if (handleData.needRemove) {\n                    handleMap.remove(handleKey, handleData);\n                }\n                removeHandleMapKeyIfNeed(msgID);\n            });\n            return handleData;\n        });\n    }\n",
@@ -643,11 +557,7 @@
     "test_src": ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresentReturnNull",
     "test_tgt": [
       ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testAddDuplicationHandle",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresent",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresentReturnNull",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresent",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresentReturnNull",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveMultiThread"
+      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresentReturnNull"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent",
     "focal_src": "    public void computeIfPresent(String msgID, String handle,\n        Function<MessageReceiptHandle, CompletableFuture<MessageReceiptHandle>> function) {\n        Map<String, HandleData> handleMap = this.receiptHandleMap.get(msgID);\n        if (handleMap == null) {\n            return;\n        }\n        long timeout = ConfigurationManager.getProxyConfig().getLockTimeoutMsInHandleGroup();\n        handleMap.computeIfPresent(handle, (handleKey, handleData) -> {\n            if (!handleData.lock(timeout)) {\n                throw new ProxyException(ProxyExceptionCode.INTERNAL_SERVER_ERROR, \"try to compute failed\");\n            }\n            CompletableFuture<MessageReceiptHandle> future = function.apply(handleData.messageReceiptHandle);\n            future.whenComplete((messageReceiptHandle, throwable) -> {\n                try {\n                    if (throwable != null) {\n                        return;\n                    }\n                    if (messageReceiptHandle == null) {\n                        handleData.needRemove = true;\n                    } else {\n                        handleData.messageReceiptHandle = messageReceiptHandle;\n                    }\n                } finally {\n                    handleData.unlock();\n                }\n                if (handleData.needRemove) {\n                    handleMap.remove(handleKey, handleData);\n                }\n                removeHandleMapKeyIfNeed(msgID);\n            });\n            return handleData;\n        });\n    }\n",
@@ -667,10 +577,6 @@
     "test_src": ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveMultiThread",
     "test_tgt": [
       ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testAddDuplicationHandle",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresent",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testGetWhenComputeIfPresentReturnNull",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresent",
-      ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveWhenComputeIfPresentReturnNull",
       ".org.apache.rocketmq.proxy.common.ReceiptHandleGroupTest#testRemoveMultiThread"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#remove",
@@ -690,8 +596,7 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessagePollingTime",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessagePollingTime",
-      ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessage"
+      ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessagePollingTime"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivity.java#receiveMessage",
     "focal_src": "    public void receiveMessage(ProxyContext ctx, ReceiveMessageRequest request,\n        StreamObserver<ReceiveMessageResponse> responseObserver) {\n        ReceiveMessageResponseStreamWriter writer = createWriter(ctx, responseObserver);\n\n        try {\n            Settings settings = this.grpcClientSettingsManager.getClientSettings(ctx);\n            Subscription subscription = settings.getSubscription();\n            boolean fifo = subscription.getFifo();\n            int maxAttempts = settings.getBackoffPolicy().getMaxAttempts();\n            ProxyConfig config = ConfigurationManager.getProxyConfig();\n\n            Long timeRemaining = ctx.getRemainingMs();\n            long pollingTime;\n            if (request.hasLongPollingTimeout()) {\n                pollingTime = Durations.toMillis(request.getLongPollingTimeout());\n            } else {\n                pollingTime = timeRemaining - Durations.toMillis(settings.getRequestTimeout()) / 2;\n            }\n            if (pollingTime < config.getGrpcClientConsumerMinLongPollingTimeoutMillis()) {\n                pollingTime = config.getGrpcClientConsumerMinLongPollingTimeoutMillis();\n            }\n            if (pollingTime > config.getGrpcClientConsumerMaxLongPollingTimeoutMillis()) {\n                pollingTime = config.getGrpcClientConsumerMaxLongPollingTimeoutMillis();\n            }\n\n            if (pollingTime > timeRemaining) {\n                if (timeRemaining >= config.getGrpcClientConsumerMinLongPollingTimeoutMillis()) {\n                    pollingTime = timeRemaining;\n                } else {\n                    final String clientVersion = ctx.getClientVersion();\n                    Code code =\n                        null == clientVersion || ILLEGAL_POLLING_TIME_INTRODUCED_CLIENT_VERSION.compareTo(clientVersion) > 0 ?\n                        Code.BAD_REQUEST : Code.ILLEGAL_POLLING_TIME;\n                    writer.writeAndComplete(ctx, code, \"The deadline time remaining is not enough\" +\n                        \" for polling, please check network condition\");\n                    return;\n                }\n            }\n\n            validateTopicAndConsumerGroup(request.getMessageQueue().getTopic(), request.getGroup());\n            String topic = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getMessageQueue().getTopic());\n            String group = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());\n\n            long actualInvisibleTime = Durations.toMillis(request.getInvisibleDuration());\n            ProxyConfig proxyConfig = ConfigurationManager.getProxyConfig();\n            if (proxyConfig.isEnableProxyAutoRenew() && request.getAutoRenew()) {\n                actualInvisibleTime = proxyConfig.getDefaultInvisibleTimeMills();\n            } else {\n                validateInvisibleTime(actualInvisibleTime,\n                    ConfigurationManager.getProxyConfig().getMinInvisibleTimeMillsForRecv());\n            }\n\n            FilterExpression filterExpression = request.getFilterExpression();\n            SubscriptionData subscriptionData;\n            try {\n                subscriptionData = FilterAPI.build(topic, filterExpression.getExpression(),\n                    GrpcConverter.getInstance().buildExpressionType(filterExpression.getType()));\n            } catch (Exception e) {\n                writer.writeAndComplete(ctx, Code.ILLEGAL_FILTER_EXPRESSION, e.getMessage());\n                return;\n            }\n\n            this.messagingProcessor.popMessage(\n                    ctx,\n                    new ReceiveMessageQueueSelector(\n                        request.getMessageQueue().getBroker().getName()\n                    ),\n                    group,\n                    topic,\n                    request.getBatchSize(),\n                    actualInvisibleTime,\n                    pollingTime,\n                    ConsumeInitMode.MAX,\n                    subscriptionData,\n                    fifo,\n                    new PopMessageResultFilterImpl(maxAttempts),\n                    timeRemaining\n                ).thenAccept(popResult -> {\n                    if (proxyConfig.isEnableProxyAutoRenew() && request.getAutoRenew()) {\n                        if (PopStatus.FOUND.equals(popResult.getPopStatus())) {\n                            List<MessageExt> messageExtList = popResult.getMsgFoundList();\n                            for (MessageExt messageExt : messageExtList) {\n                                String receiptHandle = messageExt.getProperty(MessageConst.PROPERTY_POP_CK);\n                                if (receiptHandle != null) {\n                                    MessageReceiptHandle messageReceiptHandle =\n                                        new MessageReceiptHandle(group, topic, messageExt.getQueueId(), receiptHandle, messageExt.getMsgId(),\n                                            messageExt.getQueueOffset(), messageExt.getReconsumeTimes());\n                                    receiptHandleProcessor.addReceiptHandle(ctx, grpcChannelManager.getChannel(ctx.getClientID()), group, messageExt.getMsgId(), receiptHandle, messageReceiptHandle);\n                                }\n                            }\n                        }\n                    }\n                    writer.writeAndComplete(ctx, request, popResult);\n                })\n                .exceptionally(t -> {\n                    writer.writeAndComplete(ctx, request, t);\n                    return null;\n                });\n        } catch (Throwable t) {\n            writer.writeAndComplete(ctx, request, t);\n        }\n    }\n",
@@ -710,7 +615,6 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessage",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessagePollingTime",
       ".org.apache.rocketmq.proxy.grpc.v2.consumer.ReceiveMessageActivityTest#testReceiveMessage"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/ReceiveMessageActivity.java#receiveMessage",
@@ -750,17 +654,7 @@
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
     "test_tgt": [
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -779,18 +673,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -809,18 +693,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -839,18 +713,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -869,18 +733,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -899,18 +753,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -929,18 +773,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -959,18 +793,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -989,18 +813,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1019,18 +833,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1049,18 +853,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1079,18 +873,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1109,18 +893,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1139,18 +913,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1169,18 +933,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1199,18 +953,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1229,18 +973,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1259,18 +993,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1289,18 +1013,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1319,18 +1033,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1349,18 +1053,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1379,18 +1073,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1409,18 +1093,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1439,18 +1113,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1469,18 +1133,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1499,18 +1153,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1529,18 +1173,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1559,18 +1193,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1589,18 +1213,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1619,18 +1233,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1649,18 +1253,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1679,18 +1273,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1709,18 +1293,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1739,18 +1313,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1769,18 +1333,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    public void addReceiptHandle(ProxyContext ctx, Channel channel, String group, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        this.addReceiptHandle(ctx, new ReceiptHandleGroupKey(channel, group), msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1799,18 +1353,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1829,18 +1373,8 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
+      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
     "focal_src": "    protected void addReceiptHandle(ProxyContext ctx, ReceiptHandleGroupKey key, String msgID, String receiptHandle,\n        MessageReceiptHandle messageReceiptHandle) {\n        if (key == null) {\n            return;\n        }\n        ConcurrentHashMapUtils.computeIfAbsent(this.receiptHandleGroupMap, key,\n            k -> new ReceiptHandleGroup()).put(msgID, receiptHandle, messageReceiptHandle);\n    }\n",
@@ -1859,17 +1393,7 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
@@ -1889,17 +1413,7 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
@@ -1919,17 +1433,7 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
@@ -1949,17 +1453,7 @@
     "refer_PR": "apache_rocketmq-6755",
     "test_src": ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddReceiptHandle",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testAddDuplicationMessage",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewExceedMaxRenewTimes",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithInvalidHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewWithErrorThenOK",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeout",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenTimeoutWithNoSubscription",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRenewReceiptHandleWhenNotArrivingTime",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testRemoveReceiptHandle",
-      ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClearGroup",
       ".org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest#testClientOffline"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle",
@@ -2197,8 +1691,7 @@
     "refer_PR": "apache_rocketmq-6859",
     "test_src": ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetTopicMessageType",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetTopicMessageType",
-      ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetSubscriptionGroupConfig"
+      ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetTopicMessageType"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java#getTopicMessageType",
     "focal_src": "    @Override\n    public TopicMessageType getTopicMessageType(String topic) {\n        TopicConfigAndQueueMapping topicConfigAndQueueMapping;\n        try {\n            topicConfigAndQueueMapping = topicConfigCache.get(topic);\n        } catch (Exception e) {\n            return TopicMessageType.UNSPECIFIED;\n        }\n        if (topicConfigAndQueueMapping.equals(EMPTY_TOPIC_CONFIG)) {\n            return TopicMessageType.UNSPECIFIED;\n        }\n        return topicConfigAndQueueMapping.getTopicMessageType();\n    }\n",
@@ -2223,7 +1716,6 @@
     "refer_PR": "apache_rocketmq-6859",
     "test_src": ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetSubscriptionGroupConfig",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetTopicMessageType",
       ".org.apache.rocketmq.proxy.service.metadata.ClusterMetadataServiceTest#testGetSubscriptionGroupConfig"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java#getSubscriptionGroupConfig",
@@ -2249,8 +1741,7 @@
     "refer_PR": "apache_rocketmq-6859",
     "test_src": ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetCurrentMessageQueueView",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetCurrentMessageQueueView",
-      ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetTopicRouteForProxy"
+      ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetCurrentMessageQueueView"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java#getCurrentMessageQueueView",
     "focal_src": "    @Override\n    public MessageQueueView getCurrentMessageQueueView(String topicName) throws Exception {\n        return getAllMessageQueueView(topicName);\n    }\n",
@@ -2275,7 +1766,6 @@
     "refer_PR": "apache_rocketmq-6859",
     "test_src": ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetTopicRouteForProxy",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetCurrentMessageQueueView",
       ".org.apache.rocketmq.proxy.service.route.ClusterTopicRouteServiceTest#testGetTopicRouteForProxy"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java#getTopicRouteForProxy",
@@ -2301,8 +1791,7 @@
     "refer_PR": "apache_rocketmq-6859",
     "test_src": ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetCurrentMessageQueueView",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetCurrentMessageQueueView",
-      ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetTopicRouteForProxy"
+      ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetCurrentMessageQueueView"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java#getCurrentMessageQueueView",
     "focal_src": "    @Override\n    public MessageQueueView getCurrentMessageQueueView(String topic) throws Exception {\n        TopicConfig topicConfig = this.brokerController.getTopicConfigManager().getTopicConfigTable().get(topic);\n        return new MessageQueueView(topic, toTopicRouteData(topicConfig));\n    }\n",
@@ -2327,7 +1816,6 @@
     "refer_PR": "apache_rocketmq-6859",
     "test_src": ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetTopicRouteForProxy",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetCurrentMessageQueueView",
       ".org.apache.rocketmq.proxy.service.route.LocalTopicRouteServiceTest#testGetTopicRouteForProxy"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java#getTopicRouteForProxy",
@@ -2360,8 +1848,7 @@
     "refer_PR": "apache_rocketmq-6885",
     "test_src": ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncGrpcV2Channel",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncGrpcV2Channel",
-      ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncRemotingChannel"
+      ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncGrpcV2Channel"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncer.java#HeartbeatSyncer",
     "focal_src": "    protected final Map<String /* group @ channelId as longText */, RemoteChannel> remoteChannelMap = new ConcurrentHashMap<>();\n    protected String localProxyId;\n\n    public HeartbeatSyncer(TopicRouteService topicRouteService, AdminService adminService,\n        ConsumerManager consumerManager, MQClientAPIFactory mqClientAPIFactory) {\n        super(topicRouteService, adminService, mqClientAPIFactory);\n        this.consumerManager = consumerManager;\n        this.localProxyId = buildLocalProxyId();\n        this.init();\n    }\n",
@@ -2377,7 +1864,6 @@
     "refer_PR": "apache_rocketmq-6885",
     "test_src": ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncRemotingChannel",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncGrpcV2Channel",
       ".org.apache.rocketmq.proxy.service.sysmessage.HeartbeatSyncerTest#testSyncRemotingChannel"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/service/sysmessage/HeartbeatSyncer.java#HeartbeatSyncer",
@@ -2413,8 +1899,7 @@
     "refer_PR": "apache_rocketmq-6965",
     "test_src": ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
-      ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData"
+      ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#getClientSettings",
     "focal_src": "    public Settings getClientSettings(ProxyContext ctx) {\n        String clientId = ctx.getClientID();\n        Settings settings = CLIENT_SETTINGS_MAP.get(clientId);\n        if (settings == null) {\n            return null;\n        }\n        if (settings.hasPublishing()) {\n            settings = mergeProducerData(settings);\n        } else if (settings.hasSubscription()) {\n            settings = mergeSubscriptionData(ctx, settings,\n                GrpcConverter.getInstance().wrapResourceWithNamespace(settings.getSubscription().getGroup()));\n        }\n        return mergeMetric(settings);\n    }\n",
@@ -2433,8 +1918,7 @@
     "refer_PR": "apache_rocketmq-6965",
     "test_src": ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
-      ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData"
+      ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#updateClientSettings",
     "focal_src": "    public void updateClientSettings(String clientId, Settings settings) {\n        if (settings.hasSubscription()) {\n            settings = createDefaultConsumerSettingsBuilder().mergeFrom(settings).build();\n        }\n        CLIENT_SETTINGS_MAP.put(clientId, settings);\n    }\n",
@@ -2453,7 +1937,6 @@
     "refer_PR": "apache_rocketmq-6965",
     "test_src": ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
       ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#getClientSettings",
@@ -2473,7 +1956,6 @@
     "refer_PR": "apache_rocketmq-6965",
     "test_src": ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
       ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#updateClientSettings",
@@ -2493,7 +1975,6 @@
     "refer_PR": "apache_rocketmq-6965",
     "test_src": ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetProducerData",
       ".org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManagerTest#testGetSubscriptionData"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#removeAndGetClientSettings",
@@ -2513,8 +1994,7 @@
     "refer_PR": "apache_rocketmq-6965",
     "test_src": ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithoutSub",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithoutSub",
-      ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithSub"
+      ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithoutSub"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/remoting/activity/PullMessageActivity.java#processRequest0",
     "focal_src": "    @Override\n    protected RemotingCommand processRequest0(ChannelHandlerContext ctx, RemotingCommand request,\n        ProxyContext context) throws Exception {\n        PullMessageRequestHeader requestHeader = (PullMessageRequestHeader) request.decodeCommandCustomHeader(PullMessageRequestHeader.class);\n        int sysFlag = requestHeader.getSysFlag();\n        if (!PullSysFlag.hasSubscriptionFlag(sysFlag)) {\n            ConsumerGroupInfo consumerInfo = messagingProcessor.getConsumerGroupInfo(requestHeader.getConsumerGroup());\n            if (consumerInfo == null) {\n                return RemotingCommand.buildErrorResponse(ResponseCode.SUBSCRIPTION_NOT_LATEST,\n                    \"the consumer's subscription not latest\");\n            }\n            SubscriptionData subscriptionData = consumerInfo.findSubscriptionData(requestHeader.getTopic());\n            if (subscriptionData == null) {\n                return RemotingCommand.buildErrorResponse(ResponseCode.SUBSCRIPTION_NOT_EXIST,\n                    \"the consumer's subscription not exist\");\n            }\n            requestHeader.setSysFlag(PullSysFlag.buildSysFlagWithSubscription(sysFlag));\n            requestHeader.setSubscription(subscriptionData.getSubString());\n            requestHeader.setExpressionType(subscriptionData.getExpressionType());\n            request.writeCustomHeader(requestHeader);\n            request.makeCustomHeaderToNet();\n        }\n        long timeoutMillis = requestHeader.getSuspendTimeoutMillis() + Duration.ofSeconds(10).toMillis();\n        return request(ctx, request, context, timeoutMillis);\n    }\n",
@@ -2533,7 +2013,6 @@
     "refer_PR": "apache_rocketmq-6965",
     "test_src": ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithSub",
     "test_tgt": [
-      ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithoutSub",
       ".org.apache.rocketmq.proxy.remoting.activity.PullMessageActivityTest#testPullMessageWithSub"
     ],
     "focal_path": "proxy/src/main/java/org/apache/rocketmq/proxy/remoting/activity/PullMessageActivity.java#processRequest0",
@@ -2590,10 +2069,7 @@
     "refer_PR": "apache_rocketmq-7322",
     "test_src": ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand",
     "test_tgt": [
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand",
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand_RunCallBackInCurrentThread",
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testScanResponseTable",
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessRequestCommand"
+      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand"
     ],
     "focal_path": "remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingAbstract.java#processResponseCommand",
     "focal_src": "    /**\n     * Process response from remote peer to the previous issued requests.\n     *\n     * @param ctx channel handler context.\n     * @param cmd response command instance.\n     */\n    public void processResponseCommand(ChannelHandlerContext ctx, RemotingCommand cmd) {\n        final int opaque = cmd.getOpaque();\n        final ResponseFuture responseFuture = responseTable.get(opaque);\n        if (responseFuture != null) {\n            responseFuture.setResponseCommand(cmd);\n\n            responseTable.remove(opaque);\n\n            if (responseFuture.getInvokeCallback() != null) {\n                executeInvokeCallback(responseFuture);\n            } else {\n                responseFuture.putResponse(cmd);\n                responseFuture.release();\n            }\n        } else {\n            log.warn(\"receive response, but not matched any request, \" + RemotingHelper.parseChannelRemoteAddr(ctx.channel()));\n            log.warn(cmd.toString());\n        }\n    }\n",
@@ -2613,10 +2089,7 @@
     "refer_PR": "apache_rocketmq-7322",
     "test_src": ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand_RunCallBackInCurrentThread",
     "test_tgt": [
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand",
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand_RunCallBackInCurrentThread",
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testScanResponseTable",
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessRequestCommand"
+      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand_RunCallBackInCurrentThread"
     ],
     "focal_path": "remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingAbstract.java#processResponseCommand",
     "focal_src": "    /**\n     * Process response from remote peer to the previous issued requests.\n     *\n     * @param ctx channel handler context.\n     * @param cmd response command instance.\n     */\n    public void processResponseCommand(ChannelHandlerContext ctx, RemotingCommand cmd) {\n        final int opaque = cmd.getOpaque();\n        final ResponseFuture responseFuture = responseTable.get(opaque);\n        if (responseFuture != null) {\n            responseFuture.setResponseCommand(cmd);\n\n            responseTable.remove(opaque);\n\n            if (responseFuture.getInvokeCallback() != null) {\n                executeInvokeCallback(responseFuture);\n            } else {\n                responseFuture.putResponse(cmd);\n                responseFuture.release();\n            }\n        } else {\n            log.warn(\"receive response, but not matched any request, \" + RemotingHelper.parseChannelRemoteAddr(ctx.channel()));\n            log.warn(cmd.toString());\n        }\n    }\n",
@@ -2636,9 +2109,6 @@
     "refer_PR": "apache_rocketmq-7322",
     "test_src": ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessRequestCommand",
     "test_tgt": [
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand",
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessResponseCommand_RunCallBackInCurrentThread",
-      ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testScanResponseTable",
       ".org.apache.rocketmq.remoting.netty.NettyRemotingAbstractTest#testProcessRequestCommand"
     ],
     "focal_path": "remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingAbstract.java#processResponseCommand",

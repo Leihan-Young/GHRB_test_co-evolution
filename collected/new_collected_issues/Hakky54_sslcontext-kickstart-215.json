@@ -1,7 +1,0 @@
-{
-  "issue_id": 210,
-  "issue_url": "https://github.com/Hakky54/sslcontext-kickstart/issues/210",
-  "title": "BasicHostnameVerifier is broken?",
-  "description": "<p dir=\"auto\">It appears that BasicHostnameVerifier doesn't actually check that the hostname in the URL matches the hostname in the SAN part of the peer\u2019s certificate.</p>\n<p dir=\"auto\">As a consequence, a server that had a certificate for say <code class=\"notranslate\">attacker.com</code> could be verified against a client request to <code class=\"notranslate\">victim.com</code>.</p>",
-  "description_text": "It appears that BasicHostnameVerifier doesn't actually check that the hostname in the URL matches the hostname in the SAN part of the peer\u2019s certificate.\nAs a consequence, a server that had a certificate for say attacker.com could be verified against a client request to victim.com."
-}

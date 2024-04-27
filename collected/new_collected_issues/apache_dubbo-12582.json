@@ -1,7 +1,0 @@
-{
-  "issue_id": 12531,
-  "issue_url": "https://github.com/apache/dubbo/issues/12531",
-  "title": " Multiple registries metrics overlap each other",
-  "description": "<h2 dir=\"auto\">Describe the proposal</h2>\n<p dir=\"auto\">In the case of multiple registries, the number of indicators overlap each other.<br>\nOptimization: Multiple labs distinguish between multiple registration centers</p>",
-  "description_text": "Describe the proposal\nIn the case of multiple registries, the number of indicators overlap each other.\nOptimization: Multiple labs distinguish between multiple registration centers"
-}

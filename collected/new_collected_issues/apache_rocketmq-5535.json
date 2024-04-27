@@ -1,7 +1,0 @@
-{
-  "issue_id": 5534,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5534",
-  "title": "BatchConsumeQueueTest timeout too eager",
-  "description": "<p dir=\"auto\">See <a href=\"https://github.com/apache/rocketmq/actions/runs/3481285945/jobs/5822179134\">https://github.com/apache/rocketmq/actions/runs/3481285945/jobs/5822179134</a></p>",
-  "description_text": "See https://github.com/apache/rocketmq/actions/runs/3481285945/jobs/5822179134"
-}

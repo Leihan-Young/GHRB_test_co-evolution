@@ -1,7 +1,0 @@
-{
-  "issue_id": 13930,
-  "issue_url": "https://github.com/checkstyle/checkstyle/issues/13930",
-  "title": "Migrate magicnumber.xml.template to use properties template",
-  "description": "<p dir=\"auto\">should be addressed after <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1943250769\" data-permission-text=\"Title is private\" data-url=\"https://github.com/checkstyle/checkstyle/issues/13885\" data-hovercard-type=\"issue\" data-hovercard-url=\"/checkstyle/checkstyle/issues/13885/hovercard\" href=\"https://github.com/checkstyle/checkstyle/issues/13885\">#13885</a><br>\nas problem might be the same or very similar.</p>",
-  "description_text": "should be addressed after #13885\nas problem might be the same or very similar."
-}

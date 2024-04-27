@@ -1,7 +1,0 @@
-{
-  "issue_id": 9571,
-  "issue_url": "https://github.com/alibaba/nacos/issues/9571",
-  "title": "Split the PersistService class because it's too big",
-  "description": "\n<h2 dir=\"auto\">Issue Description</h2>\n<p dir=\"auto\">Type: <em>bug report</em> or <em>feature request</em></p>\n<h3 dir=\"auto\">Describe what happened (or what feature you want)</h3>\n<h3 dir=\"auto\">Describe what you expected to happen</h3>\n<h3 dir=\"auto\">How to reproduce it (as minimally and precisely as possible)</h3>\n<ol dir=\"auto\">\n<li></li>\n<li></li>\n<li></li>\n</ol>\n<h3 dir=\"auto\">Tell us your environment</h3>\n<h3 dir=\"auto\">Anything else we need to know?</h3>",
-  "description_text": "\nIssue Description\nType: bug report or feature request\nDescribe what happened (or what feature you want)\nDescribe what you expected to happen\nHow to reproduce it (as minimally and precisely as possible)\n\n\n\n\n\nTell us your environment\nAnything else we need to know?"
-}

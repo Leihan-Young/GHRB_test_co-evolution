@@ -1,7 +1,0 @@
-{
-  "issue_id": 5116,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5116",
-  "title": "Make PlainAccessControlFlowTest portable",
-  "description": "<p dir=\"auto\">Test case PlainAccessControlFlowTest is not properly composed. It binds to Linux and modifies the configuration files from the source file directory.</p>\n<p dir=\"auto\">Further, It does not follow hermetic principle described here <a href=\"https://bazel.build/reference/test-encyclopedia\" rel=\"nofollow\">https://bazel.build/reference/test-encyclopedia</a></p>",
-  "description_text": "Test case PlainAccessControlFlowTest is not properly composed. It binds to Linux and modifies the configuration files from the source file directory.\nFurther, It does not follow hermetic principle described here https://bazel.build/reference/test-encyclopedia"
-}

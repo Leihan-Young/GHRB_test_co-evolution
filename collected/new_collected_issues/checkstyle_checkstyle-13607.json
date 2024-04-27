@@ -1,7 +1,0 @@
-{
-  "issue_id": 13596,
-  "issue_url": "https://github.com/checkstyle/checkstyle/issues/13596",
-  "title": "Move CheckUtil#isGetterMethod and CheckUtil#isSetterMethod to MissingJavadocMethodCheck",
-  "description": "<p dir=\"auto\">Noticed at <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1852452892\" data-permission-text=\"Title is private\" data-url=\"https://github.com/checkstyle/checkstyle/issues/13555\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/checkstyle/checkstyle/pull/13555/hovercard\" href=\"https://github.com/checkstyle/checkstyle/pull/13555\">#13555</a>, the only place we use these utility methods is in MissingJavadocMethodCheck, we should just move them there along with associated tests.</p>",
-  "description_text": "Noticed at #13555, the only place we use these utility methods is in MissingJavadocMethodCheck, we should just move them there along with associated tests."
-}

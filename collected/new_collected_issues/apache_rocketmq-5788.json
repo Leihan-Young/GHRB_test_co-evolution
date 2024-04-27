@@ -1,7 +1,0 @@
-{
-  "issue_id": 5787,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5787",
-  "title": "Support long polling in rocketmq proxy in the protocol",
-  "description": "<p dir=\"auto\">Support long polling in rocketmq proxy in the protocol.</p>\n<p dir=\"auto\">See <a href=\"https://github.com/apache/rocketmq-apis/releases/tag/v2.0.2\">rocketmq-apis 2.0.2</a></p>",
-  "description_text": "Support long polling in rocketmq proxy in the protocol.\nSee rocketmq-apis 2.0.2"
-}

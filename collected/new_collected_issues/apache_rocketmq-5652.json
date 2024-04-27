@@ -1,7 +1,0 @@
-{
-  "issue_id": 5583,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5583",
-  "title": "FlakyTest: ReceiptHandleProcessorTest",
-  "description": "<ol dir=\"auto\">\n<li>testRenewReceiptHandleWhenTimeout(org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest)<br>\njava.lang.AssertionError<br>\nat org.junit.Assert.fail(Assert.java:87)<br>\nat org.junit.Assert.assertTrue(Assert.java:42)<br>\nat org.junit.Assert.assertTrue(Assert.java:53)<br>\nat org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest.testRenewReceiptHandleWhenTimeout(ReceiptHandleProcessorTest.java:291)</li>\n</ol>\n<p dir=\"auto\">See <a href=\"https://github.com/apache/rocketmq/actions/runs/3532479286/jobs/5926876270\">https://github.com/apache/rocketmq/actions/runs/3532479286/jobs/5926876270</a></p>",
-  "description_text": "\ntestRenewReceiptHandleWhenTimeout(org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest)\njava.lang.AssertionError\nat org.junit.Assert.fail(Assert.java:87)\nat org.junit.Assert.assertTrue(Assert.java:42)\nat org.junit.Assert.assertTrue(Assert.java:53)\nat org.apache.rocketmq.proxy.processor.ReceiptHandleProcessorTest.testRenewReceiptHandleWhenTimeout(ReceiptHandleProcessorTest.java:291)\n\nSee https://github.com/apache/rocketmq/actions/runs/3532479286/jobs/5926876270"
-}

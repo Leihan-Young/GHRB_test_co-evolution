@@ -1,7 +1,0 @@
-{
-  "issue_id": 5862,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5862",
-  "title": "Stop send heartbeat to broker when ProducerGroup is offline in proxy",
-  "description": "<p dir=\"auto\"><strong>BUG REPORT</strong></p>\n<p dir=\"auto\">The steps to reproduce</p>\n<ol dir=\"auto\">\n<li>Start a remoting producer</li>\n<li>Send a transaction message to proxy</li>\n<li>Stop producer quickly before send heart beat</li>\n<li>Will find proxy sill send heart beat to broker for this producer group</li>\n</ol>",
-  "description_text": "BUG REPORT\nThe steps to reproduce\n\nStart a remoting producer\nSend a transaction message to proxy\nStop producer quickly before send heart beat\nWill find proxy sill send heart beat to broker for this producer group\n"
-}

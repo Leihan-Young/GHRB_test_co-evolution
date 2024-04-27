@@ -86,10 +86,6 @@ def call_checkout(pid, tid, dir):
     abs_path = os.getcwd()
     report_id = test_info['refer_PR']
 
-    test_patch_dir = os.path.abspath(os.path.join('./collected/test_diff/', f'{report_id}.diff'))
-    
-    prod_diff_dir = os.path.abspath(os.path.join('./collected/prod_diff/', f'{report_id}.diff'))
-
     if version == "s":
         # source version
         commit = test_info["commit_src"]
@@ -126,14 +122,24 @@ def call_checkout(pid, tid, dir):
             #print("dir is not None 1")
             if not os.path.isdir(dir):
                 os.mkdir(dir)
-                p = sp.run(['git', 'init'], stderr=sp.PIPE, stdout=sp.PIPE, cwd=dir)
 
-            p = sp.run(['git', 'fetch', 'origin', commit], 
-                                        stderr=sp.PIPE, stdout=sp.PIPE,
-                                        cwd=repo_path)
+            if pid == "skywalking":
+                p = sp.run(['git', 'clone', repo_path, dir], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                p = sp.run(['git', 'submodule', 'init'], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                p = sp.run(['git', 'submodule', 'update'], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                p = sp.run(['git', 'checkout', commit], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                output += (f"Checking out \033[92m{commit}\033[0m to \033[92m{dir}\033[0m\n")
+            else:
+                
+                # p = sp.run(['git', 'init'], stderr=sp.PIPE, stdout=sp.PIPE, cwd=dir)
+                # p = sp.run(['git', 'fetch', 'origin', commit], 
+                #                             stderr=sp.PIPE, stdout=sp.PIPE,
+                #                             cwd=repo_path)
 
-            run = sp.run(['git', f'--work-tree={dir}', 'checkout', commit, '--', '.'], cwd=repo_path, shell=True)
-            output += (f"Checking out \033[92m{commit}\033[0m to \033[92m{dir}\033[0m\n")
+                # run = sp.run(['git', f'--work-tree={dir}', 'checkout', commit, '--', '.'], cwd=repo_path, shell=True)
+                p = sp.run(['git', 'clone', repo_path, dir], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                p = sp.run(['git', 'checkout', commit], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                output += (f"Checking out \033[92m{commit}\033[0m to \033[92m{dir}\033[0m\n")
         else:
             sp.run(['git', 'checkout', commit], cwd=repo_path,
                 stdout=sp.DEVNULL, stderr=sp.DEVNULL)
@@ -280,7 +286,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None, tidy_pom = 
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
 
     elif mvnw:
-        default = ['./mvnw', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
+        default = [f'mvnw', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
         if command is not None:
             extra_command = command.split()
             new_command = default + extra_command
@@ -291,10 +297,10 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None, tidy_pom = 
             run = sp.run(default,
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
     elif gradlew:
-        default = ["./gradlew", "test", "--tests", f'{test_case}', '--info', '--stacktrace']
+        default = [f"gradlew", "test", "--tests", f'{test_case}', '--info', '--stacktrace']
         if command is not None:
             if 'test' in command:
-                new_command = ["./gradlew", command, '--tests', f'{test_case}']
+                new_command = ["gradlew", command, '--tests', f'{test_case}']
                 run = sp.run(new_command,
                              env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
             else:
@@ -349,6 +355,9 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None, tidy_pom = 
     {fail_part}
 ------------------------------------------------------------------------\n''')
         test_output = False
+
+    # output += stdout
+
     return output, test_output, stdout
 
 def call_test(dir, test_case, test_class, test_suite, log, quiet):
@@ -480,11 +489,11 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
     out = re.search(pid_pattern, content)
     pid = out.group(2)
 
-    vid_pattern = r'(tid=)(.*)'
-    out = re.search(vid_pattern, content)
-    vid = out.group(2)
-    tid = vid[:-1]
-    version = vid[-1]
+    tid_pattern = r'(tid=)(.*)'
+    out = re.search(tid_pattern, content)
+    full_tid = out.group(2)
+    tid = full_tid[:-1]
+    version = full_tid[-1]
 
     with open("./project_id.json", "r") as f:
         project_id = json.load(f)
@@ -522,12 +531,7 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
         output = f"Wrong tid version in {path}"
         return output
 
-    p = sp.run(['git', 'reset', '--hard', 'HEAD'],
-           cwd=path, stdout=sp.PIPE, stderr=sp.PIPE)
-    p = sp.run(['git', 'clean', '-df'],
-           cwd=path, stdout=sp.PIPE, stderr=sp.PIPE)
-    p = sp.run(['git', 'checkout', commit], cwd=path,
-           stdout=sp.PIPE, stderr=sp.PIPE)
+    # _ = call_checkout(pid, full_tid, path)
 
     test_cases = ''
     if input_file is None:
@@ -542,7 +546,7 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
             with open(input_file, 'r', encoding='utf-8') as f:
                 method_lines = f.readlines()
                 tree = javalang.parse.parse("public class tempClassName { $TEST_METHODS$ }".replace("$TEST_METHODS$", ''.join(method_lines)))
-            for path, node in tree:
+            for _, node in tree:
                 if isinstance(node, javalang.tree.MethodDeclaration) and 'annotations' in node.attrs:
                     for anno in getattr(node, 'annotations'):
                         if anno.name == 'Test':
@@ -568,11 +572,11 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
         output = f"Fail to find test_src file for {path}"
         return output
     if input_file != None:
-        with open(test_path, 'r', encoding='utf-8') as f:
+        with open(os.path.join(path, test_path), 'r', encoding='utf-8') as f:
             test_class_lines = f.readlines()
         test_class_lines = delete_test_methods_with_code_lines(test_class_lines, test_cases.split(','))
         test_class_lines = insert_test_methods_into_code_lines(test_class_lines, method_lines)
-        with open(test_path, 'w', encoding='utf-8') as f:
+        with open(os.path.join(path, test_path), 'w', encoding='utf-8') as f:
             f.writelines(test_class_lines)
 
     # root pom
@@ -600,18 +604,17 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
         cur = path
         for i in range(len(test_path)):
             if 'pom.xml' not in os.listdir(os.path.join(cur, test_path[i])):
-                break
+                cur = os.path.join(cur, test_path[i])
+                continue
             cur = os.path.join(cur, test_path[i])
-            tgt_modules.append(test_path[i])
-        cur = path
+            tgt_modules.append(cur)
         for tgt_module in tgt_modules:
-            cur = os.path.join(cur, tgt_module)
-            with open(os.path.join(cur, "pom.xml"), 'r') as f:
+            with open(os.path.join(tgt_module, "pom.xml"), 'r') as f:
                 pom_root = et.fromstring(f.read())
             prefix = pom_root.tag[:pom_root.tag.find('project')] if pom_root.tag != 'project' else ""
             pom_root = correct_surefire_argLine(pom_root, prefix)
             et.register_namespace('', prefix[1:-1])
-            with open(os.path.join(cur, "pom.xml"), 'w') as f:
+            with open(os.path.join(tgt_module, "pom.xml"), 'w') as f:
                 str = minidom.parseString(et.tostring(pom_root, method='xml').decode()).toprettyxml(indent="  ")
                 list = str.split('\n')
                 write_content = '\n'.join([l for l in list if len(l.lstrip()) != 0])
@@ -628,19 +631,28 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
             tidy_pom = True
     output, test_output, stdout = run_test(new_env, mvnw, gradlew, test_cases, path, command, tidy_pom)
 
-    cur = path
-    for tgt_module in tgt_modules:
-        if not os.path.exists(os.path.join(cur, "pom.xml")):
-            break
-        cur = os.path.join(cur, tgt_module)
-    if not os.path.exists(os.path.join(cur, 'target', 'site', 'jacoco', 'jacoco.xml')):
+    tgt_cov_xml = None
+    if len(tgt_modules) == 0:
+        if os.path.exists(os.path.join(path, 'target', 'site', 'jacoco', 'jacoco.xml')):
+            tgt_cov_xml = os.path.join(path, 'target', 'site', 'jacoco', 'jacoco.xml')
+    else:
+        for tgt_module in tgt_modules:
+            if os.path.exists(os.path.join(tgt_module, 'target', 'site', 'jacoco', 'jacoco.xml')):
+                tgt_cov_xml = os.path.join(tgt_module, 'target', 'site', 'jacoco', 'jacoco.xml')
+    if tgt_cov_xml == None:
         output = f"Fail to generate jacoco report for {path}"
         return output
     
-    with open(os.path.join(cur, 'target', 'site', 'jacoco', 'jacoco.xml'), 'r', encoding='utf-8') as f:
+    output += (f"Coverage report generated to \033[4m{os.path.join(cur, 'target', 'site', 'jacoco', 'jacoco.xml')}\033[0m\n")
+
+    with open(tgt_cov_xml, 'r', encoding='utf-8') as f:
         s = f.read()
-    with open(os.path.join(output_dir, f'{pid}:{vid}-cov-jacoco.xml'), 'w', encoding='utf-8') as f:
-        s = minidom.parseString(s).toprettyxml(indent="  ")
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    with open(os.path.join(output_dir, f'{pid}-{full_tid}_cov_jacoco.xml'), 'w', encoding='utf-8') as f:
+        f.write(minidom.parseString(s).toprettyxml(indent="  "))
+
+    output += (f"Formatted report xml is written to \033[4m{os.path.join(output_dir, f'{pid}_{full_tid}-cov-jacoco.xml')}\033[0m\n")
 
     return output
 
@@ -653,7 +665,7 @@ def delete_test_methods_with_code_lines(code_lines, test_cases):
             for anno in getattr(node, 'annotations'):
                 if anno.name == 'Test':
                     positions.append((node.name, node.position.line))
-    for pos in reversed(sorted(positions)):
+    for pos in reversed(sorted(positions, key=lambda x:x[1])):
         code_lines = delete_test_method_with_code_lines(code_lines, pos)
     return code_lines
 
@@ -661,7 +673,7 @@ def delete_test_method_with_code_lines(code_lines, pos):
     method_name, target_line_number = pos
     start = target_line_number
     while start >= 0:
-        if code_lines[start].find(method_name) != -1 and (code_lines[start].find('public ') != -1 or code_lines[start].find('private ') != -1 or code_lines[start].find('protected ') != -1):
+        if code_lines[start].find(method_name) != -1 or (code_lines[start].find('public ') != -1 or code_lines[start].find('private ') != -1 or code_lines[start].find('protected ') != -1):
             break
         start = start - 1
     # 如果方法前有Annotations
@@ -676,7 +688,7 @@ def delete_test_method_with_code_lines(code_lines, pos):
     while start >= 0:
         if code_lines[start].find('/*') != -1:
             break
-        elif re.match('\s*(})\s*', code_lines[start]) or code_lines[start].find(' class ') != -1 or code_lines[start].find(' interface ') != -1:
+        elif re.match('\s*(})\s*', code_lines[start]) or code_lines[start].find('class ') != -1 or code_lines[start].find('interface ') != -1:
             start = tmp
             break
         start = start - 1
@@ -740,6 +752,7 @@ def countSymbol(line, symbol):
     return count
 
 def insert_test_methods_into_code_lines(code_lines, method_lines):
+    method_lines = ['\t'+l if l.endswith('\n') else '\t'+l+'\n' for l in method_lines]
     cur = len(code_lines) - 1
     while not code_lines[cur].startswith('}'):
         cur = cur - 1
@@ -771,8 +784,16 @@ def add_plugin_config(root, prefix):
         jacoco.append(create_element(prefix+"artifactId", "jacoco-maven-plugin"))
     if jacoco.find(prefix+"version") == None:
         jacoco.append(create_element(prefix+"version", "0.8.11"))
-    else:
-        jacoco.find(prefix+"version").text = "0.8.11"
+    # else:
+    #     jacoco.find(prefix+"version").text = "0.8.11"
+    if jacoco.find(prefix+"configuration") != None:
+        config_node = jacoco.find(prefix+"configuration")
+        destFile_node = config_node.find(prefix+"destFile")
+        dataFile_node = config_node.find(prefix+"dataFile")
+        if destFile_node != None:
+            destFile_node.text = "target/jacoco.exec"
+        if dataFile_node != None:
+            dataFile_node.text = "target/jacoco.exec"
     executions_node = jacoco.find(prefix+"executions")
     if executions_node == None:
         executions_node = et.Element(prefix+"executions")
@@ -932,9 +953,9 @@ def add_plugin_config(root, prefix):
         surefire.append(create_element(prefix+"groupId", "org.apache.maven.plugins"))
         surefire.append(create_element(prefix+"artifactId", "maven-surefire-plugin"))
     if surefire.find(prefix+"version") == None:
-        surefire.append(create_element(prefix+"version", "2.22.2"))
-    else:
-        surefire.find(prefix+"version").text = "2.22.2"
+        surefire.append(create_element(prefix+"version", "3.0.0"))
+    # else:
+    #     surefire.find(prefix+"version").text = "3.0.0"
     configuration_node = surefire.find(prefix+"configuration")
     if configuration_node == None:
         configuration_node = et.Element(prefix+"configuration")
@@ -988,7 +1009,7 @@ def add_jacoco_dependency(root, prefix):
         group_id = dep.find(prefix+"groupId").text
         artifact_id = dep.find(prefix+"artifactId").text
         if group_id == "org.jacoco" and artifact_id == "org.jacoco.agent":
-            dep.find(prefix+"version").text = "0.8.11"
+            # dep.find(prefix+"version").text = "0.8.11"
             return root
     jacoco_dep = et.Element(prefix+"dependency")
     jacoco_dep.append(create_element(prefix+"groupId", "org.jacoco"))

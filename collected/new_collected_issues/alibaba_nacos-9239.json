@@ -1,7 +1,0 @@
-{
-  "issue_id": 9210,
-  "issue_url": "https://github.com/alibaba/nacos/issues/9210",
-  "title": "Using hash as revision for DISTRO data verification",
-  "description": "<p dir=\"auto\">Sometimes client data may not be synced properly via DISTRO verification.</p>\n<p dir=\"auto\">Using hash as ephemeral client's revision for distro data verification.</p>",
-  "description_text": "Sometimes client data may not be synced properly via DISTRO verification.\nUsing hash as ephemeral client's revision for distro data verification."
-}

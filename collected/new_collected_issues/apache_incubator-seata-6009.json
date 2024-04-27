@@ -1,7 +1,0 @@
-{
-  "issue_id": 5962,
-  "issue_url": "https://github.com/apache/incubator-seata/issues/5962",
-  "title": "Adding test cases for RaftServerFactory",
-  "description": "\n<h2 dir=\"auto\">Why you need it?</h2>\n<p dir=\"auto\">\u6d4b\u8bd5\u7528\u4f8b\u9700\u8981\u8986\u76d6init\u65b9\u6cd5\u548cstart\uff0c\u4ee5\u53caraftserver\u4e2d\u7684close\u65b9\u6cd5\u88ab\u8c03\u7528<br>\nThe test case needs to cover the init method and start, as well as the close method in raftserver being called</p>\n<h2 dir=\"auto\">How it could be?</h2>\n<p dir=\"auto\">A clear and concise description of what you want to happen. You can explain more about input of the feature, and output of it.</p>\n<h2 dir=\"auto\">Other related information</h2>\n<p dir=\"auto\">Add any other context or screenshots about the feature request here.</p>",
-  "description_text": "\nWhy you need it?\n\u6d4b\u8bd5\u7528\u4f8b\u9700\u8981\u8986\u76d6init\u65b9\u6cd5\u548cstart\uff0c\u4ee5\u53caraftserver\u4e2d\u7684close\u65b9\u6cd5\u88ab\u8c03\u7528\nThe test case needs to cover the init method and start, as well as the close method in raftserver being called\nHow it could be?\nA clear and concise description of what you want to happen. You can explain more about input of the feature, and output of it.\nOther related information\nAdd any other context or screenshots about the feature request here."
-}

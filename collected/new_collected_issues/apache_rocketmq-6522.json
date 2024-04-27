@@ -1,7 +1,0 @@
-{
-  "issue_id": 6513,
-  "issue_url": "https://github.com/apache/rocketmq/issues/6513",
-  "title": "Enhance the proxy context in the remoting protocol server",
-  "description": "<p dir=\"auto\">ProxyContext  lacks client related information such as clientId Language clientVersion etc.<br>\nPlan to add the relevant client information into the channel attr when client heartbeat in proxy.</p>",
-  "description_text": "ProxyContext  lacks client related information such as clientId Language clientVersion etc.\nPlan to add the relevant client information into the channel attr when client heartbeat in proxy."
-}

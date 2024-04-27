@@ -1,0 +1,18 @@
+{
+  "incubator-seata_1": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "incubator-seata_2": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "incubator-seata_3": {
+    "success_in_src": false,
+    "success_in_tgt": false
+  },
+  "incubator-seata_4": {
+    "success_in_src": false,
+    "success_in_tgt": false
+  }
+}

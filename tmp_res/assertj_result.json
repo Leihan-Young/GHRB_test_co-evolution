@@ -1,0 +1,18 @@
+{
+  "assertj_1": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "assertj_2": {
+    "success_in_src": false,
+    "success_in_tgt": false
+  },
+  "assertj_3": {
+    "success_in_src": false,
+    "success_in_tgt": false
+  },
+  "assertj_4": {
+    "success_in_src": false,
+    "success_in_tgt": false
+  }
+}

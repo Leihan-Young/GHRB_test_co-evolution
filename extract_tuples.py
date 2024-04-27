@@ -304,7 +304,6 @@ def extract_tuples_from_sample_info(sample_info, project_info):
         for t in test_tgt:
             if t.startswith(class_name):
                 related_test_tgt.append(t)
-        tuple['test_tgt'] = related_test_tgt
         class_path = class_name.replace('.', '/')
         test_path = None
         for changed_test in sample_info['changed_tests']:
@@ -313,6 +312,7 @@ def extract_tuples_from_sample_info(sample_info, project_info):
                 break
         if test_path == None:
             continue
+        tuple['test_tgt'] = filter_unchanged_tests(test_path, test, related_test_tgt, project_info['repo_path'], sample_info['buggy_commit'], sample_info['merge_commit'])
         focal_path, focal_src, focal_tgt = parse_focal_method(project_info['repo_path'], sample_info['buggy_commit'], 
                                                   sample_info['merge_commit'], f'{test_path}#{test_method_name}', 
                                                   related_test_tgt, sample_info['bug_id'])
@@ -325,6 +325,36 @@ def extract_tuples_from_sample_info(sample_info, project_info):
             tuple_copy['focal_tgt'] = focal_tgt[i]
             tuples.append(tuple_copy)
     return tuples
+
+def filter_unchanged_tests(test_path, test_src, test_tgt, repo_path, commit_src, commit_tgt):
+    checkout(repo_path, commit_src)
+    test_src_method_names = get_test_method_names(os.path.join(repo_path, test_path))
+    checkout(repo_path, commit_tgt)
+    test_tgt_method_names = get_test_method_names(os.path.join(repo_path, test_path))
+    res = []
+    for t in test_tgt:
+        if t == test_src:
+            res.append(t)
+            continue
+        t_name = t.split('#')[-1]
+        if t_name not in test_src_method_names and t_name in test_tgt_method_names:
+            res.append(t)
+    return res
+
+def get_test_method_names(file_path):
+    res = []
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            tree = javalang.parse.parse(f.read())
+        for path, node in tree:
+            if isinstance(node, javalang.tree.MethodDeclaration) and 'annotations' in node.attrs:
+                for anno in getattr(node, 'annotations'):
+                    if anno.name == 'Test':
+                        res.append(node.name)
+                        break
+        return res
+    except:
+        return res
 
 def extract_tuples_from_json(json_path, project_info):
     with open(json_path, 'r', encoding='utf-8') as f:

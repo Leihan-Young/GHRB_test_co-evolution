@@ -1,0 +1,10 @@
+{
+  "skywalking_1": {
+    "success_in_src": false,
+    "success_in_tgt": false
+  },
+  "skywalking_2": {
+    "success_in_src": false,
+    "success_in_tgt": false
+  }
+}

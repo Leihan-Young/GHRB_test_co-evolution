@@ -1,7 +1,0 @@
-{
-  "issue_id": 5923,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5923",
-  "title": "[RIP-57] Add example tiered storage backend service provider",
-  "description": "<p dir=\"auto\">link to <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1506464155\" data-permission-text=\"Title is private\" data-url=\"https://github.com/apache/rocketmq/issues/5754\" data-hovercard-type=\"issue\" data-hovercard-url=\"/apache/rocketmq/issues/5754/hovercard\" href=\"https://github.com/apache/rocketmq/issues/5754\">#5754</a></p>\n<p dir=\"auto\">As stated in the title, this issue aims to add a POSIX provider for tiered storage. It transfers message data from the default store directory to the mount point of storage medium for tiered storage. This provider is fully functional but for demonstration purposes only.</p>",
-  "description_text": "link to #5754\nAs stated in the title, this issue aims to add a POSIX provider for tiered storage. It transfers message data from the default store directory to the mount point of storage medium for tiered storage. This provider is fully functional but for demonstration purposes only."
-}

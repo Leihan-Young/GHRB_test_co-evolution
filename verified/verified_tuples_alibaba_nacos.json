@@ -26,12 +26,7 @@
     "refer_PR": "alibaba_nacos-9228",
     "test_src": ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testReport",
     "test_tgt": [
-      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testSelf",
-      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testListNodes",
-      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testListSimpleNodes",
-      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testGetHealth",
-      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testReport",
-      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testLeave"
+      ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testReport"
     ],
     "focal_path": "core/src/main/java/com/alibaba/nacos/core/controller/NacosClusterController.java#report",
     "focal_src": "    /**\n     * Other nodes return their own metadata information.\n     *\n     * @param node {@link Member}\n     * @return {@link RestResult}\n     */\n    @PostMapping(value = {\"/report\"})\n    public RestResult<String> report(@RequestBody Member node) {\n        if (!node.check()) {\n            return RestResultUtils.failedWithMsg(400, \"Node information is illegal\");\n        }\n        LoggerUtils.printIfDebugEnabled(Loggers.CLUSTER, \"node state report, receive info : {}\", node);\n        node.setState(NodeState.UP);\n        node.setFailAccessCnt(0);\n        \n        boolean result = memberManager.update(node);\n        \n        return RestResultUtils.success(Boolean.toString(result));\n    }\n",
@@ -64,7 +59,6 @@
     "test_src": ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefixForMap",
     "test_tgt": [
       ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefixForMap",
-      ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefix",
       ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testHandleSpringBinder"
     ],
     "focal_path": "sys/src/main/java/com/alibaba/nacos/sys/utils/PropertiesUtil.java#getPropertiesWithPrefixForMap",
@@ -81,7 +75,6 @@
     "refer_PR": "alibaba_nacos-11240",
     "test_src": ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefix",
     "test_tgt": [
-      ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefixForMap",
       ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefix",
       ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testHandleSpringBinder"
     ],
@@ -99,10 +92,7 @@
     "refer_PR": "alibaba_nacos-11893",
     "test_src": ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode",
     "test_tgt": [
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException"
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode"
     ],
     "focal_path": "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build",
     "focal_src": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        return response;\n    }\n",
@@ -118,10 +108,7 @@
     "refer_PR": "alibaba_nacos-11893",
     "test_src": ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
     "test_tgt": [
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException"
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable"
     ],
     "focal_path": "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build",
     "focal_src": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        return response;\n    }\n",
@@ -137,10 +124,7 @@
     "refer_PR": "alibaba_nacos-11893",
     "test_src": ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
     "test_tgt": [
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException"
+      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException"
     ],
     "focal_path": "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build",
     "focal_src": "    /**\n     * build an error response.\n     *\n     * @param exception exception\n     * @return response\n     */\n    public static Response build(Throwable exception) {\n        int errorCode;\n        if (exception instanceof NacosException) {\n            errorCode = ((NacosException) exception).getErrCode();\n        } else if (exception instanceof NacosRuntimeException) {\n            errorCode = ((NacosRuntimeException) exception).getErrCode();\n        } else {\n            errorCode = ResponseCode.FAIL.getCode();\n        }\n        ErrorResponse response = new ErrorResponse();\n        response.setErrorInfo(errorCode, exception.getMessage());\n        return response;\n    }\n",
@@ -156,9 +140,6 @@
     "refer_PR": "alibaba_nacos-11893",
     "test_src": ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException",
     "test_tgt": [
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithErrorCode",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
-      ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
       ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException"
     ],
     "focal_path": "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build",

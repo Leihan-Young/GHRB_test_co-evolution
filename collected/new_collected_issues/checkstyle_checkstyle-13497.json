@@ -1,7 +1,0 @@
-{
-  "issue_id": 13496,
-  "issue_url": "https://github.com/checkstyle/checkstyle/issues/13496",
-  "title": "Move all example tests to extend `AbstractExamplesModuleTestSupport`",
-  "description": "<p dir=\"auto\">In <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1829086461\" data-permission-text=\"Title is private\" data-url=\"https://github.com/checkstyle/checkstyle/issues/13489\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/checkstyle/checkstyle/pull/13489/hovercard\" href=\"https://github.com/checkstyle/checkstyle/pull/13489\">#13489</a> we add a new class <code class=\"notranslate\">AbstractExamplesModuleTestSupport</code> that all example tests should extend. The reason is that there were some tests with swapped <code class=\"notranslate\">getPackageLocation</code> and <code class=\"notranslate\">getResourceLocation</code>.</p>\n<p dir=\"auto\">The purpose of this issue is to convert the rest of the suite to extend this class.</p>",
-  "description_text": "In #13489 we add a new class AbstractExamplesModuleTestSupport that all example tests should extend. The reason is that there were some tests with swapped getPackageLocation and getResourceLocation.\nThe purpose of this issue is to convert the rest of the suite to extend this class."
-}

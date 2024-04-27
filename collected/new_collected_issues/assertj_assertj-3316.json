@@ -1,7 +1,0 @@
-{
-  "issue_id": 3263,
-  "issue_url": "https://github.com/assertj/assertj/issues/3263",
-  "title": "`hasPermittedSubclasses` and `hasNoPermittedSubclasses` for `Class` assertions",
-  "description": "<p dir=\"auto\">We should add <code class=\"notranslate\">hasPermittedSubclasses(Class<?>...)</code> and <code class=\"notranslate\">hasNoPermittedSubclasses()</code> to <code class=\"notranslate\">Class</code> assertions, following <a href=\"https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html#getPermittedSubclasses()\" rel=\"nofollow\"><code class=\"notranslate\">Class::getPermittedSubclasses</code></a>.</p>\n<p dir=\"auto\">As we still target Java 8, the implementation should be reflection-based, similar to <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1752460618\" data-permission-text=\"Title is private\" data-url=\"https://github.com/assertj/assertj/issues/3080\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/assertj/assertj/pull/3080/hovercard\" href=\"https://github.com/assertj/assertj/pull/3080\">#3080</a>.</p>",
-  "description_text": "We should add hasPermittedSubclasses(Class...) and hasNoPermittedSubclasses() to Class assertions, following Class::getPermittedSubclasses.\nAs we still target Java 8, the implementation should be reflection-based, similar to #3080."
-}

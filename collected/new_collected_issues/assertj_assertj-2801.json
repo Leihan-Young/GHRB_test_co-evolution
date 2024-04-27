@@ -1,7 +1,0 @@
-{
-  "issue_id": 2799,
-  "issue_url": "https://github.com/assertj/assertj/issues/2799",
-  "title": "(very) small error in javadoc of : org.assertj.core.api.Assertions#within(long, java.time.temporal.TemporalUnit)",
-  "description": "<p dir=\"auto\">There is a small error in the java doc of org.assertj.core.api.Assertions#within(long, java.time.temporal.TemporalUnit)<br>\n\"Assertions entry point for TemporalUnitOffset with with less than or equal condition to use with isCloseTo temporal assertions.\"</p>\n<p dir=\"auto\">\"with\" is doubled</p>\n<ul dir=\"auto\">\n<li>assertj core version: 3.7.0</li>\n</ul>",
-  "description_text": "There is a small error in the java doc of org.assertj.core.api.Assertions#within(long, java.time.temporal.TemporalUnit)\n\"Assertions entry point for TemporalUnitOffset with with less than or equal condition to use with isCloseTo temporal assertions.\"\n\"with\" is doubled\n\nassertj core version: 3.7.0\n"
-}

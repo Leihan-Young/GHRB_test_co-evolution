@@ -1,7 +1,0 @@
-{
-  "issue_id": 4248,
-  "issue_url": "https://github.com/FasterXML/jackson-databind/issues/4248",
-  "title": "`ThrowableDeserializer` does not handle `null` well for `cause`",
-  "description": "<h3 dir=\"auto\">Describe your Issue</h3>\n<p dir=\"auto\">Currently JSON for deserializing any <code class=\"notranslate\">Throwable</code> with <code class=\"notranslate\">null</code> for <code class=\"notranslate\">\"cause\"</code> property:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"{ \"message\": \"...\",\n   \"cause\": null\n}\"><pre class=\"notranslate\"><code class=\"notranslate\">{ \"message\": \"...\",\n   \"cause\": null\n}\n</code></pre></div>\n<p dir=\"auto\">will lead to cryptic exception, due to <code class=\"notranslate\">Throwable.initCause()</code> being called with <code class=\"notranslate\">null</code>.<br>\nTo avoid this, <code class=\"notranslate\">ThrowableDeserializer</code> should handle this edge case gracefully.</p>",
-  "description_text": "Describe your Issue\nCurrently JSON for deserializing any Throwable with null for \"cause\" property:\n{ \"message\": \"...\",\n   \"cause\": null\n}\n\nwill lead to cryptic exception, due to Throwable.initCause() being called with null.\nTo avoid this, ThrowableDeserializer should handle this edge case gracefully."
-}

@@ -1,7 +1,0 @@
-{
-  "issue_id": 7572,
-  "issue_url": "https://github.com/apache/skywalking/issues/7572",
-  "title": "Support PagerDuty immigration for alarm",
-  "description": "<p dir=\"auto\">PagerDuty(<a href=\"https://www.pagerduty.com/\" rel=\"nofollow\">https://www.pagerduty.com/</a>) is widely used for on-call globally. We are welcome the contributions to support it as alarm notification channel.</p>",
-  "description_text": "PagerDuty(https://www.pagerduty.com/) is widely used for on-call globally. We are welcome the contributions to support it as alarm notification channel."
-}

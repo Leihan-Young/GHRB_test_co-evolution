@@ -9,7 +9,9 @@
       "wrapper": false,
       "version": "3.8.6",
       "jdk": "17",
-      "extra": {}
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
     }
   },
   "dubbo": {
@@ -22,7 +24,9 @@
       "wrapper": false,
       "version": "3.8.6",
       "jdk": "8",
-      "extra": {}
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
     }
   },
   "incubator-seata": {
@@ -35,7 +39,9 @@
       "wrapper": true,
       "version": "3.8.6",
       "jdk": "8",
-      "extra": {}
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dmaven.test.failure.ignore=true"
+      }
     }
   },
   "openapi-generator": {
@@ -48,7 +54,7 @@
       "wrapper": true,
       "jdk": "11",
       "extra": {
-        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dmaven.test.failure.ignore=true"
       }
     }
   },
@@ -62,7 +68,9 @@
       "wrapper": false,
       "version": "3.8.6",
       "jdk": "8",
-      "extra": {}
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
     }
   },
   "assertj": {
@@ -75,7 +83,9 @@
       "wrapper": false,
       "version": "3.8.6",
       "jdk": "17",
-      "extra": {}
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
     }
   },
   "rocketmq": {
@@ -89,7 +99,7 @@
       "version": "3.8.1",
       "jdk": "8",
       "extra": {
-        "command": "-Dargline='-Xmx1024m' -Dcheckstyle.skip"
+        "command": "-Dargline='-Xmx1024m' -Dcheckstyle.skip -Dsurefire.failIfNoSpecifiedTests=false"
       }
     }
   },
@@ -103,7 +113,9 @@
       "wrapper": true,
       "version": "3.8.6",
       "jdk": "8",
-      "extra": {}
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false"
+      }
     }
   }
 }

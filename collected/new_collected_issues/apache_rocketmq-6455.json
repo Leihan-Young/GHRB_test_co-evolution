@@ -1,7 +1,0 @@
-{
-  "issue_id": 6454,
-  "issue_url": "https://github.com/apache/rocketmq/issues/6454",
-  "title": "Fix unsafe shutdown process in tiered storage",
-  "description": "<p dir=\"auto\">Fix the risk of a potential JVM crash, see <a href=\"https://github.com/apache/rocketmq/actions/runs/4498498448/jobs/7915190340?pr=6452\">https://github.com/apache/rocketmq/actions/runs/4498498448/jobs/7915190340?pr=6452</a> for further information.</p>",
-  "description_text": "Fix the risk of a potential JVM crash, see https://github.com/apache/rocketmq/actions/runs/4498498448/jobs/7915190340?pr=6452 for further information."
-}

@@ -1,7 +1,0 @@
-{
-  "issue_id": 5408,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5408",
-  "title": "The offset of PopReviveGroup unable to move forward when there are more ack than ck",
-  "description": "<p dir=\"auto\">The steps to reproduce</p>\n<ol dir=\"auto\">\n<li>Send some messages</li>\n<li>Pop messages normally from broker, and for each message all ack more than two times</li>\n<li>Not to pop any more messages</li>\n</ol>\n<p dir=\"auto\">We will see, the consumer offset of CID_RMQ_SYS_REVIVE_GROUP cannot move to the max offset because there will be no matching ck in the future<br>\nAnd this problem will be more obvious when set enablePopBufferMerge to true<br>\nAs a result, resources have been wasted to repeatedly pull the messages in PopReviveTopic</p>",
-  "description_text": "The steps to reproduce\n\nSend some messages\nPop messages normally from broker, and for each message all ack more than two times\nNot to pop any more messages\n\nWe will see, the consumer offset of CID_RMQ_SYS_REVIVE_GROUP cannot move to the max offset because there will be no matching ck in the future\nAnd this problem will be more obvious when set enablePopBufferMerge to true\nAs a result, resources have been wasted to repeatedly pull the messages in PopReviveTopic"
-}

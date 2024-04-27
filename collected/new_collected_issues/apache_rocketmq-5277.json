@@ -1,7 +1,0 @@
-{
-  "issue_id": 5274,
-  "issue_url": "https://github.com/apache/rocketmq/issues/5274",
-  "title": "AutoSwitchRoleIntegrationTest is still flaky",
-  "description": "<p dir=\"auto\">testChangeMaster(org.apache.rocketmq.test.autoswitchrole.AutoSwitchRoleIntegrationTest)  Time elapsed: 29.741 sec  <<< FAILURE!<br>\njava.lang.AssertionError: expected: but was:<OFFSET_OVERFLOW_ONE><br>\nat org.apache.rocketmq.test.autoswitchrole.AutoSwitchRoleIntegrationTest.testChangeMaster(AutoSwitchRoleIntegrationTest.java:171)</p>\n<p dir=\"auto\">For full error logs, see <a href=\"https://github.com/apache/rocketmq/actions/runs/3224766162/jobs/5276261376\">https://github.com/apache/rocketmq/actions/runs/3224766162/jobs/5276261376</a></p>",
-  "description_text": "testChangeMaster(org.apache.rocketmq.test.autoswitchrole.AutoSwitchRoleIntegrationTest)  Time elapsed: 29.741 sec  <<< FAILURE!\njava.lang.AssertionError: expected: but was:\nat org.apache.rocketmq.test.autoswitchrole.AutoSwitchRoleIntegrationTest.testChangeMaster(AutoSwitchRoleIntegrationTest.java:171)\nFor full error logs, see https://github.com/apache/rocketmq/actions/runs/3224766162/jobs/5276261376"
-}

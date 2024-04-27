@@ -1,7 +1,0 @@
-{
-  "issue_id": 3877,
-  "issue_url": "https://github.com/FasterXML/jackson-databind/issues/3877",
-  "title": "Add new `OptBoolean` valued property in `@JsonTypeInfo`, handling, to allow per-polymorphic type loose Type Id handling",
-  "description": "<p dir=\"auto\">(note: offshoot of <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1647699078\" data-permission-text=\"Title is private\" data-url=\"https://github.com/FasterXML/jackson-databind/issues/3853\" data-hovercard-type=\"issue\" data-hovercard-url=\"/FasterXML/jackson-databind/issues/3853/hovercard\" href=\"https://github.com/FasterXML/jackson-databind/issues/3853\">#3853</a>)</p>\n<p dir=\"auto\">It seems reasonable and useful to allow annotation(s) to specify loose/strict handling of Type Ids for polymorphic types.<br>\nThe simplest location to do that would seem to be <code class=\"notranslate\">@JsonTypeInfo</code>; this would only allow enabling/disabling for all (or none) subtypes but alternatives are probably more difficult to implement.</p>",
-  "description_text": "(note: offshoot of #3853)\nIt seems reasonable and useful to allow annotation(s) to specify loose/strict handling of Type Ids for polymorphic types.\nThe simplest location to do that would seem to be @JsonTypeInfo; this would only allow enabling/disabling for all (or none) subtypes but alternatives are probably more difficult to implement."
-}

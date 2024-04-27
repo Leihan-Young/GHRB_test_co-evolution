@@ -1,7 +1,0 @@
-{
-  "issue_id": 6022,
-  "issue_url": "https://github.com/apache/incubator-seata/issues/6022",
-  "title": "[Optimize] add a check for the existence of the undolog table",
-  "description": "\n<h2 dir=\"auto\">Why you need it?</h2>\n<p dir=\"auto\">When proxying the datasourceProxy, a check is performed to see if the undolog table exists. If it doesn't exist, an exception is thrown as a prompt. Remember to add a check switch, as it's possible that a user may only use the TCC mode but inadvertently enable the check switch.</p>\n<h2 dir=\"auto\">How it could be?</h2>\n<p dir=\"auto\">A clear and concise description of what you want to happen. You can explain more about input of the feature, and output of it.</p>\n<h2 dir=\"auto\">Other related information</h2>\n<p dir=\"auto\">Add any other context or screenshots about the feature request here.</p>",
-  "description_text": "\nWhy you need it?\nWhen proxying the datasourceProxy, a check is performed to see if the undolog table exists. If it doesn't exist, an exception is thrown as a prompt. Remember to add a check switch, as it's possible that a user may only use the TCC mode but inadvertently enable the check switch.\nHow it could be?\nA clear and concise description of what you want to happen. You can explain more about input of the feature, and output of it.\nOther related information\nAdd any other context or screenshots about the feature request here."
-}

@@ -10,8 +10,7 @@
     "refer_PR": "apache_dubbo-11051",
     "test_src": ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp",
-      ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeTelnet"
+      ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java#decode",
     "focal_src": "    @Override\n    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {\n        if (in.readableBytes() < 1) {\n            return;\n        }\n\n        // read one byte to guess protocol\n        final int magic = in.getByte(in.readerIndex());\n\n        ChannelPipeline p = ctx.pipeline();\n        p.addLast(new LocalHostPermitHandler(acceptForeignIp));\n        if (isHttp(magic)) {\n            // no welcome output for http protocol\n            if (welcomeFuture != null && welcomeFuture.isCancellable()) {\n                welcomeFuture.cancel(false);\n            }\n            p.addLast(new HttpServerCodec());\n            p.addLast(new HttpObjectAggregator(1048576));\n            p.addLast(new HttpProcessHandler(frameworkModel));\n            p.remove(this);\n        } else {\n            p.addLast(new LineBasedFrameDecoder(2048));\n            p.addLast(new StringDecoder(CharsetUtil.UTF_8));\n            p.addLast(new StringEncoder(CharsetUtil.UTF_8));\n            p.addLast(new IdleStateHandler(0, 0, 5 * 60));\n            p.addLast(new TelnetIdleEventHandler());\n            p.addLast(new TelnetProcessHandler(frameworkModel));\n            p.remove(this);\n        }\n    }\n",
@@ -29,7 +28,6 @@
     "refer_PR": "apache_dubbo-11051",
     "test_src": ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeTelnet",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp",
       ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeTelnet"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java#decode",
@@ -75,9 +73,6 @@
     "test_src": ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
     "test_tgt": [
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteListAndPermissionConfig"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java#ForeignHostPermitHandler",
@@ -100,9 +95,6 @@
     "test_src": ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
     "test_tgt": [
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteListAndPermissionConfig"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java#handlerAdded",
@@ -124,10 +116,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteListAndPermissionConfig"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java#ForeignHostPermitHandler",
@@ -149,10 +138,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteListAndPermissionConfig"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java#handlerAdded",
@@ -174,10 +160,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteListAndPermissionConfig"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java#ForeignHostPermitHandler",
@@ -199,10 +182,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteListAndPermissionConfig"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandler.java#handlerAdded",
@@ -224,9 +204,6 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteListAndPermissionConfig"
     ],
@@ -249,9 +226,6 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
-      ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
       ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteListAndPermissionConfig"
     ],
@@ -274,9 +248,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1",
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2",
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test3"
+      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/HttpProcessHandler.java#HttpProcessHandler",
     "focal_src": "    public HttpProcessHandler(FrameworkModel frameworkModel) {\n        this.commandExecutor = new DefaultCommandExecutor(frameworkModel);\n    }\n",
@@ -297,9 +269,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1",
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2",
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test3"
+      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/HttpProcessHandler.java#channelRead0",
     "focal_src": "    @Override\n    protected void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) throws Exception {\n        CommandContext commandContext = HttpCommandDecoder.decode(msg);\n        // return 404 when fail to construct command context\n        if (commandContext == null) {\n            log.warn(QOS_UNEXPECTED_EXCEPTION, \"\", \"\", \"can not found commandContext, url: \" + msg.uri());\n            FullHttpResponse response = http404();\n            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);\n        } else {\n            commandContext.setRemote(ctx.channel());\n            try {\n                String result = commandExecutor.execute(commandContext);\n                int httpCode = commandContext.getHttpCode();\n                FullHttpResponse response = http(httpCode, result);\n                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);\n            } catch (NoSuchCommandException ex) {\n                log.error(QOS_COMMAND_NOT_FOUND, \"\", \"\", \"can not find command: \" + commandContext, ex);\n                FullHttpResponse response = http404();\n                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);\n            } catch (Exception qosEx) {\n                log.error(QOS_UNEXPECTED_EXCEPTION, \"\", \"\", \"execute commandContext: \" + commandContext + \" got exception\", qosEx);\n                FullHttpResponse response = http(500, qosEx.getMessage());\n                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);\n            }\n        }\n    }\n",
@@ -320,9 +290,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1",
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2",
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test3"
+      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/HttpProcessHandler.java#HttpProcessHandler",
     "focal_src": "    public HttpProcessHandler(FrameworkModel frameworkModel) {\n        this.commandExecutor = new DefaultCommandExecutor(frameworkModel);\n    }\n",
@@ -343,9 +311,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1",
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2",
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test3"
+      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/HttpProcessHandler.java#channelRead0",
     "focal_src": "    @Override\n    protected void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) throws Exception {\n        CommandContext commandContext = HttpCommandDecoder.decode(msg);\n        // return 404 when fail to construct command context\n        if (commandContext == null) {\n            log.warn(QOS_UNEXPECTED_EXCEPTION, \"\", \"\", \"can not found commandContext, url: \" + msg.uri());\n            FullHttpResponse response = http404();\n            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);\n        } else {\n            commandContext.setRemote(ctx.channel());\n            try {\n                String result = commandExecutor.execute(commandContext);\n                int httpCode = commandContext.getHttpCode();\n                FullHttpResponse response = http(httpCode, result);\n                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);\n            } catch (NoSuchCommandException ex) {\n                log.error(QOS_COMMAND_NOT_FOUND, \"\", \"\", \"can not find command: \" + commandContext, ex);\n                FullHttpResponse response = http404();\n                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);\n            } catch (Exception qosEx) {\n                log.error(QOS_UNEXPECTED_EXCEPTION, \"\", \"\", \"execute commandContext: \" + commandContext + \" got exception\", qosEx);\n                FullHttpResponse response = http(500, qosEx.getMessage());\n                ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);\n            }\n        }\n    }\n",
@@ -366,8 +332,6 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test3",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1",
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2",
       ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test3"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/HttpProcessHandler.java#HttpProcessHandler",
@@ -389,8 +353,6 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test3",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1",
-      ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2",
       ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test3"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/HttpProcessHandler.java#channelRead0",
@@ -412,8 +374,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp",
-      ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeTelnet"
+      ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java#decode",
     "focal_src": "    @Override\n    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {\n        if (in.readableBytes() < 1) {\n            return;\n        }\n\n        // read one byte to guess protocol\n        final int magic = in.getByte(in.readerIndex());\n\n        ChannelPipeline p = ctx.pipeline();\n        p.addLast(new ForeignHostPermitHandler(acceptForeignIp, acceptForeignIpWhitelist));\n        if (isHttp(magic)) {\n            // no welcome output for http protocol\n            if (welcomeFuture != null && welcomeFuture.isCancellable()) {\n                welcomeFuture.cancel(false);\n            }\n            p.addLast(new HttpServerCodec());\n            p.addLast(new HttpObjectAggregator(1048576));\n            p.addLast(new HttpProcessHandler(frameworkModel));\n            p.remove(this);\n        } else {\n            p.addLast(new LineBasedFrameDecoder(2048));\n            p.addLast(new StringDecoder(CharsetUtil.UTF_8));\n            p.addLast(new StringEncoder(CharsetUtil.UTF_8));\n            p.addLast(new IdleStateHandler(0, 0, 5 * 60));\n            p.addLast(new TelnetIdleEventHandler());\n            p.addLast(new TelnetProcessHandler(frameworkModel));\n            p.remove(this);\n        }\n    }\n",
@@ -434,7 +395,6 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeTelnet",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp",
       ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeTelnet"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/QosProcessHandler.java#decode",
@@ -456,10 +416,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting"
+      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java#TelnetProcessHandler",
     "focal_src": "    public TelnetProcessHandler(FrameworkModel frameworkModel) {\n        this.commandExecutor = new DefaultCommandExecutor(frameworkModel);\n    }\n",
@@ -480,10 +437,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting"
+      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java#channelRead0",
     "focal_src": "    @Override\n    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {\n\n        if (StringUtils.isBlank(msg)) {\n            ctx.writeAndFlush(QosProcessHandler.PROMPT);\n        } else {\n            CommandContext commandContext = TelnetCommandDecoder.decode(msg);\n            commandContext.setRemote(ctx.channel());\n\n            try {\n                String result = commandExecutor.execute(commandContext);\n                if (StringUtils.isEquals(QosConstants.CLOSE, result)) {\n                    ctx.writeAndFlush(getByeLabel()).addListener(ChannelFutureListener.CLOSE);\n                } else {\n                    ctx.writeAndFlush(result + QosConstants.BR_STR + QosProcessHandler.PROMPT);\n                }\n            } catch (NoSuchCommandException ex) {\n                ctx.writeAndFlush(msg + \" :no such command\");\n                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);\n                log.error(QOS_COMMAND_NOT_FOUND, \"\", \"\", \"can not found command \" + commandContext, ex);\n            } catch (Exception ex) {\n                ctx.writeAndFlush(msg + \" :fail to execute commandContext by \" + ex.getMessage());\n                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);\n                log.error(QOS_UNEXPECTED_EXCEPTION, \"\", \"\", \"execute commandContext got exception \" + commandContext, ex);\n            }\n        }\n    }\n",
@@ -504,10 +458,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting"
+      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java#TelnetProcessHandler",
     "focal_src": "    public TelnetProcessHandler(FrameworkModel frameworkModel) {\n        this.commandExecutor = new DefaultCommandExecutor(frameworkModel);\n    }\n",
@@ -528,10 +479,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting"
+      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java#channelRead0",
     "focal_src": "    @Override\n    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {\n\n        if (StringUtils.isBlank(msg)) {\n            ctx.writeAndFlush(QosProcessHandler.PROMPT);\n        } else {\n            CommandContext commandContext = TelnetCommandDecoder.decode(msg);\n            commandContext.setRemote(ctx.channel());\n\n            try {\n                String result = commandExecutor.execute(commandContext);\n                if (StringUtils.isEquals(QosConstants.CLOSE, result)) {\n                    ctx.writeAndFlush(getByeLabel()).addListener(ChannelFutureListener.CLOSE);\n                } else {\n                    ctx.writeAndFlush(result + QosConstants.BR_STR + QosProcessHandler.PROMPT);\n                }\n            } catch (NoSuchCommandException ex) {\n                ctx.writeAndFlush(msg + \" :no such command\");\n                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);\n                log.error(QOS_COMMAND_NOT_FOUND, \"\", \"\", \"can not found command \" + commandContext, ex);\n            } catch (Exception ex) {\n                ctx.writeAndFlush(msg + \" :fail to execute commandContext by \" + ex.getMessage());\n                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);\n                log.error(QOS_UNEXPECTED_EXCEPTION, \"\", \"\", \"execute commandContext got exception \" + commandContext, ex);\n            }\n        }\n    }\n",
@@ -552,10 +500,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting"
+      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java#TelnetProcessHandler",
     "focal_src": "    public TelnetProcessHandler(FrameworkModel frameworkModel) {\n        this.commandExecutor = new DefaultCommandExecutor(frameworkModel);\n    }\n",
@@ -576,10 +521,7 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting"
+      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java#channelRead0",
     "focal_src": "    @Override\n    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {\n\n        if (StringUtils.isBlank(msg)) {\n            ctx.writeAndFlush(QosProcessHandler.PROMPT);\n        } else {\n            CommandContext commandContext = TelnetCommandDecoder.decode(msg);\n            commandContext.setRemote(ctx.channel());\n\n            try {\n                String result = commandExecutor.execute(commandContext);\n                if (StringUtils.isEquals(QosConstants.CLOSE, result)) {\n                    ctx.writeAndFlush(getByeLabel()).addListener(ChannelFutureListener.CLOSE);\n                } else {\n                    ctx.writeAndFlush(result + QosConstants.BR_STR + QosProcessHandler.PROMPT);\n                }\n            } catch (NoSuchCommandException ex) {\n                ctx.writeAndFlush(msg + \" :no such command\");\n                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);\n                log.error(QOS_COMMAND_NOT_FOUND, \"\", \"\", \"can not found command \" + commandContext, ex);\n            } catch (Exception ex) {\n                ctx.writeAndFlush(msg + \" :fail to execute commandContext by \" + ex.getMessage());\n                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);\n                log.error(QOS_UNEXPECTED_EXCEPTION, \"\", \"\", \"execute commandContext got exception \" + commandContext, ex);\n            }\n        }\n    }\n",
@@ -600,9 +542,6 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
       ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java#TelnetProcessHandler",
@@ -624,9 +563,6 @@
     "refer_PR": "apache_dubbo-11076",
     "test_src": ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting",
     "test_tgt": [
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
-      ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
       ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting"
     ],
     "focal_path": "dubbo-plugin/dubbo-qos/src/main/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandler.java#channelRead0",
@@ -663,9 +599,7 @@
     "refer_PR": "apache_dubbo-12582",
     "test_src": ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testRegisterMetrics",
     "test_tgt": [
-      ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testRegisterMetrics",
-      ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServicePushMetrics",
-      ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServiceSubscribeMetrics"
+      ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testRegisterMetrics"
     ],
     "focal_path": "dubbo-metrics/dubbo-metrics-registry/src/main/java/org/apache/dubbo/metrics/registry/collector/RegistryMetricsCollector.java#collect",
     "focal_src": "    @Override\n    public List<MetricSample> collect() {\n        List<MetricSample> list = new ArrayList<>();\n        if (!isCollectEnabled()) {\n            return list;\n        }\n        list.addAll(super.export(MetricsCategory.REGISTRY));\n        return list;\n    }\n",
@@ -683,9 +617,7 @@
     "refer_PR": "apache_dubbo-12582",
     "test_src": ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServicePushMetrics",
     "test_tgt": [
-      ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testRegisterMetrics",
-      ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServicePushMetrics",
-      ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServiceSubscribeMetrics"
+      ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServicePushMetrics"
     ],
     "focal_path": "dubbo-metrics/dubbo-metrics-registry/src/main/java/org/apache/dubbo/metrics/registry/collector/RegistryMetricsCollector.java#collect",
     "focal_src": "    @Override\n    public List<MetricSample> collect() {\n        List<MetricSample> list = new ArrayList<>();\n        if (!isCollectEnabled()) {\n            return list;\n        }\n        list.addAll(super.export(MetricsCategory.REGISTRY));\n        return list;\n    }\n",
@@ -703,8 +635,6 @@
     "refer_PR": "apache_dubbo-12582",
     "test_src": ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServiceSubscribeMetrics",
     "test_tgt": [
-      ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testRegisterMetrics",
-      ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServicePushMetrics",
       ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServiceSubscribeMetrics"
     ],
     "focal_path": "dubbo-metrics/dubbo-metrics-registry/src/main/java/org/apache/dubbo/metrics/registry/collector/RegistryMetricsCollector.java#collect",

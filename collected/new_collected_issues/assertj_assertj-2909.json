@@ -1,7 +1,0 @@
-{
-  "issue_id": 2908,
-  "issue_url": "https://github.com/assertj/assertj/issues/2908",
-  "title": "`containsOnlyDigits()` was deprecated without alternative in `3.24.1`",
-  "description": "<p dir=\"auto\">Not a bug, but a question. The string assertion <code class=\"notranslate\">containsOnlyDigits()</code> has been marked as deprecated in commit <a class=\"commit-link\" data-hovercard-type=\"commit\" data-hovercard-url=\"https://github.com/assertj/assertj/commit/88e252e5a9267b6e0a3c0e0d521d065a59618039/hovercard\" href=\"https://github.com/assertj/assertj/commit/88e252e5a9267b6e0a3c0e0d521d065a59618039\"><tt>88e252e</tt></a>. There doesn't seem to be an alternative method and no mention of this in the release notes.</p>\n<p dir=\"auto\">Was this an intentional change? If so, what method should be used instead?</p>\n<ul dir=\"auto\">\n<li>assertj core version: <code class=\"notranslate\">3.24.1</code></li>\n</ul>",
-  "description_text": "Not a bug, but a question. The string assertion containsOnlyDigits() has been marked as deprecated in commit 88e252e. There doesn't seem to be an alternative method and no mention of this in the release notes.\nWas this an intentional change? If so, what method should be used instead?\n\nassertj core version: 3.24.1\n"
-}

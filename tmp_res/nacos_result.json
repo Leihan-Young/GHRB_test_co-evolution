@@ -1,0 +1,38 @@
+{
+  "nacos_1": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "nacos_2": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "nacos_3": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "nacos_4": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "nacos_5": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "nacos_6": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "nacos_7": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "nacos_8": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "nacos_9": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  }
+}

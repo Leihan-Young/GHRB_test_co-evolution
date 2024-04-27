@@ -1,0 +1,18 @@
+{
+  "checkstyle_1": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "checkstyle_2": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "checkstyle_3": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  },
+  "checkstyle_4": {
+    "success_in_src": true,
+    "success_in_tgt": true
+  }
+}
