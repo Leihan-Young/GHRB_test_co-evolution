@@ -347,18 +347,18 @@ def find_env (pid):
 
     JAVA_HOME = mvn_path = None
     if jdk_required == '8':
-        JAVA_HOME = r'C:\Program Files\Java\jdk-1.8'
+        JAVA_HOME = r'/Java/jdk-1.8'
     elif jdk_required == '11':
-        JAVA_HOME = r'C:\Program Files\Java\jdk-11'
+        JAVA_HOME = r'/Java/jdk-11'
     elif jdk_required == '17':
-        JAVA_HOME = r'C:\Program Files\Java\jdk-17.0.5'
+        JAVA_HOME = r'/Java/jdk-17.0.5'
     
     if mvn_required is None:
         mvn_path = ""
     elif mvn_required == '3.8.6':
-        mvn_path = r'C:\Program Files\Maven\apache-maven-3.8.6\bin'
+        mvn_path = r'/Maven/apache-maven-3.8.6/bin'
     elif mvn_required == '3.8.1':
-        mvn_path = r'C:\Program Files\Maven\apache-maven-3.8.1\bin'
+        mvn_path = r'/Maven/apache-maven-3.8.1/bin'
 
     new_env = os.environ.copy()
     new_env['JAVA_HOME'] = JAVA_HOME
