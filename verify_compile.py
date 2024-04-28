@@ -351,7 +351,7 @@ def find_env (pid):
     elif jdk_required == '11':
         JAVA_HOME = r'/Java/jdk-11'
     elif jdk_required == '17':
-        JAVA_HOME = r'/Java/jdk-17.0.5'
+        JAVA_HOME = r'/Java/jdk-17'
     
     if mvn_required is None:
         mvn_path = ""
