@@ -3,7 +3,7 @@
     "owner": "checkstyle",
     "number_of_tests": 4,
     "verified_db": "verified/verified_tuples_checkstyle_checkstyle.json",
-    "repo_path": "/workspace/GHRB_test_co-evolution/repos/checkstyle",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/checkstyle",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -18,7 +18,7 @@
     "owner": "apache",
     "number_of_tests": 33,
     "verified_db": "verified/verified_tuples_apache_dubbo.json",
-    "repo_path": "/workspace/GHRB_test_co-evolution/repos/dubbo",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/dubbo",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -33,7 +33,7 @@
     "owner": "apache",
     "number_of_tests": 4,
     "verified_db": "verified/verified_tuples_apache_incubator-seata.json",
-    "repo_path": "/workspace/GHRB_test_co-evolution/repos/incubator-seata",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/incubator-seata",
     "requirements": {
       "build": "maven",
       "wrapper": true,
@@ -48,7 +48,7 @@
     "owner": "OpenAPITools",
     "number_of_tests": 1,
     "verified_db": "verified/verified_tuples_OpenAPITools_openapi-generator.json",
-    "repo_path": "/workspace/GHRB_test_co-evolution/repos/openapi-generator",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/openapi-generator",
     "requirements": {
       "build": "maven",
       "wrapper": true,
@@ -62,7 +62,7 @@
     "owner": "alibaba",
     "number_of_tests": 9,
     "verified_db": "verified/verified_tuples_alibaba_nacos.json",
-    "repo_path": "/workspace/GHRB_test_co-evolution/repos/nacos",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/nacos",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -77,7 +77,7 @@
     "owner": "assertj",
     "number_of_tests": 4,
     "verified_db": "verified/verified_tuples_assertj_assertj.json",
-    "repo_path": "/workspace/GHRB_test_co-evolution/repos/assertj",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/assertj",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -92,7 +92,7 @@
     "owner": "apache",
     "number_of_tests": 117,
     "verified_db": "verified/verified_tuples_apache_rocketmq.json",
-    "repo_path": "/workspace/GHRB_test_co-evolution/repos/rocketmq",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/rocketmq",
     "requirements": {
       "build": "maven",
       "wrapper": false,
@@ -107,7 +107,7 @@
     "owner": "apache",
     "number_of_tests": 2,
     "verified_db": "verified/verified_tuples_apache_skywalking.json",
-    "repo_path": "/workspace/GHRB_test_co-evolution/repos/skywalking",
+    "repo_path": "D:/Code/VS-Code/GHRB/repos/skywalking",
     "requirements": {
       "build": "maven",
       "wrapper": true,
