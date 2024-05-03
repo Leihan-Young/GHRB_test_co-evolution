@@ -200,7 +200,7 @@ def find_env (pid):
     elif mvn_required == '3.8.6':
         mvn_path = r'/Maven/apache-maven-3.8.6/bin'
     elif mvn_required == '3.8.1':
-        mvn_path = r'/Maven/apache-maven-3.8.1/bin'
+        mvn_path = r'C:/Program Files/Maven/apache-maven-3.8.1/bin'
 
     new_env = os.environ.copy()
     new_env['JAVA_HOME'] = JAVA_HOME
@@ -286,7 +286,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None, tidy_pom = 
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
 
     elif mvnw:
-        default = [f'mvnw', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
+        default = [f'./mvnw', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
         if command is not None:
             extra_command = command.split()
             new_command = default + extra_command
@@ -297,7 +297,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None, tidy_pom = 
             run = sp.run(default,
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
     elif gradlew:
-        default = [f"gradlew", "test", "--tests", f'{test_case}', '--info', '--stacktrace']
+        default = [f"./gradlew", "test", "--tests", f'{test_case}', '--info', '--stacktrace']
         if command is not None:
             if 'test' in command:
                 new_command = ["gradlew", command, '--tests', f'{test_case}']
@@ -630,7 +630,6 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
         if "org.codehaus.mojo" in x and "tidy-maven-plugin" in x:
             tidy_pom = True
     output, test_output, stdout = run_test(new_env, mvnw, gradlew, test_cases, path, command, tidy_pom)
-
     tgt_cov_xml = None
     if len(tgt_modules) == 0:
         if os.path.exists(os.path.join(path, 'target', 'site', 'jacoco', 'jacoco.xml')):
@@ -640,7 +639,7 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
             if os.path.exists(os.path.join(tgt_module, 'target', 'site', 'jacoco', 'jacoco.xml')):
                 tgt_cov_xml = os.path.join(tgt_module, 'target', 'site', 'jacoco', 'jacoco.xml')
     if tgt_cov_xml == None:
-        output = f"Fail to generate jacoco report for {path}"
+        output += f"Fail to generate jacoco report for {path}"
         return output
     
     output += (f"Coverage report generated to \033[4m{os.path.join(cur, 'target', 'site', 'jacoco', 'jacoco.xml')}\033[0m\n")

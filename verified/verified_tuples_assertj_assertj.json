@@ -15,6 +15,7 @@
     "test_tgt": [
       ".org.assertj.core.error.ShouldContainAnyOf_create_Test#should_create_error_message"
     ],
+    "test_src_code": "",
     "focal_path": "src/main/java/org/assertj/core/error/ShouldContainAnyOf.java#shouldContainAnyOf",
     "focal_src": "  public static ErrorMessageFactory shouldContainAnyOf(Object actual, Object expected) {\n    return shouldContainAnyOf(actual, expected, StandardComparisonStrategy.instance());\n  }\n",
     "focal_tgt": "  public static ErrorMessageFactory shouldContainAnyOf(Object actual, Object expected) {\n    return new ShouldContainAnyOf(actual, expected);\n  }\n",
@@ -32,6 +33,7 @@
     "test_tgt": [
       ".org.assertj.core.api.Assertions_catchThrowableOfType_Test#catchThrowableOfType_should_fail_with_good_message_if_wrong_type"
     ],
+    "test_src_code": "",
     "focal_path": "assertj-core/src/main/java/org/assertj/core/api/Assertions.java#catchThrowableOfType",
     "focal_src": "  public static <THROWABLE extends Throwable> THROWABLE catchThrowableOfType(ThrowingCallable shouldRaiseThrowable,\n                                                                             Class<THROWABLE> type) {\n    return AssertionsForClassTypes.catchThrowableOfType(shouldRaiseThrowable, type);\n  }\n",
     "focal_tgt": "  @Deprecated\n  public static <THROWABLE extends Throwable> THROWABLE catchThrowableOfType(ThrowingCallable shouldRaiseThrowable,\n                                                                             Class<THROWABLE> type) {\n    return AssertionsForClassTypes.catchThrowableOfType(type, shouldRaiseThrowable);\n  }\n",
@@ -51,6 +53,7 @@
     "test_tgt": [
       ".org.assertj.core.internal.UnambiguousRepresentation_Test#should_use_unambiguousToStringOf_whe_toStringOf_are_equal"
     ],
+    "test_src_code": "",
     "focal_path": "assertj-core/src/main/java/org/assertj/core/internal/UnambiguousRepresentation.java#UnambiguousRepresentation",
     "focal_src": "  public UnambiguousRepresentation(Representation representation, Object actual, Object expected) {\n    String actualRepresentation = representation.toStringOf(actual);\n    String expectedRepresentation = representation.toStringOf(expected);\n\n    boolean sameRepresentation = Objects.equals(actualRepresentation, expectedRepresentation);\n    this.actual = sameRepresentation\n        ? representation.unambiguousToStringOf(actual)\n        : actualRepresentation;\n    this.expected = sameRepresentation\n        ? representation.unambiguousToStringOf(expected)\n        : expectedRepresentation;\n  }\n",
     "focal_tgt": "  public UnambiguousRepresentation(Representation representation, Object actual, Object expected) {\n    String actualRepresentation = representation.toStringOf(actual);\n    String expectedRepresentation = representation.toStringOf(expected);\n\n    boolean sameRepresentation = Objects.equals(actualRepresentation, expectedRepresentation);\n    this.actual = sameRepresentation\n        ? representation.unambiguousToStringOf(actual, false)\n        : actualRepresentation;\n    this.expected = sameRepresentation\n        ? representation.unambiguousToStringOf(expected, false)\n        : expectedRepresentation;\n  }\n",
@@ -68,6 +71,7 @@
     "test_tgt": [
       ".org.assertj.core.error.ShouldHaveCauseInstance_create_Test#should_create_error_message_for_no_cause"
     ],
+    "test_src_code": "",
     "focal_path": "assertj-core/src/main/java/org/assertj/core/error/ShouldHaveCauseInstance.java#shouldHaveCauseInstance",
     "focal_src": "  /**\n   * Creates a new <code>{@link org.assertj.core.error.BasicErrorMessageFactory}</code>.\n   * \n   * @param actual the actual value in the failed assertion.\n   * @param expectedCauseType the expected cause type.\n   * @return the created {@code ErrorMessageFactory}.\n   */\n  public static ErrorMessageFactory shouldHaveCauseInstance(Throwable actual,\n                                                            Class<? extends Throwable> expectedCauseType) {\n    return actual.getCause() == null\n        ? new ShouldHaveCauseInstance(expectedCauseType)\n        : new ShouldHaveCauseInstance(actual, expectedCauseType);\n  }\n",
     "focal_tgt": "  /**\n   * Creates a new <code>{@link org.assertj.core.error.BasicErrorMessageFactory}</code>.\n   * \n   * @param actual the actual value in the failed assertion.\n   * @param expectedCauseType the expected cause type.\n   * @return the created {@code ErrorMessageFactory}.\n   */\n  public static ErrorMessageFactory shouldHaveCauseInstance(Throwable actual,\n                                                            Class<? extends Throwable> expectedCauseType) {\n    return actual.getCause() == null\n        ? new ShouldHaveCauseInstance(expectedCauseType, actual)\n        : new ShouldHaveCauseInstance(actual, expectedCauseType);\n  }\n",

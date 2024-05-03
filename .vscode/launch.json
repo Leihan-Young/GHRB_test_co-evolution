@@ -97,7 +97,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": "coverage -w ../tmp -o ../tmp_output"
+            "args": "coverage -w ./tmp/repos/1s -o ../tmp_output -i ./tmp/input_file.java"
         },
     ]
 }

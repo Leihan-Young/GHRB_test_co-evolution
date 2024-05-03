@@ -316,6 +316,7 @@ def extract_tuples_from_sample_info(sample_info, project_info):
         focal_path, focal_src, focal_tgt = parse_focal_method(project_info['repo_path'], sample_info['buggy_commit'], 
                                                   sample_info['merge_commit'], f'{test_path}#{test_method_name}', 
                                                   related_test_tgt, sample_info['bug_id'])
+        tuple['test_src_code'] = parse_test_src_code(project_info['repo_path'], sample_info['buggy_commit'], f'{test_path}#{test_method_name}')
         if focal_path == None or focal_src == None or focal_tgt == None:
             continue
         for i in range(len(focal_path)):
@@ -325,6 +326,22 @@ def extract_tuples_from_sample_info(sample_info, project_info):
             tuple_copy['focal_tgt'] = focal_tgt[i]
             tuples.append(tuple_copy)
     return tuples
+
+def parse_test_src_code(repo_path, commit, test):
+    checkout(repo_path, commit)
+    test_method_name = test.split('#')[-1]
+    test_path = os.path.join(repo_path, test.split('#')[0])
+    with open(test_path, 'r', encoding='utf-8') as f:
+        root_node = javalang.parse.parse(f.read())
+    test_node = None
+    for path, node in root_node:
+        if isinstance(node, javalang.tree.MethodDeclaration) and node.name == test_method_name:
+            test_node = node
+            break
+    if test_node == None:
+        return ""
+    test_src_code = extract_focal_code(repo_path, test_path, test_node)
+    return "".join(test_src_code)
 
 def filter_unchanged_tests(test_path, test_src, test_tgt, repo_path, commit_src, commit_tgt):
     checkout(repo_path, commit_src)
