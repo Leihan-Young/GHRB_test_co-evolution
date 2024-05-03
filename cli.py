@@ -200,7 +200,7 @@ def find_env (pid):
     elif mvn_required == '3.8.6':
         mvn_path = r'/Maven/apache-maven-3.8.6/bin'
     elif mvn_required == '3.8.1':
-        mvn_path = r'C:/Program Files/Maven/apache-maven-3.8.1/bin'
+        mvn_path = r'/Maven/apache-maven-3.8.1/bin'
 
     new_env = os.environ.copy()
     new_env['JAVA_HOME'] = JAVA_HOME

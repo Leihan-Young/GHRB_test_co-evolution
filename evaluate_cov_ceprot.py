@@ -23,7 +23,7 @@ def get_coverage(cov_xml, focal_path):
 
 if __name__ == "__main__":
     data_path = './ceprot_gen'
-    cli_path = r'D:\Code\VS-Code\GHRB'
+    cli_path = r'./'
     output_dir = os.path.abspath('./output')
     tmp_path = os.path.abspath('./tmp')
     files = [name for name in os.listdir(data_path)
