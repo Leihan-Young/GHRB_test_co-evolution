@@ -1,166 +1,74 @@
 {
-  "apache_dubbo-11051": {
-    "bug_id": "apache_dubbo-11051",
-    "PR_number": 11051,
-    "PR_createdAt": "2022-11-29T06:16:11Z",
-    "merge_commit": "850f719927962ad983e93bbbee391471b1bd2cf7",
+  "apache_dubbo-11457": {
+    "bug_id": "apache_dubbo-11457",
+    "PR_number": 11457,
+    "PR_createdAt": "2023-02-04T10:44:02Z",
+    "merge_commit": "42cd91d8cd3623a2c6a6057cae5fae98c3b32520",
     "buggy_commits": [
       {
-        "oid": "d07d89159f80740d5a79fdb6242d978378d78b58",
-        "message": "Error code is managed with constants (#10771) (#11054)"
+        "oid": "684484b8197fcd745401c1b0d3d818b08ed3d6f0",
+        "message": "Fix curator5 version (#11492)"
       }
     ],
     "issue": {
-      "url": "https://github.com/apache/dubbo/issues/11014",
-      "createdAt": "2022-11-24T08:30:07Z",
-      "content": "bug_report_all/apache_dubbo-11051.json"
+      "url": "https://github.com/apache/dubbo/issues/11453",
+      "createdAt": "2023-02-03T11:10:20Z",
+      "content": "bug_report_all/apache_dubbo-11457.json"
     },
     "changed_tests": [
-      "dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandlerTest.java",
-      "dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/LocalHostPermitHandlerTest.java",
-      "dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/QosProcessHandlerTest.java"
+      "dubbo-metrics/dubbo-metrics-default/src/test/java/org/apache/dubbo/metrics/metrics/collector/DefaultMetricsCollectorTest.java",
+      "dubbo-metrics/dubbo-metrics-default/src/test/java/org/apache/dubbo/metrics/metrics/event/RequestEventTest.java",
+      "dubbo-metrics/dubbo-metrics-prometheus/src/test/java/org/apache/dubbo/metrics/prometheus/PrometheusMetricsReporterTest.java"
     ],
-    "PR_url": "https://github.com/apache/dubbo/pull/11051",
-    "merge_commit_url": "https://github.com/apache/dubbo/commit/850f719927962ad983e93bbbee391471b1bd2cf7",
-    "buggy_commit": "d07d89159f80740d5a79fdb6242d978378d78b58",
+    "PR_url": "https://github.com/apache/dubbo/pull/11457",
+    "merge_commit_url": "https://github.com/apache/dubbo/commit/42cd91d8cd3623a2c6a6057cae5fae98c3b32520",
+    "buggy_commit": "684484b8197fcd745401c1b0d3d818b08ed3d6f0",
     "execution_result": {
       "test_src": [
-        ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp",
-        ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeTelnet"
+        ".org.apache.dubbo.metrics.metrics.collector.DefaultMetricsCollectorTest#testListener",
+        ".org.apache.dubbo.metrics.metrics.event.RequestEventTest#testNewEvent"
       ],
       "test_tgt": [
-        ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp",
-        ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeTelnet"
+        ".org.apache.dubbo.metrics.metrics.collector.DefaultMetricsCollectorTest#testListener",
+        ".org.apache.dubbo.metrics.metrics.event.RequestEventTest#testNewEvent"
       ]
     }
   },
-  "apache_dubbo-11076": {
-    "bug_id": "apache_dubbo-11076",
-    "PR_number": 11076,
-    "PR_createdAt": "2022-12-05T16:22:24Z",
-    "merge_commit": "ab5d95f46b9bd63ff60d926f031903b3ac171126",
+  "apache_dubbo-11531": {
+    "bug_id": "apache_dubbo-11531",
+    "PR_number": 11531,
+    "PR_createdAt": "2023-02-11T08:26:11Z",
+    "merge_commit": "46aff44c2fe62d7670d3f524d0c881a53d5e6adf",
     "buggy_commits": [
       {
-        "oid": "ee9a3d53d4d8dcad17498747e92d15da42357e12",
-        "message": "ssl abstract and remoteapi remove netty (#11099)"
+        "oid": "6296c4401d6be323de53dc310dffeba556836d50",
+        "message": "add classes of java.util.x into serialize.allowlist file to avoid compatibility issues in the future (#11872)"
       }
     ],
     "issue": {
-      "url": "https://github.com/apache/dubbo/issues/11015",
-      "createdAt": "2022-11-24T08:38:19Z",
-      "content": "bug_report_all/apache_dubbo-11076.json"
+      "url": "https://github.com/apache/dubbo/issues/11013",
+      "createdAt": "2022-11-24T08:20:52Z",
+      "content": "bug_report_all/apache_dubbo-11531.json"
     },
     "changed_tests": [
-      "dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/command/DefaultCommandExecutorTest.java",
-      "dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/pu/QosWireProtocolTest.java",
-      "dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/ForeignHostPermitHandlerTest.java",
-      "dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/HttpProcessHandlerTest.java",
-      "dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/QosProcessHandlerTest.java",
-      "dubbo-plugin/dubbo-qos/src/test/java/org/apache/dubbo/qos/server/handler/TelnetProcessHandlerTest.java"
+      "dubbo-rpc/dubbo-rpc-injvm/src/test/java/org/apache/dubbo/rpc/protocol/injvm/InjvmProtocolTest.java",
+      "dubbo-rpc/dubbo-rpc-injvm/src/test/java/org/apache/dubbo/rpc/protocol/injvm/ProtocolTest.java"
     ],
-    "PR_url": "https://github.com/apache/dubbo/pull/11076",
-    "merge_commit_url": "https://github.com/apache/dubbo/commit/ab5d95f46b9bd63ff60d926f031903b3ac171126",
-    "buggy_commit": "ee9a3d53d4d8dcad17498747e92d15da42357e12",
+    "PR_url": "https://github.com/apache/dubbo/pull/11531",
+    "merge_commit_url": "https://github.com/apache/dubbo/commit/46aff44c2fe62d7670d3f524d0c881a53d5e6adf",
+    "buggy_commit": "6296c4401d6be323de53dc310dffeba556836d50",
     "execution_result": {
       "test_src": [
-        ".org.apache.dubbo.qos.command.DefaultCommandExecutorTest#testExecute2",
-        ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
-        ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
-        ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
-        ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
-        ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1",
-        ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2",
-        ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test3",
-        ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp",
-        ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeTelnet",
-        ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
-        ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
-        ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
-        ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting"
+        ".org.apache.dubbo.rpc.protocol.injvm.InjvmProtocolTest#testLocalProtocol",
+        ".org.apache.dubbo.rpc.protocol.injvm.InjvmProtocolTest#testLocalProtocolWithToken",
+        ".org.apache.dubbo.rpc.protocol.injvm.InjvmProtocolTest#testIsInjvmRefer",
+        ".org.apache.dubbo.rpc.protocol.injvm.InjvmProtocolTest#testLocalProtocolAsync"
       ],
       "test_tgt": [
-        ".org.apache.dubbo.qos.command.DefaultCommandExecutorTest#testExecute2",
-        ".org.apache.dubbo.qos.command.DefaultCommandExecutorTest#shouldNotThrowPermissionDenyException_GivenPermissionConfigAndMatchDefaultPUBLICCmdPermissionLevel",
-        ".org.apache.dubbo.qos.command.DefaultCommandExecutorTest#shouldNotThrowPermissionDenyException_GivenPermissionConfigAndNotMatchCmdPermissionLevel",
-        ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList",
-        ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList",
-        ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList",
-        ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange",
-        ".org.apache.dubbo.qos.server.handler.ForeignHostPermitHandlerTest#shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteListAndPermissionConfig",
-        ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test1",
-        ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test2",
-        ".org.apache.dubbo.qos.server.handler.HttpProcessHandlerTest#test3",
-        ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeHttp",
-        ".org.apache.dubbo.qos.server.handler.QosProcessHandlerTest#testDecodeTelnet",
-        ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testPrompt",
-        ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testBye",
-        ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testUnknownCommand",
-        ".org.apache.dubbo.qos.server.handler.TelnetProcessHandlerTest#testGreeting"
-      ]
-    }
-  },
-  "apache_dubbo-11084": {
-    "bug_id": "apache_dubbo-11084",
-    "PR_number": 11084,
-    "PR_createdAt": "2022-12-06T10:32:37Z",
-    "merge_commit": "c768ad8f13186320de71a0df5e78acb08205106c",
-    "buggy_commits": [
-      {
-        "oid": "e3ee0cc6894a35d64c24de2ebf98c70f58619d93",
-        "message": "Fix TimeoutCountDown objects being passed through and support for method-level configuration of cut-off timeout-count (#11120)\n\n* fix timout-countdown being passed\r\n\r\nSigned-off-by: crazyhzm <crazyhzm@gmail.com>\r\n\r\n* timeout-countdown supports method level shutdown capability\r\n\r\nSigned-off-by: crazyhzm <crazyhzm@gmail.com>\r\n\r\n* fix triple invoker test\r\n\r\nSigned-off-by: crazyhzm <crazyhzm@gmail.com>\r\n\r\nSigned-off-by: crazyhzm <crazyhzm@gmail.com>"
-      }
-    ],
-    "issue": {
-      "url": "https://github.com/apache/dubbo/issues/11047",
-      "createdAt": "2022-11-29T02:51:43Z",
-      "content": "bug_report_all/apache_dubbo-11084.json"
-    },
-    "changed_tests": [
-      "dubbo-rpc/dubbo-rpc-triple/src/test/java/org/apache/dubbo/rpc/protocol/tri/TripleCustomerProtocolWapperTest.java",
-      "dubbo-rpc/dubbo-rpc-triple/src/test/java/org/apache/dubbo/rpc/protocol/tri/service/TriBuiltinServiceTest.java"
-    ],
-    "PR_url": "https://github.com/apache/dubbo/pull/11084",
-    "merge_commit_url": "https://github.com/apache/dubbo/commit/c768ad8f13186320de71a0df5e78acb08205106c",
-    "buggy_commit": "e3ee0cc6894a35d64c24de2ebf98c70f58619d93",
-    "execution_result": {
-      "test_src": [
-        ".org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinServiceTest#test"
-      ],
-      "test_tgt": [
-        ".org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinServiceTest#testDefaultNotEnable",
-        ".org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinServiceTest#testForceEnable"
-      ]
-    }
-  },
-  "apache_dubbo-11179": {
-    "bug_id": "apache_dubbo-11179",
-    "PR_number": 11179,
-    "PR_createdAt": "2022-12-20T15:04:09Z",
-    "merge_commit": "bb05764dd35dbd8e289404363ff1ad3d331d7cd7",
-    "buggy_commits": [
-      {
-        "oid": "1bfd354d3ddc5b211160c0d8de64ec5e0d7e9425",
-        "message": "Change constant name of error code 0-2, merge 4-19 to 0-2. Add error code of 'port is overridden' hint. (#11181)\n\n* Change 4-19 to 0-2 (same actually).\r\n\r\n* Use error code 4-19.\r\n\r\n* Add cause."
-      }
-    ],
-    "issue": {
-      "url": "https://github.com/apache/dubbo/issues/11168",
-      "createdAt": "2022-12-19T13:43:53Z",
-      "content": "bug_report_all/apache_dubbo-11179.json"
-    },
-    "changed_tests": [
-      "dubbo-config/dubbo-config-api/src/test/java/org/apache/dubbo/config/ReferenceConfigTest.java"
-    ],
-    "PR_url": "https://github.com/apache/dubbo/pull/11179",
-    "merge_commit_url": "https://github.com/apache/dubbo/commit/bb05764dd35dbd8e289404363ff1ad3d331d7cd7",
-    "buggy_commit": "1bfd354d3ddc5b211160c0d8de64ec5e0d7e9425",
-    "execution_result": {
-      "test_src": [
-        ".org.apache.dubbo.config.ReferenceConfigTest#testDifferentClassLoaderRequest"
-      ],
-      "test_tgt": [
-        ".org.apache.dubbo.config.ReferenceConfigTest#testDifferentClassLoaderRequest",
-        ".org.apache.dubbo.config.ReferenceConfigTest#testClassLoader"
+        ".org.apache.dubbo.rpc.protocol.injvm.InjvmProtocolTest#testLocalProtocol",
+        ".org.apache.dubbo.rpc.protocol.injvm.InjvmProtocolTest#testLocalProtocolWithToken",
+        ".org.apache.dubbo.rpc.protocol.injvm.InjvmProtocolTest#testIsInjvmRefer",
+        ".org.apache.dubbo.rpc.protocol.injvm.InjvmProtocolTest#testLocalProtocolAsync"
       ]
     }
   },
@@ -229,6 +137,64 @@
       ]
     }
   },
+  "apache_dubbo-12551": {
+    "bug_id": "apache_dubbo-12551",
+    "PR_number": 12551,
+    "PR_createdAt": "2023-06-18T06:10:33Z",
+    "merge_commit": "3160602072c198728cca48e449984a4e596e7c37",
+    "buggy_commits": [
+      {
+        "oid": "d3be69b349bcd5f297eb63bca3344f26cc024b5a",
+        "message": "Fix config center properties log level (#12555)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/dubbo/issues/11785",
+      "createdAt": "2023-03-10T12:27:39Z",
+      "content": "bug_report_all/apache_dubbo-12551.json"
+    },
+    "changed_tests": [
+      "dubbo-config/dubbo-config-api/src/test/java/org/apache/dubbo/config/ConfigCenterConfigTest.java",
+      "dubbo-config/dubbo-config-api/src/test/java/org/apache/dubbo/config/ConsumerConfigTest.java",
+      "dubbo-config/dubbo-config-api/src/test/java/org/apache/dubbo/config/bootstrap/DubboBootstrapTest.java",
+      "dubbo-registry/dubbo-registry-api/src/test/java/org/apache/dubbo/registry/client/migration/MigrationRuleListenerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/dubbo/pull/12551",
+    "merge_commit_url": "https://github.com/apache/dubbo/commit/3160602072c198728cca48e449984a4e596e7c37",
+    "buggy_commit": "d3be69b349bcd5f297eb63bca3344f26cc024b5a",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshAll",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshSystem",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshProperties",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshExternal",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshById",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshParameters",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshParametersWithAttribute",
+        ".org.apache.dubbo.config.AbstractConfigTest#testOnlyPrefixedKeyTakeEffect",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshNested",
+        ".org.apache.dubbo.config.ConfigCenterConfigTest#testOverrideConfigByDubboProps",
+        ".org.apache.dubbo.config.ConfigCenterConfigTest#testOverrideConfigByDubboPropsWithId",
+        ".org.apache.dubbo.config.ConsumerConfigTest#testOverrideConfigByDubboProps",
+        ".org.apache.dubbo.config.bootstrap.DubboBootstrapTest#compatibleApplicationShutdown"
+      ],
+      "test_tgt": [
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshAll",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshSystem",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshProperties",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshExternal",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshById",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshParameters",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshParametersWithAttribute",
+        ".org.apache.dubbo.config.AbstractConfigTest#testOnlyPrefixedKeyTakeEffect",
+        ".org.apache.dubbo.config.AbstractConfigTest#testRefreshNested",
+        ".org.apache.dubbo.config.ConfigCenterConfigTest#testOverrideConfigByDubboProps",
+        ".org.apache.dubbo.config.ConfigCenterConfigTest#testOverrideConfigByDubboPropsWithId",
+        ".org.apache.dubbo.config.ConsumerConfigTest#testOverrideConfigByDubboProps",
+        ".org.apache.dubbo.config.bootstrap.DubboBootstrapTest#compatibleApplicationShutdown"
+      ]
+    }
+  },
   "apache_dubbo-12582": {
     "bug_id": "apache_dubbo-12582",
     "PR_number": 12582,
@@ -263,6 +229,37 @@
         ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testRegisterMetrics",
         ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServicePushMetrics",
         ".org.apache.dubbo.metrics.registry.metrics.collector.RegistryMetricsCollectorTest#testServiceSubscribeMetrics"
+      ]
+    }
+  },
+  "apache_dubbo-12861": {
+    "bug_id": "apache_dubbo-12861",
+    "PR_number": 12861,
+    "PR_createdAt": "2023-08-07T11:39:26Z",
+    "merge_commit": "7290ae59bc69577b5b902dc0f6e161eb4c74db6b",
+    "buggy_commits": [
+      {
+        "oid": "b87746b19fb99b60b3e6973b3b50e3daca04eb27",
+        "message": "\ud83d\ude91 add more metrics catch (#12917)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/dubbo/issues/12779",
+      "createdAt": "2023-07-24T02:38:58Z",
+      "content": "bug_report_all/apache_dubbo-12861.json"
+    },
+    "changed_tests": [
+      "dubbo-spring-boot/dubbo-spring-boot-compatible/autoconfigure/src/test/java/org/apache/dubbo/spring/boot/env/DubboDefaultPropertiesEnvironmentPostProcessorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/dubbo/pull/12861",
+    "merge_commit_url": "https://github.com/apache/dubbo/commit/7290ae59bc69577b5b902dc0f6e161eb4c74db6b",
+    "buggy_commit": "b87746b19fb99b60b3e6973b3b50e3daca04eb27",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.dubbo.spring.boot.env.DubboDefaultPropertiesEnvironmentPostProcessorTest#testPostProcessEnvironment"
+      ],
+      "test_tgt": [
+        ".org.apache.dubbo.spring.boot.env.DubboDefaultPropertiesEnvironmentPostProcessorTest#testPostProcessEnvironment"
       ]
     }
   },
@@ -332,6 +329,41 @@
       ],
       "test_tgt": [
         ".org.apache.dubbo.rpc.protocol.tri.call.ReflectionServerCallTest#doStartCall"
+      ]
+    }
+  },
+  "apache_dubbo-13553": {
+    "bug_id": "apache_dubbo-13553",
+    "PR_number": 13553,
+    "PR_createdAt": "2023-12-21T16:40:25Z",
+    "merge_commit": "25b73b1a135ae75ed50c68e6b5acd694067fd325",
+    "buggy_commits": [
+      {
+        "oid": "501a7a7653bc8db09a46db3541109266e6a1a90b",
+        "message": "resteasy response status code support (#13586)\n\n* resteasy response status code support\r\n\r\n* fix code format"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/dubbo/issues/13552",
+      "createdAt": "2023-12-21T16:27:53Z",
+      "content": "bug_report_all/apache_dubbo-13553.json"
+    },
+    "changed_tests": [
+      "dubbo-config/dubbo-config-api/src/test/java/org/apache/dubbo/config/AbstractConfigTest.java",
+      "dubbo-config/dubbo-config-api/src/test/java/org/apache/dubbo/config/bootstrap/DubboBootstrapTest.java"
+    ],
+    "PR_url": "https://github.com/apache/dubbo/pull/13553",
+    "merge_commit_url": "https://github.com/apache/dubbo/commit/25b73b1a135ae75ed50c68e6b5acd694067fd325",
+    "buggy_commit": "501a7a7653bc8db09a46db3541109266e6a1a90b",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.dubbo.config.bootstrap.DubboBootstrapTest#testRemoteMetadataServiceExporter"
+      ],
+      "test_tgt": [
+        ".org.apache.dubbo.config.AbstractConfigTest#testValidateProtocolConfigSerialization",
+        ".org.apache.dubbo.config.AbstractConfigTest#testValidateProtocolConfigViolateSerialization",
+        ".org.apache.dubbo.config.bootstrap.DubboBootstrapTest#testRemoteMetadataServiceExporter",
+        ".org.apache.dubbo.config.bootstrap.DubboBootstrapTest#testRemoteMetadataServiceExporterCheckMetadataType"
       ]
     }
   }

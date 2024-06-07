@@ -15,7 +15,7 @@
     "test_tgt": [
       ".org.assertj.core.error.ShouldContainAnyOf_create_Test#should_create_error_message"
     ],
-    "test_src_code": "",
+    "test_src_code": "  @Test\n  void should_create_error_message() {\n    // GIVEN\n    ErrorMessageFactory factory = shouldContainAnyOf(list(\"Yoda\", \"Han\", \"Han\"), list(\"Vador\", \"Leia\"));\n    // WHEN\n    String message = factory.create(new TextDescription(\"Test\"), CONFIGURATION_PROVIDER.representation());\n    // THEN\n    then(message).isEqualTo(format(\"[Test] %n\" +\n                                   \"Expecting actual:%n\" +\n                                   \"  [\\\"Yoda\\\", \\\"Han\\\", \\\"Han\\\"]%n\" +\n                                   \"to contain at least one of the following elements:%n\" +\n                                   \"  [\\\"Vador\\\", \\\"Leia\\\"]%n\" +\n                                   \"but none were found \"));\n  }\n",
     "focal_path": "src/main/java/org/assertj/core/error/ShouldContainAnyOf.java#shouldContainAnyOf",
     "focal_src": "  public static ErrorMessageFactory shouldContainAnyOf(Object actual, Object expected) {\n    return shouldContainAnyOf(actual, expected, StandardComparisonStrategy.instance());\n  }\n",
     "focal_tgt": "  public static ErrorMessageFactory shouldContainAnyOf(Object actual, Object expected) {\n    return new ShouldContainAnyOf(actual, expected);\n  }\n",
@@ -262,7 +262,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test public void shouldContainAnyOf_StandardComparisonStrategy_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOfShouldContainAnyOfShouldContainAnyOf_WithExpectedComparisonStrategy_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_ShouldContainAnyOf_WithExpected"
+    "CEPROT_gen_test_tgt": "@Test\n  void should_create_error_message() {\n    // GIVEN\n    ErrorMessageFactory factory = shouldContainAnyOf(list(\"Yoda\", \"Han\", \"Han\"), list(\"Vador\", \"Leia\"));\n    // WHEN\n    String message = factory.create(new TextDescription(\"Test\"), CONFIGURATION_PROVIDER.representation());\n    // THEN\n    then(message).isEqualTo(format(\"[Test] %n\" +\n                                   \"Expecting actual:%n\" +\n                                   \"  \\\\\"Yoda\\\\\", \\\\\"Han\\\\\", \\\\\"Han\\\\\"]%n\"),"
   },
   "2": {
     "commit_src": "8a7843e2d8621cae892c938996be6c294c3152ce",
@@ -276,7 +276,7 @@
     "test_tgt": [
       ".org.assertj.core.api.Assertions_catchThrowableOfType_Test#catchThrowableOfType_should_fail_with_good_message_if_wrong_type"
     ],
-    "test_src_code": "",
+    "test_src_code": "  @Test\n  void catchThrowableOfType_should_fail_with_good_message_if_wrong_type() {\n    // GIVEN\n    ThrowingCallable code = () -> catchThrowableOfType(raisingException(\"boom!!\"), RuntimeException.class);\n    // WHEN\n    AssertionError assertionError = expectAssertionError(code);\n    // THEN\n    assertThat(assertionError).hasMessageContainingAll(RuntimeException.class.getName(), Exception.class.getName());\n  }\n",
     "focal_path": "assertj-core/src/main/java/org/assertj/core/api/Assertions.java#catchThrowableOfType",
     "focal_src": "  public static <THROWABLE extends Throwable> THROWABLE catchThrowableOfType(ThrowingCallable shouldRaiseThrowable,\n                                                                             Class<THROWABLE> type) {\n    return AssertionsForClassTypes.catchThrowableOfType(shouldRaiseThrowable, type);\n  }\n",
     "focal_tgt": "  @Deprecated\n  public static <THROWABLE extends Throwable> THROWABLE catchThrowableOfType(ThrowingCallable shouldRaiseThrowable,\n                                                                             Class<THROWABLE> type) {\n    return AssertionsForClassTypes.catchThrowableOfType(type, shouldRaiseThrowable);\n  }\n",
@@ -598,7 +598,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Deprecated\n public static <THROWABLE extends Throwable> THROWABLE catchThrowableOfType(ThrowingCallable shouldRaiseThrowable, Class <THROWABLE > type) {\n    return AssertionsForClassTypes.catchThrowableOfType(shouldRaiseThrowable, type);\n  }\n"
+    "CEPROT_gen_test_tgt": "@Test\n  void catchThrowableOfType_should_fail_with_good_message_if_wrong_type() {\n    // GIVEN\n    ThrowingCallable code = () -> catchThrowableOfType(raisingException(\"boom!!\"), RuntimeException.class, Exception.class);\n    // WHEN\n    AssertionError assertionError = expectAssertionError(code);\n    // THEN\n    assertThat(assertionError).hasMessageContainingAll(RuntimeException.class.getName(), Exception.class.getName());\n  }\n    // GIVEN\n    ThrowingCallable code = () -> catchThrowableOfType(raisingException(\"boom!!\"), RuntimeException.class"
   },
   "3": {
     "commit_src": "8a7843e2d8621cae892c938996be6c294c3152ce",
@@ -614,7 +614,7 @@
     "test_tgt": [
       ".org.assertj.core.internal.UnambiguousRepresentation_Test#should_use_unambiguousToStringOf_whe_toStringOf_are_equal"
     ],
-    "test_src_code": "",
+    "test_src_code": "  @Test\n  void should_use_unambiguousToStringOf_whe_toStringOf_are_equal() {\n    // GIVEN\n    Object actual = new Object();\n    Object expected = new Object();\n    given(representation.toStringOf(actual)).willReturn(\"representation\");\n    given(representation.toStringOf(expected)).willReturn(\"representation\");\n    given(representation.unambiguousToStringOf(actual)).willReturn(\"actual\");\n    given(representation.unambiguousToStringOf(expected)).willReturn(\"expected\");\n    // WHEN\n    UnambiguousRepresentation actualRepresentation = new UnambiguousRepresentation(representation, actual, expected);\n    // THEN\n    then(actualRepresentation.getActual()).isEqualTo(\"actual\");\n    then(actualRepresentation.getExpected()).isEqualTo(\"expected\");\n  }\n",
     "focal_path": "assertj-core/src/main/java/org/assertj/core/internal/UnambiguousRepresentation.java#UnambiguousRepresentation",
     "focal_src": "  public UnambiguousRepresentation(Representation representation, Object actual, Object expected) {\n    String actualRepresentation = representation.toStringOf(actual);\n    String expectedRepresentation = representation.toStringOf(expected);\n\n    boolean sameRepresentation = Objects.equals(actualRepresentation, expectedRepresentation);\n    this.actual = sameRepresentation\n        ? representation.unambiguousToStringOf(actual)\n        : actualRepresentation;\n    this.expected = sameRepresentation\n        ? representation.unambiguousToStringOf(expected)\n        : expectedRepresentation;\n  }\n",
     "focal_tgt": "  public UnambiguousRepresentation(Representation representation, Object actual, Object expected) {\n    String actualRepresentation = representation.toStringOf(actual);\n    String expectedRepresentation = representation.toStringOf(expected);\n\n    boolean sameRepresentation = Objects.equals(actualRepresentation, expectedRepresentation);\n    this.actual = sameRepresentation\n        ? representation.unambiguousToStringOf(actual, false)\n        : actualRepresentation;\n    this.expected = sameRepresentation\n        ? representation.unambiguousToStringOf(expected, false)\n        : expectedRepresentation;\n  }\n",
@@ -1221,7 +1221,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test public void testUnambiguousRepresentation_String_String_ShouldBeEqualToUnambiguousString_ThisIsTheSameAsAsTheSameAsTheOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOther.Test assertThatThatThatDoesNotHaveTheSameAsTheSoSoSoSoSoSoThatIsEqualToUnambiguousString_ThisIsTheSameAsTheOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOtherOther"
+    "CEPROT_gen_test_tgt": "@Test\n  void should_use_unambiguousToStringOf_whe_toStringOf_are_equal() {\n    // GIVEN\n    Object actual = new Object();\n    Object expected = new Object();\n    given(representation.toStringOf(actual)).willReturn(\"representation\");\n    given(representation.toStringOf(expected)).willReturn(\"representation\");\n    given(representation.unambiguousToStringOf(actual)).willReturn(\"actual\");\n    given(representation.unambiguousToStringOf(expected)).willReturn(\"expected\");\n    // WHEN\n    UnambiguousRepresentation actualRepresentation = new Unamb"
   },
   "4": {
     "commit_src": "8a7843e2d8621cae892c938996be6c294c3152ce",
@@ -1235,7 +1235,7 @@
     "test_tgt": [
       ".org.assertj.core.error.ShouldHaveCauseInstance_create_Test#should_create_error_message_for_no_cause"
     ],
-    "test_src_code": "",
+    "test_src_code": "  @Test\n  void should_create_error_message_for_no_cause() {\n    // GIVEN\n    Throwable actual = new RuntimeException();\n    Throwable expected = new IllegalStateException();\n    // WHEN\n    String message = shouldHaveCauseInstance(actual, expected.getClass()).create();\n    // THEN\n    then(message).isEqualTo(\"%nExpecting a throwable with cause being an instance of:%n\" +\n                            \"  %s%n\" +\n                            \"but current throwable has no cause.\", expected);\n  }\n",
     "focal_path": "assertj-core/src/main/java/org/assertj/core/error/ShouldHaveCauseInstance.java#shouldHaveCauseInstance",
     "focal_src": "  /**\n   * Creates a new <code>{@link org.assertj.core.error.BasicErrorMessageFactory}</code>.\n   * \n   * @param actual the actual value in the failed assertion.\n   * @param expectedCauseType the expected cause type.\n   * @return the created {@code ErrorMessageFactory}.\n   */\n  public static ErrorMessageFactory shouldHaveCauseInstance(Throwable actual,\n                                                            Class<? extends Throwable> expectedCauseType) {\n    return actual.getCause() == null\n        ? new ShouldHaveCauseInstance(expectedCauseType)\n        : new ShouldHaveCauseInstance(actual, expectedCauseType);\n  }\n",
     "focal_tgt": "  /**\n   * Creates a new <code>{@link org.assertj.core.error.BasicErrorMessageFactory}</code>.\n   * \n   * @param actual the actual value in the failed assertion.\n   * @param expectedCauseType the expected cause type.\n   * @return the created {@code ErrorMessageFactory}.\n   */\n  public static ErrorMessageFactory shouldHaveCauseInstance(Throwable actual,\n                                                            Class<? extends Throwable> expectedCauseType) {\n    return actual.getCause() == null\n        ? new ShouldHaveCauseInstance(expectedCauseType, actual)\n        : new ShouldHaveCauseInstance(actual, expectedCauseType);\n  }\n",
@@ -1637,6 +1637,6 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test public static ErrorMessageFactory shouldHaveCauseInstance(Throwable actual, Class<? extends Throwable> expectedCauseType) { return new ErrorMessageFactory(expectedCauseType, actual); }\n "
+    "CEPROT_gen_test_tgt": "@Test\n  void should_create_error_message_for_no_cause() {\n    // GIVEN\n    Throwable actual = new RuntimeException();\n    Throwable expected = new IllegalStateException();\n    // WHEN\n    String message = shouldHaveCauseInstance(actual, expected.getClass()).create();\n    // THEN\n    then(message).isEqualTo(\"%nExpecting a throwable with cause being an instance of:%n\" +\n                            \"  but current throwable has no cause.\", expected);\n  }\n    // GIVEN\n    Throwable actual = new RuntimeException();\n    Throwable expected = new IllegalStateException();\n   "
   }
 }

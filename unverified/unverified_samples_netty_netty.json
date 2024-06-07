@@ -1,0 +1,203 @@
+{
+  "netty_netty-13209": {
+    "bug_id": "netty_netty-13209",
+    "PR_number": 13209,
+    "PR_createdAt": "2023-02-10T09:22:22Z",
+    "merge_commit": "1cfe7103fbf7acdc5e21365419e9565955540703",
+    "buggy_commits": [
+      {
+        "oid": "3acad41e942fe181f83c977eb7991f580aa6c018",
+        "message": "Fix HttpHeaders.names for non-String headers (#13219)\n\nMotivation:\r\n\r\nWith #12321, the HttpHeaders object returned by the standard HTTP/1 pipeline now contains AsciiStrings, not Strings. This uncovered a bug where HttpHeaders.names() did not behave properly as a Set<String> when the backing HttpHeaders contained a CharSequence type other than String. This leads to .contains incorrectly returning false when the header is present.\r\n\r\nModification:\r\n\r\nReplace CharSequenceDelegatingStringSet with a class that delegates directly to the Headers object, instead of Headers.names(), for the .contains call.\r\n\r\nResult:\r\n\r\n- The .contains call works properly even when the backing Headers aren't Strings.\r\n- Mutation methods were removed. This is an improvement imo, names() previously returned a copy, so changes would not be reflected in the Headers anyway.\r\n- .contains is now case-insensitive."
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/netty/netty/issues/13208",
+      "createdAt": "2023-02-10T09:12:50Z",
+      "content": "bug_report_all/netty_netty-13209.json"
+    },
+    "changed_tests": [
+      "codec-http/src/test/java/io/netty/handler/codec/http/DefaultHttpHeadersTest.java"
+    ],
+    "PR_url": "https://github.com/netty/netty/pull/13209",
+    "merge_commit_url": "https://github.com/netty/netty/commit/1cfe7103fbf7acdc5e21365419e9565955540703",
+    "buggy_commit": "3acad41e942fe181f83c977eb7991f580aa6c018",
+    "execution_result": {
+      "test_src": [
+        ".io.netty.handler.codec.http.DefaultHttpHeadersTest#setCharSequenceValidatesValue",
+        ".io.netty.handler.codec.http.DefaultHttpHeadersTest#setIterableValidatesValue"
+      ],
+      "test_tgt": [
+        ".io.netty.handler.codec.http.DefaultHttpHeadersTest#setCharSequenceValidatesValue",
+        ".io.netty.handler.codec.http.DefaultHttpHeadersTest#setIterableValidatesValue"
+      ]
+    }
+  },
+  "netty_netty-13388": {
+    "bug_id": "netty_netty-13388",
+    "PR_number": 13388,
+    "PR_createdAt": "2023-05-19T15:17:59Z",
+    "merge_commit": "f76d6462412fa5c2f6baf82b216356196ebb10bd",
+    "buggy_commits": [
+      {
+        "oid": "439e9074b4022e96881d82c976dd6df7d4c3a701",
+        "message": "Set top level permission to remaining workflows (#13385)\n\nMotivation:\r\n\r\nSetting minimum permissions on workflow's top level is good practice.\r\nSimilar changes were previously discussed in\r\nhttps://github.com/netty/netty/pull/12462. Since some workflows were\r\nleft out of the previous PR, this PR is a small update to restrict their\r\npermissions.\r\n\r\nModification:\r\n\r\nSet top level read only permission to `ci-deploy.yml`, `ci-pr.yml`,\r\n`ci-release.yml` and `ci-release5.yml`\r\n\r\nI wasn't able to test the workflows:\r\n\r\n- `ci-release.yml` and `ci-release5.yml`: although I wasn't able to test\r\nsuccessfully, considering that they are basically using personalized\r\nsecrets and not the standard GITHUB_TOKEN (github.token), I've\r\nconsidered that no write permission would be needed to it. To avoid\r\nerrors I've opted for `read-all` instead of `contents: read`.\r\n\r\n- `ci-deploy.yml` also seems to not be working so I wasn't able to\r\nprovide a success example either.\r\n\r\n- `ci-pr.yml` run example\r\nhttps://github.com/joycebrum/netty/actions/runs/4994205584. Not sure why\r\nit didn't run on my fork but the errors seems not to be related to any\r\npermission. Anyway, I've changed the permission to read-all which\r\ncertainly will be enough since it runs on pull request (which will\r\nalways be no more than read-all to external PRs).\r\n\r\nResult:\r\n\r\nSimilar change discussed at https://github.com/netty/netty/pull/12462:\r\nsince github workflow default behavior is to grant write all permission\r\nto any workflow it is both a recommendation from [OpenSSF\r\nScorecard](https://github.com/ossf/scorecard/blob/main/docs/checks.md#token-permissions)\r\nand the\r\n[Github](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)\r\nto always use credentials that are minimally scoped.\r\n\r\n---------\r\n\r\nSigned-off-by: Joyce <joycebrum@google.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/reactor/reactor-netty/issues/2760",
+      "createdAt": "2023-04-03T11:16:00Z",
+      "content": "bug_report_all/netty_netty-13388.json"
+    },
+    "changed_tests": [
+      "codec-http2/src/test/java/io/netty/handler/codec/http2/Http2ConnectionHandlerTest.java",
+      "codec-http2/src/test/java/io/netty/handler/codec/http2/Http2MultiplexTransportTest.java"
+    ],
+    "PR_url": "https://github.com/netty/netty/pull/13388",
+    "merge_commit_url": "https://github.com/netty/netty/commit/f76d6462412fa5c2f6baf82b216356196ebb10bd",
+    "buggy_commit": "439e9074b4022e96881d82c976dd6df7d4c3a701",
+    "execution_result": {
+      "test_src": [
+        ".io.netty.handler.codec.http2.Http2ConnectionHandlerTest#canCloseStreamWithVoidPromise"
+      ],
+      "test_tgt": [
+        ".io.netty.handler.codec.http2.Http2ConnectionHandlerTest#canCloseStreamWithVoidPromise"
+      ]
+    }
+  },
+  "netty_netty-13427": {
+    "bug_id": "netty_netty-13427",
+    "PR_number": 13427,
+    "PR_createdAt": "2023-06-06T05:38:32Z",
+    "merge_commit": "385b2880845520c6a50f8de5ed0653a2c7d75173",
+    "buggy_commits": [
+      {
+        "oid": "bc3035f51b8524e737f5f9b693957977a88258e9",
+        "message": "Enhance DNS logs and make them consistent (#13429)\n\nMotivation:\r\n\r\nAlways include information that helps to correlate log events.\r\n\r\nModifications:\r\n\r\n- Always include `Channel` at the beginning of every log, when channel\r\nis available;\r\n- Always include `[queryId: sender]` when available;\r\n- `DnsQueryContext`: include expected values when logging at `WARN`\r\nlevel;\r\n\r\nResult:\r\n\r\nConsistent logging, easier to correlate log events."
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/netty/netty/issues/13426",
+      "createdAt": "2023-06-05T16:22:00Z",
+      "content": "bug_report_all/netty_netty-13427.json"
+    },
+    "changed_tests": [
+      "codec-socks/src/test/java/io/netty/handler/codec/socks/SocksCmdRequestTest.java"
+    ],
+    "PR_url": "https://github.com/netty/netty/pull/13427",
+    "merge_commit_url": "https://github.com/netty/netty/commit/385b2880845520c6a50f8de5ed0653a2c7d75173",
+    "buggy_commit": "bc3035f51b8524e737f5f9b693957977a88258e9",
+    "execution_result": {
+      "test_src": [
+        ".io.netty.handler.codec.socks.SocksCmdRequestTest#testIDNEncodeToAsciiForDomain"
+      ],
+      "test_tgt": [
+        ".io.netty.handler.codec.socks.SocksCmdRequestTest#testIDNEncodeToAsciiForDomain",
+        ".io.netty.handler.codec.socks.SocksCmdRequestTest#testEndianessForPort"
+      ]
+    }
+  },
+  "netty_netty-13452": {
+    "bug_id": "netty_netty-13452",
+    "PR_number": 13452,
+    "PR_createdAt": "2023-06-15T18:49:43Z",
+    "merge_commit": "26a7df3e9a5a4945786a736ad28cb2db62015016",
+    "buggy_commits": [
+      {
+        "oid": "b87831421109536df204bde0023921163fba4696",
+        "message": "Delay possibility to reuse transaction id when query is failing becau\u2026 (#13446)\n\n\u2026se of timeout\r\n\r\nMotivation:\r\n\r\nWe should try to make it as unlikely as possible that we will reuse a\r\ntransaction for a query while the remote peer still might send the\r\nresponse for the previously timed out query. Failing to do so put us in\r\nrisk that we will not be able to map the response correctly.\r\n\r\nThis reduces the risk of the following scenario:\r\n\r\n- Query is send to the remote nameeserver\r\n- Query is failed as the remote nameserver did not respond in the\r\nconfigured time\r\n- New query is send which uses the same transaction id as the failed\r\none. While we use a random to generate these this can still happen as we\r\nonly have 16bits for the id\r\n- nameserver sends back the response for the first query (that we\r\nalready failed as timed out)\r\n- We lookup the query for the id and find the new one and try to\r\ncomplete it with the response for the \"old query\".\r\n- This fails as validation of hostname etc not matches.\r\n\r\nModifications:\r\n\r\nIf we fail a query because of a timeout or cancellation, delay the removal of the id from\r\nthe context map. This will make the id not-reusable until the removal\r\nactually take place.\r\n\r\nResult:\r\n\r\nMuch less likely to reuse an id while the remote nameserver might still\r\nrespond to the old query"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/netty/netty/issues/13328",
+      "createdAt": "2023-04-13T14:07:54Z",
+      "content": "bug_report_all/netty_netty-13452.json"
+    },
+    "changed_tests": [
+      "transport/src/test/java/io/netty/channel/nio/SelectedSelectionKeySetTest.java"
+    ],
+    "PR_url": "https://github.com/netty/netty/pull/13452",
+    "merge_commit_url": "https://github.com/netty/netty/commit/26a7df3e9a5a4945786a736ad28cb2db62015016",
+    "buggy_commit": "b87831421109536df204bde0023921163fba4696",
+    "execution_result": {
+      "test_src": [
+        ".io.netty.channel.nio.SelectedSelectionKeySetTest#contains"
+      ],
+      "test_tgt": [
+        ".io.netty.channel.nio.SelectedSelectionKeySetTest#contains"
+      ]
+    }
+  },
+  "netty_netty-13769": {
+    "bug_id": "netty_netty-13769",
+    "PR_number": 13769,
+    "PR_createdAt": "2024-01-07T17:58:34Z",
+    "merge_commit": "6c883d620722c12e19561ce1a10b41fadfbd6a60",
+    "buggy_commits": [
+      {
+        "oid": "79371e1f1e36cc20e949c8576dc5cf3d3d1ed20a",
+        "message": "Fix copy-paste mistake in LazyX509Certificate.getIssuerAlternativeNames() (#13797)\n\nMotivation:\r\n\r\nAt present, `LazyX509Certificate.getIssuerAlternativeNames()` returns\r\ncompletely incorrect values. I discovered this while working on a\r\nproject for my employer, HubSpot. We are planning to use this field to\r\nconvey some company-specific authentication information in our internal\r\nsystems. This bug is somewhat blocking our ability to read these values\r\ninside HBase servers, which use Netty for TLS support.\r\n\r\nModification:\r\n\r\n- Change the one-line implementation of this method from `return unwrap().getSubjectAlternativeNames();` to `return unwrap().getIssuerAlternativeNames();`\r\n- Add unit tests\r\n\r\nResult:\r\n\r\nGet the correct values from the certificate.\r\n\r\nFixes #13796. \r\n\r\n---------\r\n\r\nCo-authored-by: Charles Connell <cconnell@hubspot.com>\r\nCo-authored-by: Norman Maurer <norman_maurer@apple.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/netty/netty/issues/13740",
+      "createdAt": "2023-12-19T08:47:26Z",
+      "content": "bug_report_all/netty_netty-13769.json"
+    },
+    "changed_tests": [
+      "codec-http/src/test/java/io/netty/handler/codec/http/cookie/ClientCookieDecoderTest.java",
+      "codec-http/src/test/java/io/netty/handler/codec/http/cookie/ServerCookieEncoderTest.java"
+    ],
+    "PR_url": "https://github.com/netty/netty/pull/13769",
+    "merge_commit_url": "https://github.com/netty/netty/commit/6c883d620722c12e19561ce1a10b41fadfbd6a60",
+    "buggy_commit": "79371e1f1e36cc20e949c8576dc5cf3d3d1ed20a",
+    "execution_result": {
+      "test_src": [
+        ".io.netty.handler.codec.http.cookie.ClientCookieDecoderTest#testDecodingSingleCookieV0",
+        ".io.netty.handler.codec.http.cookie.ServerCookieEncoderTest#testEncodingSingleCookieV0"
+      ],
+      "test_tgt": [
+        ".io.netty.handler.codec.http.cookie.ClientCookieDecoderTest#testDecodingSingleCookieV0",
+        ".io.netty.handler.codec.http.cookie.ServerCookieEncoderTest#testEncodingSingleCookieV0"
+      ]
+    }
+  },
+  "netty_netty-13998": {
+    "bug_id": "netty_netty-13998",
+    "PR_number": 13998,
+    "PR_createdAt": "2024-04-23T13:28:05Z",
+    "merge_commit": "a300058380ec531db9af9d18585bd732e3039355",
+    "buggy_commits": [
+      {
+        "oid": "d868c7b5926c0c00a2367543ba91901072cce636",
+        "message": "Support bc-fips in BouncyCastleSelfSignedCertGenerator (#13954)\n\nMotivation:\n\nWhen using the bouncycastle FIPS dependencies (bcpkix-fips instead of\nbcpkix, and bc-fips instead of bcprov), BouncyCastleProvider is replaced\nby BouncyCastleFipsProvider. This made\nBouncyCastleSelfSignedCertGenerator fail even though all the necessary\nalgorithms are present.\n\nWhile bc-fips is only necessary for fips-compliant production\ndeployments, and self-signed certs are only necessary in test\ndeployments that don't have to be fips-compliant, this change is still\nuseful because the fips and non-fips artifacts cannot exist alongside\neach other. So if you have a prod fips dependency, tests that also have\na non-fips dependency for self-signed certs cannot live alongside each\nother. It's easiest to just use the fips dependency everywhere.\n\nModification:\n\nUse reflection in BouncyCastleSelfSignedCertGenerator to instantiate\nwhichever provider is available. This has the advantage of not needing a\nnew dependency, though it may have some impact on native image\ndeployments. For this reason I've also added the providers to the\nreflect-config.json.\n\nNo test is possible because it would require a different classpath. I\ntested manually that it works by changing to the fips dependencies and\nthen running SelfSignedCertificateTest, and checking with a debugger\nthat the correct provider was used.\n\nResult:\n\nSelfSignedCertificate will work with bc-fips dependencies."
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/netty/netty/issues/13981",
+      "createdAt": "2024-04-17T14:11:17Z",
+      "content": "bug_report_all/netty_netty-13998.json"
+    },
+    "changed_tests": [
+      "codec-http/src/test/java/io/netty/handler/codec/http/multipart/HttpPostStandardRequestDecoderTest.java"
+    ],
+    "PR_url": "https://github.com/netty/netty/pull/13998",
+    "merge_commit_url": "https://github.com/netty/netty/commit/a300058380ec531db9af9d18585bd732e3039355",
+    "buggy_commit": "d868c7b5926c0c00a2367543ba91901072cce636",
+    "execution_result": {
+      "test_src": [
+        ".io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoderTest#testDecodeSingleAttributeWithNoValue",
+        ".io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoderTest#testDecodeSingleAttributeWithNoValueEmptyLast",
+        ".io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoderTest#testDecodeEndAttributeWithNoValue",
+        ".io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoderTest#testDecodeMultipleAttributesWithNoValue"
+      ],
+      "test_tgt": [
+        ".io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoderTest#testDecodeSingleAttributeWithNoValue",
+        ".io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoderTest#testDecodeSingleAttributeWithNoValueEmptyLast",
+        ".io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoderTest#testDecodeEndAttributeWithNoValue",
+        ".io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoderTest#testDecodeJsonAttributeAsEmpty",
+        ".io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoderTest#testDecodeJsonAttributeAsEmptyAndNoHeaders",
+        ".io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoderTest#testDecodeMultipleAttributesWithNoValue"
+      ]
+    }
+  }
+}

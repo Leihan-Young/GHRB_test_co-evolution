@@ -1,0 +1,6 @@
+{
+    "exclude": [
+      "**/raw_repos",
+      "**/repos"
+    ]
+  }

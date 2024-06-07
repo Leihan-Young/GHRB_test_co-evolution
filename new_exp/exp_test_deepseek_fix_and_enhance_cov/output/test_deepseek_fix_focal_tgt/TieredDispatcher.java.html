@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TieredDispatcher.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-tiered-store 5.1.4-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.tieredstore</a> &gt; <span class="el_source">TieredDispatcher.java</span></div><h1>TieredDispatcher.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.rocketmq.tieredstore;
+
+import io.opentelemetry.api.common.Attributes;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import org.apache.rocketmq.common.ServiceThread;
+import org.apache.rocketmq.common.message.MessageConst;
+import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.logging.org.slf4j.Logger;
+import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+import org.apache.rocketmq.store.CommitLogDispatcher;
+import org.apache.rocketmq.store.ConsumeQueue;
+import org.apache.rocketmq.store.DispatchRequest;
+import org.apache.rocketmq.store.MessageStore;
+import org.apache.rocketmq.store.SelectMappedBufferResult;
+import org.apache.rocketmq.tieredstore.common.AppendResult;
+import org.apache.rocketmq.tieredstore.common.FileSegmentType;
+import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
+import org.apache.rocketmq.tieredstore.common.TieredStoreExecutor;
+import org.apache.rocketmq.tieredstore.file.CompositeQueueFlatFile;
+import org.apache.rocketmq.tieredstore.file.TieredFlatFileManager;
+import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant;
+import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManager;
+import org.apache.rocketmq.tieredstore.util.CQItemBufferUtil;
+import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
+import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
+
+public class TieredDispatcher extends ServiceThread implements CommitLogDispatcher {
+
+<span class="fc" id="L57">    private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);</span>
+
+    private final String brokerName;
+    private final MessageStore defaultStore;
+    private final TieredMessageStoreConfig storeConfig;
+    private final TieredFlatFileManager tieredFlatFileManager;
+    private final ReentrantLock dispatchTaskLock;
+    private final ReentrantLock dispatchWriteLock;
+
+    private ConcurrentMap&lt;CompositeQueueFlatFile, List&lt;DispatchRequest&gt;&gt; dispatchRequestReadMap;
+    private ConcurrentMap&lt;CompositeQueueFlatFile, List&lt;DispatchRequest&gt;&gt; dispatchRequestWriteMap;
+
+<span class="fc" id="L69">    public TieredDispatcher(MessageStore defaultStore, TieredMessageStoreConfig storeConfig) {</span>
+<span class="fc" id="L70">        this.defaultStore = defaultStore;</span>
+<span class="fc" id="L71">        this.storeConfig = storeConfig;</span>
+<span class="fc" id="L72">        this.brokerName = storeConfig.getBrokerName();</span>
+<span class="fc" id="L73">        this.tieredFlatFileManager = TieredFlatFileManager.getInstance(storeConfig);</span>
+<span class="fc" id="L74">        this.dispatchRequestReadMap = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L75">        this.dispatchRequestWriteMap = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L76">        this.dispatchTaskLock = new ReentrantLock();</span>
+<span class="fc" id="L77">        this.dispatchWriteLock = new ReentrantLock();</span>
+<span class="fc" id="L78">        this.initScheduleTask();</span>
+<span class="fc" id="L79">    }</span>
+
+    private void initScheduleTask() {
+<span class="fc" id="L82">        TieredStoreExecutor.commonScheduledExecutor.scheduleWithFixedDelay(() -&gt;</span>
+<span class="nc" id="L83">            tieredFlatFileManager.deepCopyFlatFileToList().forEach(flatFile -&gt; {</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                if (!flatFile.getCompositeFlatFileLock().isLocked()) {</span>
+<span class="nc" id="L85">                    dispatchFlatFileAsync(flatFile);</span>
+                }
+<span class="nc" id="L87">            }), 30, 10, TimeUnit.SECONDS);</span>
+<span class="fc" id="L88">    }</span>
+
+    @Override
+    public void dispatch(DispatchRequest request) {
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (stopped) {</span>
+<span class="nc" id="L93">            return;</span>
+        }
+
+<span class="nc" id="L96">        String topic = request.getTopic();</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (TieredStoreUtil.isSystemTopic(topic)) {</span>
+<span class="nc" id="L98">            return;</span>
+        }
+
+<span class="nc" id="L101">        CompositeQueueFlatFile flatFile = tieredFlatFileManager.getOrCreateFlatFileIfAbsent(</span>
+<span class="nc" id="L102">            new MessageQueue(topic, brokerName, request.getQueueId()));</span>
+
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (flatFile == null) {</span>
+<span class="nc" id="L105">            logger.error(&quot;[Bug] TieredDispatcher#dispatch: get or create flat file failed, skip this request. &quot;,</span>
+<span class="nc" id="L106">                &quot;topic: {}, queueId: {}&quot;, request.getTopic(), request.getQueueId());</span>
+<span class="nc" id="L107">            return;</span>
+        }
+
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (detectFallBehind(flatFile)) {</span>
+<span class="nc" id="L111">            return;</span>
+        }
+
+        // Set cq offset as commitlog first dispatch offset if flat file first init
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (flatFile.getDispatchOffset() == -1) {</span>
+<span class="nc" id="L116">            flatFile.initOffset(request.getConsumeQueueOffset());</span>
+        }
+
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (request.getConsumeQueueOffset() == flatFile.getDispatchOffset()) {</span>
+
+            // In order to ensure the efficiency of dispatch operation and avoid high dispatch delay,
+            // it is not allowed to block for a long time here.
+            try {
+                // Acquired flat file write lock to append commitlog
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                if (flatFile.getCompositeFlatFileLock().isLocked()</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">                    || !flatFile.getCompositeFlatFileLock().tryLock(3, TimeUnit.MILLISECONDS)) {</span>
+<span class="nc" id="L127">                    return;</span>
+                }
+<span class="nc" id="L129">            } catch (Exception e) {</span>
+<span class="nc" id="L130">                logger.warn(&quot;Temporarily skip dispatch request because we can not acquired write lock. &quot; +</span>
+<span class="nc" id="L131">                    &quot;topic: {}, queueId: {}&quot;, request.getTopic(), request.getQueueId(), e);</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">                if (flatFile.getCompositeFlatFileLock().isLocked()) {</span>
+<span class="nc" id="L133">                    flatFile.getCompositeFlatFileLock().unlock();</span>
+                }
+<span class="nc" id="L135">                return;</span>
+<span class="nc" id="L136">            }</span>
+
+            // double check whether the offset matches
+<span class="nc bnc" id="L139" title="All 2 branches missed.">            if (request.getConsumeQueueOffset() != flatFile.getDispatchOffset()) {</span>
+<span class="nc" id="L140">                flatFile.getCompositeFlatFileLock().unlock();</span>
+<span class="nc" id="L141">                return;</span>
+            }
+
+            // obtain message
+<span class="nc" id="L145">            SelectMappedBufferResult message =</span>
+<span class="nc" id="L146">                defaultStore.selectOneMessageByOffset(request.getCommitLogOffset(), request.getMsgSize());</span>
+
+<span class="nc bnc" id="L148" title="All 2 branches missed.">            if (message == null) {</span>
+<span class="nc" id="L149">                logger.error(&quot;TieredDispatcher#dispatch: dispatch failed, &quot; +</span>
+                        &quot;can not get message from next store: topic: {}, queueId: {}, commitLog offset: {}, size: {}&quot;,
+<span class="nc" id="L151">                    request.getTopic(), request.getQueueId(), request.getCommitLogOffset(), request.getMsgSize());</span>
+<span class="nc" id="L152">                flatFile.getCompositeFlatFileLock().unlock();</span>
+<span class="nc" id="L153">                return;</span>
+            }
+
+            // drop expired request
+            try {
+<span class="nc bnc" id="L158" title="All 2 branches missed.">                if (request.getConsumeQueueOffset() &lt; flatFile.getDispatchOffset()) {</span>
+<span class="nc" id="L159">                    return;</span>
+                }
+<span class="nc" id="L161">                AppendResult result = flatFile.appendCommitLog(message.getByteBuffer());</span>
+<span class="nc" id="L162">                long newCommitLogOffset = flatFile.getCommitLogMaxOffset() - message.getByteBuffer().remaining();</span>
+<span class="nc" id="L163">                doRedispatchRequestToWriteMap(result, flatFile, request.getConsumeQueueOffset(),</span>
+<span class="nc" id="L164">                    newCommitLogOffset, request.getMsgSize(), request.getTagsCode(), message.getByteBuffer());</span>
+
+<span class="nc bnc" id="L166" title="All 2 branches missed.">                if (result == AppendResult.SUCCESS) {</span>
+<span class="nc" id="L167">                    Attributes attributes = TieredStoreMetricsManager.newAttributesBuilder()</span>
+<span class="nc" id="L168">                        .put(TieredStoreMetricsConstant.LABEL_TOPIC, request.getTopic())</span>
+<span class="nc" id="L169">                        .put(TieredStoreMetricsConstant.LABEL_QUEUE_ID, request.getQueueId())</span>
+<span class="nc" id="L170">                        .put(TieredStoreMetricsConstant.LABEL_FILE_TYPE,</span>
+<span class="nc" id="L171">                            FileSegmentType.COMMIT_LOG.name().toLowerCase())</span>
+<span class="nc" id="L172">                        .build();</span>
+<span class="nc" id="L173">                    TieredStoreMetricsManager.messagesDispatchTotal.add(1, attributes);</span>
+                }
+<span class="nc" id="L175">            } catch (Exception throwable) {</span>
+<span class="nc" id="L176">                logger.error(&quot;TieredDispatcher#dispatch: dispatch has unexpected problem. &quot; +</span>
+<span class="nc" id="L177">                        &quot;topic: {}, queueId: {}, queue offset: {}&quot;, request.getTopic(), request.getQueueId(),</span>
+<span class="nc" id="L178">                    request.getConsumeQueueOffset(), throwable);</span>
+            } finally {
+<span class="nc" id="L180">                message.release();</span>
+<span class="nc" id="L181">                flatFile.getCompositeFlatFileLock().unlock();</span>
+            }
+        }
+<span class="nc" id="L184">    }</span>
+
+    // prevent consume queue and index file falling too far
+    private boolean detectFallBehind(CompositeQueueFlatFile flatFile) {
+<span class="nc" id="L188">        int groupCommitCount = storeConfig.getTieredStoreMaxGroupCommitCount();</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        return dispatchRequestWriteMap.getOrDefault(flatFile, Collections.emptyList()).size() &gt; groupCommitCount</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            || dispatchRequestReadMap.getOrDefault(flatFile, Collections.emptyList()).size() &gt; groupCommitCount;</span>
+    }
+
+    public void dispatchFlatFileAsync(CompositeQueueFlatFile flatFile) {
+<span class="nc" id="L194">        this.dispatchFlatFileAsync(flatFile, null);</span>
+<span class="nc" id="L195">    }</span>
+
+    public void dispatchFlatFileAsync(CompositeQueueFlatFile flatFile, Consumer&lt;Long&gt; consumer) {
+        // Avoid dispatch tasks too much
+<span class="nc bnc" id="L199" title="All 2 branches missed.">        if (TieredStoreExecutor.dispatchThreadPoolQueue.size() &gt;</span>
+            TieredStoreExecutor.QUEUE_CAPACITY * 0.75) {
+<span class="nc" id="L201">            return;</span>
+        }
+<span class="nc" id="L203">        TieredStoreExecutor.dispatchExecutor.execute(() -&gt; {</span>
+            try {
+<span class="nc" id="L205">                dispatchFlatFile(flatFile);</span>
+<span class="nc" id="L206">            } catch (Throwable throwable) {</span>
+<span class="nc" id="L207">                logger.error(&quot;[Bug] TieredDispatcher#dispatchFlatFileAsync failed, topic: {}, queueId: {}&quot;,</span>
+<span class="nc" id="L208">                    flatFile.getMessageQueue().getTopic(), flatFile.getMessageQueue().getQueueId(), throwable);</span>
+<span class="nc" id="L209">            }</span>
+
+<span class="nc bnc" id="L211" title="All 2 branches missed.">            if (consumer != null) {</span>
+<span class="nc" id="L212">                consumer.accept(flatFile.getDispatchOffset());</span>
+            }
+<span class="nc" id="L214">        });</span>
+<span class="nc" id="L215">    }</span>
+
+    protected void dispatchFlatFile(CompositeQueueFlatFile flatFile) {
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">        if (stopped) {</span>
+<span class="nc" id="L219">            return;</span>
+        }
+
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">        if (flatFile.getDispatchOffset() == -1L) {</span>
+<span class="fc" id="L223">            return;</span>
+        }
+
+<span class="nc bnc" id="L226" title="All 2 branches missed.">        if (detectFallBehind(flatFile)) {</span>
+<span class="nc" id="L227">            return;</span>
+        }
+
+<span class="nc" id="L230">        MessageQueue mq = flatFile.getMessageQueue();</span>
+<span class="nc" id="L231">        String topic = mq.getTopic();</span>
+<span class="nc" id="L232">        int queueId = mq.getQueueId();</span>
+
+<span class="nc" id="L234">        long beforeOffset = flatFile.getDispatchOffset();</span>
+<span class="nc" id="L235">        long minOffsetInQueue = defaultStore.getMinOffsetInQueue(topic, queueId);</span>
+<span class="nc" id="L236">        long maxOffsetInQueue = defaultStore.getMaxOffsetInQueue(topic, queueId);</span>
+
+        // perhaps it was caused by local cq file corruption or ha truncation
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        if (beforeOffset &gt;= maxOffsetInQueue) {</span>
+<span class="nc" id="L240">            return;</span>
+        }
+
+        try {
+<span class="nc bnc" id="L244" title="All 2 branches missed.">            if (!flatFile.getCompositeFlatFileLock().tryLock(200, TimeUnit.MILLISECONDS)) {</span>
+<span class="nc" id="L245">                return;</span>
+            }
+<span class="nc" id="L247">        } catch (Exception e) {</span>
+<span class="nc" id="L248">            logger.warn(&quot;TieredDispatcher#dispatchFlatFile: can not acquire flatFile lock, &quot; +</span>
+<span class="nc" id="L249">                &quot;topic: {}, queueId: {}&quot;, mq.getTopic(), mq.getQueueId(), e);</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">            if (flatFile.getCompositeFlatFileLock().isLocked()) {</span>
+<span class="nc" id="L251">                flatFile.getCompositeFlatFileLock().unlock();</span>
+            }
+<span class="nc" id="L253">            return;</span>
+<span class="nc" id="L254">        }</span>
+
+        try {
+<span class="nc" id="L257">            long dispatchOffset = flatFile.getDispatchOffset();</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">            if (dispatchOffset &lt; minOffsetInQueue) {</span>
+                // If the tiered storage feature is turned off midway,
+                // it may cause cq discontinuity, resulting in data loss here.
+<span class="nc" id="L261">                logger.warn(&quot;TieredDispatcher#dispatchFlatFile: dispatch offset is too small, &quot; +</span>
+                        &quot;topic: {}, queueId: {}, dispatch offset: {}, local cq offset range {}-{}&quot;,
+<span class="nc" id="L263">                    topic, queueId, dispatchOffset, minOffsetInQueue, maxOffsetInQueue);</span>
+
+                // when dispatch offset is smaller than min offset in local cq
+                // some earliest messages may be lost at this time
+<span class="nc" id="L267">                tieredFlatFileManager.destroyCompositeFile(flatFile.getMessageQueue());</span>
+<span class="nc" id="L268">                CompositeQueueFlatFile newFlatFile =</span>
+<span class="nc" id="L269">                    tieredFlatFileManager.getOrCreateFlatFileIfAbsent(new MessageQueue(topic, brokerName, queueId));</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">                if (newFlatFile != null) {</span>
+<span class="nc" id="L271">                    newFlatFile.initOffset(maxOffsetInQueue);</span>
+                }
+<span class="nc" id="L273">                return;</span>
+            }
+<span class="nc" id="L275">            beforeOffset = dispatchOffset;</span>
+
+            // flow control by max count, also we could do flow control based on message size
+<span class="nc" id="L278">            long maxCount = storeConfig.getTieredStoreGroupCommitCount();</span>
+<span class="nc" id="L279">            long upperBound = Math.min(dispatchOffset + maxCount, maxOffsetInQueue);</span>
+<span class="nc" id="L280">            ConsumeQueue consumeQueue = (ConsumeQueue) defaultStore.getConsumeQueue(topic, queueId);</span>
+
+<span class="nc" id="L282">            logger.debug(&quot;DispatchFlatFile race, topic={}, queueId={}, cq range={}-{}, dispatch offset={}-{}&quot;,</span>
+<span class="nc" id="L283">                topic, queueId, minOffsetInQueue, maxOffsetInQueue, dispatchOffset, upperBound - 1);</span>
+
+<span class="nc bnc" id="L285" title="All 2 branches missed.">            for (; dispatchOffset &lt; upperBound; dispatchOffset++) {</span>
+                // get consume queue
+<span class="nc" id="L287">                SelectMappedBufferResult cqItem = consumeQueue.getIndexBuffer(dispatchOffset);</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">                if (cqItem == null) {</span>
+<span class="nc" id="L289">                    logger.error(&quot;[Bug] TieredDispatcher#dispatchFlatFile: cq item is null, &quot; +</span>
+                            &quot;topic: {}, queueId: {}, dispatch offset: {}, local cq offset range {}-{}&quot;,
+<span class="nc" id="L291">                        topic, queueId, dispatchOffset, minOffsetInQueue, maxOffsetInQueue);</span>
+<span class="nc" id="L292">                    return;</span>
+                }
+<span class="nc" id="L294">                long commitLogOffset = CQItemBufferUtil.getCommitLogOffset(cqItem.getByteBuffer());</span>
+<span class="nc" id="L295">                int size = CQItemBufferUtil.getSize(cqItem.getByteBuffer());</span>
+<span class="nc" id="L296">                long tagCode = CQItemBufferUtil.getTagCode(cqItem.getByteBuffer());</span>
+<span class="nc" id="L297">                cqItem.release();</span>
+
+                // get message
+<span class="nc" id="L300">                SelectMappedBufferResult message = defaultStore.selectOneMessageByOffset(commitLogOffset, size);</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">                if (message == null) {</span>
+<span class="nc" id="L302">                    logger.error(&quot;TieredDispatcher#dispatchFlatFile: get message from next store failed, &quot; +</span>
+                            &quot;topic: {}, queueId: {}, commitLog offset: {}, size: {}&quot;,
+<span class="nc" id="L304">                        topic, queueId, commitLogOffset, size);</span>
+                    // not dispatch immediately
+<span class="nc" id="L306">                    return;</span>
+                }
+
+                // append commitlog will increase dispatch offset here
+<span class="nc" id="L310">                AppendResult result = flatFile.appendCommitLog(message.getByteBuffer(), true);</span>
+<span class="nc" id="L311">                long newCommitLogOffset = flatFile.getCommitLogMaxOffset() - message.getByteBuffer().remaining();</span>
+<span class="nc" id="L312">                doRedispatchRequestToWriteMap(</span>
+<span class="nc" id="L313">                    result, flatFile, dispatchOffset, newCommitLogOffset, size, tagCode, message.getByteBuffer());</span>
+<span class="nc" id="L314">                message.release();</span>
+
+<span class="nc bnc" id="L316" title="All 3 branches missed.">                switch (result) {</span>
+                    case SUCCESS:
+<span class="nc" id="L318">                        continue;</span>
+                    case FILE_CLOSED:
+<span class="nc" id="L320">                        tieredFlatFileManager.destroyCompositeFile(flatFile.getMessageQueue());</span>
+<span class="nc" id="L321">                        logger.info(&quot;TieredDispatcher#dispatchFlatFile: file has been close and destroy, &quot; +</span>
+<span class="nc" id="L322">                            &quot;topic: {}, queueId: {}&quot;, topic, queueId);</span>
+<span class="nc" id="L323">                        return;</span>
+                    default:
+<span class="nc" id="L325">                        dispatchOffset--;</span>
+                        break;
+                }
+            }
+
+<span class="nc" id="L330">            Attributes attributes = TieredStoreMetricsManager.newAttributesBuilder()</span>
+<span class="nc" id="L331">                .put(TieredStoreMetricsConstant.LABEL_TOPIC, mq.getTopic())</span>
+<span class="nc" id="L332">                .put(TieredStoreMetricsConstant.LABEL_QUEUE_ID, mq.getQueueId())</span>
+<span class="nc" id="L333">                .put(TieredStoreMetricsConstant.LABEL_FILE_TYPE, FileSegmentType.COMMIT_LOG.name().toLowerCase())</span>
+<span class="nc" id="L334">                .build();</span>
+
+<span class="nc" id="L336">            TieredStoreMetricsManager.messagesDispatchTotal.add(dispatchOffset - beforeOffset, attributes);</span>
+        } finally {
+<span class="nc" id="L338">            flatFile.getCompositeFlatFileLock().unlock();</span>
+        }
+
+        // If this queue dispatch falls too far, dispatch again immediately
+<span class="nc bnc" id="L342" title="All 4 branches missed.">        if (flatFile.getDispatchOffset() &lt; maxOffsetInQueue &amp;&amp; !flatFile.getCompositeFlatFileLock().isLocked()) {</span>
+<span class="nc" id="L343">            dispatchFlatFileAsync(flatFile);</span>
+        }
+<span class="nc" id="L345">    }</span>
+
+    // Submit cq to write map if append commitlog success
+    public void doRedispatchRequestToWriteMap(AppendResult result, CompositeQueueFlatFile flatFile,
+        long queueOffset, long newCommitLogOffset, int size, long tagCode, ByteBuffer message) {
+
+<span class="nc" id="L351">        MessageQueue mq = flatFile.getMessageQueue();</span>
+<span class="nc" id="L352">        String topic = mq.getTopic();</span>
+<span class="nc" id="L353">        int queueId = mq.getQueueId();</span>
+
+<span class="nc bnc" id="L355" title="All 3 branches missed.">        switch (result) {</span>
+            case SUCCESS:
+<span class="nc" id="L357">                long offset = MessageBufferUtil.getQueueOffset(message);</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">                if (queueOffset != offset) {</span>
+<span class="nc" id="L359">                    logger.warn(&quot;Message cq offset in commitlog does not meet expectations, &quot; +</span>
+                            &quot;result={}, topic={}, queueId={}, cq offset={}, msg offset={}&quot;,
+<span class="nc" id="L361">                        AppendResult.OFFSET_INCORRECT, topic, queueId, queueOffset, offset);</span>
+                }
+                break;
+            case BUFFER_FULL:
+<span class="nc" id="L365">                logger.debug(&quot;Commitlog buffer full, result={}, topic={}, queueId={}, offset={}&quot;,</span>
+<span class="nc" id="L366">                    result, topic, queueId, queueOffset);</span>
+<span class="nc" id="L367">                return;</span>
+            default:
+<span class="nc" id="L369">                logger.info(&quot;Commitlog append failed, result={}, topic={}, queueId={}, offset={}&quot;,</span>
+<span class="nc" id="L370">                    result, topic, queueId, queueOffset);</span>
+<span class="nc" id="L371">                return;</span>
+        }
+
+<span class="nc" id="L374">        dispatchWriteLock.lock();</span>
+        try {
+<span class="nc" id="L376">            Map&lt;String, String&gt; properties = MessageBufferUtil.getProperties(message);</span>
+<span class="nc" id="L377">            DispatchRequest dispatchRequest = new DispatchRequest(</span>
+                topic,
+                queueId,
+                newCommitLogOffset,
+                size,
+                tagCode,
+<span class="nc" id="L383">                MessageBufferUtil.getStoreTimeStamp(message),</span>
+                queueOffset,
+<span class="nc" id="L385">                properties.getOrDefault(MessageConst.PROPERTY_KEYS, &quot;&quot;),</span>
+<span class="nc" id="L386">                properties.getOrDefault(MessageConst.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX, &quot;&quot;),</span>
+                0, 0, new HashMap&lt;&gt;());
+<span class="nc" id="L388">            dispatchRequest.setOffsetId(MessageBufferUtil.getOffsetId(message));</span>
+<span class="nc" id="L389">            List&lt;DispatchRequest&gt; requestList =</span>
+<span class="nc" id="L390">                dispatchRequestWriteMap.computeIfAbsent(flatFile, k -&gt; new ArrayList&lt;&gt;());</span>
+<span class="nc" id="L391">            requestList.add(dispatchRequest);</span>
+<span class="nc bnc" id="L392" title="All 2 branches missed.">            if (requestList.get(0).getConsumeQueueOffset() &gt;= flatFile.getConsumeQueueMaxOffset()) {</span>
+<span class="nc" id="L393">                wakeup();</span>
+            }
+        } finally {
+<span class="nc" id="L396">            dispatchWriteLock.unlock();</span>
+        }
+<span class="nc" id="L398">    }</span>
+
+    public void swapDispatchRequestList() {
+<span class="nc" id="L401">        dispatchWriteLock.lock();</span>
+        try {
+<span class="nc" id="L403">            dispatchRequestReadMap = dispatchRequestWriteMap;</span>
+<span class="nc" id="L404">            dispatchRequestWriteMap = new ConcurrentHashMap&lt;&gt;();</span>
+        } finally {
+<span class="nc" id="L406">            dispatchWriteLock.unlock();</span>
+        }
+<span class="nc" id="L408">    }</span>
+
+    public void copySurvivorObject() {
+<span class="nc bnc" id="L411" title="All 2 branches missed.">        if (dispatchRequestReadMap.isEmpty()) {</span>
+<span class="nc" id="L412">            return;</span>
+        }
+
+        try {
+<span class="nc" id="L416">            dispatchWriteLock.lock();</span>
+<span class="nc" id="L417">            dispatchRequestReadMap.forEach((flatFile, requestList) -&gt; {</span>
+<span class="nc" id="L418">                String topic = flatFile.getMessageQueue().getTopic();</span>
+<span class="nc" id="L419">                int queueId = flatFile.getMessageQueue().getQueueId();</span>
+<span class="nc bnc" id="L420" title="All 2 branches missed.">                if (requestList.isEmpty()) {</span>
+<span class="nc" id="L421">                    logger.warn(&quot;Copy survivor object failed, dispatch request list is empty, &quot; +</span>
+<span class="nc" id="L422">                        &quot;topic: {}, queueId: {}&quot;, topic, queueId);</span>
+<span class="nc" id="L423">                    return;</span>
+                }
+
+<span class="nc" id="L426">                List&lt;DispatchRequest&gt; requestListToWrite =</span>
+<span class="nc" id="L427">                    dispatchRequestWriteMap.computeIfAbsent(flatFile, k -&gt; new ArrayList&lt;&gt;());</span>
+
+<span class="nc bnc" id="L429" title="All 2 branches missed.">                if (!requestListToWrite.isEmpty()) {</span>
+<span class="nc" id="L430">                    long readOffset = requestList.get(requestList.size() - 1).getConsumeQueueOffset();</span>
+<span class="nc" id="L431">                    long writeOffset = requestListToWrite.get(0).getConsumeQueueOffset();</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">                    if (readOffset &gt; writeOffset) {</span>
+<span class="nc" id="L433">                        logger.warn(&quot;Copy survivor object failed, offset in request list are not continuous. &quot; +</span>
+                                &quot;topic: {}, queueId: {}, read offset: {}, write offset: {}&quot;,
+<span class="nc" id="L435">                            topic, queueId, readOffset, writeOffset);</span>
+
+                        // sort request list according cq offset
+<span class="nc" id="L438">                        requestList.sort(Comparator.comparingLong(DispatchRequest::getConsumeQueueOffset));</span>
+                    }
+                }
+
+<span class="nc" id="L442">                requestList.addAll(requestListToWrite);</span>
+<span class="nc" id="L443">                dispatchRequestWriteMap.put(flatFile, requestList);</span>
+<span class="nc" id="L444">            });</span>
+<span class="nc" id="L445">            dispatchRequestReadMap = new ConcurrentHashMap&lt;&gt;();</span>
+        } finally {
+<span class="nc" id="L447">            dispatchWriteLock.unlock();</span>
+        }
+<span class="nc" id="L449">    }</span>
+
+    protected void buildConsumeQueueAndIndexFile() {
+<span class="nc" id="L452">        swapDispatchRequestList();</span>
+<span class="nc" id="L453">        Map&lt;MessageQueue, Long&gt; cqMetricsMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L454">        Map&lt;MessageQueue, Long&gt; ifMetricsMap = new HashMap&lt;&gt;();</span>
+
+<span class="nc bnc" id="L456" title="All 2 branches missed.">        for (Map.Entry&lt;CompositeQueueFlatFile, List&lt;DispatchRequest&gt;&gt; entry : dispatchRequestReadMap.entrySet()) {</span>
+<span class="nc" id="L457">            CompositeQueueFlatFile flatFile = entry.getKey();</span>
+<span class="nc" id="L458">            List&lt;DispatchRequest&gt; requestList = entry.getValue();</span>
+<span class="nc bnc" id="L459" title="All 2 branches missed.">            if (flatFile.isClosed()) {</span>
+<span class="nc" id="L460">                requestList.clear();</span>
+            }
+
+<span class="nc" id="L463">            MessageQueue messageQueue = flatFile.getMessageQueue();</span>
+<span class="nc" id="L464">            Iterator&lt;DispatchRequest&gt; iterator = requestList.iterator();</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">            while (iterator.hasNext()) {</span>
+<span class="nc" id="L466">                DispatchRequest request = iterator.next();</span>
+
+                // remove expired request
+<span class="nc bnc" id="L469" title="All 2 branches missed.">                if (request.getConsumeQueueOffset() &lt; flatFile.getConsumeQueueMaxOffset()) {</span>
+<span class="nc" id="L470">                    iterator.remove();</span>
+<span class="nc" id="L471">                    continue;</span>
+                }
+
+                // wait uploading commitLog
+<span class="nc bnc" id="L475" title="All 2 branches missed.">                if (flatFile.getCommitLogDispatchCommitOffset() &lt; request.getConsumeQueueOffset()) {</span>
+<span class="nc" id="L476">                    break;</span>
+                }
+
+                // build consume queue
+<span class="nc" id="L480">                AppendResult result = flatFile.appendConsumeQueue(request, true);</span>
+
+                // handle build cq result
+<span class="nc bnc" id="L483" title="All 2 branches missed.">                if (AppendResult.SUCCESS.equals(result)) {</span>
+<span class="nc" id="L484">                    long cqCount = cqMetricsMap.computeIfAbsent(messageQueue, key -&gt; 0L);</span>
+<span class="nc" id="L485">                    cqMetricsMap.put(messageQueue, cqCount + 1);</span>
+
+                    // build index
+<span class="nc bnc" id="L488" title="All 2 branches missed.">                    if (storeConfig.isMessageIndexEnable()) {</span>
+<span class="nc" id="L489">                        result = flatFile.appendIndexFile(request);</span>
+<span class="nc bnc" id="L490" title="All 2 branches missed.">                        if (AppendResult.SUCCESS.equals(result)) {</span>
+<span class="nc" id="L491">                            long ifCount = ifMetricsMap.computeIfAbsent(messageQueue, key -&gt; 0L);</span>
+<span class="nc" id="L492">                            ifMetricsMap.put(messageQueue, ifCount + 1);</span>
+<span class="nc" id="L493">                            iterator.remove();</span>
+<span class="nc" id="L494">                        } else {</span>
+<span class="nc" id="L495">                            logger.warn(&quot;Build index failed, skip this message, &quot; +</span>
+                                    &quot;result: {}, topic: {}, queue: {}, request offset: {}&quot;,
+<span class="nc" id="L497">                                result, request.getTopic(), request.getQueueId(), request.getConsumeQueueOffset());</span>
+                        }
+                    }
+                    continue;
+                }
+
+<span class="nc bnc" id="L503" title="All 2 branches missed.">                if (AppendResult.OFFSET_INCORRECT.equals(result)) {</span>
+<span class="nc" id="L504">                    logger.error(&quot;Consume queue offset incorrect, try to recreated consume queue, &quot; +</span>
+                            &quot;result: {}, topic: {}, queue: {}, request offset: {}, current cq offset: {}&quot;,
+<span class="nc" id="L506">                        result, request.getTopic(), request.getQueueId(),</span>
+<span class="nc" id="L507">                        request.getConsumeQueueOffset(), flatFile.getConsumeQueueMaxOffset());</span>
+
+                    try {
+<span class="nc" id="L510">                        flatFile.getCompositeFlatFileLock().lock();</span>
+
+                        // reset dispatch offset, this operation will cause duplicate message in commitLog
+<span class="nc" id="L513">                        long minOffsetInQueue =</span>
+<span class="nc" id="L514">                            defaultStore.getMinOffsetInQueue(request.getTopic(), request.getQueueId());</span>
+
+                        // when dispatch offset is smaller than min offset in local cq
+                        // some messages may be lost at this time
+<span class="nc bnc" id="L518" title="All 2 branches missed.">                        if (flatFile.getConsumeQueueMaxOffset() &lt; minOffsetInQueue) {</span>
+                            // if we use flatFile.destroy() directly will cause manager reference leak.
+<span class="nc" id="L520">                            tieredFlatFileManager.destroyCompositeFile(flatFile.getMessageQueue());</span>
+<span class="nc" id="L521">                            logger.warn(&quot;Found cq max offset is smaller than local cq min offset, &quot; +</span>
+                                    &quot;so destroy tiered flat file to recreated, topic: {}, queueId: {}&quot;,
+<span class="nc" id="L523">                                request.getTopic(), request.getQueueId());</span>
+                        } else {
+<span class="nc" id="L525">                            flatFile.initOffset(flatFile.getConsumeQueueMaxOffset());</span>
+                        }
+
+                        // clean invalid dispatch request
+<span class="nc" id="L529">                        dispatchRequestWriteMap.remove(flatFile);</span>
+<span class="nc" id="L530">                        requestList.clear();</span>
+                    } finally {
+<span class="nc" id="L532">                        flatFile.getCompositeFlatFileLock().unlock();</span>
+                    }
+<span class="nc" id="L534">                    break;</span>
+                }
+
+                // other append result
+<span class="nc" id="L538">                logger.warn(&quot;Append consume queue failed, result: {}, topic: {}, queue: {}, request offset: {}&quot;,</span>
+<span class="nc" id="L539">                    result, request.getTopic(), request.getQueueId(), request.getConsumeQueueOffset());</span>
+<span class="nc" id="L540">            }</span>
+
+            // remove empty list, prevent send back
+<span class="nc bnc" id="L543" title="All 2 branches missed.">            if (requestList.isEmpty()) {</span>
+<span class="nc" id="L544">                dispatchRequestReadMap.remove(flatFile);</span>
+            }
+<span class="nc" id="L546">        }</span>
+
+<span class="nc" id="L548">        cqMetricsMap.forEach((messageQueue, count) -&gt; {</span>
+<span class="nc" id="L549">            Attributes attributes = TieredStoreMetricsManager.newAttributesBuilder()</span>
+<span class="nc" id="L550">                .put(TieredStoreMetricsConstant.LABEL_TOPIC, messageQueue.getTopic())</span>
+<span class="nc" id="L551">                .put(TieredStoreMetricsConstant.LABEL_QUEUE_ID, messageQueue.getQueueId())</span>
+<span class="nc" id="L552">                .put(TieredStoreMetricsConstant.LABEL_FILE_TYPE, FileSegmentType.CONSUME_QUEUE.name().toLowerCase())</span>
+<span class="nc" id="L553">                .build();</span>
+<span class="nc" id="L554">            TieredStoreMetricsManager.messagesDispatchTotal.add(count, attributes);</span>
+<span class="nc" id="L555">        });</span>
+
+<span class="nc" id="L557">        ifMetricsMap.forEach((messageQueue, count) -&gt; {</span>
+<span class="nc" id="L558">            Attributes attributes = TieredStoreMetricsManager.newAttributesBuilder()</span>
+<span class="nc" id="L559">                .put(TieredStoreMetricsConstant.LABEL_TOPIC, messageQueue.getTopic())</span>
+<span class="nc" id="L560">                .put(TieredStoreMetricsConstant.LABEL_QUEUE_ID, messageQueue.getQueueId())</span>
+<span class="nc" id="L561">                .put(TieredStoreMetricsConstant.LABEL_FILE_TYPE, FileSegmentType.INDEX.name().toLowerCase())</span>
+<span class="nc" id="L562">                .build();</span>
+<span class="nc" id="L563">            TieredStoreMetricsManager.messagesDispatchTotal.add(count, attributes);</span>
+<span class="nc" id="L564">        });</span>
+
+<span class="nc" id="L566">        copySurvivorObject();</span>
+<span class="nc" id="L567">    }</span>
+
+    // Allow work-stealing
+    public void doDispatchTask() {
+        try {
+<span class="nc" id="L572">            dispatchTaskLock.lock();</span>
+<span class="nc" id="L573">            buildConsumeQueueAndIndexFile();</span>
+<span class="nc" id="L574">        } catch (Exception e) {</span>
+<span class="nc" id="L575">            logger.error(&quot;Tiered storage do dispatch task failed&quot;, e);</span>
+        } finally {
+<span class="nc" id="L577">            dispatchTaskLock.unlock();</span>
+        }
+<span class="nc" id="L579">    }</span>
+
+    @Override
+    public String getServiceName() {
+<span class="nc" id="L583">        return &quot;TieredStoreDispatcherService&quot;;</span>
+    }
+
+    @Override
+    public void run() {
+<span class="nc bnc" id="L588" title="All 2 branches missed.">        while (!stopped) {</span>
+<span class="nc" id="L589">            waitForRunning(1000);</span>
+<span class="nc" id="L590">            doDispatchTask();</span>
+        }
+<span class="nc" id="L592">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

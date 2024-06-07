@@ -1,0 +1,191 @@
+[
+  {
+    "name": "dubbo",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/dubbo"
+  },
+  {
+    "name": "incubator-seata",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/incubator-seata"
+  },
+  {
+    "name": "skywalking",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/skywalking"
+  },
+  {
+    "name": "rocketmq",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/rocketmq"
+  },
+  {
+    "name": "hadoop",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/hadoop"
+  },
+  {
+    "name": "jfreechart",
+    "owner": {
+      "login": "jfree"
+    },
+    "url": "https://github.com/jfree/jfreechart"
+  },
+  {
+    "name": "commons-cli",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/commons-cli"
+  },
+  {
+    "name": "commons-codec",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/commons-codec"
+  },
+  {
+    "name": "commons-collections",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/commons-collections"
+  },
+  {
+    "name": "commons-compress",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/commons-compress"
+  },
+  {
+    "name": "commons-csv",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/commons-csv"
+  },
+  {
+    "name": "gson",
+    "owner": {
+      "login": "google"
+    },
+    "url": "https://github.com/google/gson"
+  },
+  {
+    "name": "jackson-core",
+    "owner": {
+      "login": "FasterXML"
+    },
+    "url": "https://github.com/FasterXML/jackson-core"
+  },
+  {
+    "name": "jackson-databind",
+    "owner": {
+      "login": "FasterXML"
+    },
+    "url": "https://github.com/FasterXML/jackson-databind"
+  },
+  {
+    "name": "jackson-dataformat-xml",
+    "owner": {
+      "login": "FasterXML"
+    },
+    "url": "https://github.com/FasterXML/jackson-dataformat-xml"
+  },
+  {
+    "name": "commons-jxpath",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/commons-jxpath"
+  },
+  {
+    "name": "commons-lang",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/commons-lang"
+  },
+  {
+    "name": "mockito",
+    "owner": {
+      "login": "mockito"
+    },
+    "url": "https://github.com/mockito/mockito"
+  },
+  {
+    "name": "joda-time",
+    "owner": {
+      "login": "JodaOrg"
+    },
+    "url": "https://github.com/JodaOrg/joda-time"
+  },
+  {
+    "name": "checkstyle",
+    "owner": {
+      "login": "checkstyle"
+    },
+    "url": "https://github.com/checkstyle/checkstyle"
+  },
+  {
+    "name": "incubator-seata",
+    "owner": {
+      "login": "apache"
+    },
+    "url": "https://github.com/apache/incubator-seata"
+  },
+  {
+    "name": "Apktool",
+    "owner": {
+      "login": "iBotPeaches"
+    },
+    "url": "https://github.com/iBotPeaches/Apktool"
+  },
+  {
+    "name": "openapi-generator",
+    "owner": {
+      "login": "OpenAPITools"
+    },
+    "url": "https://github.com/OpenAPITools/openapi-generator"
+  },
+  {
+    "name": "nacos",
+    "owner": {
+      "login": "alibaba"
+    },
+    "url": "https://github.com/alibaba/nacos"
+  },
+  {
+    "name": "fastjson",
+    "owner": {
+      "login": "alibaba"
+    },
+    "url": "https://github.com/alibaba/fastjson"
+  },
+  {
+    "name": "assertj",
+    "owner": {
+      "login": "assertj"
+    },
+    "url": "https://github.com/assertj/assertj"
+  },
+  {
+    "name": "sslcontext-kickstart",
+    "owner": {
+      "login": "Hakky54"
+    },
+    "url": "https://github.com/Hakky54/sslcontext-kickstart"
+  }
+]

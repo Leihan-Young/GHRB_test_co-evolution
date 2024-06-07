@@ -76,7 +76,7 @@ def parse_focal_method(repo_path, commit_src, commit_tgt, test_src, test_tgt, di
     # changed_methods = {}
     if not os.path.exists(f'./collected/prod_diff/{diff_name}.diff'):
         print("No prod changed")
-        return None, None, None
+        return None, None, None, None
     with open(f'./collected/prod_diff/{diff_name}.diff', 'r', encoding='utf-8') as f:
         diff_lines = f.readlines()
     for i in range(len(diff_lines)):
@@ -89,7 +89,8 @@ def parse_focal_method(repo_path, commit_src, commit_tgt, test_src, test_tgt, di
 
     related_prod_files = [f for f in changed_prod_files if f.split('/')[-1].replace('.java', '') in test_class_name]
     if len(related_prod_files) == 0:
-        return None, None, None
+        print("No related prod file")
+        return None, None, None, None
     related_prod_files = [max(related_prod_files, key=len)]
 
     methods_tgt = {}
@@ -123,44 +124,56 @@ def parse_focal_method(repo_path, commit_src, commit_tgt, test_src, test_tgt, di
         for ind in dup_tgt:
             methods_tgt_list.pop(ind)
 
-        for method_src in methods_src_list:
-            for method_tgt in methods_tgt_list:
-                if method_src.name != method_tgt.name:
-                    continue
-                changed_prod_methods.append((related_prod_file, method_src, method_tgt))
+        prod_src = methods_src_list
+        prod_tgt = methods_tgt_list
+        changed_prod_methods.append((related_prod_file, prod_src, prod_tgt))
+
+        # for method_src in methods_src_list:
+        #     for method_tgt in methods_tgt_list:
+        #         if method_src.name != method_tgt.name:
+        #             continue
+        #         changed_prod_methods.append((related_prod_file, method_src, method_tgt))
     
     related_methods = []
-    length = 0
-    for related_prod_file, method_src, method_tgt in changed_prod_methods:
-        if method_src.name.lower() in test_method_name.lower():
-            if len(method_src.name) > length:
-                related_methods = [(related_prod_file, method_src, method_tgt)]
-                length = len(method_src.name)
-    if len(related_methods) == 0 and invoked_methods != None:
-        for related_prod_file, method_src, method_tgt in changed_prod_methods:
-            if method_src.name in invoked_methods:
-                related_methods.append((related_prod_file, method_src, method_tgt))
-    if len(related_methods) > 0:
-        # print("More than 1 related methods")
-        focal_path = []
-        focal_src = []
-        focal_tgt = []
-        for related_prod_file, method_src, method_tgt in related_methods:
-            focal_path.append(f"{related_prod_file}#{method_src.name}")
-            checkout(repo_path, commit_src)
-            focal_src.append(''.join(extract_focal_code(repo_path, related_prod_file, method_src)))
-            checkout(repo_path, commit_tgt)
-            focal_tgt.append(''.join(extract_focal_code(repo_path, related_prod_file, method_tgt)))
-        return focal_path, focal_src, focal_tgt
-    # if len(related_methods) == 1:
-    #     # extract focal_src & focal_tgt
-    #     related_prod_file, method_src, method_tgt = related_methods[0]
-    #     checkout(repo_path, commit_src)
-    #     focal_src = extract_focal_code(repo_path, related_prod_file, method_src)
-    #     checkout(repo_path, commit_tgt)
-    #     focal_tgt = extract_focal_code(repo_path, related_prod_file, method_tgt)
-    #     return [''.join(focal_src)], [''.join(focal_tgt)]
-    return None, None, None
+    focal_path_src = []
+    focal_path_tgt = []
+    focal_src = []
+    focal_tgt = []
+    for related_prod_file, prod_src, prod_tgt in changed_prod_methods:
+        checkout(repo_path, commit_src)
+        for method_src in prod_src:
+            if method_src.name not in invoked_methods:
+                continue
+            focal_path_src.append(f"{related_prod_file}#{method_src.name}")
+            src_code = ''.join(extract_focal_code(repo_path, related_prod_file, method_src))
+            if src_code == "":
+                continue
+            focal_src.append(src_code)
+        checkout(repo_path, commit_tgt)
+        for method_tgt in prod_tgt:
+            if method_tgt.name not in invoked_methods:
+                continue
+            focal_path_tgt.append(f"{related_prod_file}#{method_tgt.name}")
+            src_code = ''.join(extract_focal_code(repo_path, related_prod_file, method_tgt))
+            if src_code == "":
+                continue
+            focal_tgt.append(src_code)
+    
+    if len(focal_src) == 0 or len(focal_tgt) == 0:
+        return None, None, None, None
+
+    # if len(related_methods) > 0:
+    #     focal_path = []
+    #     focal_src = []
+    #     focal_tgt = []
+    #     for related_prod_file, method_src, method_tgt in related_methods:
+    #         focal_path.append(f"{related_prod_file}#{method_src.name}")
+    #         checkout(repo_path, commit_src)
+    #         focal_src.append(''.join(extract_focal_code(repo_path, related_prod_file, method_src)))
+    #         checkout(repo_path, commit_tgt)
+    #         focal_tgt.append(''.join(extract_focal_code(repo_path, related_prod_file, method_tgt)))
+    #     return focal_path, focal_src, focal_tgt
+    return focal_path_src, focal_path_tgt, focal_src, focal_tgt
 
 def extract_focal_code(repo_path, prod_file, method):
     java_file_path = os.path.join(repo_path, prod_file)
@@ -171,6 +184,9 @@ def extract_focal_code(repo_path, prod_file, method):
     start = target_line_number
     while start >= 0:
         if java_code[start].find(method_name) != -1 and (java_code[start].find('public ') != -1 or java_code[start].find('private ') != -1 or java_code[start].find('protected ') != -1):
+            break
+        if java_code[start].find('@Test') != -1:
+            start = start + 1
             break
         start = start - 1
     # 如果方法前有Annotations
@@ -185,7 +201,7 @@ def extract_focal_code(repo_path, prod_file, method):
     while start >= 0:
         if java_code[start].find('/*') != -1:
             break
-        elif re.match('\s*(})\s*', java_code[start]) or java_code[start].find(' class ') != -1 or java_code[start].find(' interface ') != -1:
+        elif re.match('\s*(})\s*', java_code[start]) or java_code[start].find(' class ') != -1 or java_code[start].find(' interface ') != -1 or java_code[start].startswith('class '):
             start = tmp
             break
         start = start - 1
@@ -313,18 +329,25 @@ def extract_tuples_from_sample_info(sample_info, project_info):
         if test_path == None:
             continue
         tuple['test_tgt'] = filter_unchanged_tests(test_path, test, related_test_tgt, project_info['repo_path'], sample_info['buggy_commit'], sample_info['merge_commit'])
-        focal_path, focal_src, focal_tgt = parse_focal_method(project_info['repo_path'], sample_info['buggy_commit'], 
+        if len(tuple['test_tgt']) == 0:
+            print('test_tgt length = 0')
+            continue
+        focal_path_src, focal_path_tgt, focal_src, focal_tgt = parse_focal_method(project_info['repo_path'], sample_info['buggy_commit'], 
                                                   sample_info['merge_commit'], f'{test_path}#{test_method_name}', 
                                                   related_test_tgt, sample_info['bug_id'])
         tuple['test_src_code'] = parse_test_src_code(project_info['repo_path'], sample_info['buggy_commit'], f'{test_path}#{test_method_name}')
-        if focal_path == None or focal_src == None or focal_tgt == None:
+        if focal_path_src == None or focal_path_tgt == None or focal_src == None or focal_tgt == None:
             continue
-        for i in range(len(focal_path)):
-            tuple_copy = tuple.copy()
-            tuple_copy['focal_path'] = focal_path[i]
-            tuple_copy['focal_src'] = focal_src[i]
-            tuple_copy['focal_tgt'] = focal_tgt[i]
-            tuples.append(tuple_copy)
+        tuple['focal_path_src'] = focal_path_src
+        tuple['focal_path_tgt'] = focal_path_tgt
+        tuple['focal_src'] = focal_src
+        tuple['focal_tgt'] = focal_tgt
+        # for i in range(len(focal_path)):
+        #     tuple_copy = tuple.copy()
+        #     tuple_copy['focal_path'] = focal_path[i]
+        #     tuple_copy['focal_src'] = focal_src[i]
+        #     tuple_copy['focal_tgt'] = focal_tgt[i]
+        tuples.append(tuple)
     return tuples
 
 def parse_test_src_code(repo_path, commit, test):
@@ -334,13 +357,13 @@ def parse_test_src_code(repo_path, commit, test):
     with open(test_path, 'r', encoding='utf-8') as f:
         root_node = javalang.parse.parse(f.read())
     test_node = None
-    for path, node in root_node:
-        if isinstance(node, javalang.tree.MethodDeclaration) and node.name == test_method_name:
+    for path, node in root_node.filter(javalang.tree.MethodDeclaration):
+        if node.name == test_method_name:
             test_node = node
             break
     if test_node == None:
         return ""
-    test_src_code = extract_focal_code(repo_path, test_path, test_node)
+    test_src_code = extract_focal_code(repo_path, test.split('#')[0], test_node)
     return "".join(test_src_code)
 
 def filter_unchanged_tests(test_path, test_src, test_tgt, repo_path, commit_src, commit_tgt):
@@ -378,9 +401,10 @@ def extract_tuples_from_json(json_path, project_info):
         unverified_samples = json.load(f)
     tuples = []
     for sample_id, sample_info in tqdm(unverified_samples.items()):
-        # if sample_info['PR_number'] != 12158:
-        #     continue
-        tuples += extract_tuples_from_sample_info(sample_info, project_info)
+        try:
+            tuples += extract_tuples_from_sample_info(sample_info, project_info)
+        except Exception as e:
+            continue
     tuples_with_test_id = {}
     for i in range(len(tuples)):
         tuples[i]["test_id"] = i+1
@@ -388,6 +412,7 @@ def extract_tuples_from_json(json_path, project_info):
     return tuples_with_test_id
 
 if __name__ == "__main__":
+    # parse_test_src_code('./repos/assertj', '5fc69d002aac2a97dbfedfdd6085638ff1fca3f5', 'src/test/java/org/assertj/core/error/ShouldContainAnyOf_create_Test.java#should_create_error_message')
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--samples', type=str, help="The folder with unverified samples")
     args = parser.parse_args()
@@ -405,10 +430,10 @@ if __name__ == "__main__":
             if file.startswith("unverified_samples_") and file.endswith(".json"):
                 output_name = file.replace("unverified_samples", "verified_tuples")
                 project_name = file.split('_')[-1].replace(".json", "")
-                # if os.path.exists(f"verified/{output_name}"):
-                #     continue
-                # if project_name not in ('rocketmq'):
-                #     continue
+                if os.path.exists(f"verified/{output_name}"):
+                    continue
+                if project_name != 'gson':
+                    continue
                 print(project_name)
                 try:
                     tuples = extract_tuples_from_json(os.path.join(root, file), projects_info[project_name])

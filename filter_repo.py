@@ -32,6 +32,7 @@ def collect_repo_data (file):
     with open("scripts/graphql/fetchSpecificRepositoryData.graphql") as f:
         fetch_specific = f.read()
 
+    # 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
     api_token = input("GitHub API Token: ")
     url = 'https://api.github.com/graphql'
     headers = {'Authorization': 'Bearer %s' % api_token}
@@ -85,8 +86,8 @@ def filter_language_repo ():
     for repo in collected_repos.keys():
         description = BeautifulSoup(collected_repos[repo]["descriptionHTML"], 'html.parser').get_text()
         lang, _ = langid.classify(description)
-        if lang == 'en':
-            filtered_repos[repo] = collected_repos[repo]
+        # if lang == 'en':
+        filtered_repos[repo] = collected_repos[repo]
     
     return filtered_repos
 

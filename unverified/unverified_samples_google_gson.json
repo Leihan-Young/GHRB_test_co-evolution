@@ -1,35 +1,4 @@
 {
-  "google_gson-2337": {
-    "bug_id": "google_gson-2337",
-    "PR_number": 2337,
-    "PR_createdAt": "2023-03-06T15:40:50Z",
-    "merge_commit": "85ebaf7c3553a5d5c058fd6067824a7c5258d07f",
-    "buggy_commits": [
-      {
-        "oid": "0adcdc80d5ef3a40086a8abd6e2f55164a7c2597",
-        "message": "Fail Maven build on warnings (#2335)\n\n* Fail Maven build on warnings\r\n\r\n* Fix configuration parameter name\r\n\r\nFor the Javadoc plugin it is \"warnings\" (plural) instead of \"warning\""
-      }
-    ],
-    "issue": {
-      "url": "https://github.com/google/gson/issues/2334",
-      "createdAt": "2023-03-04T11:49:51Z",
-      "content": "bug_report_all/google_gson-2337.json"
-    },
-    "changed_tests": [
-      "gson/src/test/java/com/google/gson/stream/JsonReaderTest.java"
-    ],
-    "PR_url": "https://github.com/google/gson/pull/2337",
-    "merge_commit_url": "https://github.com/google/gson/commit/85ebaf7c3553a5d5c058fd6067824a7c5258d07f",
-    "buggy_commit": "0adcdc80d5ef3a40086a8abd6e2f55164a7c2597",
-    "execution_result": {
-      "test_src": [
-        ".com.google.gson.stream.JsonReaderTest#testUnescapingInvalidCharacters"
-      ],
-      "test_tgt": [
-        ".com.google.gson.stream.JsonReaderTest#testUnescapingInvalidCharacters"
-      ]
-    }
-  },
   "google_gson-2410": {
     "bug_id": "google_gson-2410",
     "PR_number": 2410,
@@ -190,6 +159,41 @@
         ".com.google.gson.functional.ObjectTest#testAnonymousLocalClassesSerialization",
         ".com.google.gson.functional.ObjectTest#testAnonymousLocalClassesCustomSerialization",
         ".com.google.gson.functional.ObjectTest#testAnonymousLocalClassesCustomDeserialization"
+      ]
+    }
+  },
+  "google_gson-2556": {
+    "bug_id": "google_gson-2556",
+    "PR_number": 2556,
+    "PR_createdAt": "2023-11-26T13:44:04Z",
+    "merge_commit": "13be1d104d5a5d39a93ff8202de4e75adbfc40f6",
+    "buggy_commits": [
+      {
+        "oid": "df0165b1bc125ceca97eae5749122ff206bb4c04",
+        "message": "Bump the maven group with 1 update (#2642)\n\nBumps the maven group with 1 update: [com.google.truth:truth](https://github.com/google/truth).\r\n\r\n\r\nUpdates `com.google.truth:truth` from 1.4.1 to 1.4.2\r\n- [Release notes](https://github.com/google/truth/releases)\r\n- [Commits](https://github.com/google/truth/compare/v1.4.1...v1.4.2)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: com.google.truth:truth\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n  dependency-group: maven\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/google/gson/issues/1529",
+      "createdAt": "2019-05-06T19:41:27Z",
+      "content": "bug_report_all/google_gson-2556.json"
+    },
+    "changed_tests": [
+      "gson/src/test/java/com/google/gson/GsonBuilderTest.java",
+      "gson/src/test/java/com/google/gson/functional/DefaultTypeAdaptersTest.java",
+      "gson/src/test/java/com/google/gson/internal/bind/DefaultDateTypeAdapterTest.java"
+    ],
+    "PR_url": "https://github.com/google/gson/pull/2556",
+    "merge_commit_url": "https://github.com/google/gson/commit/13be1d104d5a5d39a93ff8202de4e75adbfc40f6",
+    "buggy_commit": "df0165b1bc125ceca97eae5749122ff206bb4c04",
+    "execution_result": {
+      "test_src": [
+        ".com.google.gson.functional.DefaultTypeAdaptersTest#testDateSerializationWithStyle"
+      ],
+      "test_tgt": [
+        ".com.google.gson.functional.DefaultTypeAdaptersTest#testDateSerializationWithStyle",
+        ".com.google.gson.functional.DefaultTypeAdaptersTest#testDateSerializationWithDateStyle",
+        ".com.google.gson.functional.DefaultTypeAdaptersTest#testDateStyleOverwritesPattern"
       ]
     }
   },

@@ -1,0 +1,591 @@
+<?xml version="1.0" ?>
+<!DOCTYPE report
+  PUBLIC '-//JACOCO//DTD Report 1.1//EN'
+  'report.dtd'>
+<report name="Pulsar IO :: Redis">
+  <sessioninfo id="e27a2b3504c1-82d44712" start="1717408678603" dump="1717408680262"/>
+  <package name="org/apache/pulsar/io/redis/sink">
+    <class name="org/apache/pulsar/io/redis/sink/RedisSink" sourcefilename="RedisSink.java">
+      <method name="&lt;init&gt;" desc="()V" line="51">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="open" desc="(Ljava/util/Map;Lorg/apache/pulsar/io/core/SinkContext;)V" line="69">
+        <counter type="INSTRUCTION" missed="50" covered="0"/>
+        <counter type="LINE" missed="11" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="write" desc="(Lorg/apache/pulsar/functions/api/Record;)V" line="88">
+        <counter type="INSTRUCTION" missed="26" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="7" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="close" desc="()V" line="99">
+        <counter type="INSTRUCTION" missed="15" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="5" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="flush" desc="()V" line="109">
+        <counter type="INSTRUCTION" missed="130" covered="0"/>
+        <counter type="BRANCH" missed="16" covered="0"/>
+        <counter type="LINE" missed="36" covered="0"/>
+        <counter type="COMPLEXITY" missed="9" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;clinit&gt;" desc="()V" line="50">
+        <counter type="INSTRUCTION" missed="4" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="228" covered="0"/>
+      <counter type="BRANCH" missed="22" covered="0"/>
+      <counter type="LINE" missed="61" covered="0"/>
+      <counter type="COMPLEXITY" missed="17" covered="0"/>
+      <counter type="METHOD" missed="6" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="org/apache/pulsar/io/redis/sink/RedisSinkConfig" sourcefilename="RedisSinkConfig.java">
+      <method name="load" desc="(Ljava/lang/String;)Lorg/apache/pulsar/io/redis/sink/RedisSinkConfig;" line="63">
+        <counter type="INSTRUCTION" missed="16" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="load" desc="(Ljava/util/Map;Lorg/apache/pulsar/io/core/SinkContext;)Lorg/apache/pulsar/io/redis/sink/RedisSinkConfig;" line="68">
+        <counter type="INSTRUCTION" missed="6" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="validate" desc="()V" line="73">
+        <counter type="INSTRUCTION" missed="31" covered="0"/>
+        <counter type="BRANCH" missed="6" covered="0"/>
+        <counter type="LINE" missed="5" covered="0"/>
+        <counter type="COMPLEXITY" missed="4" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;init&gt;" desc="()V" line="36">
+        <counter type="INSTRUCTION" missed="12" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getOperationTimeout" desc="()J" line="47">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getBatchTimeMs" desc="()J" line="53">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getBatchSize" desc="()I" line="60">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setOperationTimeout" desc="(J)Lorg/apache/pulsar/io/redis/sink/RedisSinkConfig;" line="36">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setBatchTimeMs" desc="(J)Lorg/apache/pulsar/io/redis/sink/RedisSinkConfig;" line="36">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setBatchSize" desc="(I)Lorg/apache/pulsar/io/redis/sink/RedisSinkConfig;" line="36">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="toString" desc="()Ljava/lang/String;" line="36">
+        <counter type="INSTRUCTION" missed="8" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="equals" desc="(Ljava/lang/Object;)Z" line="37">
+        <counter type="INSTRUCTION" missed="44" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="canEqual" desc="(Ljava/lang/Object;)Z" line="37">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="hashCode" desc="()I" line="37">
+        <counter type="INSTRUCTION" missed="41" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="185" covered="0"/>
+      <counter type="BRANCH" missed="18" covered="0"/>
+      <counter type="LINE" missed="16" covered="0"/>
+      <counter type="COMPLEXITY" missed="23" covered="0"/>
+      <counter type="METHOD" missed="14" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="RedisSinkConfig.java">
+      <line nr="36" mi="25" ci="0" mb="0" cb="0"/>
+      <line nr="37" mi="88" ci="0" mb="12" cb="0"/>
+      <line nr="43" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="55" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="63" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="64" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="73" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="74" mi="10" ci="0" mb="2" cb="0"/>
+      <line nr="75" mi="10" ci="0" mb="2" cb="0"/>
+      <line nr="76" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="77" mi="1" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="185" covered="0"/>
+      <counter type="BRANCH" missed="18" covered="0"/>
+      <counter type="LINE" missed="16" covered="0"/>
+      <counter type="COMPLEXITY" missed="23" covered="0"/>
+      <counter type="METHOD" missed="14" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="RedisSink.java">
+      <line nr="50" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="69" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="71" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="74" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="76" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="78" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="79" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="82" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="83" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="88" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="90" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="91" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="92" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="93" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="95" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="99" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="100" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="103" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="104" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="106" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="109" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="112" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="113" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="114" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="116" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="117" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="118" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="120" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="121" mi="10" ci="0" mb="2" cb="0"/>
+      <line nr="124" mi="11" ci="0" mb="2" cb="0"/>
+      <line nr="125" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="126" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="127" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="128" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="129" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="130" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="131" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="132" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="133" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="137" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="138" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="139" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="142" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="144" mi="9" ci="0" mb="4" cb="0"/>
+      <line nr="145" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="146" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="147" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="148" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="151" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="152" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="153" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="154" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="155" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="156" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="157" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="158" mi="1" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="228" covered="0"/>
+      <counter type="BRANCH" missed="22" covered="0"/>
+      <counter type="LINE" missed="61" covered="0"/>
+      <counter type="COMPLEXITY" missed="17" covered="0"/>
+      <counter type="METHOD" missed="6" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="413" covered="0"/>
+    <counter type="BRANCH" missed="40" covered="0"/>
+    <counter type="LINE" missed="77" covered="0"/>
+    <counter type="COMPLEXITY" missed="40" covered="0"/>
+    <counter type="METHOD" missed="20" covered="0"/>
+    <counter type="CLASS" missed="2" covered="0"/>
+  </package>
+  <package name="org/apache/pulsar/io/redis">
+    <class name="org/apache/pulsar/io/redis/RedisSession" sourcefilename="RedisSession.java">
+      <method name="&lt;init&gt;" desc="(Lio/lettuce/core/AbstractRedisClient;Lio/lettuce/core/api/StatefulConnection;Lio/lettuce/core/cluster/api/async/RedisClusterAsyncCommands;)V" line="50">
+        <counter type="INSTRUCTION" missed="12" covered="0"/>
+        <counter type="LINE" missed="5" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="client" desc="()Lio/lettuce/core/AbstractRedisClient;" line="57">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="connection" desc="()Lio/lettuce/core/api/StatefulConnection;" line="61">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="asyncCommands" desc="()Lio/lettuce/core/cluster/api/async/RedisClusterAsyncCommands;" line="65">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="close" desc="()V" line="69">
+        <counter type="INSTRUCTION" missed="15" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="5" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="create" desc="(Lorg/apache/pulsar/io/redis/sink/RedisSinkConfig;)Lorg/apache/pulsar/io/redis/RedisSession;" line="79">
+        <counter type="INSTRUCTION" missed="118" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="33" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="redisURIs" desc="(Ljava/util/List;Lorg/apache/pulsar/io/redis/sink/RedisSinkConfig;)Ljava/util/List;" line="127">
+        <counter type="INSTRUCTION" missed="46" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="11" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="200" covered="0"/>
+      <counter type="BRANCH" missed="12" covered="0"/>
+      <counter type="LINE" missed="57" covered="0"/>
+      <counter type="COMPLEXITY" missed="13" covered="0"/>
+      <counter type="METHOD" missed="7" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="org/apache/pulsar/io/redis/RedisAbstractConfig" sourcefilename="RedisAbstractConfig.java">
+      <method name="validate" desc="()V" line="96">
+        <counter type="INSTRUCTION" missed="6" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getHostAndPorts" desc="()Ljava/util/List;" line="105">
+        <counter type="INSTRUCTION" missed="32" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="6" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;init&gt;" desc="()V" line="34">
+        <counter type="INSTRUCTION" missed="24" covered="0"/>
+        <counter type="LINE" missed="8" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getRedisHosts" desc="()Ljava/lang/String;" line="44">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getRedisPassword" desc="()Ljava/lang/String;" line="51">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getRedisDatabase" desc="()I" line="57">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getClientMode" desc="()Ljava/lang/String;" line="63">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="isAutoReconnect" desc="()Z" line="69">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getRequestQueue" desc="()I" line="75">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="isTcpNoDelay" desc="()Z" line="81">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="isKeepAlive" desc="()Z" line="87">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getConnectTimeout" desc="()J" line="93">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setRedisHosts" desc="(Ljava/lang/String;)Lorg/apache/pulsar/io/redis/RedisAbstractConfig;" line="34">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setRedisPassword" desc="(Ljava/lang/String;)Lorg/apache/pulsar/io/redis/RedisAbstractConfig;" line="34">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setRedisDatabase" desc="(I)Lorg/apache/pulsar/io/redis/RedisAbstractConfig;" line="34">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setClientMode" desc="(Ljava/lang/String;)Lorg/apache/pulsar/io/redis/RedisAbstractConfig;" line="34">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setAutoReconnect" desc="(Z)Lorg/apache/pulsar/io/redis/RedisAbstractConfig;" line="34">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setRequestQueue" desc="(I)Lorg/apache/pulsar/io/redis/RedisAbstractConfig;" line="34">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setTcpNoDelay" desc="(Z)Lorg/apache/pulsar/io/redis/RedisAbstractConfig;" line="34">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setKeepAlive" desc="(Z)Lorg/apache/pulsar/io/redis/RedisAbstractConfig;" line="34">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setConnectTimeout" desc="(J)Lorg/apache/pulsar/io/redis/RedisAbstractConfig;" line="34">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="equals" desc="(Ljava/lang/Object;)Z" line="34">
+        <counter type="INSTRUCTION" missed="115" covered="0"/>
+        <counter type="BRANCH" missed="36" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="19" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="canEqual" desc="(Ljava/lang/Object;)Z" line="34">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="hashCode" desc="()I" line="34">
+        <counter type="INSTRUCTION" missed="109" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="toString" desc="()Ljava/lang/String;" line="34">
+        <counter type="INSTRUCTION" missed="20" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="381" covered="0"/>
+      <counter type="BRANCH" missed="50" covered="0"/>
+      <counter type="LINE" missed="25" covered="0"/>
+      <counter type="COMPLEXITY" missed="50" covered="0"/>
+      <counter type="METHOD" missed="25" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="org/apache/pulsar/io/redis/RedisAbstractConfig$ClientMode" sourcefilename="RedisAbstractConfig.java">
+      <method name="&lt;clinit&gt;" desc="()V" line="99">
+        <counter type="INSTRUCTION" missed="15" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="15" covered="0"/>
+      <counter type="LINE" missed="3" covered="0"/>
+      <counter type="COMPLEXITY" missed="1" covered="0"/>
+      <counter type="METHOD" missed="1" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="RedisSession.java">
+      <line nr="50" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="57" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="61" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="65" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="69" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="70" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="73" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="75" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="79" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="82" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="83" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="84" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="85" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="90" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="91" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="92" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="93" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="95" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="97" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="98" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="99" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="100" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="101" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="103" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="104" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="105" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="106" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="107" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="108" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="109" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="110" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="112" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="113" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="115" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="116" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="117" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="118" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="119" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="123" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="127" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="128" mi="10" ci="0" mb="2" cb="0"/>
+      <line nr="129" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="130" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="131" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="132" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="133" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="134" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="136" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="137" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="138" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="200" covered="0"/>
+      <counter type="BRANCH" missed="12" covered="0"/>
+      <counter type="LINE" missed="57" covered="0"/>
+      <counter type="COMPLEXITY" missed="13" covered="0"/>
+      <counter type="METHOD" missed="7" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="RedisAbstractConfig.java">
+      <line nr="34" mi="294" ci="0" mb="48" cb="0"/>
+      <line nr="44" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="57" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="59" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="63" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="65" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="69" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="71" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="75" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="77" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="83" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="87" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="93" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="96" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="97" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="99" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="100" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="101" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="105" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="106" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="107" mi="16" ci="0" mb="2" cb="0"/>
+      <line nr="108" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="109" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="111" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="396" covered="0"/>
+      <counter type="BRANCH" missed="50" covered="0"/>
+      <counter type="LINE" missed="28" covered="0"/>
+      <counter type="COMPLEXITY" missed="51" covered="0"/>
+      <counter type="METHOD" missed="26" covered="0"/>
+      <counter type="CLASS" missed="2" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="596" covered="0"/>
+    <counter type="BRANCH" missed="62" covered="0"/>
+    <counter type="LINE" missed="85" covered="0"/>
+    <counter type="COMPLEXITY" missed="64" covered="0"/>
+    <counter type="METHOD" missed="33" covered="0"/>
+    <counter type="CLASS" missed="3" covered="0"/>
+  </package>
+  <counter type="INSTRUCTION" missed="1009" covered="0"/>
+  <counter type="BRANCH" missed="102" covered="0"/>
+  <counter type="LINE" missed="162" covered="0"/>
+  <counter type="COMPLEXITY" missed="104" covered="0"/>
+  <counter type="METHOD" missed="53" covered="0"/>
+  <counter type="CLASS" missed="5" covered="0"/>
+</report>

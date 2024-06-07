@@ -30,6 +30,37 @@
       ]
     }
   },
+  "OpenAPITools_openapi-generator-15990": {
+    "bug_id": "OpenAPITools_openapi-generator-15990",
+    "PR_number": 15990,
+    "PR_createdAt": "2023-07-03T21:53:02Z",
+    "merge_commit": "315fbff6807813cccc53ee78a2d9f90e1b6e94bd",
+    "buggy_commits": [
+      {
+        "oid": "9170306ffaaa208e5dc1fa3a90dfabec2c2559c8",
+        "message": "Fix Spring CI sample folder (#16005)\n\n* fix spring CI sample folder\r\n\r\n* fix path\r\n\r\n* trigger build\r\n\r\n* test push\r\n\r\n* add spring jdk17 workflow\r\n\r\n* trigger build"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/15989",
+      "createdAt": "2023-07-03T20:51:51Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-15990.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/postman/PostmanCollectionCodegenTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/15990",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/315fbff6807813cccc53ee78a2d9f90e1b6e94bd",
+    "buggy_commit": "9170306ffaaa208e5dc1fa3a90dfabec2c2559c8",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.postman.PostmanCollectionCodegenTest#testHeaderParameters"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.postman.PostmanCollectionCodegenTest#testHeaderParameters"
+      ]
+    }
+  },
   "OpenAPITools_openapi-generator-16050": {
     "bug_id": "OpenAPITools_openapi-generator-16050",
     "PR_number": 16050,
@@ -61,6 +92,72 @@
       ]
     }
   },
+  "OpenAPITools_openapi-generator-16827": {
+    "bug_id": "OpenAPITools_openapi-generator-16827",
+    "PR_number": 16827,
+    "PR_createdAt": "2023-10-14T09:35:07Z",
+    "merge_commit": "b4f9d8103f99faa26830c53eb792935499f86b65",
+    "buggy_commits": [
+      {
+        "oid": "3bc4f67333f5529b4b5f5dd13ce4c61549675b22",
+        "message": "[php-nextgen] Remove deprecated @category phpdoc (#16829)\n\n* [php-nextgen] Remove deprecated @category phpdoc\r\n\r\n@category tag is deprecated accordingly to:\r\n* [PhpDocumentor](https://docs.phpdoc.org/guide/references/phpdoc/tags/category.html)\r\n\r\n* Refresh samples"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/16826",
+      "createdAt": "2023-10-14T09:30:36Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-16827.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/postman/PostmanCollectionCodegenTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/16827",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/b4f9d8103f99faa26830c53eb792935499f86b65",
+    "buggy_commit": "3bc4f67333f5529b4b5f5dd13ce4c61549675b22",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.postman.PostmanCollectionCodegenTest#testBasicGeneration",
+        ".org.openapitools.codegen.postman.PostmanCollectionCodegenTest#testVariables",
+        ".org.openapitools.codegen.postman.PostmanCollectionCodegenTest#testVariablesInRequestExample"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.postman.PostmanCollectionCodegenTest#testBasicGeneration",
+        ".org.openapitools.codegen.postman.PostmanCollectionCodegenTest#testVariables",
+        ".org.openapitools.codegen.postman.PostmanCollectionCodegenTest#testVariablesInRequestExample"
+      ]
+    }
+  },
+  "OpenAPITools_openapi-generator-16992": {
+    "bug_id": "OpenAPITools_openapi-generator-16992",
+    "PR_number": 16992,
+    "PR_createdAt": "2023-11-05T13:47:19Z",
+    "merge_commit": "c301004b7e5956f4bdaab2dfc9a57ade45fddbd8",
+    "buggy_commits": [
+      {
+        "oid": "a31b38b2234b8e9606cdb8a693c841732702f4b6",
+        "message": "Added some Test Cases  (#16994)\n\n* New Test Case Added to AndroidClientCodegenTest\r\n\r\n* New Test Case Added to GenApiControllerTest\r\n\r\n* New Test Case Added to BirdAndCategoryTest\r\n\r\n* New Test Case Added to WorkflowSettingsTest\r\n\r\n* Modified GenApiControllerTest\r\n\r\n* Added Test case in JavascriptClientCodegenTest\r\n\r\n* Modified BirdAndCategoryTest\r\n\r\n* Modified BirdAndCategoryTest\r\n\r\n---------\r\n\r\nCo-authored-by: Mann <mn906219@dal.ca>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/16710",
+      "createdAt": "2023-10-03T07:17:37Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-16992.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/16992",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/c301004b7e5956f4bdaab2dfc9a57ade45fddbd8",
+    "buggy_commit": "a31b38b2234b8e9606cdb8a693c841732702f4b6",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.DefaultCodegenTest#testOneOfEnum"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.DefaultCodegenTest#testOneOfEnum"
+      ]
+    }
+  },
   "OpenAPITools_openapi-generator-17056": {
     "bug_id": "OpenAPITools_openapi-generator-17056",
     "PR_number": 17056,
@@ -89,41 +186,6 @@
       ],
       "test_tgt": [
         ".org.openapitools.codegen.DefaultCodegenTest#testAllOfDefaultEnumType"
-      ]
-    }
-  },
-  "OpenAPITools_openapi-generator-17278": {
-    "bug_id": "OpenAPITools_openapi-generator-17278",
-    "PR_number": 17278,
-    "PR_createdAt": "2023-12-01T14:57:43Z",
-    "merge_commit": "4b2c045a53576c05d791e924fe0bfebc85484a03",
-    "buggy_commits": [
-      {
-        "oid": "2934f5ac511261e4499ff5681e0dde1ac55ea97f",
-        "message": "add logic to simplify any type represented with oneof/anyof (#18268)"
-      },
-      {
-        "oid": "8431712a604cf1fe0d42d38c8e52fcd903c414a3",
-        "message": "#17276 \"==\" enum value generates \"_\" in Java which is invalid since Java 9"
-      }
-    ],
-    "issue": {
-      "url": "https://github.com/OpenAPITools/openapi-generator/issues/17276",
-      "createdAt": "2023-12-01T14:43:42Z",
-      "content": "bug_report_all/OpenAPITools_openapi-generator-17278.json"
-    },
-    "changed_tests": [
-      "modules/openapi-generator/src/test/java/org/openapitools/codegen/java/AbstractJavaCodegenTest.java"
-    ],
-    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/17278",
-    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/4b2c045a53576c05d791e924fe0bfebc85484a03",
-    "buggy_commit": "2934f5ac511261e4499ff5681e0dde1ac55ea97f",
-    "execution_result": {
-      "test_src": [
-        ".org.openapitools.codegen.java.AbstractJavaCodegenTest#toEnumVarNameShouldNotResultInSingleUnderscore"
-      ],
-      "test_tgt": [
-        ".org.openapitools.codegen.java.AbstractJavaCodegenTest#toEnumVarNameShouldNotResultInSingleUnderscore"
       ]
     }
   },
@@ -223,6 +285,118 @@
       ],
       "test_tgt": [
         ".org.openapitools.codegen.java.spring.SpringCodegenTest#shouldAddValidAnnotationIntoCollectionWhenBeanValidationIsEnabled_issue17150"
+      ]
+    }
+  },
+  "OpenAPITools_openapi-generator-18131": {
+    "bug_id": "OpenAPITools_openapi-generator-18131",
+    "PR_number": 18131,
+    "PR_createdAt": "2024-03-16T19:39:29Z",
+    "merge_commit": "12849cccbeb6f1125914e43b3ca88b53c9ac8a6d",
+    "buggy_commits": [
+      {
+        "oid": "c5ab78575afaff11a80313f2483d96330a4bcc84",
+        "message": "Add rule to set container (array, set, map) to true (#18128)\n\n* add rule to set containter to null\r\n\r\n* update doc"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/18130",
+      "createdAt": "2024-03-16T19:24:35Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-18131.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/DefaultCodegenTest.java",
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/OpenAPINormalizerTest.java",
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/templating/mustache/CamelCaseLambdaTest.java",
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/templating/mustache/PascalCaseLambdaTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/18131",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/12849cccbeb6f1125914e43b3ca88b53c9ac8a6d",
+    "buggy_commit": "c5ab78575afaff11a80313f2483d96330a4bcc84",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.DefaultCodegenTest#commonLambdasRegistrationTest",
+        ".org.openapitools.codegen.templating.mustache.CamelCaseLambdaTest#camelCaseTest",
+        ".org.openapitools.codegen.templating.mustache.CamelCaseLambdaTest#camelCaseSpaceTest",
+        ".org.openapitools.codegen.templating.mustache.CamelCaseLambdaTest#camelCaseReservedWordTest",
+        ".org.openapitools.codegen.templating.mustache.CamelCaseLambdaTest#camelCaseEscapeParamTest",
+        ".org.openapitools.codegen.templating.mustache.PascalCaseLambdaTest#pascalCaseTest",
+        ".org.openapitools.codegen.templating.mustache.PascalCaseLambdaTest#pascalCaseSpaceTest",
+        ".org.openapitools.codegen.templating.mustache.PascalCaseLambdaTest#pascalCaseReservedWordTest",
+        ".org.openapitools.codegen.templating.mustache.PascalCaseLambdaTest#pascalCaseEscapeParamTest"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.DefaultCodegenTest#commonLambdasRegistrationTest",
+        ".org.openapitools.codegen.templating.mustache.CamelCaseLambdaTest#camelCaseTest",
+        ".org.openapitools.codegen.templating.mustache.CamelCaseLambdaTest#camelCaseSpaceTest",
+        ".org.openapitools.codegen.templating.mustache.CamelCaseLambdaTest#camelCaseReservedWordTest",
+        ".org.openapitools.codegen.templating.mustache.CamelCaseLambdaTest#camelCaseEscapeParamTest",
+        ".org.openapitools.codegen.templating.mustache.PascalCaseLambdaTest#pascalCaseTest",
+        ".org.openapitools.codegen.templating.mustache.PascalCaseLambdaTest#pascalCaseSpaceTest",
+        ".org.openapitools.codegen.templating.mustache.PascalCaseLambdaTest#pascalCaseReservedWordTest",
+        ".org.openapitools.codegen.templating.mustache.PascalCaseLambdaTest#pascalCaseEscapeParamTest"
+      ]
+    }
+  },
+  "OpenAPITools_openapi-generator-18338": {
+    "bug_id": "OpenAPITools_openapi-generator-18338",
+    "PR_number": 18338,
+    "PR_createdAt": "2024-04-09T03:25:14Z",
+    "merge_commit": "b2a7f435c824ad5a36ad46420c7cd92ccf5d4240",
+    "buggy_commits": [
+      {
+        "oid": "45a657f59d73e5da1d33715272f6e98fe6f7174f",
+        "message": "Deal with boolean field (#18294)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/17276",
+      "createdAt": "2023-12-01T14:43:42Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-18338.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/java/AbstractJavaCodegenTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/18338",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/b2a7f435c824ad5a36ad46420c7cd92ccf5d4240",
+    "buggy_commit": "45a657f59d73e5da1d33715272f6e98fe6f7174f",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.java.AbstractJavaCodegenTest#toEnumVarNameShouldNotResultInSingleUnderscore"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.java.AbstractJavaCodegenTest#toEnumVarNameShouldNotResultInSingleUnderscore"
+      ]
+    }
+  },
+  "OpenAPITools_openapi-generator-18504": {
+    "bug_id": "OpenAPITools_openapi-generator-18504",
+    "PR_number": 18504,
+    "PR_createdAt": "2024-04-26T02:36:11Z",
+    "merge_commit": "1751163f366e2890f16aad369604dc77801acc4b",
+    "buggy_commits": [
+      {
+        "oid": "a5ccd7a77ee4326b7b9d491159e759e8b03a3f1f",
+        "message": "fix array default check in php nextgen"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/OpenAPITools/openapi-generator/issues/18497",
+      "createdAt": "2024-04-25T08:16:29Z",
+      "content": "bug_report_all/OpenAPITools_openapi-generator-18504.json"
+    },
+    "changed_tests": [
+      "modules/openapi-generator/src/test/java/org/openapitools/codegen/OpenAPINormalizerTest.java"
+    ],
+    "PR_url": "https://github.com/OpenAPITools/openapi-generator/pull/18504",
+    "merge_commit_url": "https://github.com/OpenAPITools/openapi-generator/commit/1751163f366e2890f16aad369604dc77801acc4b",
+    "buggy_commit": "a5ccd7a77ee4326b7b9d491159e759e8b03a3f1f",
+    "execution_result": {
+      "test_src": [
+        ".org.openapitools.codegen.OpenAPINormalizerTest#testOpenAPINormalizerSimplifyOneOfAnyOf"
+      ],
+      "test_tgt": [
+        ".org.openapitools.codegen.OpenAPINormalizerTest#testOpenAPINormalizerSimplifyOneOfAnyOf"
       ]
     }
   }

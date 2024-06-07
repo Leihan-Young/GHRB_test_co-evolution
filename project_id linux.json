@@ -1,0 +1,177 @@
+{
+  "Sentinel": {
+    "owner": "alibaba",
+    "number_of_tests": 0,
+    "verified_db": "verified/verified_tuples_alibaba_Sentinel.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/Sentinel",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "17",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true -Dmaven.test.failure.ignore=true"
+      }
+    }
+  },
+  "fastjson": {
+    "owner": "alibaba",
+    "number_of_tests": 0,
+    "verified_db": "verified/verified_tuples_alibaba_fastjson.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/fastjson",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true -Dmaven.test.failure.ignore=true"
+      }
+    }
+  },
+  "shardingsphere": {
+    "owner": "apache",
+    "number_of_tests": 0,
+    "verified_db": "verified/verified_tuples_apache_shardingsphere.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/shardingsphere",
+    "requirements": {
+      "build": "maven",
+      "wrapper": true,
+      "jdk": "11",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true"
+      }
+    }
+  },
+  "mybatis-3": {
+    "owner": "mybatis",
+    "number_of_tests": 0,
+    "verified_db": "verified/verified_tuples_mybatis_mybatis-3.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/mybatis-3",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "jdk": "11",
+      "version": "3.8.1",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true"
+      }
+    }
+  },
+  "netty": {
+    "owner": "netty",
+    "number_of_tests": 0,
+    "verified_db": "verified/verified_tuples_netty_netty.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/netty",
+    "requirements": {
+      "build": "maven",
+      "wrapper": true,
+      "jdk": "8",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true"
+      }
+    }
+  },
+  "pulsar": {
+    "owner": "apache",
+    "number_of_tests": 0,
+    "verified_db": "verified/verified_tuples_apache_pulsar.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/pulsar",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "jdk": "17",
+	  "version": "3.8.6",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true -Dlicense.skip=true"
+      }
+    }
+  },
+  "guava": {
+    "owner": "google",
+    "number_of_tests": 0,
+    "verified_db": "verified/verified_tuples_google_guava.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/guava",
+    "requirements": {
+      "build": "maven",
+      "wrapper": true,
+      "jdk": "8",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true"
+      }
+    }
+  },
+  "gson": {
+    "owner": "google",
+    "number_of_tests": 0,
+    "verified_db": "verified/verified_tuples_google_gson.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/gson",
+    "requirements": {
+      "build": "maven",
+      "wrapper": true,
+      "jdk": "17",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true"
+      }
+    }
+  },
+  "dubbo": {
+    "owner": "apache",
+    "number_of_tests": 33,
+    "verified_db": "verified/verified_tuples_apache_dubbo.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/dubbo",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true"
+      }
+    }
+  },
+  "openapi-generator": {
+    "owner": "OpenAPITools",
+    "number_of_tests": 1,
+    "verified_db": "verified/verified_tuples_OpenAPITools_openapi-generator.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/openapi-generator",
+    "requirements": {
+      "build": "maven",
+      "wrapper": true,
+      "jdk": "11",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dmaven.test.failure.ignore=true"
+      }
+    }
+  },
+  "nacos": {
+    "owner": "alibaba",
+    "number_of_tests": 9,
+    "verified_db": "verified/verified_tuples_alibaba_nacos.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/nacos",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.6",
+      "jdk": "8",
+      "extra": {
+        "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true"
+      }
+    }
+  },
+  "rocketmq": {
+    "owner": "apache",
+    "number_of_tests": 117,
+    "verified_db": "verified/verified_tuples_apache_rocketmq.json",
+    "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/rocketmq",
+    "requirements": {
+      "build": "maven",
+      "wrapper": false,
+      "version": "3.8.1",
+      "jdk": "8",
+      "extra": {
+        "command": "-Dargline='-Xmx1024m' -Dcheckstyle.skip -Dsurefire.failIfNoSpecifiedTests=false -Dspotbugs.skip=true"
+      }
+    }
+  }
+}

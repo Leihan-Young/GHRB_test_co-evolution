@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AckMessageActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-proxy 5.1.4-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.proxy.grpc.v2.consumer</a> &gt; <span class="el_source">AckMessageActivity.java</span></div><h1>AckMessageActivity.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.rocketmq.proxy.grpc.v2.consumer;
+
+import apache.rocketmq.v2.AckMessageEntry;
+import apache.rocketmq.v2.AckMessageRequest;
+import apache.rocketmq.v2.AckMessageResponse;
+import apache.rocketmq.v2.AckMessageResultEntry;
+import apache.rocketmq.v2.Code;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import org.apache.rocketmq.client.consumer.AckResult;
+import org.apache.rocketmq.client.consumer.AckStatus;
+import org.apache.rocketmq.common.consumer.ReceiptHandle;
+import org.apache.rocketmq.proxy.common.MessageReceiptHandle;
+import org.apache.rocketmq.proxy.common.ProxyContext;
+import org.apache.rocketmq.proxy.config.ConfigurationManager;
+import org.apache.rocketmq.proxy.grpc.v2.AbstractMessingActivity;
+import org.apache.rocketmq.proxy.grpc.v2.channel.GrpcChannelManager;
+import org.apache.rocketmq.proxy.grpc.v2.common.GrpcClientSettingsManager;
+import org.apache.rocketmq.proxy.grpc.v2.common.GrpcConverter;
+import org.apache.rocketmq.proxy.grpc.v2.common.ResponseBuilder;
+import org.apache.rocketmq.proxy.processor.BatchAckResult;
+import org.apache.rocketmq.proxy.processor.MessagingProcessor;
+import org.apache.rocketmq.proxy.service.message.ReceiptHandleMessage;
+
+public class AckMessageActivity extends AbstractMessingActivity {
+
+    public AckMessageActivity(MessagingProcessor messagingProcessor, GrpcClientSettingsManager grpcClientSettingsManager,
+        GrpcChannelManager grpcChannelManager) {
+<span class="fc" id="L48">        super(messagingProcessor, grpcClientSettingsManager, grpcChannelManager);</span>
+<span class="fc" id="L49">    }</span>
+
+    public CompletableFuture&lt;AckMessageResponse&gt; ackMessage(ProxyContext ctx, AckMessageRequest request) {
+<span class="fc" id="L52">        CompletableFuture&lt;AckMessageResponse&gt; future = new CompletableFuture&lt;&gt;();</span>
+
+        try {
+<span class="fc" id="L55">            validateTopicAndConsumerGroup(request.getTopic(), request.getGroup());</span>
+<span class="fc" id="L56">            String group = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getGroup());</span>
+<span class="fc" id="L57">            String topic = GrpcConverter.getInstance().wrapResourceWithNamespace(request.getTopic());</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">            if (ConfigurationManager.getProxyConfig().isEnableBatchAck()) {</span>
+<span class="nc" id="L59">                future = ackMessageInBatch(ctx, group, topic, request);</span>
+            } else {
+<span class="fc" id="L61">                future = ackMessageOneByOne(ctx, group, topic, request);</span>
+            }
+<span class="nc" id="L63">        } catch (Throwable t) {</span>
+<span class="nc" id="L64">            future.completeExceptionally(t);</span>
+<span class="fc" id="L65">        }</span>
+<span class="fc" id="L66">        return future;</span>
+    }
+
+    protected CompletableFuture&lt;AckMessageResponse&gt; ackMessageInBatch(ProxyContext ctx, String group, String topic, AckMessageRequest request) {
+<span class="nc" id="L70">        List&lt;ReceiptHandleMessage&gt; handleMessageList = new ArrayList&lt;&gt;(request.getEntriesCount());</span>
+
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        for (AckMessageEntry ackMessageEntry : request.getEntriesList()) {</span>
+<span class="nc" id="L73">            String handleString = getHandleString(ctx, group, request, ackMessageEntry);</span>
+<span class="nc" id="L74">            handleMessageList.add(new ReceiptHandleMessage(ReceiptHandle.decode(handleString), ackMessageEntry.getMessageId()));</span>
+<span class="nc" id="L75">        }</span>
+<span class="nc" id="L76">        return this.messagingProcessor.batchAckMessage(ctx, handleMessageList, group, topic)</span>
+<span class="nc" id="L77">            .thenApply(batchAckResultList -&gt; {</span>
+<span class="nc" id="L78">                AckMessageResponse.Builder responseBuilder = AckMessageResponse.newBuilder();</span>
+<span class="nc" id="L79">                Set&lt;Code&gt; responseCodes = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">                for (BatchAckResult batchAckResult : batchAckResultList) {</span>
+<span class="nc" id="L81">                    AckMessageResultEntry entry = convertToAckMessageResultEntry(batchAckResult);</span>
+<span class="nc" id="L82">                    responseBuilder.addEntries(entry);</span>
+<span class="nc" id="L83">                    responseCodes.add(entry.getStatus().getCode());</span>
+<span class="nc" id="L84">                }</span>
+<span class="nc" id="L85">                setAckResponseStatus(responseBuilder, responseCodes);</span>
+<span class="nc" id="L86">                return responseBuilder.build();</span>
+            });
+    }
+
+    protected AckMessageResultEntry convertToAckMessageResultEntry(BatchAckResult batchAckResult) {
+<span class="nc" id="L91">        ReceiptHandleMessage handleMessage = batchAckResult.getReceiptHandleMessage();</span>
+<span class="nc" id="L92">        AckMessageResultEntry.Builder resultBuilder = AckMessageResultEntry.newBuilder()</span>
+<span class="nc" id="L93">            .setMessageId(handleMessage.getMessageId())</span>
+<span class="nc" id="L94">            .setReceiptHandle(handleMessage.getReceiptHandle().getReceiptHandle());</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (batchAckResult.getProxyException() != null) {</span>
+<span class="nc" id="L96">            resultBuilder.setStatus(ResponseBuilder.getInstance().buildStatus(batchAckResult.getProxyException()));</span>
+        } else {
+<span class="nc" id="L98">            AckResult ackResult = batchAckResult.getAckResult();</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            if (AckStatus.OK.equals(ackResult.getStatus())) {</span>
+<span class="nc" id="L100">                resultBuilder.setStatus(ResponseBuilder.getInstance().buildStatus(Code.OK, Code.OK.name()));</span>
+            } else {
+<span class="nc" id="L102">                resultBuilder.setStatus(ResponseBuilder.getInstance().buildStatus(Code.INTERNAL_SERVER_ERROR, &quot;ack failed: status is abnormal&quot;));</span>
+            }
+        }
+<span class="nc" id="L105">        return resultBuilder.build();</span>
+    }
+
+    protected CompletableFuture&lt;AckMessageResponse&gt; ackMessageOneByOne(ProxyContext ctx, String group, String topic, AckMessageRequest request) {
+<span class="fc" id="L109">        CompletableFuture&lt;AckMessageResponse&gt; resultFuture = new CompletableFuture&lt;&gt;();</span>
+<span class="fc" id="L110">        CompletableFuture&lt;AckMessageResultEntry&gt;[] futures = new CompletableFuture[request.getEntriesCount()];</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        for (int i = 0; i &lt; request.getEntriesCount(); i++) {</span>
+<span class="fc" id="L112">            futures[i] = processAckMessage(ctx, group, topic, request, request.getEntries(i));</span>
+        }
+<span class="fc" id="L114">        CompletableFuture.allOf(futures).whenComplete((val, throwable) -&gt; {</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">            if (throwable != null) {</span>
+<span class="nc" id="L116">                resultFuture.completeExceptionally(throwable);</span>
+<span class="nc" id="L117">                return;</span>
+            }
+
+<span class="fc" id="L120">            Set&lt;Code&gt; responseCodes = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L121">            List&lt;AckMessageResultEntry&gt; entryList = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            for (CompletableFuture&lt;AckMessageResultEntry&gt; entryFuture : futures) {</span>
+<span class="fc" id="L123">                AckMessageResultEntry entryResult = entryFuture.join();</span>
+<span class="fc" id="L124">                responseCodes.add(entryResult.getStatus().getCode());</span>
+<span class="fc" id="L125">                entryList.add(entryResult);</span>
+            }
+<span class="fc" id="L127">            AckMessageResponse.Builder responseBuilder = AckMessageResponse.newBuilder()</span>
+<span class="fc" id="L128">                .addAllEntries(entryList);</span>
+<span class="fc" id="L129">            setAckResponseStatus(responseBuilder, responseCodes);</span>
+<span class="fc" id="L130">            resultFuture.complete(responseBuilder.build());</span>
+<span class="fc" id="L131">        });</span>
+<span class="fc" id="L132">        return resultFuture;</span>
+    }
+
+    protected CompletableFuture&lt;AckMessageResultEntry&gt; processAckMessage(ProxyContext ctx, String group, String topic, AckMessageRequest request,
+        AckMessageEntry ackMessageEntry) {
+<span class="fc" id="L137">        CompletableFuture&lt;AckMessageResultEntry&gt; future = new CompletableFuture&lt;&gt;();</span>
+
+        try {
+<span class="fc" id="L140">            String handleString = this.getHandleString(ctx, group, request, ackMessageEntry);</span>
+<span class="fc" id="L141">            CompletableFuture&lt;AckResult&gt; ackResultFuture = this.messagingProcessor.ackMessage(</span>
+                ctx,
+<span class="fc" id="L143">                ReceiptHandle.decode(handleString),</span>
+<span class="fc" id="L144">                ackMessageEntry.getMessageId(),</span>
+                group,
+                topic
+            );
+<span class="fc" id="L148">            ackResultFuture.thenAccept(result -&gt; {</span>
+<span class="fc" id="L149">                future.complete(convertToAckMessageResultEntry(ctx, ackMessageEntry, result));</span>
+<span class="fc" id="L150">            }).exceptionally(t -&gt; {</span>
+<span class="nc" id="L151">                future.complete(convertToAckMessageResultEntry(ctx, ackMessageEntry, t));</span>
+<span class="nc" id="L152">                return null;</span>
+            });
+<span class="fc" id="L154">        } catch (Throwable t) {</span>
+<span class="fc" id="L155">            future.complete(convertToAckMessageResultEntry(ctx, ackMessageEntry, t));</span>
+<span class="fc" id="L156">        }</span>
+<span class="fc" id="L157">        return future;</span>
+    }
+
+    protected AckMessageResultEntry convertToAckMessageResultEntry(ProxyContext ctx, AckMessageEntry ackMessageEntry, Throwable throwable) {
+<span class="fc" id="L161">        return AckMessageResultEntry.newBuilder()</span>
+<span class="fc" id="L162">            .setStatus(ResponseBuilder.getInstance().buildStatus(throwable))</span>
+<span class="fc" id="L163">            .setMessageId(ackMessageEntry.getMessageId())</span>
+<span class="fc" id="L164">            .setReceiptHandle(ackMessageEntry.getReceiptHandle())</span>
+<span class="fc" id="L165">            .build();</span>
+    }
+
+    protected AckMessageResultEntry convertToAckMessageResultEntry(ProxyContext ctx, AckMessageEntry ackMessageEntry,
+        AckResult ackResult) {
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        if (AckStatus.OK.equals(ackResult.getStatus())) {</span>
+<span class="fc" id="L171">            return AckMessageResultEntry.newBuilder()</span>
+<span class="fc" id="L172">                .setMessageId(ackMessageEntry.getMessageId())</span>
+<span class="fc" id="L173">                .setReceiptHandle(ackMessageEntry.getReceiptHandle())</span>
+<span class="fc" id="L174">                .setStatus(ResponseBuilder.getInstance().buildStatus(Code.OK, Code.OK.name()))</span>
+<span class="fc" id="L175">                .build();</span>
+        }
+<span class="fc" id="L177">        return AckMessageResultEntry.newBuilder()</span>
+<span class="fc" id="L178">            .setMessageId(ackMessageEntry.getMessageId())</span>
+<span class="fc" id="L179">            .setReceiptHandle(ackMessageEntry.getReceiptHandle())</span>
+<span class="fc" id="L180">            .setStatus(ResponseBuilder.getInstance().buildStatus(Code.INTERNAL_SERVER_ERROR, &quot;ack failed: status is abnormal&quot;))</span>
+<span class="fc" id="L181">            .build();</span>
+    }
+
+    protected void setAckResponseStatus(AckMessageResponse.Builder responseBuilder, Set&lt;Code&gt; responseCodes) {
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">        if (responseCodes.size() &gt; 1) {</span>
+<span class="fc" id="L186">            responseBuilder.setStatus(ResponseBuilder.getInstance().buildStatus(Code.MULTIPLE_RESULTS, Code.MULTIPLE_RESULTS.name()));</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">        } else if (responseCodes.size() == 1) {</span>
+<span class="nc" id="L188">            Code code = responseCodes.stream().findAny().get();</span>
+<span class="nc" id="L189">            responseBuilder.setStatus(ResponseBuilder.getInstance().buildStatus(code, code.name()));</span>
+<span class="nc" id="L190">        } else {</span>
+<span class="nc" id="L191">            responseBuilder.setStatus(ResponseBuilder.getInstance().buildStatus(Code.INTERNAL_SERVER_ERROR, &quot;ack message result is empty&quot;));</span>
+        }
+<span class="fc" id="L193">    }</span>
+
+    protected String getHandleString(ProxyContext ctx, String group, AckMessageRequest request, AckMessageEntry ackMessageEntry) {
+<span class="fc" id="L196">        String handleString = ackMessageEntry.getReceiptHandle();</span>
+
+<span class="fc" id="L198">        MessageReceiptHandle messageReceiptHandle = messagingProcessor.removeReceiptHandle(ctx, grpcChannelManager.getChannel(ctx.getClientID()), group, ackMessageEntry.getMessageId(), ackMessageEntry.getReceiptHandle());</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        if (messageReceiptHandle != null) {</span>
+<span class="nc" id="L200">            handleString = messageReceiptHandle.getReceiptHandleStr();</span>
+        }
+<span class="fc" id="L202">        return handleString;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -677,7 +677,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testHealthCheck() throws IllegalAccessException, NacosException { healthCheckRetryTimes.set(rpcClient, 3);\n        healthCheckTimeOut.set(rpcClient, 3000L);\n        rpcClient.rpcClientStatus.set(RpcClientStatus.RUNNING);\n        rpcClient.currentConnection = connection;\n        doThrow(new NacosException()).when(connection).request(any(), anyLong());\n        try {\n            healthCheck.invoke(rpcClient);\n        } catch (InvocationTargetException e) {\n            e.printStackTrace();\n        }\n        verify(connection, times(3)).request(any(), anyLong());\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testHealthCheck() throws IllegalAccessException, NacosException {\n        healthCheckRetryTimes.set(rpcClient, 3);\n        healthCheckTimeOut.set(rpcClient, 3000L);\n        rpcClient.rpcClientStatus.set(RpcClientStatus.RUNNING);\n        rpcClient.currentConnection = connection;\n        doThrow(new NacosException()).when(connection).request(any(), anyLong());\n        try {\n            healthCheck.invoke(rpcClient);\n        } catch (InvocationTargetException e) {\n            e.printStackTrace();\n        }\n        verify(connection, times(3)).request("
   },
   "2": {
     "commit_src": "04fe7eab2fa20423e09d2019da18fba3fa4b6191",
@@ -1534,7 +1534,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testReport() { Mockito.when(serverMemberManager.update(Mockito.any())).thenReturn(true);\n        \n        Member member = new Member();\n        member.setIp(\"1.1.1.1\");\n        member.setPort(8848);\n        member.setAddress(\"test\");RestResult<String> result = nacosClusterController.report(member);\n        Assert.assertTrue(Boolean.parseBoolean(result.getData()));\n        }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testReport() {\n        Mockito.when(serverMemberManager.update(Mockito.any())).thenReturn(true);\n        \n Member member = new Member();\n        member.setIp(\"1.1.1.1\");\n        member.setPort(8848);\n        member.setAddress(\"test\");\n        RestResult<String> result = nacosClusterController.report(member);\n        Assert.assertTrue(Boolean.parseBoolean(result.getData()));\n        }\n    }\n"
   },
   "3": {
     "commit_src": "86cf2082a9eb7ad2f63a339238deff5d1c344369",
@@ -3629,7 +3629,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRequestFutureWhenRetryReachMaxRetryTimesThenSwitchServer()\n            throws NacosException, IllegalAccessException {\n        when(rpcClientConfig.timeOutMills()).thenReturn(5000L);\n        when(rpcClientConfig.retryTimes()).thenReturn(3);\n        rpcClient.currentConnection = connection;\n        doThrow(NacosException.class).when(connection).requestFuture(any());\n        verify(connection, times(3)).requestFuture(any());\n        Assert.assertNotNull(exception);\n        assertEquals(RpcClientStatus.UNHEALTHY, rpcClient.rpcClientStatus.get());\n    }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRequestFutureWhenRetryReachMaxRetryTimesThenSwitchServer()\n            throws NacosException, IllegalAccessException {\n        when(rpcClientConfig.timeOutMills()).thenReturn(5000L);\n        when(rpcClientConfig.retryTimes()).thenReturn(3);\n        rpcClient.rpcClientStatus.set(RpcClientStatus.RUNNING);\n        rpcClient.currentConnection = connection;\n        doThrow(NacosException.class).when(connection).requestFuture(any());\n        Exception exception = null;\n        \n        try {\n            rpcClient.requestFuture(null);\n        } catch (N"
   },
   "4": {
     "commit_src": "7911eb03dbe3f2616edf8b4accd9dcb1d6eef3d7",
@@ -4010,7 +4010,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetPropertiesWithPrefixForMap()throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {\n        Map<String, Object> actual = PropertiesUtil.getPropertiesWithPrefixForMap(environment, \"nacos.prefix\");\n        assertEquals(3, actual.size());\n        for (Map.Entry<String, Object> entry : actual.entrySet()) {\n            String key = entry.getKey();\n            Map<String, Object> subMap = (Map<String, Object>) entry.getValue();\n            switch (key) {\n                case \"one\":\n                    assertEquals(\"1\", subMap.get(\"value\"));\n                    break;\n               "
+    "CEPROT_gen_test_tgt": "@Test\n    @SuppressWarnings(\"unchecked\")\n    public void testGetPropertiesWithPrefixForMap()\n            throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {\n        Map<String, Object> actual = PropertiesUtil.getPropertiesWithPrefixForMap(environment, \"nacos.prefix\");\n        assertEquals(3, actual.size());\n        for (Map.Entry<String, Object> entry : actual.entrySet()) {\n            String key = entry.getKey();\n            Map<String, Object> subMap = (Map<String, Object>) entry.getValue();\n            switch (key) {\n                case \"one\":\n"
   },
   "5": {
     "commit_src": "7911eb03dbe3f2616edf8b4accd9dcb1d6eef3d7",
@@ -4346,7 +4346,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetPropertiesWithPrefix()throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {\n        Properties actual = PropertiesUtil.getPropertiesWithPrefix(environment, \"nacos.prefix\");\n        assertEquals(3, actual.size());\n    }\n'use strict'; "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetPropertiesWithPrefix()throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {\n        Properties actual = PropertiesUtil.getPropertiesWithPrefix(environment, \"nacos.prefix\");\n        assertEquals(3, actual.size());\n    }\n\npublic void testGetPropertiesWithPrefix()throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {\n        Properties actual = PropertiesUtil.getPropertiesWithPrefix(environment, \"nacos.prefix\")\n        assertEquals(3, actual.size());\n    }\npublic void testGetPropertiesWithPrefix()throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {\n        Properties actual = PropertiesUtil.getProperties"
   },
   "6": {
     "commit_src": "3a1f0c297e37608035514a98ebc51133daad7863",
@@ -5116,7 +5116,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testBuildWithErrorCode() { int errorCode = 500;\n        String msg = \"err msg\";\n        \n Response response = ErrorResponse.build(errorCode, msg);\n        \n assertEquals(errorCode, response.getErrorCode());\n assertEquals(msg, response.getMessage());\n    }\n} "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testBuildWithErrorCode() {\n        int errorCode = 500;\n        String msg = \"err msg\";\n        \n Response response = ErrorResponse.build(errorCode, msg);\n        \n        Assert.assertEquals(errorCode, response.getErrorCode());\n        Assert.assertEquals(msg, response.getMessage());\n    }\n} "
   },
   "7": {
     "commit_src": "3a1f0c297e37608035514a98ebc51133daad7863",
@@ -5886,7 +5886,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testBuildWithThrowable() { String errMsg = \"exception msg\";\n Throwable runtimeException = new RuntimeException(errMsg); \n        Response response = ErrorResponse.build(runtimeException);\n        \n        Assert.assertEquals(ResponseCode.FAIL.getCode(), response.getErrorCode()); \n        Assert.assertEquals(errMsg, response.getMessage());\n    }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testBuildWithThrowable() {\n        String errMsg = \"exception msg\";\n        RuntimeException runtimeException = new RuntimeException(errMsg);\n        \n Response response = ErrorResponse.build(runtimeException);\n        \n        Assert.assertEquals(ResponseCode.FAIL.getCode(), response.getErrorCode());\n        Assert.assertEquals(errMsg, response.getMessage());\n    }\n"
   },
   "8": {
     "commit_src": "3a1f0c297e37608035514a98ebc51133daad7863",
@@ -6656,7 +6656,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testBuildWithNacosException() { int errCode = 500;\n        String errMsg = \"nacos exception msg\";\n        NacosException nacosException = new NacosException(errCode, errMsg);\n        \n Response response = ErrorResponse.build(nacosException);\n        \n        Assert.assertEquals(errCode, response.getErrorCode());\n        Assert.assertEquals(errMsg, response.getMessage());\n    }\n    @Test\n    public void testBuildWithNacosException() { int errCode = 500;\n        String errMsg = \"nacos exception msg\";\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testBuildWithNacosException() {\n        int errCode = 500;\n        String errMsg = \"nacos exception msg\";\n        NacosException nacosException = new NacosException(errCode, errMsg);\n        \n Response response = ErrorResponse.build(nacosException);\n        \n        Assert.assertEquals(errCode, response.getErrorCode());\n        Assert.assertEquals(errMsg, response.getMessage());\n    }\n        @Test\n    public void testBuildWithNacosException() {\n        int errCode = 500;\n        String errMsg = \"nacos exception msg"
   },
   "9": {
     "commit_src": "3a1f0c297e37608035514a98ebc51133daad7863",
@@ -7426,6 +7426,6 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testBuildWithNacosRuntimeException() { int errCode = 500;\n        String errMsg = \"nacos runtime exception msg\";\n        NacosRuntimeException nacosRuntimeException = new NacosRuntimeException(errCode, errMsg);\n        \n Response response = ErrorResponse.build(nacosRuntimeException);\n        \n Assert.assertEquals(errCode, response.getErrorCode());\n        Assert.assertEquals(\"errCode: \" + errCode + \", errMsg: \" + errMsg + \" \", response.getMessage());\n    }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testBuildWithNacosRuntimeException() {\n        int errCode = 500;\n        String errMsg = \"nacos runtime exception msg\";\n        NacosException nacosException = new NacosException(errCode, errMsg);\n        \n Response response = ErrorResponse.build(nacosException);\n        \n        Assert.assertEquals(errCode, response.getErrorCode());\n        Assert.assertEquals(\"errCode: \" + errCode + \", errMsg: \" + errMsg + \" \", response.getMessage());\n    }\n"
   }
 }

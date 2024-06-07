@@ -24,196 +24,243 @@ file_path = os.getcwd()
 
 config = {
     'alibaba_fastjson': {
-        'repo_path': file_path + '/repos/fastjson',
+        'repo_path': file_path + '/collected/raw_repos/fastjson',
         'src_dir': 'src/main/java/',
         'test_prefix': 'src/test/java',
         'project_name': 'alibaba_fastjson',
         'project_id': 'fastjson'
     },
     'TheAlgorithms_Java': {
-        'repo_path': file_path + '/repos/Java',
+        'repo_path': file_path + '/collected/raw_repos/Java',
         'src_dir': 'src/main/java/',
         'test_prefix': 'src/test/java',
         'project_name': 'TheAlgorithms_Java',
         'project_id': 'Java'
     },
     'ReactiveX_RxJava': {
-        'repo_path': file_path + '/repos/RxJava',
+        'repo_path': file_path + '/collected/raw_repos/RxJava',
         'src_dir': 'src/main/java',
         'test_prefix': 'src/test/java',
         'project_name': 'ReactiveX_RxJava',
         'project_id': 'RxJava'
     },
     'LMAX-Exchange_disruptor': {
-        'repo_path': file_path + '/repos/disruptor',
+        'repo_path': file_path + '/collected/raw_repos/disruptor',
         'src_dir': 'src/main/java',
         'test_prefix': 'src/test/java',
         'project_name': 'LMAX-Exchange_disruptor',
         'project_id': 'disruptor'
     },
     'assertj_assertj': {
-        'repo_path': file_path + '/repos/assertj',
+        'repo_path': file_path + '/collected/raw_repos/assertj',
         'src_dir': 'src/main/java',
         'test_prefix': 'src/test/java',
         'project_name': 'assertj_assertj',
         'project_id': 'assertj'
     },
     'checkstyle_checkstyle': {
-        'repo_path': file_path + '/repos/checkstyle',
+        'repo_path': file_path + '/collected/raw_repos/checkstyle',
         'src_dir': 'src/main/java',
         'test_prefix': 'src/test/java',
         'project_name': 'checkstyle_checkstyle',
         'project_id': 'checkstyle'
     },
     'FasterXML_jackson-core': {
-        'repo_path': file_path + '/repos/jackson-core',
+        'repo_path': file_path + '/collected/raw_repos/jackson-core',
         'src_dir': 'src/main/java',
         'test_prefix': 'src/test/java',
         'project_name': 'FasterXML_jackson-core',
         'project_id': 'jackson-core'
     },
     'FasterXML_jackson-databind': {
-        'repo_path': file_path + '/repos/jackson-databind',
+        'repo_path': file_path + '/collected/raw_repos/jackson-databind',
         'src_dir': 'src/main/java',
         'test_prefix': 'src/test/java',
         'project_name': 'FasterXML_jackson-databind',
         'project_id': 'jackson-databind'
     },
     'jhy_jsoup': {
-        'repo_path': file_path + '/repos/jsoup',
+        'repo_path': file_path + '/collected/raw_repos/jsoup',
         'src_dir': 'src/main/java',
         'test_prefix': 'src/test/java',
         'project_name': 'jhy_jsoup',
         'project_id': 'jsoup'
     },
     'mockito_mockito': {
-        'repo_path': file_path + '/repos/mockito',
+        'repo_path': file_path + '/collected/raw_repos/mockito',
         'src_dir': 'src/main/java',
         'test_prefix': 'src/test/java',
         'project_name': 'mockito_mockito',
         'project_id': 'mockito'
     },
     'FasterXML_jackson-dataformat-xml': {
-        'repo_path': file_path + '/repos/jackson-dataformat-xml',
+        'repo_path': file_path + '/collected/raw_repos/jackson-dataformat-xml',
         'src_dir': 'src/main/java',
         'test_prefix': 'src/test/java',
         'project_name': 'FasterXML_jackson-dataformat-xml',
         'project_id': 'jackson-dataformat-xml'
     },
     'google_gson': {
-        'repo_path': file_path + '/repos/gson',
+        'repo_path': file_path + '/collected/raw_repos/gson',
         'src_dir': 'gson/src/main/java',
         'test_prefix': 'gson/src/test/java',
         'project_name': 'google_gson',
         'project_id': 'gson'
     },
     'Hakky54_sslcontext-kickstart': {
-        'repo_path': file_path + '/repos/sslcontext-kickstart/sslcontext-kickstart',
+        'repo_path': file_path + '/collected/raw_repos/sslcontext-kickstart/sslcontext-kickstart',
         'src_dir': 'sslcontext-kickstart/src/main/java',
         'test_prefix': 'src/test/java',
         'project_name': 'Hakky54_sslcontext-kickstart',
         'project_id': 'sslcontext-kickstart'
     },
     'google_closure-compiler': {
-        'repo_path': file_path + '/repos/closure-compiler',
+        'repo_path': file_path + '/collected/raw_repos/closure-compiler',
         'src_dir': 'src/com/google',
         'test_prefix': 'test/com/google',
         'project_name': 'google_closure-compiler',
         'project_id': 'closure-compiler'
     },
     'netty_netty': {
-        'repo_path': file_path + '/repos/netty',
+        'repo_path': file_path + '/collected/raw_repos/netty',
         'src_dir': 'handler/src',
         'test_prefix': 'handler/src/test',
         'project_name': 'netty_netty',
         'project_id': 'netty'
     },
     'apache_rocketmq': {
-        'repo_path': file_path + '/repos/rocketmq',
+        'repo_path': file_path + '/collected/raw_repos/rocketmq',
         'src_dir': '',
         'test_prefix': '',
         'project_name': 'apache_rocketmq',
         'project_id': 'rocketmq'
     },
     'apache_dubbo': {
-        'repo_path': file_path + '/repos/dubbo',
+        'repo_path': file_path + '/collected/raw_repos/dubbo',
         'src_dir': '',
         'test_prefix': '',
         'project_name': 'apache_dubbo',
         'project_id': 'dubbo',
     },
     'iluwatar_java-design-patterns': {
-        'repo_path': file_path + '/repos/java-design-patterns',
+        'repo_path': file_path + '/collected/raw_repos/java-design-patterns',
         'project_name': 'iluwatar_java-design-patterns',
     },
     'dbeaver_dbeaver': {
-        'repo_path': file_path + '/repos/dbeaver',
+        'repo_path': file_path + '/collected/raw_repos/dbeaver',
         'project_name': 'dbeaver_dbeaver'
     },
     'seata_seata': {
-        'repo_path': file_path + '/repos/seata',
+        'repo_path': file_path + '/collected/raw_repos/seata',
         'project_name': 'seata_seata',
         'project_id': 'seata'
     },
     'OpenAPITools_openapi-generator': {
-        'repo_path': file_path + '/repos/openapi-generator',
+        'repo_path': file_path + '/collected/raw_repos/openapi-generator',
         'project_name': 'OpenAPITools_openapi-generator',
         'project_id': 'openapi-generator'
     },
     'apache_shardingsphere': {
-        'repo_path': file_path + '/repos/shardingsphere',
-        'project_name': 'apache_shardingsphere'
+        'repo_path': file_path + '/collected/raw_repos/shardingsphere',
+        'project_name': 'apache_shardingsphere',
+        'project_id': "shardingsphere"
+    },
+    'apache_pulsar': {
+        'repo_path': file_path + '/collected/raw_repos/pulsar',
+        'project_name': 'apache_pulsar',
+        'project_id': 'pulsar'
+    },
+    'apache_commons-lang': {
+        'repo_path': file_path + '/collected/raw_repos/commons-lang',
+        'project_name': 'apache_commons-lang',
+        'project_id': 'commons-lang'
     },
     'alibaba_nacos': {
-        'repo_path': file_path + '/repos/nacos',
+        'repo_path': file_path + '/collected/raw_repos/nacos',
         'project_name': 'alibaba_nacos',
         'project_id': 'nacos'
     },
+    'alibaba_COLA': {
+        'repo_path': file_path + '/collected/raw_repos/COLA',
+        'project_name': 'alibaba_COLA',
+        'project_id': 'COLA'
+    },
+    'alibaba_Sentinel': {
+        'repo_path': file_path + '/collected/raw_repos/Sentinel',
+        'project_name': 'alibaba_Sentinel',
+        'project_id': 'Sentinel'
+    },
     'keycloak_keycloak': {
-        'repo_path': file_path + '/repos/keycloak',
+        'repo_path': file_path + '/collected/raw_repos/keycloak',
         'project_name': 'keycloak_keycloak'
     },
     'redisson_redisson': {
-        'repo_path': file_path + '/repos/redisson',
+        'repo_path': file_path + '/collected/raw_repos/redisson',
         'project_name': 'redisson_redisson'
     },
     'elastic_elasticsearch': {
-        'repo_path': file_path + '/repos/elasticsearch',
+        'repo_path': file_path + '/collected/raw_repos/elasticsearch',
         'project_name': 'elastic_elasticsearch'
     },
     'iBotPeaches_Apktool': {
-        'repo_path': file_path + '/repos/Apktool',
+        'repo_path': file_path + '/collected/raw_repos/Apktool',
         'project_name': 'iBotPeaches_Apktool',
         'project_id': 'Apktool'
     },
     'spring-projects_spring-framework': {
-        'repo_path': file_path + '/repos/spring-framework',
+        'repo_path': file_path + '/collected/raw_repos/spring-framework',
         'project_name': 'spring-projects_spring-framework'
     },
+    'spring-projects_spring-boot': {
+        'repo_path': file_path + '/collected/raw_repos/spring-boot',
+        'project_name': 'spring-projects_spring-boot'
+    },
     'square_retrofit': {
-        'repo_path': file_path + '/repos/retrofit',
+        'repo_path': file_path + '/collected/raw_repos/retrofit',
         'project_name': 'square_retrofit',
         'project_id': 'retrofit'
     },
     'javaparser_javaparser': {
-        'repo_path': file_path + '/repos/javaparser',
+        'repo_path': file_path + '/collected/raw_repos/javaparser',
         'project_name': 'javaparser_javaparser',
         'project_id': 'javaparser'
     },
     'apache_incubator-seata': {
-        'repo_path': file_path + '/repos/incubator-seata',
+        'repo_path': file_path + '/collected/raw_repos/incubator-seata',
         'project_name': 'apache_incubator-seata',
         'project_id': 'incubator-seata'
     },
     'apache_skywalking': {
-        'repo_path': file_path + '/repos/skywalking',
+        'repo_path': file_path + '/collected/raw_repos/skywalking',
         'project_name': 'apache_skywalking',
         'project_id': 'skywalking'
     },
+    'google_guava': {
+        'repo_path': file_path + '/collected/raw_repos/guava',
+        'project_name': 'google_guava',
+        'project_id': 'guava'
+    },
+    'google_ExoPlayer': {
+        'repo_path': file_path + '/collected/raw_repos/ExoPlayer',
+        'project_name': 'google_ExoPlayer',
+        'project_id': 'ExoPlayer'
+    },
+    'google_auto': {
+        'repo_path': file_path + '/collected/raw_repos/auto',
+        'project_name': 'google_auto',
+        'project_id': 'auto'
+    },
     'JodaOrg_joda-time': {
-        'repo_path': file_path + '/repos/joda-time',
+        'repo_path': file_path + '/collected/raw_repos/joda-time',
         'project_name': 'JodaOrg_joda-time',
         'project_id': 'joda-time',
+        'src_dir': 'src/main/java',
+        'test_prefix': 'src/test/java'
+    },
+    'mybatis_mybatis-3': {
+        'repo_path': file_path + '/collected/raw_repos/mybatis-3',
+        'project_name': 'mybatis_mybatis-3',
+        'project_id': 'mybatis-3',
         'src_dir': 'src/main/java',
         'test_prefix': 'src/test/java'
     }
@@ -387,7 +434,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
 
     elif mvnw:
         # default = ['timeout', '10m', './mvnw', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
-        default = ['.\mvnw', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
+        default = ['./mvnw', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
         if command is not None:
             extra_command = command.split()
             new_command = default + extra_command
@@ -398,7 +445,7 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
             run = sp.run(default,
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
     elif gradlew:
-        default = [".\gradlew", "test", "--tests", f'{test_case}', '--info', '--stacktrace']
+        default = ["./gradlew", "test", "--tests", f'{test_case}', '--info', '--stacktrace']
         if command is not None:
             if 'test' in command:
                 new_command = [".\gradlew", command, '--tests', f'{test_case}']
@@ -411,8 +458,8 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None):
             run = sp.run(default,
                          env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
     
-    stdout = run.stdout.decode(encoding='gbk', errors='ignore')
-    stderr = run.stderr.decode(encoding='gbk', errors='ignore')
+    stdout = run.stdout.decode()
+    stderr = run.stderr.decode()
 
     return stdout, stderr
             
@@ -530,7 +577,7 @@ def verify_in_fixed_version(fixed_commit, target_test_classes, repo_path, test_p
     else:
         command = None
 
-    fix_build_env(repo_path)
+    # fix_build_env(repo_path)
 
     valid_tests = []
 
@@ -572,7 +619,7 @@ def get_compilable_tests(bug_id, buggy_commit, fixed_commit, build='maven'):
 
     test_trees_in_fixed_version, specified_repo_path = verify_compile(fixed_commit, test_patch_dir, repo_path, test_prefix, build, pid)
 
-    # 除了@Test之外部分有修改则不加入数据集
+    # Test代码中除了@Test之外部分有修改则不加入数据集
     tests_src = []
     tests_tgt = []
     for (test_id_buggy, tree_buggy) in test_trees_in_buggy_version:
@@ -758,6 +805,9 @@ def verify_compile(commit, test_patch_dir, repo_path, test_prefix, build, pid):
                     except javalang.parser.JavaSyntaxError as e:
                         print(f"{valid_test}:JavaSyntaxError")
                         continue
+                    except javalang.tokenizer.LexerError as e:
+                        print(f"{valid_test}:LexerError")
+                        continue
                 test_tree.append((valid_test, tree))
 
     return test_tree, repo_path
@@ -819,7 +869,7 @@ def fetch_test_diff (report_map):
     new_cleaned_data = {}
 
     repo_path = ""
-    if not os.path.isdir("collected/test_diff"):
+    if not os.path.exists("collected/test_diff"):
         os.makedirs("collected/test_diff")
 
     for repo_name in report_map:
@@ -829,8 +879,8 @@ def fetch_test_diff (report_map):
         owner, name = repo_name.split("_")
 
         link = "https://github.com/" + owner + "/" + name
-        repo_path = os.getcwd() + '/repos/' + name
-        p = subprocess.Popen(['git', 'clone', link, repo_path], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        repo_path = os.getcwd() + '/collected/raw_repos/' + name
+        p = subprocess.run(['git', 'clone', link, repo_path], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         
 
         for bug_id, bug_info in report_map[repo_name].items():
@@ -894,19 +944,17 @@ def fetch_test_diff (report_map):
 
 def fetch_prod_diff (report_map):
     
-    if not os.path.isdir("collected/prod_diff"):
+    if not os.path.exists("collected/prod_diff"):
         os.makedirs("collected/prod_diff")
     
     for repo_name in report_map:
 
         owner, name = repo_name.split("_")
 
-        repo_path = os.getcwd() + '/repos/' + name
+        repo_path = os.getcwd() + '/collected/raw_repos/' + name
 
 
         for bug_id, bug_info in report_map[repo_name].items():
-            if bug_id == "apache_rocketmq-5193":
-                print(1)
             
             merge_commit = bug_info['merge_commit']
             buggy_commits = [c['oid'] for c in bug_info['buggy_commits']]
@@ -986,7 +1034,7 @@ if __name__ == '__main__':
     with open(args.file, 'r', encoding='utf-8') as f:
         report_test_mappings = json.load(f)
 
-    # fetch_test_diff(report_test_mappings)
+    fetch_test_diff(report_test_mappings)
     fetch_prod_diff(report_test_mappings)
 
     projects = report_test_mappings.keys()
@@ -1003,22 +1051,22 @@ if __name__ == '__main__':
         dataset = report_test_mappings[repo_name]
         report = copy.deepcopy(report_test_mappings[repo_name])
         
-        temp_save = f"unverified/temp_save_report_{repo_name}.json"
-        start_id = None
-        if os.path.exists(temp_save):
-            with open(temp_save, 'r', encoding='utf-8') as f:
-                report_saved = json.load(f)
-            for bug_id, bug_info in report_saved.items():
-                if 'execution_result' in bug_info.keys():
-                    report[bug_id] = bug_info
-                    start_id = bug_id
+        # temp_save = f"unverified/temp_save_report_{repo_name}.json"
+        # start_id = None
+        # if os.path.exists(temp_save):
+        #     with open(temp_save, 'r', encoding='utf-8') as f:
+        #         report_saved = json.load(f)
+        #     for bug_id, bug_info in report_saved.items():
+        #         if 'execution_result' in bug_info.keys():
+        #             report[bug_id] = bug_info
+        #             start_id = bug_id
 
         for bug_id in tqdm(dataset):
 
-            if start_id != None:
-                if start_id == bug_id:
-                    start_id = None
-                continue
+            # if start_id != None:
+            #     if start_id == bug_id:
+            #         start_id = None
+            #     continue
 
             buggy_commit = report_test_mappings[repo_name][bug_id]['buggy_commit']
             fixed_commit = report_test_mappings[repo_name][bug_id]['merge_commit']

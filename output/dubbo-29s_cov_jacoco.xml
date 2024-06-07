@@ -1,0 +1,420 @@
+<?xml version="1.0" ?>
+<!DOCTYPE report
+  PUBLIC '-//JACOCO//DTD Report 1.1//EN'
+  'report.dtd'>
+<report name="dubbo-metrics-registry">
+  <sessioninfo id="DESKTOP-H605J07-9e631779" start="1714760995621" dump="1714760997930"/>
+  <package name="org/apache/dubbo/metrics/registry/collector">
+    <class name="org/apache/dubbo/metrics/registry/collector/RegistryMetricsCollector" sourcefilename="RegistryMetricsCollector.java">
+      <method name="&lt;init&gt;" desc="(Lorg/apache/dubbo/rpc/model/ApplicationModel;)V" line="52">
+        <counter type="INSTRUCTION" missed="0" covered="19"/>
+        <counter type="LINE" missed="0" covered="5"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="setCollectEnabled" desc="(Ljava/lang/Boolean;)V" line="80">
+        <counter type="INSTRUCTION" missed="0" covered="6"/>
+        <counter type="BRANCH" missed="1" covered="1"/>
+        <counter type="LINE" missed="0" covered="3"/>
+        <counter type="COMPLEXITY" missed="1" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="isCollectEnabled" desc="()Z" line="87">
+        <counter type="INSTRUCTION" missed="9" covered="12"/>
+        <counter type="BRANCH" missed="1" covered="1"/>
+        <counter type="LINE" missed="2" covered="2"/>
+        <counter type="COMPLEXITY" missed="1" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="collect" desc="()Ljava/util/List;" line="97">
+        <counter type="INSTRUCTION" missed="2" covered="15"/>
+        <counter type="BRANCH" missed="1" covered="1"/>
+        <counter type="LINE" missed="1" covered="4"/>
+        <counter type="COMPLEXITY" missed="1" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="lambda$isCollectEnabled$0" desc="(Lorg/apache/dubbo/config/MetricsConfig;)V" line="89">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="16" covered="52"/>
+      <counter type="BRANCH" missed="3" covered="3"/>
+      <counter type="LINE" missed="3" covered="14"/>
+      <counter type="COMPLEXITY" missed="4" covered="4"/>
+      <counter type="METHOD" missed="1" covered="4"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <class name="org/apache/dubbo/metrics/registry/collector/RegistryMetricsCollector$1" sourcefilename="RegistryMetricsCollector.java">
+      <method name="&lt;init&gt;" desc="(Lorg/apache/dubbo/rpc/model/ApplicationModel;)V" line="56">
+        <counter type="INSTRUCTION" missed="0" covered="4"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="init" desc="(Lorg/apache/dubbo/metrics/data/ApplicationStatComposite;)V" line="59">
+        <counter type="INSTRUCTION" missed="0" covered="7"/>
+        <counter type="LINE" missed="0" covered="3"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="init" desc="(Lorg/apache/dubbo/metrics/data/ServiceStatComposite;)V" line="65">
+        <counter type="INSTRUCTION" missed="0" covered="7"/>
+        <counter type="LINE" missed="0" covered="3"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="init" desc="(Lorg/apache/dubbo/metrics/data/RtStatComposite;)V" line="71">
+        <counter type="INSTRUCTION" missed="0" covered="28"/>
+        <counter type="LINE" missed="0" covered="3"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <counter type="INSTRUCTION" missed="0" covered="46"/>
+      <counter type="LINE" missed="0" covered="10"/>
+      <counter type="COMPLEXITY" missed="0" covered="4"/>
+      <counter type="METHOD" missed="0" covered="4"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <sourcefile name="RegistryMetricsCollector.java">
+      <line nr="52" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="56" mi="0" ci="10" mb="0" cb="0"/>
+      <line nr="59" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="60" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="61" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="65" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="66" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="67" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="71" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="72" mi="0" ci="24" mb="0" cb="0"/>
+      <line nr="73" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="75" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="76" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="77" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="80" mi="0" ci="2" mb="1" cb="1"/>
+      <line nr="81" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="83" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="87" mi="0" ci="3" mb="1" cb="1"/>
+      <line nr="88" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="91" mi="0" ci="9" mb="0" cb="0"/>
+      <line nr="97" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="98" mi="0" ci="3" mb="1" cb="1"/>
+      <line nr="99" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="101" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="102" mi="0" ci="2" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="16" covered="98"/>
+      <counter type="BRANCH" missed="3" covered="3"/>
+      <counter type="LINE" missed="3" covered="23"/>
+      <counter type="COMPLEXITY" missed="4" covered="8"/>
+      <counter type="METHOD" missed="1" covered="8"/>
+      <counter type="CLASS" missed="0" covered="2"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="16" covered="98"/>
+    <counter type="BRANCH" missed="3" covered="3"/>
+    <counter type="LINE" missed="3" covered="23"/>
+    <counter type="COMPLEXITY" missed="4" covered="8"/>
+    <counter type="METHOD" missed="1" covered="8"/>
+    <counter type="CLASS" missed="0" covered="2"/>
+  </package>
+  <package name="org/apache/dubbo/metrics/registry/event">
+    <class name="org/apache/dubbo/metrics/registry/event/RegistrySubDispatcher$MCat" sourcefilename="RegistrySubDispatcher.java">
+      <method name="lambda$static$6" desc="(Lorg/apache/dubbo/metrics/model/key/MetricsKey;Lorg/apache/dubbo/metrics/model/key/MetricsPlaceValue;Lorg/apache/dubbo/metrics/collector/CombMetricsCollector;)Lorg/apache/dubbo/metrics/listener/AbstractMetricsKeyListener;" line="105">
+        <counter type="INSTRUCTION" missed="0" covered="5"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="lambda$null$5" desc="(Lorg/apache/dubbo/metrics/collector/CombMetricsCollector;Lorg/apache/dubbo/metrics/event/TimeCounterEvent;)V" line="108">
+        <counter type="INSTRUCTION" missed="10" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="lambda$null$4" desc="(Lorg/apache/dubbo/metrics/collector/CombMetricsCollector;Lorg/apache/dubbo/metrics/model/key/MetricsKey;Ljava/util/Map;)V" line="110">
+        <counter type="INSTRUCTION" missed="6" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="lambda$null$3" desc="(Lorg/apache/dubbo/metrics/collector/CombMetricsCollector;Lorg/apache/dubbo/metrics/model/key/MetricsKey;Ljava/lang/String;Ljava/lang/Integer;)V" line="111">
+        <counter type="INSTRUCTION" missed="11" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="lambda$static$2" desc="(Lorg/apache/dubbo/metrics/model/key/MetricsKey;Lorg/apache/dubbo/metrics/model/key/MetricsPlaceValue;Lorg/apache/dubbo/metrics/collector/CombMetricsCollector;)Lorg/apache/dubbo/metrics/listener/AbstractMetricsKeyListener;" line="94">
+        <counter type="INSTRUCTION" missed="0" covered="7"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="lambda$null$1" desc="(Lorg/apache/dubbo/metrics/collector/CombMetricsCollector;Lorg/apache/dubbo/metrics/model/key/MetricsPlaceValue;Lorg/apache/dubbo/metrics/model/key/MetricsKey;Lorg/apache/dubbo/metrics/event/TimeCounterEvent;)V" line="96">
+        <counter type="INSTRUCTION" missed="22" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="lambda$null$0" desc="(Lorg/apache/dubbo/metrics/collector/CombMetricsCollector;Lorg/apache/dubbo/metrics/model/key/MetricsKey;Ljava/lang/String;Ljava/lang/Integer;)V" line="99">
+        <counter type="INSTRUCTION" missed="11" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;clinit&gt;" desc="()V" line="82">
+        <counter type="INSTRUCTION" missed="0" covered="91"/>
+        <counter type="LINE" missed="0" covered="15"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <counter type="INSTRUCTION" missed="60" covered="103"/>
+      <counter type="LINE" missed="10" covered="16"/>
+      <counter type="COMPLEXITY" missed="5" covered="3"/>
+      <counter type="METHOD" missed="5" covered="3"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <class name="org/apache/dubbo/metrics/registry/event/RegistrySubDispatcher" sourcefilename="RegistrySubDispatcher.java">
+      <method name="&lt;init&gt;" desc="(Lorg/apache/dubbo/metrics/registry/collector/RegistryMetricsCollector;)V" line="47">
+        <counter type="INSTRUCTION" missed="0" covered="8"/>
+        <counter type="LINE" missed="0" covered="3"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="lambda$new$0" desc="(Lorg/apache/dubbo/metrics/registry/collector/RegistryMetricsCollector;Lorg/apache/dubbo/metrics/model/key/CategoryOverall;)V" line="51">
+        <counter type="INSTRUCTION" missed="0" covered="31"/>
+        <counter type="BRANCH" missed="0" covered="4"/>
+        <counter type="LINE" missed="0" covered="6"/>
+        <counter type="COMPLEXITY" missed="0" covered="3"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <counter type="INSTRUCTION" missed="0" covered="39"/>
+      <counter type="BRANCH" missed="0" covered="4"/>
+      <counter type="LINE" missed="0" covered="9"/>
+      <counter type="COMPLEXITY" missed="0" covered="4"/>
+      <counter type="METHOD" missed="0" covered="2"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <class name="org/apache/dubbo/metrics/registry/event/RegistrySubDispatcher$CategorySet" sourcefilename="RegistrySubDispatcher.java">
+      <method name="&lt;clinit&gt;" desc="()V" line="65">
+        <counter type="INSTRUCTION" missed="0" covered="77"/>
+        <counter type="LINE" missed="0" covered="7"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <counter type="INSTRUCTION" missed="0" covered="77"/>
+      <counter type="LINE" missed="0" covered="7"/>
+      <counter type="COMPLEXITY" missed="0" covered="1"/>
+      <counter type="METHOD" missed="0" covered="1"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <class name="org/apache/dubbo/metrics/registry/event/RegistryEvent$1" sourcefilename="RegistryEvent.java">
+      <method name="&lt;init&gt;" desc="(Lorg/apache/dubbo/rpc/model/ApplicationModel;Lorg/apache/dubbo/metrics/model/key/TypeWrapper;)V" line="64">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="customAfterPost" desc="(Ljava/lang/Object;)V" line="67">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="10" covered="0"/>
+      <counter type="LINE" missed="3" covered="0"/>
+      <counter type="COMPLEXITY" missed="2" covered="0"/>
+      <counter type="METHOD" missed="2" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="org/apache/dubbo/metrics/registry/event/RegistryEvent" sourcefilename="RegistryEvent.java">
+      <method name="&lt;init&gt;" desc="(Lorg/apache/dubbo/rpc/model/ApplicationModel;Lorg/apache/dubbo/metrics/model/key/TypeWrapper;)V" line="41">
+        <counter type="INSTRUCTION" missed="1" covered="26"/>
+        <counter type="BRANCH" missed="3" covered="3"/>
+        <counter type="LINE" missed="0" covered="6"/>
+        <counter type="COMPLEXITY" missed="3" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="toRegisterEvent" desc="(Lorg/apache/dubbo/rpc/model/ApplicationModel;)Lorg/apache/dubbo/metrics/registry/event/RegistryEvent;" line="52">
+        <counter type="INSTRUCTION" missed="0" covered="6"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="toSubscribeEvent" desc="(Lorg/apache/dubbo/rpc/model/ApplicationModel;)Lorg/apache/dubbo/metrics/registry/event/RegistryEvent;" line="58">
+        <counter type="INSTRUCTION" missed="6" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="toNotifyEvent" desc="(Lorg/apache/dubbo/rpc/model/ApplicationModel;)Lorg/apache/dubbo/metrics/registry/event/RegistryEvent;" line="64">
+        <counter type="INSTRUCTION" missed="6" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="toRsEvent" desc="(Lorg/apache/dubbo/rpc/model/ApplicationModel;Ljava/lang/String;I)Lorg/apache/dubbo/metrics/registry/event/RegistryEvent;" line="74">
+        <counter type="INSTRUCTION" missed="17" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="toSsEvent" desc="(Lorg/apache/dubbo/rpc/model/ApplicationModel;Ljava/lang/String;)Lorg/apache/dubbo/metrics/registry/event/RegistryEvent;" line="82">
+        <counter type="INSTRUCTION" missed="12" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="refreshDirectoryEvent" desc="(Lorg/apache/dubbo/rpc/model/ApplicationModel;Ljava/util/Map;)Lorg/apache/dubbo/metrics/registry/event/RegistryEvent;" line="89">
+        <counter type="INSTRUCTION" missed="12" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;clinit&gt;" desc="()V" line="50">
+        <counter type="INSTRUCTION" missed="0" covered="50"/>
+        <counter type="LINE" missed="0" covered="6"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <counter type="INSTRUCTION" missed="54" covered="82"/>
+      <counter type="BRANCH" missed="3" covered="3"/>
+      <counter type="LINE" missed="12" covered="13"/>
+      <counter type="COMPLEXITY" missed="8" covered="3"/>
+      <counter type="METHOD" missed="5" covered="3"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <sourcefile name="RegistrySubDispatcher.java">
+      <line nr="47" mi="0" ci="2" mb="0" cb="0"/>
+      <line nr="49" mi="0" ci="5" mb="0" cb="0"/>
+      <line nr="51" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="52" mi="0" ci="3" mb="0" cb="2"/>
+      <line nr="53" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="55" mi="0" ci="3" mb="0" cb="2"/>
+      <line nr="56" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="58" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="59" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="65" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="66" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="67" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="68" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="69" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="70" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="72" mi="0" ci="29" mb="0" cb="0"/>
+      <line nr="82" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="83" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="84" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="87" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="88" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="89" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="92" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="93" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="94" mi="0" ci="7" mb="0" cb="0"/>
+      <line nr="96" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="97" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="98" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="99" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="101" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="105" mi="0" ci="11" mb="0" cb="0"/>
+      <line nr="108" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="109" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="110" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="111" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="112" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="117" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="118" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="119" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="123" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="124" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="125" mi="0" ci="7" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="60" covered="219"/>
+      <counter type="BRANCH" missed="0" covered="4"/>
+      <counter type="LINE" missed="10" covered="32"/>
+      <counter type="COMPLEXITY" missed="5" covered="8"/>
+      <counter type="METHOD" missed="5" covered="6"/>
+      <counter type="CLASS" missed="0" covered="3"/>
+    </sourcefile>
+    <sourcefile name="RegistryEvent.java">
+      <line nr="41" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="42" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="44" mi="0" ci="3" mb="1" cb="1"/>
+      <line nr="45" mi="0" ci="5" mb="0" cb="0"/>
+      <line nr="46" mi="1" ci="9" mb="2" cb="2"/>
+      <line nr="48" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="50" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="52" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="56" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="58" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="0" ci="9" mb="0" cb="0"/>
+      <line nr="64" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="67" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="74" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="75" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="76" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="77" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="0" ci="8" mb="0" cb="0"/>
+      <line nr="82" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="83" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="84" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="87" mi="0" ci="9" mb="0" cb="0"/>
+      <line nr="89" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="90" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="91" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="64" covered="82"/>
+      <counter type="BRANCH" missed="3" covered="3"/>
+      <counter type="LINE" missed="14" covered="13"/>
+      <counter type="COMPLEXITY" missed="10" covered="3"/>
+      <counter type="METHOD" missed="7" covered="3"/>
+      <counter type="CLASS" missed="1" covered="1"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="124" covered="301"/>
+    <counter type="BRANCH" missed="3" covered="7"/>
+    <counter type="LINE" missed="24" covered="45"/>
+    <counter type="COMPLEXITY" missed="15" covered="11"/>
+    <counter type="METHOD" missed="12" covered="9"/>
+    <counter type="CLASS" missed="1" covered="4"/>
+  </package>
+  <package name="org/apache/dubbo/metrics/registry">
+    <class name="org/apache/dubbo/metrics/registry/RegistryMetricsConstants" sourcefilename="RegistryMetricsConstants.java">
+      <method name="&lt;clinit&gt;" desc="()V" line="49">
+        <counter type="INSTRUCTION" missed="0" covered="149"/>
+        <counter type="LINE" missed="0" covered="8"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <counter type="INSTRUCTION" missed="0" covered="149"/>
+      <counter type="LINE" missed="0" covered="8"/>
+      <counter type="COMPLEXITY" missed="0" covered="1"/>
+      <counter type="METHOD" missed="0" covered="1"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <sourcefile name="RegistryMetricsConstants.java">
+      <line nr="49" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="50" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="51" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="52" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="53" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="54" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="57" mi="0" ci="32" mb="0" cb="0"/>
+      <line nr="62" mi="0" ci="93" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="0" covered="149"/>
+      <counter type="LINE" missed="0" covered="8"/>
+      <counter type="COMPLEXITY" missed="0" covered="1"/>
+      <counter type="METHOD" missed="0" covered="1"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="0" covered="149"/>
+    <counter type="LINE" missed="0" covered="8"/>
+    <counter type="COMPLEXITY" missed="0" covered="1"/>
+    <counter type="METHOD" missed="0" covered="1"/>
+    <counter type="CLASS" missed="0" covered="1"/>
+  </package>
+  <counter type="INSTRUCTION" missed="140" covered="548"/>
+  <counter type="BRANCH" missed="6" covered="10"/>
+  <counter type="LINE" missed="27" covered="76"/>
+  <counter type="COMPLEXITY" missed="19" covered="20"/>
+  <counter type="METHOD" missed="13" covered="18"/>
+  <counter type="CLASS" missed="1" covered="7"/>
+</report>

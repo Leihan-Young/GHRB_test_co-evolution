@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GrpcClientSettingsManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-proxy 5.1.4-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.proxy.grpc.v2.common</a> &gt; <span class="el_source">GrpcClientSettingsManager.java</span></div><h1>GrpcClientSettingsManager.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.rocketmq.proxy.grpc.v2.common;
+
+import apache.rocketmq.v2.Address;
+import apache.rocketmq.v2.AddressScheme;
+import apache.rocketmq.v2.ClientType;
+import apache.rocketmq.v2.CustomizedBackoff;
+import apache.rocketmq.v2.Endpoints;
+import apache.rocketmq.v2.ExponentialBackoff;
+import apache.rocketmq.v2.Metric;
+import apache.rocketmq.v2.Settings;
+import com.google.protobuf.Duration;
+import com.google.protobuf.util.Durations;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import org.apache.rocketmq.broker.client.ConsumerGroupInfo;
+import org.apache.rocketmq.common.ServiceThread;
+import org.apache.rocketmq.common.constant.LoggerName;
+import org.apache.rocketmq.common.utils.StartAndShutdown;
+import org.apache.rocketmq.logging.org.slf4j.Logger;
+import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+import org.apache.rocketmq.proxy.common.ProxyContext;
+import org.apache.rocketmq.proxy.config.ConfigurationManager;
+import org.apache.rocketmq.proxy.config.MetricCollectorMode;
+import org.apache.rocketmq.proxy.config.ProxyConfig;
+import org.apache.rocketmq.proxy.processor.MessagingProcessor;
+import org.apache.rocketmq.remoting.protocol.subscription.CustomizedRetryPolicy;
+import org.apache.rocketmq.remoting.protocol.subscription.ExponentialRetryPolicy;
+import org.apache.rocketmq.remoting.protocol.subscription.GroupRetryPolicy;
+import org.apache.rocketmq.remoting.protocol.subscription.GroupRetryPolicyType;
+import org.apache.rocketmq.remoting.protocol.subscription.SubscriptionGroupConfig;
+
+public class GrpcClientSettingsManager extends ServiceThread implements StartAndShutdown {
+<span class="fc" id="L55">    private static final Logger log = LoggerFactory.getLogger(LoggerName.PROXY_LOGGER_NAME);</span>
+<span class="fc" id="L56">    protected static final Map&lt;String, Settings&gt; CLIENT_SETTINGS_MAP = new ConcurrentHashMap&lt;&gt;();</span>
+
+    private final MessagingProcessor messagingProcessor;
+
+<span class="fc" id="L60">    public GrpcClientSettingsManager(MessagingProcessor messagingProcessor) {</span>
+<span class="fc" id="L61">        this.messagingProcessor = messagingProcessor;</span>
+<span class="fc" id="L62">    }</span>
+
+    public Settings getRawClientSettings(String clientId) {
+<span class="fc" id="L65">        return CLIENT_SETTINGS_MAP.get(clientId);</span>
+    }
+
+    public Settings getClientSettings(ProxyContext ctx) {
+<span class="fc" id="L69">        String clientId = ctx.getClientID();</span>
+<span class="fc" id="L70">        Settings settings = getRawClientSettings(clientId);</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (settings == null) {</span>
+<span class="fc" id="L72">            return null;</span>
+        }
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        if (settings.hasPublishing()) {</span>
+<span class="nc" id="L75">            settings = mergeProducerData(settings);</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        } else if (settings.hasSubscription()) {</span>
+<span class="fc" id="L77">            settings = mergeSubscriptionData(ctx, settings,</span>
+<span class="fc" id="L78">                GrpcConverter.getInstance().wrapResourceWithNamespace(settings.getSubscription().getGroup()));</span>
+        }
+<span class="fc" id="L80">        return mergeMetric(settings);</span>
+    }
+
+    protected static Settings mergeProducerData(Settings settings) {
+<span class="nc" id="L84">        ProxyConfig config = ConfigurationManager.getProxyConfig();</span>
+<span class="nc" id="L85">        Settings.Builder builder = settings.toBuilder();</span>
+
+<span class="nc" id="L87">        builder.getBackoffPolicyBuilder()</span>
+<span class="nc" id="L88">            .setMaxAttempts(config.getGrpcClientProducerMaxAttempts())</span>
+<span class="nc" id="L89">            .setExponentialBackoff(ExponentialBackoff.newBuilder()</span>
+<span class="nc" id="L90">                .setInitial(Durations.fromMillis(config.getGrpcClientProducerBackoffInitialMillis()))</span>
+<span class="nc" id="L91">                .setMax(Durations.fromMillis(config.getGrpcClientProducerBackoffMaxMillis()))</span>
+<span class="nc" id="L92">                .setMultiplier(config.getGrpcClientProducerBackoffMultiplier())</span>
+<span class="nc" id="L93">                .build());</span>
+
+<span class="nc" id="L95">        builder.getPublishingBuilder()</span>
+<span class="nc" id="L96">            .setValidateMessageType(config.isEnableTopicMessageTypeCheck())</span>
+<span class="nc" id="L97">            .setMaxBodySize(config.getMaxMessageSize());</span>
+<span class="nc" id="L98">        return builder.build();</span>
+    }
+
+    protected Settings mergeSubscriptionData(ProxyContext ctx, Settings settings, String consumerGroup) {
+<span class="fc" id="L102">        SubscriptionGroupConfig config = this.messagingProcessor.getSubscriptionGroupConfig(ctx, consumerGroup);</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        if (config == null) {</span>
+<span class="nc" id="L104">            return settings;</span>
+        }
+
+<span class="fc" id="L107">        return mergeSubscriptionData(settings, config);</span>
+    }
+
+    protected Settings mergeMetric(Settings settings) {
+        // Construct metric according to the proxy config
+<span class="fc" id="L112">        final ProxyConfig proxyConfig = ConfigurationManager.getProxyConfig();</span>
+<span class="fc" id="L113">        final MetricCollectorMode metricCollectorMode =</span>
+<span class="fc" id="L114">            MetricCollectorMode.getEnumByString(proxyConfig.getMetricCollectorMode());</span>
+<span class="fc" id="L115">        final String metricCollectorAddress = proxyConfig.getMetricCollectorAddress();</span>
+<span class="fc" id="L116">        final Metric.Builder metricBuilder = Metric.newBuilder();</span>
+<span class="pc bpc" id="L117" title="2 of 3 branches missed.">        switch (metricCollectorMode) {</span>
+            case ON:
+<span class="nc" id="L119">                final String[] split = metricCollectorAddress.split(&quot;:&quot;);</span>
+<span class="nc" id="L120">                final String host = split[0];</span>
+<span class="nc" id="L121">                final int port = Integer.parseInt(split[1]);</span>
+<span class="nc" id="L122">                Address address = Address.newBuilder().setHost(host).setPort(port).build();</span>
+<span class="nc" id="L123">                final Endpoints endpoints = Endpoints.newBuilder().setScheme(AddressScheme.IPv4)</span>
+<span class="nc" id="L124">                    .addAddresses(address).build();</span>
+<span class="nc" id="L125">                metricBuilder.setOn(true).setEndpoints(endpoints);</span>
+<span class="nc" id="L126">                break;</span>
+            case PROXY:
+<span class="nc" id="L128">                metricBuilder.setOn(true).setEndpoints(settings.getAccessPoint());</span>
+<span class="nc" id="L129">                break;</span>
+            case OFF:
+            default:
+<span class="fc" id="L132">                metricBuilder.setOn(false);</span>
+                break;
+        }
+<span class="fc" id="L135">        Metric metric = metricBuilder.build();</span>
+<span class="fc" id="L136">        return settings.toBuilder().setMetric(metric).build();</span>
+    }
+
+    protected static Settings mergeSubscriptionData(Settings settings, SubscriptionGroupConfig groupConfig) {
+<span class="fc" id="L140">        Settings.Builder resultSettingsBuilder = settings.toBuilder();</span>
+<span class="fc" id="L141">        ProxyConfig config = ConfigurationManager.getProxyConfig();</span>
+
+<span class="fc" id="L143">        resultSettingsBuilder.getSubscriptionBuilder()</span>
+<span class="fc" id="L144">            .setReceiveBatchSize(config.getGrpcClientConsumerLongPollingBatchSize())</span>
+<span class="fc" id="L145">            .setLongPollingTimeout(Durations.fromMillis(config.getGrpcClientConsumerMaxLongPollingTimeoutMillis()))</span>
+<span class="fc" id="L146">            .setFifo(groupConfig.isConsumeMessageOrderly());</span>
+
+<span class="fc" id="L148">        resultSettingsBuilder.getBackoffPolicyBuilder().setMaxAttempts(groupConfig.getRetryMaxTimes() + 1);</span>
+
+<span class="fc" id="L150">        GroupRetryPolicy groupRetryPolicy = groupConfig.getGroupRetryPolicy();</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        if (groupRetryPolicy.getType().equals(GroupRetryPolicyType.EXPONENTIAL)) {</span>
+<span class="fc" id="L152">            ExponentialRetryPolicy exponentialRetryPolicy = groupRetryPolicy.getExponentialRetryPolicy();</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">            if (exponentialRetryPolicy == null) {</span>
+<span class="nc" id="L154">                exponentialRetryPolicy = new ExponentialRetryPolicy();</span>
+            }
+<span class="fc" id="L156">            resultSettingsBuilder.getBackoffPolicyBuilder().setExponentialBackoff(convertToExponentialBackoff(exponentialRetryPolicy));</span>
+<span class="fc" id="L157">        } else {</span>
+<span class="fc" id="L158">            CustomizedRetryPolicy customizedRetryPolicy = groupRetryPolicy.getCustomizedRetryPolicy();</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">            if (customizedRetryPolicy == null) {</span>
+<span class="fc" id="L160">                customizedRetryPolicy = new CustomizedRetryPolicy();</span>
+            }
+<span class="fc" id="L162">            resultSettingsBuilder.getBackoffPolicyBuilder().setCustomizedBackoff(convertToCustomizedRetryPolicy(customizedRetryPolicy));</span>
+        }
+
+<span class="fc" id="L165">        return resultSettingsBuilder.build();</span>
+    }
+
+    protected static ExponentialBackoff convertToExponentialBackoff(ExponentialRetryPolicy retryPolicy) {
+<span class="fc" id="L169">        return ExponentialBackoff.newBuilder()</span>
+<span class="fc" id="L170">            .setInitial(Durations.fromMillis(retryPolicy.getInitial()))</span>
+<span class="fc" id="L171">            .setMax(Durations.fromMillis(retryPolicy.getMax()))</span>
+<span class="fc" id="L172">            .setMultiplier(retryPolicy.getMultiplier())</span>
+<span class="fc" id="L173">            .build();</span>
+    }
+
+    protected static CustomizedBackoff convertToCustomizedRetryPolicy(CustomizedRetryPolicy retryPolicy) {
+<span class="fc" id="L177">        List&lt;Duration&gt; durationList = Arrays.stream(retryPolicy.getNext())</span>
+<span class="fc" id="L178">            .mapToObj(Durations::fromMillis).collect(Collectors.toList());</span>
+<span class="fc" id="L179">        return CustomizedBackoff.newBuilder()</span>
+<span class="fc" id="L180">            .addAllNext(durationList)</span>
+<span class="fc" id="L181">            .build();</span>
+    }
+
+    public void updateClientSettings(ProxyContext ctx, String clientId, Settings settings) {
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">        if (settings.hasSubscription()) {</span>
+<span class="fc" id="L186">            settings = createDefaultConsumerSettingsBuilder().mergeFrom(settings).build();</span>
+        }
+<span class="fc" id="L188">        CLIENT_SETTINGS_MAP.put(clientId, settings);</span>
+<span class="fc" id="L189">    }</span>
+
+    protected Settings.Builder createDefaultConsumerSettingsBuilder() {
+<span class="fc" id="L192">        return mergeSubscriptionData(Settings.newBuilder().getDefaultInstanceForType(), new SubscriptionGroupConfig())</span>
+<span class="fc" id="L193">            .toBuilder();</span>
+    }
+
+    public Settings removeAndGetRawClientSettings(String clientId) {
+<span class="fc" id="L197">        return CLIENT_SETTINGS_MAP.remove(clientId);</span>
+    }
+
+    public Settings removeAndGetClientSettings(ProxyContext ctx) {
+<span class="fc" id="L201">        String clientId = ctx.getClientID();</span>
+<span class="fc" id="L202">        Settings settings = this.removeAndGetRawClientSettings(clientId);</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">        if (settings == null) {</span>
+<span class="fc" id="L204">            return null;</span>
+        }
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if (settings.hasSubscription()) {</span>
+<span class="fc" id="L207">            settings = mergeSubscriptionData(ctx, settings,</span>
+<span class="fc" id="L208">                GrpcConverter.getInstance().wrapResourceWithNamespace(settings.getSubscription().getGroup()));</span>
+        }
+<span class="fc" id="L210">        return mergeMetric(settings);</span>
+    }
+
+    @Override
+    public String getServiceName() {
+<span class="nc" id="L215">        return &quot;GrpcClientSettingsManagerCleaner&quot;;</span>
+    }
+
+    @Override
+    public void run() {
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        while (!this.isStopped()) {</span>
+<span class="nc" id="L221">            this.waitForRunning(TimeUnit.SECONDS.toMillis(5));</span>
+        }
+<span class="nc" id="L223">    }</span>
+
+    @Override
+    protected void onWaitEnd() {
+<span class="nc" id="L227">        Set&lt;String&gt; clientIdSet = CLIENT_SETTINGS_MAP.keySet();</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">        for (String clientId : clientIdSet) {</span>
+            try {
+<span class="nc" id="L230">                CLIENT_SETTINGS_MAP.computeIfPresent(clientId, (clientIdKey, settings) -&gt; {</span>
+<span class="nc bnc" id="L231" title="All 4 branches missed.">                    if (!settings.getClientType().equals(ClientType.PUSH_CONSUMER) &amp;&amp; !settings.getClientType().equals(ClientType.SIMPLE_CONSUMER)) {</span>
+<span class="nc" id="L232">                        return settings;</span>
+                    }
+<span class="nc" id="L234">                    String consumerGroup = GrpcConverter.getInstance().wrapResourceWithNamespace(settings.getSubscription().getGroup());</span>
+<span class="nc" id="L235">                    ConsumerGroupInfo consumerGroupInfo = this.messagingProcessor.getConsumerGroupInfo(</span>
+<span class="nc" id="L236">                        ProxyContext.createForInner(this.getClass()),</span>
+                        consumerGroup
+                    );
+<span class="nc bnc" id="L239" title="All 4 branches missed.">                    if (consumerGroupInfo == null || consumerGroupInfo.findChannel(clientId) == null) {</span>
+<span class="nc" id="L240">                        log.info(&quot;remove unused grpc client settings. group:{}, settings:{}&quot;, consumerGroupInfo, settings);</span>
+<span class="nc" id="L241">                        return null;</span>
+                    }
+<span class="nc" id="L243">                    return settings;</span>
+                });
+<span class="nc" id="L245">            } catch (Throwable t) {</span>
+<span class="nc" id="L246">                log.error(&quot;check expired grpc client settings failed. clientId:{}&quot;, clientId, t);</span>
+<span class="nc" id="L247">            }</span>
+<span class="nc" id="L248">        }</span>
+<span class="nc" id="L249">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

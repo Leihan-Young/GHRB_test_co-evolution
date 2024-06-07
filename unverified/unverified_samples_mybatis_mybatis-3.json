@@ -1,0 +1,43 @@
+{
+  "mybatis_mybatis-3-2957": {
+    "bug_id": "mybatis_mybatis-3-2957",
+    "PR_number": 2957,
+    "PR_createdAt": "2023-09-18T07:28:22Z",
+    "merge_commit": "75171e88a9b4596d788acdfa66e7da48f365e914",
+    "buggy_commits": [
+      {
+        "oid": "fdbd5e59632b7aebf6fc9e9f9135e54ee5d0dc64",
+        "message": "Merge pull request #2935 from cflxl/niyiming-dev\n\nsolve the unremoved result in keyList"
+      },
+      {
+        "oid": "06ec2c0c1bc8115062922406b7393cebc683633e",
+        "message": "Registered type handler should be used for anonymous enum\n\nShould fix #2956"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/mybatis/mybatis-3/issues/2956",
+      "createdAt": "2023-09-16T16:38:26Z",
+      "content": "bug_report_all/mybatis_mybatis-3-2957.json"
+    },
+    "changed_tests": [
+      "src/test/java/org/apache/ibatis/scripting/defaults/DefaultParameterHandlerTest.java",
+      "src/test/java/org/apache/ibatis/submitted/enum_with_method/EnumWithMethodTest.java",
+      "src/test/java/org/apache/ibatis/submitted/enum_with_method/Mood.java",
+      "src/test/java/org/apache/ibatis/submitted/enum_with_method/MoodTypeTypeHandler.java",
+      "src/test/java/org/apache/ibatis/submitted/enum_with_method/User.java"
+    ],
+    "PR_url": "https://github.com/mybatis/mybatis-3/pull/2957",
+    "merge_commit_url": "https://github.com/mybatis/mybatis-3/commit/75171e88a9b4596d788acdfa66e7da48f365e914",
+    "buggy_commit": "fdbd5e59632b7aebf6fc9e9f9135e54ee5d0dc64",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.ibatis.submitted.enum_with_method.EnumWithMethodTest#shouldGetAUser",
+        ".org.apache.ibatis.submitted.enum_with_method.EnumWithMethodTest#shouldInsertAUser"
+      ],
+      "test_tgt": [
+        ".org.apache.ibatis.submitted.enum_with_method.EnumWithMethodTest#shouldGetAUser",
+        ".org.apache.ibatis.submitted.enum_with_method.EnumWithMethodTest#shouldInsertAUser"
+      ]
+    }
+  }
+}

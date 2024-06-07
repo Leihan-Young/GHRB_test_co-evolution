@@ -1,0 +1,726 @@
+{
+  "1": {
+    "cov_test_src_focal_src": {
+      "proxy/bootstrap/src/main/java/org/apache/shardingsphere/proxy/database/DatabaseServerInfo.java#DatabaseServerInfo": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "18"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "7"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/bootstrap/src/main/java/org/apache/shardingsphere/proxy/database/DatabaseServerInfo.java#toString": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "proxy/bootstrap/src/main/java/org/apache/shardingsphere/proxy/database/DatabaseServerInfo.java#DatabaseServerInfo": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "18"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "7"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/bootstrap/src/main/java/org/apache/shardingsphere/proxy/database/DatabaseServerInfo.java#toString": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": {
+      "proxy/bootstrap/src/main/java/org/apache/shardingsphere/proxy/database/DatabaseServerInfo.java#DatabaseServerInfo": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "18"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "7"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/bootstrap/src/main/java/org/apache/shardingsphere/proxy/database/DatabaseServerInfo.java#toString": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "2": {
+    "cov_test_src_focal_src": {
+      "infra/util/src/main/java/org/apache/shardingsphere/infra/util/yaml/representer/ShardingSphereYamlRepresenter.java#ShardingSphereYamlRepresenter": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "22"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "infra/util/src/main/java/org/apache/shardingsphere/infra/util/yaml/representer/ShardingSphereYamlRepresenter.java#ShardingSphereYamlRepresenter": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "3": {
+    "cov_test_src_focal_src": {
+      "infra/util/src/main/java/org/apache/shardingsphere/infra/util/yaml/representer/ShardingSphereYamlRepresenter.java#ShardingSphereYamlRepresenter": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "22"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "infra/util/src/main/java/org/apache/shardingsphere/infra/util/yaml/representer/ShardingSphereYamlRepresenter.java#ShardingSphereYamlRepresenter": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "4": {
+    "cov_test_src_focal_src": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowDistVariablesExecutor.java#getRows": {
+        "INSTRUCTION": {
+          "missed": "15",
+          "covered": "61"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "9"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowDistVariablesExecutor.java#getRows": {
+        "INSTRUCTION": {
+          "missed": "15",
+          "covered": "62"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "10"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowDistVariablesExecutor.java#getRows": {
+        "INSTRUCTION": {
+          "missed": "15",
+          "covered": "62"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "10"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "5": {
+    "cov_test_src_focal_src": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowDistVariablesExecutor.java#getRows": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "76"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowDistVariablesExecutor.java#getRows": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "77"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "12"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowDistVariablesExecutor.java#getRows": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "77"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "12"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "6": {
+    "cov_test_src_focal_src": {
+      "features/broadcast/core/src/main/java/org/apache/shardingsphere/broadcast/route/engine/type/broadcast/BroadcastDatabaseBroadcastRoutingEngine.java#route": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "27"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "features/broadcast/core/src/main/java/org/apache/shardingsphere/broadcast/route/engine/type/broadcast/BroadcastDatabaseBroadcastRoutingEngine.java#route": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "27"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "7": {
+    "cov_test_src_focal_src": {
+      "features/broadcast/core/src/main/java/org/apache/shardingsphere/broadcast/route/engine/type/broadcast/BroadcastInstanceBroadcastRoutingEngine.java#route": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "37"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "features/broadcast/core/src/main/java/org/apache/shardingsphere/broadcast/route/engine/type/broadcast/BroadcastInstanceBroadcastRoutingEngine.java#route": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "37"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "8": {
+    "cov_test_src_focal_src": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowTableMetaDataExecutor.java#getColumnNames": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "20"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowTableMetaDataExecutor.java#getColumnNames": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "24"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowTableMetaDataExecutor.java#getColumnNames": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "24"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "9": {
+    "cov_test_src_focal_src": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowTableMetaDataExecutor.java#getRows": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "30"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowTableMetaDataExecutor.java#getRows": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "30"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": {
+      "proxy/backend/core/src/main/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowTableMetaDataExecutor.java#getRows": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "30"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "10": {
+    "cov_test_src_focal_src": {
+      "infra/database/type/mariadb/src/main/java/org/apache/shardingsphere/infra/database/mariadb/type/MariaDBDatabaseType.java#getJdbcUrlPrefixes": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "12"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "infra/database/type/mariadb/src/main/java/org/apache/shardingsphere/infra/database/mariadb/type/MariaDBDatabaseType.java#getJdbcUrlPrefixes": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "21"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "11": {
+    "cov_test_src_focal_src": {
+      "proxy/backend/type/mysql/src/main/java/org/apache/shardingsphere/proxy/backend/mysql/handler/admin/executor/ShowDatabasesExecutor.java#getQueryResultMetaData": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "proxy/backend/type/mysql/src/main/java/org/apache/shardingsphere/proxy/backend/mysql/handler/admin/executor/ShowDatabasesExecutor.java#getQueryResultMetaData": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": {
+      "proxy/backend/type/mysql/src/main/java/org/apache/shardingsphere/proxy/backend/mysql/handler/admin/executor/ShowDatabasesExecutor.java#getQueryResultMetaData": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "12": {
+    "cov_test_src_focal_src": null,
+    "cov_test_tgt_focal_tgt": {
+      "infra/util/src/main/java/org/apache/shardingsphere/infra/util/directory/ClasspathResourceDirectoryReader.java#read": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": {
+      "infra/util/src/main/java/org/apache/shardingsphere/infra/util/directory/ClasspathResourceDirectoryReader.java#read": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  }
+}

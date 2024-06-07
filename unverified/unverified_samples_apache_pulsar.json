@@ -1,0 +1,2019 @@
+{
+  "apache_pulsar-19715": {
+    "bug_id": "apache_pulsar-19715",
+    "PR_number": 19715,
+    "PR_createdAt": "2023-03-05T08:28:07Z",
+    "merge_commit": "42a65aaa55e03c147adabac55ad5227fc8c8f596",
+    "buggy_commits": [
+      {
+        "oid": "7d5d2df0f0caf7630e89e4aab79a87e632475ab8",
+        "message": "[fix][doc] Update the comment of the method of OwnershipCache (#19553)\n\nCo-authored-by: huangzegui <huangzegui@didiglobal.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/18600",
+      "createdAt": "2022-11-24T10:21:46Z",
+      "content": "bug_report_all/apache_pulsar-19715.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/admin/v3/AdminApiTransactionMultiBrokerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/19715",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/42a65aaa55e03c147adabac55ad5227fc8c8f596",
+    "buggy_commit": "7d5d2df0f0caf7630e89e4aab79a87e632475ab8",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.admin.v3.AdminApiTransactionMultiBrokerTest#testRedirectOfGetCoordinatorInternalStats"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.admin.v3.AdminApiTransactionMultiBrokerTest#testRedirectOfGetCoordinatorInternalStats"
+      ]
+    }
+  },
+  "apache_pulsar-19750": {
+    "bug_id": "apache_pulsar-19750",
+    "PR_number": 19750,
+    "PR_createdAt": "2023-03-08T10:10:50Z",
+    "merge_commit": "ef18bab1badbe6ce537254b3ff8fd288da1e7d4d",
+    "buggy_commits": [
+      {
+        "oid": "2b4a3c14458f564e7e0178f71979a41e7b7a42b7",
+        "message": "[fix][broker] Fix RetentionPolicies constructor (#19777)\n\nSigned-off-by: Zixuan Liu <nodeces@gmail.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/7354",
+      "createdAt": "2020-06-24T17:33:56Z",
+      "content": "bug_report_all/apache_pulsar-19750.json"
+    },
+    "changed_tests": [
+      "pulsar-functions/utils/src/test/java/org/apache/pulsar/functions/utils/FunctionCommonTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/19750",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/ef18bab1badbe6ce537254b3ff8fd288da1e7d4d",
+    "buggy_commit": "2b4a3c14458f564e7e0178f71979a41e7b7a42b7",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.functions.utils.FunctionCommonTest#testDownloadFile"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.functions.utils.FunctionCommonTest#testDownloadFile",
+        ".org.apache.pulsar.functions.utils.FunctionCommonTest#testDownloadFileWithBasicAuth"
+      ]
+    }
+  },
+  "apache_pulsar-19777": {
+    "bug_id": "apache_pulsar-19777",
+    "PR_number": 19777,
+    "PR_createdAt": "2023-03-10T04:27:49Z",
+    "merge_commit": "2b4a3c14458f564e7e0178f71979a41e7b7a42b7",
+    "buggy_commits": [
+      {
+        "oid": "329e80b847bd6584cbb031a96d5416d4df488432",
+        "message": "[improve][broker] Clear delayed message when unsubscribe &  Make clear operation asynchronous (#19901)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/18112",
+      "createdAt": "2022-10-19T09:45:14Z",
+      "content": "bug_report_all/apache_pulsar-19777.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/ConsumedLedgersTrimTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/19777",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/2b4a3c14458f564e7e0178f71979a41e7b7a42b7",
+    "buggy_commit": "329e80b847bd6584cbb031a96d5416d4df488432",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.ConsumedLedgersTrimTest#TestConsumedLedgersTrim"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.ConsumedLedgersTrimTest#TestConsumedLedgersTrim"
+      ]
+    }
+  },
+  "apache_pulsar-20000": {
+    "bug_id": "apache_pulsar-20000",
+    "PR_number": 20000,
+    "PR_createdAt": "2023-04-03T08:43:30Z",
+    "merge_commit": "f04252b84a8b594ea371645e367c491aa8e2dd80",
+    "buggy_commits": [
+      {
+        "oid": "c32caba54a5ab2c01c092ab952343f4ac405da35",
+        "message": "[fix][broker] Fix default bundle size used while setting bookie affinity (#20250)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/19981",
+      "createdAt": "2023-03-31T07:48:49Z",
+      "content": "bug_report_all/apache_pulsar-20000.json"
+    },
+    "changed_tests": [
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/PulsarFunctionsTest.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/PulsarFunctionsTestBase.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/go/PulsarFunctionsGoTest.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/java/PulsarFunctionsJavaTest.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/python/PulsarFunctionsPythonTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20000",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/f04252b84a8b594ea371645e367c491aa8e2dd80",
+    "buggy_commit": "c32caba54a5ab2c01c092ab952343f4ac405da35",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.tests.integration.functions.java.PulsarFunctionsJavaTest#testJavaExclamationFunction",
+        ".org.apache.pulsar.tests.integration.functions.java.PulsarFunctionsJavaTest#testJavaExclamationTopicPatternFunction",
+        ".org.apache.pulsar.tests.integration.functions.python.PulsarFunctionsPythonTest#testPythonExclamationFunction",
+        ".org.apache.pulsar.tests.integration.functions.python.PulsarFunctionsPythonTest#testPythonExclamationFunctionWithExtraDeps",
+        ".org.apache.pulsar.tests.integration.functions.python.PulsarFunctionsPythonTest#testPythonExclamationZipFunction",
+        ".org.apache.pulsar.tests.integration.functions.python.PulsarFunctionsPythonTest#testPythonExclamationTopicPatternFunction"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.tests.integration.functions.go.PulsarFunctionsGoTest#testGoExclamationMultiInputsFunction",
+        ".org.apache.pulsar.tests.integration.functions.java.PulsarFunctionsJavaTest#testJavaExclamationFunction",
+        ".org.apache.pulsar.tests.integration.functions.java.PulsarFunctionsJavaTest#testJavaExclamationTopicPatternFunction",
+        ".org.apache.pulsar.tests.integration.functions.python.PulsarFunctionsPythonTest#testPythonExclamationFunction",
+        ".org.apache.pulsar.tests.integration.functions.python.PulsarFunctionsPythonTest#testPythonExclamationFunctionWithExtraDeps",
+        ".org.apache.pulsar.tests.integration.functions.python.PulsarFunctionsPythonTest#testPythonExclamationZipFunction",
+        ".org.apache.pulsar.tests.integration.functions.python.PulsarFunctionsPythonTest#testPythonExclamationTopicPatternFunction"
+      ]
+    }
+  },
+  "apache_pulsar-20037": {
+    "bug_id": "apache_pulsar-20037",
+    "PR_number": 20037,
+    "PR_createdAt": "2023-04-07T03:27:05Z",
+    "merge_commit": "f2076b44764ffbbf39e01b3873a6735a90bc3d47",
+    "buggy_commits": [
+      {
+        "oid": "4f503fd886cd25670b6344defb8feb1ff2a6e816",
+        "message": "[fix] [cli] Fix Broker crashed by too much memory usage of pulsar tools (#20031)\n\n### Motivation\r\nAfter #15868, we allow `PULSAR_MEM` & `PULSAR_GC` to be overridden in `pulsar_tool_env.sh`.\r\n\r\nMany users set `-Xms` to `2G` or larger in `PULSAR_MEM`, this will make the tools(such as `pulsar-admin`) cost a lot of memory, and if users execute `pulsar-admin` or another tool on the machine where the Broker is deployed, the current device will not have enough memory to allocate, resulting in a broker crash.\r\n\r\n### Modifications\r\n\r\nWhen `PULSAR_MEM` is overridden  in `pulsar_tool_env.sh`, delete parameter `-Xms`"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20010",
+      "createdAt": "2023-04-04T11:15:11Z",
+      "content": "bug_report_all/apache_pulsar-20037.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/persistent/PersistentTopicTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20037",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/f2076b44764ffbbf39e01b3873a6735a90bc3d47",
+    "buggy_commit": "4f503fd886cd25670b6344defb8feb1ff2a6e816",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.persistent.PersistentTopicTest#testCreateTopicWithZombieReplicatorCursor"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.persistent.PersistentTopicTest#testCreateTopicWithZombieReplicatorCursor"
+      ]
+    }
+  },
+  "apache_pulsar-20040": {
+    "bug_id": "apache_pulsar-20040",
+    "PR_number": 20040,
+    "PR_createdAt": "2023-04-07T11:11:48Z",
+    "merge_commit": "a91865140893f7e9737f6ce9ffc052584c721884",
+    "buggy_commits": [
+      {
+        "oid": "bafecb2a9c0e73942de6a38df72dd5888d5afd66",
+        "message": "[improve] Removed usages of SafeRun (#20060)\n\n### Motivation\r\n\r\nWith BK 4.16, we don't need to pass `SafeRunnable` instances to the `OrderedExecutor` anymore. The executor has embedded the logic of checking and logging exceptions.\r\n\r\nRemoving the SafeRun will avoid extra allocations in critical path and clutter of the code\r\n\r\n### Verifying this change\r\n\r\n- [ ] Make sure that the change passes the CI checks.\r\n\r\n*(Please pick either of the following options)*\r\n\r\nThis change is a trivial rework / code cleanup without any test coverage.\r\n\r\n*(or)*\r\n\r\nThis change is already covered by existing tests, such as *(please describe tests)*.\r\n\r\n*(or)*\r\n\r\nThis change added tests and can be verified as follows:\r\n\r\n*(example:)*\r\n  - *Added integration tests for end-to-end deployment with large payloads (10MB)*\r\n  - *Extended integration test for recovery after broker failure*\r\n\r\n### Does this pull request potentially affect one of the following parts:\r\n\r\n<!-- DO NOT REMOVE THIS SECTION. CHECK THE PROPER BOX ONLY. -->\r\n\r\n*If the box was checked, please highlight the changes*\r\n\r\n- [ ] Dependencies (add or upgrade a dependency)\r\n- [ ] The public API\r\n- [ ] The schema\r\n- [ ] The default values of configurations\r\n- [ ] The threading model\r\n- [ ] The binary protocol\r\n- [ ] The REST endpoints\r\n- [ ] The admin CLI options\r\n- [ ] The metrics\r\n- [ ] Anything that affects deployment\r\n\r\n### Documentation\r\n\r\n<!-- DO NOT REMOVE THIS SECTION. CHECK THE PROPER BOX ONLY. -->\r\n\r\n- [ ] `doc` <!-- Your PR contains doc changes. -->\r\n- [ ] `doc-required` <!-- Your PR changes impact docs and you will update later -->\r\n- [x] `doc-not-needed` <!-- Your PR changes do not impact docs -->\r\n- [ ] `doc-complete` <!-- Docs have been already added -->\r\n\r\n### Matching PR in forked repository\r\n\r\nPR in forked repository: (https://github.com/merlimat/pulsar/pull/6)\r\n\r\n<!--\r\nAfter opening this PR, the build in apache/pulsar will fail and instructions will\r\nbe provided for opening a PR in the PR author's forked repository.\r\n\r\napache/pulsar pull requests should be first tested in your own fork since the \r\napache/pulsar CI based on GitHub Actions has constrained resources and quota.\r\nGitHub Actions provides separate quota for pull requests that are executed in \r\na forked repository.\r\n\r\nThe tests will be run in the forked repository until all PR review comments have\r\nbeen handled, the tests pass and the PR is approved by a reviewer.\r\n-->"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/4940",
+      "createdAt": "2019-08-12T15:19:18Z",
+      "content": "bug_report_all/apache_pulsar-20040.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/TopicReaderTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/impl/TopicsConsumerImplTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20040",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/a91865140893f7e9737f6ce9ffc052584c721884",
+    "buggy_commit": "bafecb2a9c0e73942de6a38df72dd5888d5afd66",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.api.TopicReaderTest#testHasMessageAvailable",
+        ".org.apache.pulsar.client.impl.TopicsConsumerImplTest#testGetLastMessageId"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.api.TopicReaderTest#testHasMessageAvailable",
+        ".org.apache.pulsar.client.impl.TopicsConsumerImplTest#testGetLastMessageId"
+      ]
+    }
+  },
+  "apache_pulsar-20068": {
+    "bug_id": "apache_pulsar-20068",
+    "PR_number": 20068,
+    "PR_createdAt": "2023-04-11T04:35:30Z",
+    "merge_commit": "fc17c1d98a3c1edd975c131d174a9ef69887d9cd",
+    "buggy_commits": [
+      {
+        "oid": "9b723022436cc1a150af765103e8d343679f92ce",
+        "message": "[improve][broker] Make timer execute immediately after load index (#20126)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20066",
+      "createdAt": "2023-04-11T03:45:49Z",
+      "content": "bug_report_all/apache_pulsar-20068.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/auth/AuthorizationTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/AuthorizationProducerConsumerTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/websocket/proxy/ProxyAuthorizationTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20068",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/fc17c1d98a3c1edd975c131d174a9ef69887d9cd",
+    "buggy_commit": "9b723022436cc1a150af765103e8d343679f92ce",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.auth.AuthorizationTest#simple",
+        ".org.apache.pulsar.websocket.proxy.ProxyAuthorizationTest#test"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.auth.AuthorizationTest#simple",
+        ".org.apache.pulsar.websocket.proxy.ProxyAuthorizationTest#test"
+      ]
+    }
+  },
+  "apache_pulsar-20085": {
+    "bug_id": "apache_pulsar-20085",
+    "PR_number": 20085,
+    "PR_createdAt": "2023-04-13T02:54:18Z",
+    "merge_commit": "93fb4f8eb6bd12872f05d7c5ec6c00b719d53009",
+    "buggy_commits": [
+      {
+        "oid": "b7eab9469177eda2c56e36bb9871aab48a17d4ec",
+        "message": "[fix][doc] ConnectorDocGenerator support Java 9+ (#20100)\n\nSigned-off-by: tison <wander4096@gmail.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20013",
+      "createdAt": "2023-04-05T04:09:06Z",
+      "content": "bug_report_all/apache_pulsar-20085.json"
+    },
+    "changed_tests": [
+      "pulsar-functions/runtime/src/test/java/org/apache/pulsar/functions/auth/KubernetesSecretsTokenAuthProviderTest.java",
+      "pulsar-functions/runtime/src/test/java/org/apache/pulsar/functions/runtime/kubernetes/KubernetesRuntimeFactoryTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20085",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/93fb4f8eb6bd12872f05d7c5ec6c00b719d53009",
+    "buggy_commit": "b7eab9469177eda2c56e36bb9871aab48a17d4ec",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.functions.auth.KubernetesSecretsTokenAuthProviderTest#testCacheAuthData",
+        ".org.apache.pulsar.functions.runtime.kubernetes.KubernetesRuntimeFactoryTest#testDynamicConfigMapLoading"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.functions.auth.KubernetesSecretsTokenAuthProviderTest#testCacheAuthData",
+        ".org.apache.pulsar.functions.runtime.kubernetes.KubernetesRuntimeFactoryTest#testDynamicConfigMapLoading"
+      ]
+    }
+  },
+  "apache_pulsar-20115": {
+    "bug_id": "apache_pulsar-20115",
+    "PR_number": 20115,
+    "PR_createdAt": "2023-04-17T09:23:41Z",
+    "merge_commit": "43a989862f548fa3f67708a5fff62eb764af878c",
+    "buggy_commits": [
+      {
+        "oid": "d0d626be8f59107d9de624f813dd0d5012cc1311",
+        "message": "[improve][cli] Allow pulser-client consume create a replicated subscription (#20316)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/5350",
+      "createdAt": "2019-10-09T19:21:54Z",
+      "content": "bug_report_all/apache_pulsar-20115.json"
+    },
+    "changed_tests": [
+      "pulsar-functions/instance/src/test/java/org/apache/pulsar/functions/source/TopicSchemaTest.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/PulsarFunctionsTest.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/PulsarFunctionsTestBase.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/java/PulsarFunctionsJavaTest.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/java/PulsarWorkerRebalanceDrainTest.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/utils/CommandGenerator.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20115",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/43a989862f548fa3f67708a5fff62eb764af878c",
+    "buggy_commit": "d0d626be8f59107d9de624f813dd0d5012cc1311",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.functions.source.TopicSchemaTest#testGetSchema"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.functions.source.TopicSchemaTest#testGetSchema"
+      ]
+    }
+  },
+  "apache_pulsar-20201": {
+    "bug_id": "apache_pulsar-20201",
+    "PR_number": 20201,
+    "PR_createdAt": "2023-04-29T11:32:01Z",
+    "merge_commit": "a22700df665a9ea0a8db98334b6d4337e5e490f3",
+    "buggy_commits": [
+      {
+        "oid": "e8d63952a40b79499eb3fd524f80db6bc986ed34",
+        "message": "[fix][docs] Remove old template inlined (#20208)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20093",
+      "createdAt": "2023-04-14T02:35:31Z",
+      "content": "bug_report_all/apache_pulsar-20201.json"
+    },
+    "changed_tests": [
+      "pulsar-client/src/test/java/org/apache/pulsar/client/impl/schema/KeyValueSchemaTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20201",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/a22700df665a9ea0a8db98334b6d4337e5e490f3",
+    "buggy_commit": "e8d63952a40b79499eb3fd524f80db6bc986ed34",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.impl.schema.KeyValueSchemaTest#testFillParametersToSchemainfo"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.impl.schema.KeyValueSchemaTest#testFillParametersToSchemaInfo",
+        ".org.apache.pulsar.client.impl.schema.KeyValueSchemaTest#testOverwriteSchemaDefaultProperties"
+      ]
+    }
+  },
+  "apache_pulsar-20250": {
+    "bug_id": "apache_pulsar-20250",
+    "PR_number": 20250,
+    "PR_createdAt": "2023-05-08T06:16:06Z",
+    "merge_commit": "c32caba54a5ab2c01c092ab952343f4ac405da35",
+    "buggy_commits": [
+      {
+        "oid": "ea56197d18d8d1f5b06c26246d920cb736d4e6a6",
+        "message": "[fix][monitor] topic with double quote breaks the prometheus format (#20230)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20194",
+      "createdAt": "2023-04-27T07:05:44Z",
+      "content": "bug_report_all/apache_pulsar-20250.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/BrokerBookieIsolationTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20250",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/c32caba54a5ab2c01c092ab952343f4ac405da35",
+    "buggy_commit": "ea56197d18d8d1f5b06c26246d920cb736d4e6a6",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.BrokerBookieIsolationTest#testBookieIsolation"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.BrokerBookieIsolationTest#testBookieIsolation"
+      ]
+    }
+  },
+  "apache_pulsar-20279": {
+    "bug_id": "apache_pulsar-20279",
+    "PR_number": 20279,
+    "PR_createdAt": "2023-05-09T17:33:04Z",
+    "merge_commit": "09e646f72eb640987ca9162988b6b146c485cd31",
+    "buggy_commits": [
+      {
+        "oid": "d92010c00e30199c5cd53021e20ba5d7bb36701c",
+        "message": "[feat] OIDC: support JWKS refresh for missing Key ID (#20338)\n\n### Motivation\r\n\r\nWhen the `AuthenticationProviderOpenID` encounters an unknown Key ID (known as the `kid` in the JWT) for a trusted token issuer, the token is rejected with the following error `java.lang.IllegalArgumentException: No JWK found for Key ID <kid>`. This behavior is technically valid, but it isn't ideal because it is possible that the Identity Provider has issued new signing keys and started using them before the Pulsar authentication provider has refreshed its cache. This PR introduces a behavior to retrieve \r\n\r\nThis PR adds a configuration called `openIDKeyIdCacheMissRefreshSeconds` that represents the length of time that must pass before the provider will reload the JWKS from the Identity Provider. The `openIDKeyIdCacheMissRefreshSeconds` setting limits the impact of an attacker invalidating the JWKS cache.\r\n\r\nWhen `openIDKeyIdCacheMissRefreshSeconds <= 0`, the JWKS will be refreshed for any missing key id when the issuer is trusted. This is only meant for testing.\r\n\r\n### Modifications\r\n\r\n* Add `openIDKeyIdCacheMissRefreshSeconds` setting and default it to 5 minutes.\r\n* Add functionality to invalidate and refresh the cache when a token has an unknown `kid` for a trusted issuer.\r\n\r\n### Verifying this change\r\n\r\nNew tests are added.\r\n\r\n### Does this pull request potentially affect one of the following parts:\r\n\r\nThis adds a new configuration, but it is very minor.\r\n\r\n### Documentation\r\n\r\n- [x] `doc-required`\r\n\r\n### Matching PR in forked repository\r\n\r\nPR in forked repository: Skipping since tests passed already on my local machine"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/11428",
+      "createdAt": "2021-07-22T07:26:32Z",
+      "content": "bug_report_all/apache_pulsar-20279.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/persistent/PersistentDispatcherFailoverConsumerStreamingDispatcherTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/persistent/PersistentFailoverStreamingDispatcherE2ETest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/persistent/PersistentStreamingDispatcherBlockConsumerTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/persistent/PersistentSubscriptionMessageDispatchStreamingDispatcherThrottlingTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/persistent/PersistentTopicStreamingDispatcherE2ETest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/persistent/PersistentTopicStreamingDispatcherTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/persistent/SimpleProducerConsumerTestStreamingDispatcherTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/streamingdispatch/StreamingEntryReaderTests.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/MessageDispatchThrottlingTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20279",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/09e646f72eb640987ca9162988b6b146c485cd31",
+    "buggy_commit": "d92010c00e30199c5cd53021e20ba5d7bb36701c",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.api.MessageDispatchThrottlingTest#testBacklogConsumerCacheReads"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.api.MessageDispatchThrottlingTest#testBacklogConsumerCacheReads"
+      ]
+    }
+  },
+  "apache_pulsar-20286": {
+    "bug_id": "apache_pulsar-20286",
+    "PR_number": 20286,
+    "PR_createdAt": "2023-05-10T02:06:52Z",
+    "merge_commit": "c5ceec72d6d9362c680c08c3ecb5b1f3e9cc682a",
+    "buggy_commits": [
+      {
+        "oid": "7e54e9b0463f5c69846dc44892d88281d5508466",
+        "message": "[fix][broker] Fix class name typo `PrecisPublishLimiter` to \"Precise\" (#20310)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20285",
+      "createdAt": "2023-05-10T02:03:50Z",
+      "content": "bug_report_all/apache_pulsar-20286.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/BrokerServiceTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20286",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/c5ceec72d6d9362c680c08c3ecb5b1f3e9cc682a",
+    "buggy_commit": "7e54e9b0463f5c69846dc44892d88281d5508466",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testShutDownWithMaxConcurrentUnload"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testShutDownWithMaxConcurrentUnload"
+      ]
+    }
+  },
+  "apache_pulsar-20293": {
+    "bug_id": "apache_pulsar-20293",
+    "PR_number": 20293,
+    "PR_createdAt": "2023-05-10T13:20:05Z",
+    "merge_commit": "b07f2a9b85a0f22b89fed5b51ee8625b00b7262e",
+    "buggy_commits": [
+      {
+        "oid": "96367e1c2bfd64ec0f72602321ae6ede4bed96cd",
+        "message": "[cleanup] Deduplicate test certificates to simplify management (#20289)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20290",
+      "createdAt": "2023-05-10T06:07:31Z",
+      "content": "bug_report_all/apache_pulsar-20293.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/impl/ConnectionPoolTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20293",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/b07f2a9b85a0f22b89fed5b51ee8625b00b7262e",
+    "buggy_commit": "96367e1c2bfd64ec0f72602321ae6ede4bed96cd",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.impl.ConnectionPoolTest#testSetProxyToTargetBrokerAddress"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.impl.ConnectionPoolTest#testSetProxyToTargetBrokerAddress"
+      ]
+    }
+  },
+  "apache_pulsar-20339": {
+    "bug_id": "apache_pulsar-20339",
+    "PR_number": 20339,
+    "PR_createdAt": "2023-05-17T05:37:58Z",
+    "merge_commit": "c7a4060763b905925ffe8e9690ea983d863aa52f",
+    "buggy_commits": [
+      {
+        "oid": "1a7a876634f32d5d9218977dc83f8ae08a08bf57",
+        "message": "[improve][client] Document Java Client's Seek logic thread-safety improved in #20242 (#20284)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20308",
+      "createdAt": "2023-05-11T15:58:31Z",
+      "content": "bug_report_all/apache_pulsar-20339.json"
+    },
+    "changed_tests": [
+      "pulsar-metadata/src/test/java/org/apache/pulsar/metadata/BaseMetadataStoreTest.java",
+      "pulsar-metadata/src/test/java/org/apache/pulsar/metadata/coordination/impl/LeaderElectionImplTest.java",
+      "pulsar-metadata/src/test/java/org/apache/pulsar/metadata/impl/EtcdMetadataStoreTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20339",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/c7a4060763b905925ffe8e9690ea983d863aa52f",
+    "buggy_commit": "1a7a876634f32d5d9218977dc83f8ae08a08bf57",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.metadata.impl.EtcdMetadataStoreTest#testCluster",
+        ".org.apache.pulsar.metadata.impl.EtcdMetadataStoreTest#testClusterWithTls",
+        ".org.apache.pulsar.metadata.impl.EtcdMetadataStoreTest#testTlsInstance"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.metadata.impl.EtcdMetadataStoreTest#testCluster",
+        ".org.apache.pulsar.metadata.impl.EtcdMetadataStoreTest#testClusterWithTls",
+        ".org.apache.pulsar.metadata.impl.EtcdMetadataStoreTest#testTlsInstance"
+      ]
+    }
+  },
+  "apache_pulsar-20387": {
+    "bug_id": "apache_pulsar-20387",
+    "PR_number": 20387,
+    "PR_createdAt": "2023-05-24T11:36:35Z",
+    "merge_commit": "903425be3afbbcfeb0a7213b0b7d04afe5868151",
+    "buggy_commits": [
+      {
+        "oid": "aff4a1c7edbf019d17795c7a67b1d0f0e701d118",
+        "message": "[fix][broker] Fix flaky test - testClusterMigrationWithReplica\u2026 (#20379)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20386",
+      "createdAt": "2023-05-24T11:20:55Z",
+      "content": "bug_report_all/apache_pulsar-20387.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/NonPersistentTopicTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20387",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/903425be3afbbcfeb0a7213b0b7d04afe5868151",
+    "buggy_commit": "aff4a1c7edbf019d17795c7a67b1d0f0e701d118",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.api.NonPersistentTopicTest#testMsgDropStat"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.api.NonPersistentTopicTest#testMsgDropStat"
+      ]
+    }
+  },
+  "apache_pulsar-20401": {
+    "bug_id": "apache_pulsar-20401",
+    "PR_number": 20401,
+    "PR_createdAt": "2023-05-25T08:45:55Z",
+    "merge_commit": "25c4b7cee402a1d486d720a71dc2e06aa6d9af64",
+    "buggy_commits": [
+      {
+        "oid": "9918bced4465e0b0746a7959550c90cb76ae945f",
+        "message": "[fix][broker] partitioned __change_events topic is policy topic (#20392)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20386",
+      "createdAt": "2023-05-24T11:20:55Z",
+      "content": "bug_report_all/apache_pulsar-20401.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/NonPersistentTopicTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20401",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/25c4b7cee402a1d486d720a71dc2e06aa6d9af64",
+    "buggy_commit": "9918bced4465e0b0746a7959550c90cb76ae945f",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.api.NonPersistentTopicTest#testMsgDropStat"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.api.NonPersistentTopicTest#testMsgDropStat"
+      ]
+    }
+  },
+  "apache_pulsar-20429": {
+    "bug_id": "apache_pulsar-20429",
+    "PR_number": 20429,
+    "PR_createdAt": "2023-05-29T12:43:43Z",
+    "merge_commit": "a26cf3eb78858ef5638650b6dbd7dab1f76a8c61",
+    "buggy_commits": [
+      {
+        "oid": "bdd1bf1fcabdfc52527d07a8f8a288930e2cb7dd",
+        "message": "[improve][broker] Replace String.intern() with Guava Interner (#20432)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20386",
+      "createdAt": "2023-05-24T11:20:55Z",
+      "content": "bug_report_all/apache_pulsar-20429.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/NonPersistentTopicTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20429",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/a26cf3eb78858ef5638650b6dbd7dab1f76a8c61",
+    "buggy_commit": "bdd1bf1fcabdfc52527d07a8f8a288930e2cb7dd",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.api.NonPersistentTopicTest#testMsgDropStat"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.api.NonPersistentTopicTest#testMsgDropStat"
+      ]
+    }
+  },
+  "apache_pulsar-20443": {
+    "bug_id": "apache_pulsar-20443",
+    "PR_number": 20443,
+    "PR_createdAt": "2023-05-31T05:04:05Z",
+    "merge_commit": "510744c20d0339c4b29366f07bf1849cabb81dec",
+    "buggy_commits": [
+      {
+        "oid": "8b3c085e9d26605cca544068e8611d72e7012468",
+        "message": "[fix][fn] enable Go function token auth and TLS (#20468)\n\nCo-authored-by: Andy Walker <andy@andy.dev>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20442",
+      "createdAt": "2023-05-31T04:55:21Z",
+      "content": "bug_report_all/apache_pulsar-20443.json"
+    },
+    "changed_tests": [
+      "pulsar-functions/runtime/src/test/java/org/apache/pulsar/functions/runtime/RuntimeUtilsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20443",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/510744c20d0339c4b29366f07bf1849cabb81dec",
+    "buggy_commit": "8b3c085e9d26605cca544068e8611d72e7012468",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.functions.runtime.RuntimeUtilsTest#getGoInstanceCmd"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.functions.runtime.RuntimeUtilsTest#getGoInstanceCmd"
+      ]
+    }
+  },
+  "apache_pulsar-20464": {
+    "bug_id": "apache_pulsar-20464",
+    "PR_number": 20464,
+    "PR_createdAt": "2023-06-01T17:38:10Z",
+    "merge_commit": "a5f2d25e0f435fa8758904a0f71ceefceb8b5deb",
+    "buggy_commits": [
+      {
+        "oid": "57f9467a8dbcd546ee9127d8dfbd000b46333f23",
+        "message": "[fix][sec] Upgrade Guava to 32.0.0 to address CVE-2023-2976 (#20459)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20463",
+      "createdAt": "2023-06-01T17:19:57Z",
+      "content": "bug_report_all/apache_pulsar-20464.json"
+    },
+    "changed_tests": [
+      "pulsar-functions/utils/src/test/java/org/apache/pulsar/functions/utils/FunctionCommonTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20464",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/a5f2d25e0f435fa8758904a0f71ceefceb8b5deb",
+    "buggy_commit": "57f9467a8dbcd546ee9127d8dfbd000b46333f23",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.functions.utils.FunctionCommonTest#testDownloadFileWithBasicAuth"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.functions.utils.FunctionCommonTest#testDownloadFileWithBasicAuth"
+      ]
+    }
+  },
+  "apache_pulsar-20468": {
+    "bug_id": "apache_pulsar-20468",
+    "PR_number": 20468,
+    "PR_createdAt": "2023-06-01T21:02:03Z",
+    "merge_commit": "8b3c085e9d26605cca544068e8611d72e7012468",
+    "buggy_commits": [
+      {
+        "oid": "ceed19cf3b8536a8c9059bfbcb29ef972841b412",
+        "message": "[fix][fn] Support customizing TLS config for function download command (#20482)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20451",
+      "createdAt": "2023-06-01T03:09:55Z",
+      "content": "bug_report_all/apache_pulsar-20468.json"
+    },
+    "changed_tests": [
+      "pulsar-functions/runtime/src/test/java/org/apache/pulsar/functions/runtime/RuntimeUtilsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20468",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/8b3c085e9d26605cca544068e8611d72e7012468",
+    "buggy_commit": "ceed19cf3b8536a8c9059bfbcb29ef972841b412",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.functions.runtime.RuntimeUtilsTest#getGoInstanceCmd"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.functions.runtime.RuntimeUtilsTest#getGoInstanceCmd"
+      ]
+    }
+  },
+  "apache_pulsar-20629": {
+    "bug_id": "apache_pulsar-20629",
+    "PR_number": 20629,
+    "PR_createdAt": "2023-06-21T08:16:24Z",
+    "merge_commit": "95263829c1b5cdadb73222e4d5c8173c2b2930fe",
+    "buggy_commits": [
+      {
+        "oid": "2f0555ca0c0d5ad9ff46b07ebf92d1f96f66189d",
+        "message": "[feat][broker]PIP-255 Part-2: Make the partition assignment strategy pluggable (#20537)\n\nCo-authored-by: Yunze Xu <xyzinfernity@163.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20615",
+      "createdAt": "2023-06-20T06:18:14Z",
+      "content": "bug_report_all/apache_pulsar-20629.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/SimpleProducerConsumerStatTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20629",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/95263829c1b5cdadb73222e4d5c8173c2b2930fe",
+    "buggy_commit": "2f0555ca0c0d5ad9ff46b07ebf92d1f96f66189d",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.api.SimpleProducerConsumerStatTest#testMsgRateExpired"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.api.SimpleProducerConsumerStatTest#testMsgRateExpired"
+      ]
+    }
+  },
+  "apache_pulsar-20739": {
+    "bug_id": "apache_pulsar-20739",
+    "PR_number": 20739,
+    "PR_createdAt": "2023-07-06T10:48:18Z",
+    "merge_commit": "558c12df6aff2b93e81ab56099c50ce291f8f6d3",
+    "buggy_commits": [
+      {
+        "oid": "e96b3398912163eb6e0528c10aed3507c95952fd",
+        "message": "[improve][broker] Support get/remove permissions for AuthorizationProvider (#20496)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20714",
+      "createdAt": "2023-07-04T12:12:40Z",
+      "content": "bug_report_all/apache_pulsar-20739.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/InactiveTopicDeleteTest.java",
+      "pulsar-client/src/test/java/org/apache/pulsar/client/impl/TopicListWatcherTest.java",
+      "pulsar-proxy/src/test/java/org/apache/pulsar/proxy/server/ProxyTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20739",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/558c12df6aff2b93e81ab56099c50ce291f8f6d3",
+    "buggy_commit": "e96b3398912163eb6e0528c10aed3507c95952fd",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.InactiveTopicDeleteTest#testDeleteWhenNoBacklogs"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.InactiveTopicDeleteTest#testDeleteWhenNoBacklogs"
+      ]
+    }
+  },
+  "apache_pulsar-20949": {
+    "bug_id": "apache_pulsar-20949",
+    "PR_number": 20949,
+    "PR_createdAt": "2023-08-07T16:46:52Z",
+    "merge_commit": "bafc8277940a827bc7a9f7c7d22f07dfe1b3ef47",
+    "buggy_commits": [
+      {
+        "oid": "980dfc81a5165147615232692e7b5a71b61c71a7",
+        "message": "[improve][cli] Add some checks for topic-level `setOffloadPolicies` (#20943)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20871",
+      "createdAt": "2023-07-25T10:07:51Z",
+      "content": "bug_report_all/apache_pulsar-20949.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/admin/BookiesApiTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/20949",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/bafc8277940a827bc7a9f7c7d22f07dfe1b3ef47",
+    "buggy_commit": "980dfc81a5165147615232692e7b5a71b61c71a7",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.admin.BookiesApiTest#testBasic"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.admin.BookiesApiTest#testBasic"
+      ]
+    }
+  },
+  "apache_pulsar-21015": {
+    "bug_id": "apache_pulsar-21015",
+    "PR_number": 21015,
+    "PR_createdAt": "2023-08-17T12:38:12Z",
+    "merge_commit": "1363777918547b0f56bdbbf04cec28d050a43586",
+    "buggy_commits": [
+      {
+        "oid": "62a88f9f8e8bde31f71b0dc0bad3fc47e6de131c",
+        "message": "[fix][doc] fix doc comment for subscriptionType (#20987)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21012",
+      "createdAt": "2023-08-17T09:04:33Z",
+      "content": "bug_report_all/apache_pulsar-21015.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/transaction/TransactionTestBase.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/BrokerServiceLookupTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/ClientAuthenticationTlsTest.java",
+      "pulsar-proxy/src/test/java/org/apache/pulsar/proxy/server/ProxyRefreshAuthTest.java",
+      "pulsar-proxy/src/test/java/org/apache/pulsar/proxy/server/ProxyServiceTlsStarterTest.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/containers/BrokerContainer.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/containers/ProxyContainer.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/tls/ClientTlsTest.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/topologies/PulsarCluster.java",
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/topologies/PulsarClusterSpec.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21015",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/1363777918547b0f56bdbbf04cec28d050a43586",
+    "buggy_commit": "62a88f9f8e8bde31f71b0dc0bad3fc47e6de131c",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.admin.AdminApi2Test#testTopicPoliciesWithMultiBroker",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#persistentTopics",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testWebserviceServiceTls",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testPartitionedMetadataWithDeprecatedVersion"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.admin.AdminApi2Test#testTopicPoliciesWithMultiBroker",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#persistentTopics",
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testGetLookupServiceAddress",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testWebserviceServiceTls",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testPartitionedMetadataWithDeprecatedVersion"
+      ]
+    }
+  },
+  "apache_pulsar-21019": {
+    "bug_id": "apache_pulsar-21019",
+    "PR_number": 21019,
+    "PR_createdAt": "2023-08-17T20:50:16Z",
+    "merge_commit": "3160b76fb6223012b366bdfe81d0ad7e25000cf1",
+    "buggy_commits": [
+      {
+        "oid": "4a9fec693b90fcb76aea9a98a94de31608b56bab",
+        "message": "[fix][broker] Fix consumers are not redirected to migrated cluster (#20928)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/19908",
+      "createdAt": "2023-03-23T09:10:04Z",
+      "content": "bug_report_all/apache_pulsar-21019.json"
+    },
+    "changed_tests": [
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/loadbalance/ExtensibleLoadManagerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21019",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/3160b76fb6223012b366bdfe81d0ad7e25000cf1",
+    "buggy_commit": "4a9fec693b90fcb76aea9a98a94de31608b56bab",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.tests.integration.loadbalance.ExtensibleLoadManagerTest#testSplitBundleAdminApi"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.tests.integration.loadbalance.ExtensibleLoadManagerTest#testSplitBundleAdminApi"
+      ]
+    }
+  },
+  "apache_pulsar-21093": {
+    "bug_id": "apache_pulsar-21093",
+    "PR_number": 21093,
+    "PR_createdAt": "2023-08-30T10:48:19Z",
+    "merge_commit": "a1405ea006f175b1bd0b9d28b9444d592fb4a010",
+    "buggy_commits": [
+      {
+        "oid": "927d1b2c12e7da88a0fc5406c148aa602cf3f58d",
+        "message": "[fix][broker] Fix unsubscribe non-durable subscription error (#21099)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21075",
+      "createdAt": "2023-08-28T02:48:01Z",
+      "content": "bug_report_all/apache_pulsar-21093.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/BrokerBkEnsemblesTests.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/systopic/PartitionedSystemTopicTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21093",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/a1405ea006f175b1bd0b9d28b9444d592fb4a010",
+    "buggy_commit": "927d1b2c12e7da88a0fc5406c148aa602cf3f58d",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.BrokerBkEnsemblesTests#testDeleteTopicWithMissingData"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.BrokerBkEnsemblesTests#testDeleteTopicWithMissingData",
+        ".org.apache.pulsar.broker.service.BrokerBkEnsemblesTests#testDeleteTopicWithoutTopicLoaded",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testDeleteTopicSchemaAndPolicyWhenTopicIsNotLoaded"
+      ]
+    }
+  },
+  "apache_pulsar-21187": {
+    "bug_id": "apache_pulsar-21187",
+    "PR_number": 21187,
+    "PR_createdAt": "2023-09-15T03:07:36Z",
+    "merge_commit": "e81a20d667aef7c0f888e88dbcf972196012ebea",
+    "buggy_commits": [
+      {
+        "oid": "434da8b5cc76a08215319be7ab066e1d1c23f6c4",
+        "message": "[cleanup] [broker] fix doc for TransactionBuffer#isTxnAborted (#21956)\n\n### Motivation\r\n~~The argument `PositionImpl readPosition` of method `org.apache.pulsar.broker.transaction.buffer.TransactionBuffer#isTxnAborted` is weird and unneccessary, we have better remove it to avoid confusion.~~\r\nArgument `PositionImpl readPosition` is used for future.\r\n\r\n### Modifications\r\n~~Remove the argument `PositionImpl readPosition`.~~\r\nfix the doc and add to-do to avoid confusion."
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21074",
+      "createdAt": "2023-08-27T16:32:40Z",
+      "content": "bug_report_all/apache_pulsar-21187.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/ReplicatorSubscriptionTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/transaction/TransactionTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/impl/ReaderTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/compaction/CompactionTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21187",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/e81a20d667aef7c0f888e88dbcf972196012ebea",
+    "buggy_commit": "434da8b5cc76a08215319be7ab066e1d1c23f6c4",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.ReplicatorSubscriptionTest#testReplicatedSubscriptionWithCompaction",
+        ".org.apache.pulsar.broker.transaction.TransactionTest#testReadCommittedWithCompaction",
+        ".org.apache.pulsar.compaction.CompactionTest#testReceiverQueueSize",
+        ".org.apache.pulsar.compaction.CompactionTest#testDispatcherMaxReadSizeBytes",
+        ".org.apache.pulsar.compaction.CompactionTest#testCompactionWithTTL"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.ReplicatorSubscriptionTest#testReplicatedSubscriptionWithCompaction",
+        ".org.apache.pulsar.broker.transaction.TransactionTest#testReadCommittedWithCompaction",
+        ".org.apache.pulsar.client.impl.ReaderTest#testReaderReconnectedFromNextEntry",
+        ".org.apache.pulsar.compaction.CompactionTest#testReceiverQueueSize",
+        ".org.apache.pulsar.compaction.CompactionTest#testDispatcherMaxReadSizeBytes",
+        ".org.apache.pulsar.compaction.CompactionTest#testCompactionWithTTL",
+        ".org.apache.pulsar.compaction.CompactionTest#testAcknowledgeWithReconnection",
+        ".org.apache.pulsar.compaction.CompactionTest#testEarliestSubsAfterRollover"
+      ]
+    }
+  },
+  "apache_pulsar-21227": {
+    "bug_id": "apache_pulsar-21227",
+    "PR_number": 21227,
+    "PR_createdAt": "2023-09-21T13:47:12Z",
+    "merge_commit": "25c662d0de105a95ce39a5de695d774b60e8419e",
+    "buggy_commits": [
+      {
+        "oid": "6947b7f665ef24b15ef21a759a88849c7675f9a7",
+        "message": "[improve][pip] PIP-305: Customize DNS servers to use for Pulsar Client (#21352)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21226",
+      "createdAt": "2023-09-21T13:38:54Z",
+      "content": "bug_report_all/apache_pulsar-21227.json"
+    },
+    "changed_tests": [
+      "pulsar-client/src/test/java/org/apache/pulsar/client/impl/ClientBuilderImplTest.java",
+      "pulsar-client/src/test/java/org/apache/pulsar/client/impl/PulsarClientImplTest.java",
+      "pulsar-client/src/test/java/org/apache/pulsar/client/impl/conf/ConfigurationDataUtilsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21227",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/25c662d0de105a95ce39a5de695d774b60e8419e",
+    "buggy_commit": "6947b7f665ef24b15ef21a759a88849c7675f9a7",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.impl.conf.ConfigurationDataUtilsTest#testLoadClientConfigurationData"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.impl.ClientBuilderImplTest#testClientBuilderWithIllegalDNSServerHostname",
+        ".org.apache.pulsar.client.impl.ClientBuilderImplTest#testClientBuilderWithDNSServerIP",
+        ".org.apache.pulsar.client.impl.PulsarClientImplTest#testInitializeWithDNSServerAddresses",
+        ".org.apache.pulsar.client.impl.conf.ConfigurationDataUtilsTest#testLoadClientConfigurationData"
+      ]
+    }
+  },
+  "apache_pulsar-21310": {
+    "bug_id": "apache_pulsar-21310",
+    "PR_number": 21310,
+    "PR_createdAt": "2023-10-07T03:58:32Z",
+    "merge_commit": "9ab7417edc20b6618bac8f66921815c7b9d5e5b8",
+    "buggy_commits": [
+      {
+        "oid": "4ee5cd78147890ce3c23092edbfc11370972728e",
+        "message": "[fix] [ml] Reader can set read-pos to a deleted ledger (#21248)\n\n### Motivation\r\n\r\nAfter trimming ledgers, the variable `lastConfirmedEntry` of the managed ledger might rely on a deleted ledger(the latest ledger which contains data).\r\n\r\nThere is a bug that makes pulsar allow users to set the start read position to an unexisting ledger or a deleted ledger when creating a subscription. This makes the `backlog` and `markDeletedPosition` wrong. \r\n\r\n### Modifications\r\n\r\nFix the bug."
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21286",
+      "createdAt": "2023-10-01T11:41:01Z",
+      "content": "bug_report_all/apache_pulsar-21310.json"
+    },
+    "changed_tests": [
+      "pulsar-metadata/src/test/java/org/apache/bookkeeper/replication/AuthAutoRecoveryTest.java",
+      "pulsar-metadata/src/test/java/org/apache/bookkeeper/replication/AutoRecoveryMainTest.java",
+      "pulsar-metadata/src/test/java/org/apache/bookkeeper/replication/BookKeeperClusterTestCase.java",
+      "pulsar-metadata/src/test/java/org/apache/bookkeeper/replication/BookieAutoRecoveryTest.java",
+      "pulsar-metadata/src/test/java/org/apache/bookkeeper/replication/BookieLedgerIndexTest.java",
+      "pulsar-metadata/src/test/java/org/apache/bookkeeper/replication/TestAutoRecoveryAlongWithBookieServers.java",
+      "pulsar-metadata/src/test/java/org/apache/bookkeeper/replication/TestReplicationWorker.java",
+      "pulsar-metadata/src/test/java/org/apache/bookkeeper/replication/ZooKeeperUtil.java",
+      "pulsar-package-management/bookkeeper-storage/src/test/java/org/apache/pulsar/packages/management/storage/bookkeeper/bookkeeper/test/BookKeeperClusterTestCase.java",
+      "testmocks/src/main/java/org/apache/bookkeeper/client/BookKeeperTestClient.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21310",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/9ab7417edc20b6618bac8f66921815c7b9d5e5b8",
+    "buggy_commit": "4ee5cd78147890ce3c23092edbfc11370972728e",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.bookkeeper.replication.AutoRecoveryMainTest#testStartup",
+        ".org.apache.bookkeeper.replication.AutoRecoveryMainTest#testShutdown",
+        ".org.apache.bookkeeper.replication.AutoRecoveryMainTest#testAutoRecoverySessionLoss"
+      ],
+      "test_tgt": [
+        ".org.apache.bookkeeper.replication.AutoRecoveryMainTest#testStartup",
+        ".org.apache.bookkeeper.replication.AutoRecoveryMainTest#testShutdown",
+        ".org.apache.bookkeeper.replication.AutoRecoveryMainTest#testAutoRecoverySessionLoss"
+      ]
+    }
+  },
+  "apache_pulsar-21329": {
+    "bug_id": "apache_pulsar-21329",
+    "PR_number": 21329,
+    "PR_createdAt": "2023-10-09T09:49:11Z",
+    "merge_commit": "c883f50e117ff9da310c879aa048993c28ea955a",
+    "buggy_commits": [
+      {
+        "oid": "66c5e1f1ae48e49ed27a72424c372ce444217d86",
+        "message": "Revert \"[fix][broker] Miss headersAndPayload and messageIdData in MessagePublishContext (#21245) (#21309)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21284",
+      "createdAt": "2023-10-01T08:45:49Z",
+      "content": "bug_report_all/apache_pulsar-21329.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/compaction/CompactionTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21329",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/c883f50e117ff9da310c879aa048993c28ea955a",
+    "buggy_commit": "66c5e1f1ae48e49ed27a72424c372ce444217d86",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.compaction.CompactionTest#testDispatcherMaxReadSizeBytes"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.compaction.CompactionTest#testDispatcherMaxReadSizeBytes"
+      ]
+    }
+  },
+  "apache_pulsar-21332": {
+    "bug_id": "apache_pulsar-21332",
+    "PR_number": 21332,
+    "PR_createdAt": "2023-10-09T11:40:22Z",
+    "merge_commit": "ecd40e43a6b90b58e209bc9bced84b35d933619e",
+    "buggy_commits": [
+      {
+        "oid": "700a29d5c877dcde5f3c8c1e946b00a8296b8d4f",
+        "message": "[fix][broker] Fix heartbeat namespace create event topic and cannot delete heartbeat topic (#21360)\n\nCo-authored-by: fanjianye <fanjianye@bigo.sg>\r\nCo-authored-by: Jiwei Guo <technoboy@apache.org>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20157",
+      "createdAt": "2023-04-20T15:43:18Z",
+      "content": "bug_report_all/apache_pulsar-21332.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/loadbalance/extensions/ExtensibleLoadManagerImplTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/loadbalance/extensions/channel/ServiceUnitStateChannelTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21332",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/ecd40e43a6b90b58e209bc9bced84b35d933619e",
+    "buggy_commit": "700a29d5c877dcde5f3c8c1e946b00a8296b8d4f",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.loadbalance.extensions.channel.ServiceUnitStateChannelTest#transferTestWhenDestBrokerFails",
+        ".org.apache.pulsar.broker.loadbalance.extensions.channel.ServiceUnitStateChannelTest#assignTestWhenDestBrokerProducerFails"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.loadbalance.extensions.channel.ServiceUnitStateChannelTest#transferTestWhenDestBrokerFails",
+        ".org.apache.pulsar.broker.loadbalance.extensions.channel.ServiceUnitStateChannelTest#assignTestWhenDestBrokerProducerFails"
+      ]
+    }
+  },
+  "apache_pulsar-21334": {
+    "bug_id": "apache_pulsar-21334",
+    "PR_number": 21334,
+    "PR_createdAt": "2023-10-09T13:34:57Z",
+    "merge_commit": "16199d2d15556ee5a19044eb739d88a01b1573e5",
+    "buggy_commits": [
+      {
+        "oid": "c883f50e117ff9da310c879aa048993c28ea955a",
+        "message": "[fix][test] Fix flaky CompactionTest.testDispatcherMaxReadSizeBytes (#21329)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21331",
+      "createdAt": "2023-10-09T11:21:34Z",
+      "content": "bug_report_all/apache_pulsar-21334.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/OneWayReplicatorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21334",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/16199d2d15556ee5a19044eb739d88a01b1573e5",
+    "buggy_commit": "c883f50e117ff9da310c879aa048993c28ea955a",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.OneWayReplicatorTest#testReplicatorProducerStatInTopic"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.OneWayReplicatorTest#testReplicatorProducerStatInTopic"
+      ]
+    }
+  },
+  "apache_pulsar-21465": {
+    "bug_id": "apache_pulsar-21465",
+    "PR_number": 21465,
+    "PR_createdAt": "2023-10-29T11:51:29Z",
+    "merge_commit": "b5925ede2ef5652e36f252ab74a3463b8b3bfaf4",
+    "buggy_commits": [
+      {
+        "oid": "f3f5fbc27391e13ab76b0f2265f51ac3a5c0a90c",
+        "message": "[fix][txn] OpRequestSend reuse problem cause tbClient commitTxnOnTopic timeout unexpectedly (#21505)\n\nCo-authored-by: fanjianye <fanjianye@bigo.sg>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21464",
+      "createdAt": "2023-10-29T11:47:51Z",
+      "content": "bug_report_all/apache_pulsar-21465.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/transaction/TransactionTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/compaction/CompactedTopicUtilsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21465",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/b5925ede2ef5652e36f252ab74a3463b8b3bfaf4",
+    "buggy_commit": "f3f5fbc27391e13ab76b0f2265f51ac3a5c0a90c",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.compaction.CompactedTopicUtilsTest#testReadCompactedEntriesWithEmptyEntries"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.transaction.TransactionTest#testReadCommittedWithReadCompacted",
+        ".org.apache.pulsar.compaction.CompactedTopicUtilsTest#testReadCompactedEntriesWithEmptyEntries"
+      ]
+    }
+  },
+  "apache_pulsar-21634": {
+    "bug_id": "apache_pulsar-21634",
+    "PR_number": 21634,
+    "PR_createdAt": "2023-11-28T16:16:33Z",
+    "merge_commit": "2bf13547bf4b4ec9babd6513a87dffbd53d678bb",
+    "buggy_commits": [
+      {
+        "oid": "575a4840fcb627ad04fef29424824433a0f0a110",
+        "message": "[improve][pip] PIP-315: Configurable max delay limit for delayed delivery (#21490)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21537",
+      "createdAt": "2023-11-07T12:58:36Z",
+      "content": "bug_report_all/apache_pulsar-21634.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/compaction/CompactionTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21634",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/2bf13547bf4b4ec9babd6513a87dffbd53d678bb",
+    "buggy_commit": "575a4840fcb627ad04fef29424824433a0f0a110",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.compaction.CompactionTest#testCompactionDuplicate"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.compaction.CompactionTest#testCompactionDuplicate"
+      ]
+    }
+  },
+  "apache_pulsar-21642": {
+    "bug_id": "apache_pulsar-21642",
+    "PR_number": 21642,
+    "PR_createdAt": "2023-11-29T12:09:51Z",
+    "merge_commit": "93ed61bf9bf3470af8f44c170c4ae41b8a57f466",
+    "buggy_commits": [
+      {
+        "oid": "81a9a527b353c07db0743f970edb009a929888fe",
+        "message": "[fix][broker] Fixed getting incorrect KeyValue schema version (#21632)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21614",
+      "createdAt": "2023-11-23T12:27:34Z",
+      "content": "bug_report_all/apache_pulsar-21642.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/SimpleProducerConsumerStatTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21642",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/93ed61bf9bf3470af8f44c170c4ae41b8a57f466",
+    "buggy_commit": "81a9a527b353c07db0743f970edb009a929888fe",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.api.SimpleProducerConsumerStatTest#testPartitionTopicStats"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.api.SimpleProducerConsumerStatTest#testPartitionTopicStats"
+      ]
+    }
+  },
+  "apache_pulsar-21645": {
+    "bug_id": "apache_pulsar-21645",
+    "PR_number": 21645,
+    "PR_createdAt": "2023-11-30T01:55:53Z",
+    "merge_commit": "e27070afffbda7ebe22d8ba001bb26123e5e3674",
+    "buggy_commits": [
+      {
+        "oid": "4e7bff7f1d2a5fb5ef04c1e6428178675474ad39",
+        "message": "[improve][sec] Delete announced deprecate method. (#21637)\n\nCo-authored-by: Jiwe Guo <technoboy@apache.org>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21584",
+      "createdAt": "2023-11-16T11:01:03Z",
+      "content": "bug_report_all/apache_pulsar-21645.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/schema/SchemaServiceTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21645",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/e27070afffbda7ebe22d8ba001bb26123e5e3674",
+    "buggy_commit": "4e7bff7f1d2a5fb5ef04c1e6428178675474ad39",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.schema.SchemaServiceTest#testKeyValueSchema"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.schema.SchemaServiceTest#testKeyValueSchema"
+      ]
+    }
+  },
+  "apache_pulsar-21668": {
+    "bug_id": "apache_pulsar-21668",
+    "PR_number": 21668,
+    "PR_createdAt": "2023-12-04T20:05:21Z",
+    "merge_commit": "93df34436f9c818fed9f275dbc12557eb2e9f0e7",
+    "buggy_commits": [
+      {
+        "oid": "91c9e0a48ef9a0b86727485a1b16fbc95aa58eb3",
+        "message": "[fix][test] add unit test to testing the lookupRequestSemaphore would leaked when lookuping topic is not exist. (#21670)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21654",
+      "createdAt": "2023-12-01T12:13:58Z",
+      "content": "bug_report_all/apache_pulsar-21668.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/loadbalance/extensions/ExtensibleLoadManagerImplTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/loadbalance/extensions/channel/ServiceUnitStateChannelTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21668",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/93df34436f9c818fed9f275dbc12557eb2e9f0e7",
+    "buggy_commit": "91c9e0a48ef9a0b86727485a1b16fbc95aa58eb3",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.loadbalance.extensions.channel.ServiceUnitStateChannelTest#splitAndRetryTest",
+        ".org.apache.pulsar.broker.loadbalance.extensions.channel.ServiceUnitStateChannelTest#unloadTest",
+        ".org.apache.pulsar.broker.loadbalance.extensions.channel.ServiceUnitStateChannelTest#splitAndRetryFailureTest"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.loadbalance.extensions.channel.ServiceUnitStateChannelTest#splitAndRetryTest",
+        ".org.apache.pulsar.broker.loadbalance.extensions.channel.ServiceUnitStateChannelTest#unloadTest",
+        ".org.apache.pulsar.broker.loadbalance.extensions.channel.ServiceUnitStateChannelTest#splitAndRetryFailureTest"
+      ]
+    }
+  },
+  "apache_pulsar-21675": {
+    "bug_id": "apache_pulsar-21675",
+    "PR_number": 21675,
+    "PR_createdAt": "2023-12-06T06:53:28Z",
+    "merge_commit": "495b141c7bebc0356297546e9db88c9e087f5039",
+    "buggy_commits": [
+      {
+        "oid": "2e31e71098d63dfe111b225d8f8219ea05d1951f",
+        "message": "[cleanup][broker] cleanup deprecated method of metadata store etcd (#21253)\n\nSigned-off-by: Lan Liang <gcslyp@gmail.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21674",
+      "createdAt": "2023-12-06T06:50:02Z",
+      "content": "bug_report_all/apache_pulsar-21675.json"
+    },
+    "changed_tests": [
+      "pulsar-io/redis/src/test/java/org/apache/pulsar/io/redis/sink/RedisSinkConfigTest.java",
+      "pulsar-io/redis/src/test/java/org/apache/pulsar/io/redis/sink/RedisSinkTest.java",
+      "pulsar-io/solr/src/test/java/org/apache/pulsar/io/solr/SolrSinkConfigTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21675",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/495b141c7bebc0356297546e9db88c9e087f5039",
+    "buggy_commit": "2e31e71098d63dfe111b225d8f8219ea05d1951f",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#loadFromMapTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#validValidateTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#missingValidValidateTableNameTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#invalidBatchTimeMsTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#invalidClientModeTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkTest#TestOpenAndWriteSink"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#loadFromMapTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#loadFromMapCredentialsFromSecretTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#validValidateTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#missingValidValidateTableNameTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#invalidBatchTimeMsTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkConfigTest#invalidClientModeTest",
+        ".org.apache.pulsar.io.redis.sink.RedisSinkTest#TestOpenAndWriteSink"
+      ]
+    }
+  },
+  "apache_pulsar-21681": {
+    "bug_id": "apache_pulsar-21681",
+    "PR_number": 21681,
+    "PR_createdAt": "2023-12-06T16:45:48Z",
+    "merge_commit": "c4cff0ab3dac169c0a1418ef2f63f61604f6278e",
+    "buggy_commits": [
+      {
+        "oid": "60522c61a3f22e534d39992d374d3fa4b5856037",
+        "message": "[fix][sec] Upgrade org.bouncycastle:bc-fips to 1.0.2.4 (#21730)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21442",
+      "createdAt": "2023-10-25T10:04:25Z",
+      "content": "bug_report_all/apache_pulsar-21681.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/stats/PrometheusMetricsTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/MessageDispatchThrottlingTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/impl/MessagePublishThrottlingTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/impl/TopicPublishThrottlingInitTest.java",
+      "pulsar-common/src/test/java/org/apache/pulsar/common/util/RateLimiterTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21681",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/c4cff0ab3dac169c0a1418ef2f63f61604f6278e",
+    "buggy_commit": "60522c61a3f22e534d39992d374d3fa4b5856037",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.admin.TopicPoliciesTest#testPublishRateInDifferentLevelPolicy",
+        ".org.apache.pulsar.broker.service.AbstractBaseDispatcherTest#testFilterEntriesForConsumerOfEntryFilter",
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testPublishRateLimiterMonitor",
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testDynamicBrokerPublisherThrottlingTickTimeMillis",
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testDynamicTopicPublisherThrottlingTickTimeMillis",
+        ".org.apache.pulsar.broker.service.MessagePublishBufferThrottleTest#testBlockByPublishRateLimiting",
+        ".org.apache.pulsar.broker.service.PublishRateLimiterDisableTest#shouldAlwaysAllowAcquire",
+        ".org.apache.pulsar.broker.service.persistent.MessageDuplicationTest#testIsDuplicateWithFailure",
+        ".org.apache.pulsar.client.impl.TopicPublishThrottlingInitTest#testBrokerPublishMessageThrottlingInit"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.admin.TopicPoliciesTest#testPublishRateInDifferentLevelPolicy",
+        ".org.apache.pulsar.broker.service.AbstractBaseDispatcherTest#testFilterEntriesForConsumerOfEntryFilter",
+        ".org.apache.pulsar.broker.service.MessagePublishBufferThrottleTest#testBlockByPublishRateLimiting",
+        ".org.apache.pulsar.broker.service.PublishRateLimiterDisableTest#shouldAlwaysAllowAcquire",
+        ".org.apache.pulsar.broker.service.persistent.MessageDuplicationTest#testIsDuplicateWithFailure",
+        ".org.apache.pulsar.client.impl.TopicPublishThrottlingInitTest#testBrokerPublishMessageThrottlingInit"
+      ]
+    }
+  },
+  "apache_pulsar-21708": {
+    "bug_id": "apache_pulsar-21708",
+    "PR_number": 21708,
+    "PR_createdAt": "2023-12-11T14:32:10Z",
+    "merge_commit": "757723e4c03b2aa2e5203e90fdb9ecb255e18a3b",
+    "buggy_commits": [
+      {
+        "oid": "3396065a3a62af3e3586700f0bbfcbff93716b48",
+        "message": "[fix][fn] Fix Deadlock in Functions Worker LeaderService (#21711)\n\nFixes #21501\r\n\r\n### Motivation\r\n\r\nNo need to `synchronized` the method `isLeader` in LeaderService\r\n\r\nSee the deadlock stack :\r\n```\r\n\"pulsar-external-listener-44525-1\":\r\n\tat org.apache.pulsar.functions.worker.FunctionMetaDataManager.giveupLeadership(FunctionMetaDataManager.java)\r\n\t- waiting to lock <0x0000100013535c90> (a org.apache.pulsar.functions.worker.FunctionMetaDataManager)\r\n\tat org.apache.pulsar.functions.worker.LeaderService.becameInactive(LeaderService.java:167)\r\n\t- locked <0x000010001344c6d8> (a org.apache.pulsar.functions.worker.LeaderService)\r\n\tat org.apache.pulsar.client.impl.ConsumerImpl.lambda$activeConsumerChanged$27(ConsumerImpl.java:1136)\r\n\tat org.apache.pulsar.client.impl.ConsumerImpl$$Lambda$2606/0x00007f854ce9cb10.run(Unknown Source)\r\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.8.1/ThreadPoolExecutor.java:1136)\r\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.8.1/ThreadPoolExecutor.java:635)\r\n\tat io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)\r\n\tat java.lang.Thread.run(java.base@17.0.8.1/Thread.java:833)\r\n\"pulsar-web-44514-6\":\r\n\tat org.apache.pulsar.functions.worker.LeaderService.isLeader(LeaderService.java)\r\n\t- waiting to lock <0x000010001344c6d8> (a org.apache.pulsar.functions.worker.LeaderService)\r\n\tat org.apache.pulsar.functions.worker.SchedulerManager.scheduleInternal(SchedulerManager.java:200)\r\n\tat org.apache.pulsar.functions.worker.SchedulerManager.schedule(SchedulerManager.java:229)\r\n\tat org.apache.pulsar.functions.worker.FunctionMetaDataManager.updateFunctionOnLeader(FunctionMetaDataManager.java:251)\r\n\t- locked <0x0000100013535c90> (a org.apache.pulsar.functions.worker.FunctionMetaDataManager)\r\n\tat org.apache.pulsar.functions.worker.rest.api.ComponentImpl.internalProcessFunctionRequest(ComponentImpl.java:1775)\r\n\tat org.apache.pulsar.functions.worker.rest.api.ComponentImpl.updateRequest(ComponentImpl.java:996)\r\n\tat org.apache.pulsar.functions.worker.rest.api.FunctionsImpl.registerFunction(FunctionsImpl.java:222)\r\n\tat org.apache.pulsar.broker.admin.impl.FunctionsBase.registerFunction(FunctionsBase.java:196)\r\n```"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21534",
+      "createdAt": "2023-11-07T12:55:08Z",
+      "content": "bug_report_all/apache_pulsar-21708.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/ReplicatorGlobalNSTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21708",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/757723e4c03b2aa2e5203e90fdb9ecb255e18a3b",
+    "buggy_commit": "3396065a3a62af3e3586700f0bbfcbff93716b48",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.ReplicatorGlobalNSTest#testRemoveLocalClusterOnGlobalNamespace"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.ReplicatorGlobalNSTest#testRemoveLocalClusterOnGlobalNamespace"
+      ]
+    }
+  },
+  "apache_pulsar-21711": {
+    "bug_id": "apache_pulsar-21711",
+    "PR_number": 21711,
+    "PR_createdAt": "2023-12-12T02:45:17Z",
+    "merge_commit": "3396065a3a62af3e3586700f0bbfcbff93716b48",
+    "buggy_commits": [
+      {
+        "oid": "19b93442546656b336c3a71adcb23dc12698632a",
+        "message": "[fix][test] Fix PerformanceProducer send count error (#21706)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21501",
+      "createdAt": "2023-11-01T22:02:55Z",
+      "content": "bug_report_all/apache_pulsar-21711.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/functions/worker/PulsarFunctionTlsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21711",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/3396065a3a62af3e3586700f0bbfcbff93716b48",
+    "buggy_commit": "19b93442546656b336c3a71adcb23dc12698632a",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.functions.worker.PulsarFunctionTlsTest#testFunctionsCreation"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.functions.worker.PulsarFunctionTlsTest#testFunctionsCreation"
+      ]
+    }
+  },
+  "apache_pulsar-21713": {
+    "bug_id": "apache_pulsar-21713",
+    "PR_number": 21713,
+    "PR_createdAt": "2023-12-12T12:50:45Z",
+    "merge_commit": "7bb6af2209796b714115092938e233c1272e3ca7",
+    "buggy_commits": [
+      {
+        "oid": "c34a5d816a12dcb108e94de6afc8108a8d86ebac",
+        "message": "[improve][pip] PIP-313 Support force unsubscribe using consumer api (#21452)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21712",
+      "createdAt": "2023-12-12T04:42:55Z",
+      "content": "bug_report_all/apache_pulsar-21713.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/plugin/FilterEntryTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21713",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/7bb6af2209796b714115092938e233c1272e3ca7",
+    "buggy_commit": "c34a5d816a12dcb108e94de6afc8108a8d86ebac",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.plugin.FilterEntryTest#testFilter"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.plugin.FilterEntryTest#testFilter"
+      ]
+    }
+  },
+  "apache_pulsar-21769": {
+    "bug_id": "apache_pulsar-21769",
+    "PR_number": 21769,
+    "PR_createdAt": "2023-12-20T15:40:01Z",
+    "merge_commit": "b944f10d2a9bac2fbe19dc83bf250a276f1ed4d1",
+    "buggy_commits": [
+      {
+        "oid": "69a45a11e22c1d963391110fb3488c9b9f98f759",
+        "message": "[fix][broker] Fixed the ExtensibleLoadManagerImpl internal system getTopic failure when the leadership changes (#21764)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21768",
+      "createdAt": "2023-12-20T15:34:20Z",
+      "content": "bug_report_all/apache_pulsar-21769.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/admin/PersistentTopicsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21769",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/b944f10d2a9bac2fbe19dc83bf250a276f1ed4d1",
+    "buggy_commit": "69a45a11e22c1d963391110fb3488c9b9f98f759",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.admin.PersistentTopicsTest#testTerminate",
+        ".org.apache.pulsar.broker.admin.PersistentTopicsTest#testCreatePartitionedTopic"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.admin.PersistentTopicsTest#testTerminate",
+        ".org.apache.pulsar.broker.admin.PersistentTopicsTest#testCreatePartitionedTopic"
+      ]
+    }
+  },
+  "apache_pulsar-21894": {
+    "bug_id": "apache_pulsar-21894",
+    "PR_number": 21894,
+    "PR_createdAt": "2024-01-13T01:15:12Z",
+    "merge_commit": "3158fd3550f9e3a0b2c0316c92265318b209f4f5",
+    "buggy_commits": [
+      {
+        "oid": "c66167be55e9ed14261174a672952136c6fdb441",
+        "message": "[improve][ml] Filter out deleted entries before read entries from ledger. (#21739)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/21897",
+      "createdAt": "2024-01-14T16:42:14Z",
+      "content": "bug_report_all/apache_pulsar-21894.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/namespace/NamespaceServiceTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/BrokerServiceTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/InactiveTopicDeleteTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/systopic/PartitionedSystemTopicTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/testcontext/PulsarTestContext.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/BrokerServiceLookupTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/compaction/CompactionTest.java",
+      "pulsar-proxy/src/test/java/org/apache/pulsar/proxy/server/ProxyWithExtensibleLoadManagerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/21894",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/3158fd3550f9e3a0b2c0316c92265318b209f4f5",
+    "buggy_commit": "c66167be55e9ed14261174a672952136c6fdb441",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.admin.AdminApiMultiBrokersTest#testGetLeaderBroker",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#clusters",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#clusterNamespaceIsolationPolicies",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#brokers",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#testInvalidDynamicConfigContentInMetadata",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#namespaces",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#testTopicBundleRangeLookup",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#testCreateAndDeleteNamespaceWithBundles",
+        ".org.apache.pulsar.broker.admin.AdminTest#brokers",
+        ".org.apache.pulsar.broker.admin.v1.V1_AdminApiTest#brokers",
+        ".org.apache.pulsar.broker.loadbalance.LeaderElectionServiceTest#anErrorShouldBeThrowBeforeLeaderElected",
+        ".org.apache.pulsar.broker.loadbalance.extensions.BrokerRegistryTest#testRegisterFailWithSameBrokerId",
+        ".org.apache.pulsar.broker.loadbalance.extensions.filter.BrokerIsolationPoliciesFilterTest#testFilterWithNamespaceIsolationPoliciesForPrimaryAndSecondaryBrokers",
+        ".org.apache.pulsar.broker.loadbalance.extensions.filter.BrokerIsolationPoliciesFilterTest#testFilterWithPersistentOrNonPersistentDisabled",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testEventPubFutureHasException",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testTimeout",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testSuccess",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testFailedStage",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testClose",
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testIsSystemTopic",
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testGetLookupServiceAddress",
+        ".org.apache.pulsar.broker.service.InactiveTopicDeleteTest#testHealthTopicInactiveNotClean",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testHealthCheckTopicNotOffload",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testSystemNamespaceNotCreateChangeEventsTopic",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testHeartbeatTopicNotAllowedToSendEvent",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testHeartbeatTopicBeDeleted",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testHeartbeatNamespaceNotCreateTransactionInternalTopic",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testMultipleBrokerLookup",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testMultipleBrokerDifferentClusterLookup",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testWebserviceServiceTls",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testSplitUnloadLookupTest",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testModularLoadManagerSplitBundle",
+        ".org.apache.pulsar.compaction.CompactionTest#testHealthCheckTopicNotCompacted"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.admin.AdminApiMultiBrokersTest#testGetLeaderBroker",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#clusters",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#clusterNamespaceIsolationPolicies",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#brokers",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#testInvalidDynamicConfigContentInMetadata",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#namespaces",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#testTopicBundleRangeLookup",
+        ".org.apache.pulsar.broker.admin.AdminApiTest#testCreateAndDeleteNamespaceWithBundles",
+        ".org.apache.pulsar.broker.admin.AdminTest#brokers",
+        ".org.apache.pulsar.broker.admin.v1.V1_AdminApiTest#brokers",
+        ".org.apache.pulsar.broker.loadbalance.LeaderElectionServiceTest#anErrorShouldBeThrowBeforeLeaderElected",
+        ".org.apache.pulsar.broker.loadbalance.extensions.BrokerRegistryTest#testRegisterFailWithSameBrokerId",
+        ".org.apache.pulsar.broker.loadbalance.extensions.filter.BrokerIsolationPoliciesFilterTest#testFilterWithNamespaceIsolationPoliciesForPrimaryAndSecondaryBrokers",
+        ".org.apache.pulsar.broker.loadbalance.extensions.filter.BrokerIsolationPoliciesFilterTest#testFilterWithPersistentOrNonPersistentDisabled",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testEventPubFutureHasException",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testTimeout",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testSuccess",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testFailedStage",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testClose",
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testIsSystemTopic",
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testGetBrokerId",
+        ".org.apache.pulsar.broker.service.InactiveTopicDeleteTest#testHealthTopicInactiveNotClean",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testHealthCheckTopicNotOffload",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testSystemNamespaceNotCreateChangeEventsTopic",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testHeartbeatTopicNotAllowedToSendEvent",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testHeartbeatTopicBeDeleted",
+        ".org.apache.pulsar.broker.systopic.PartitionedSystemTopicTest#testHeartbeatNamespaceNotCreateTransactionInternalTopic",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testMultipleBrokerLookup",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testMultipleBrokerDifferentClusterLookup",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testWebserviceServiceTls",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testSplitUnloadLookupTest",
+        ".org.apache.pulsar.client.api.BrokerServiceLookupTest#testModularLoadManagerSplitBundle",
+        ".org.apache.pulsar.compaction.CompactionTest#testHealthCheckTopicNotCompacted"
+      ]
+    }
+  },
+  "apache_pulsar-22053": {
+    "bug_id": "apache_pulsar-22053",
+    "PR_number": 22053,
+    "PR_createdAt": "2024-02-14T17:49:57Z",
+    "merge_commit": "7e73967f9daf368562fa0318d4ecb62272d72174",
+    "buggy_commits": [
+      {
+        "oid": "beed0cfc52e566f3a5293f7ea37fdcc6e334b0f0",
+        "message": "[feat][io] AzureDataExplorer/Kusto Sink for Pulsar (#22006)\n\n- https://learn.microsoft.com/en-us/azure/data-explorer/\r\n\r\nCo-authored-by: Ramachandran A G <106139410+ag-ramachandran@users.noreply.github.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/22050",
+      "createdAt": "2024-02-13T14:33:36Z",
+      "content": "bug_report_all/apache_pulsar-22053.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/ConsistentHashingStickyKeyConsumerSelectorTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/persistent/PersistentStickyKeyDispatcherMultipleConsumersTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/22053",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/7e73967f9daf368562fa0318d4ecb62272d72174",
+    "buggy_commit": "beed0cfc52e566f3a5293f7ea37fdcc6e334b0f0",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.ConsistentHashingStickyKeyConsumerSelectorTest#testGetConsumerKeyHashRanges",
+        ".org.apache.pulsar.broker.service.persistent.PersistentStickyKeyDispatcherMultipleConsumersTest#testSkipRedeliverTemporally",
+        ".org.apache.pulsar.broker.service.persistent.PersistentStickyKeyDispatcherMultipleConsumersTest#testMessageRedelivery"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.ConsistentHashingStickyKeyConsumerSelectorTest#testGetConsumerKeyHashRanges",
+        ".org.apache.pulsar.broker.service.ConsistentHashingStickyKeyConsumerSelectorTest#shouldNotCollideWithConsumerNameEndsWithNumber",
+        ".org.apache.pulsar.broker.service.ConsistentHashingStickyKeyConsumerSelectorTest#shouldRemoveConsumersFromConsumerKeyHashRanges",
+        ".org.apache.pulsar.broker.service.persistent.PersistentStickyKeyDispatcherMultipleConsumersTest#testSkipRedeliverTemporally",
+        ".org.apache.pulsar.broker.service.persistent.PersistentStickyKeyDispatcherMultipleConsumersTest#testMessageRedelivery"
+      ]
+    }
+  },
+  "apache_pulsar-22107": {
+    "bug_id": "apache_pulsar-22107",
+    "PR_number": 22107,
+    "PR_createdAt": "2024-02-23T14:36:53Z",
+    "merge_commit": "5c44e1b356cf89bd57cb46390e9e890182778c2f",
+    "buggy_commits": [
+      {
+        "oid": "8607905989081421c452e87db7b1eedececd7977",
+        "message": "[improve][broker] Cache the internal writer when sent to system topic. (#22099)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/22108",
+      "createdAt": "2024-02-23T14:43:36Z",
+      "content": "bug_report_all/apache_pulsar-22107.json"
+    },
+    "changed_tests": [
+      "tests/integration/src/test/java/org/apache/pulsar/tests/integration/functions/PulsarStateTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/22107",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/5c44e1b356cf89bd57cb46390e9e890182778c2f",
+    "buggy_commit": "8607905989081421c452e87db7b1eedececd7977",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.tests.integration.functions.PulsarStateTest#testSourceState",
+        ".org.apache.pulsar.tests.integration.functions.PulsarStateTest#testSinkState"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.tests.integration.functions.PulsarStateTest#testSourceState",
+        ".org.apache.pulsar.tests.integration.functions.PulsarStateTest#testSinkState",
+        ".org.apache.pulsar.tests.integration.functions.PulsarStateTest#testNonExistFunction"
+      ]
+    }
+  },
+  "apache_pulsar-22190": {
+    "bug_id": "apache_pulsar-22190",
+    "PR_number": 22190,
+    "PR_createdAt": "2024-03-04T12:27:46Z",
+    "merge_commit": "8c7c9788119197ac78bb90dfb030b1883139c026",
+    "buggy_commits": [
+      {
+        "oid": "ccc2ea67c192b4771c9af30c6eaf994fe01958e5",
+        "message": "[fix] [client] Do no retrying for error subscription not found when disabled allowAutoSubscriptionCreation (#22164)\n\nCo-authored-by: zifengmo <38554710+zifengmo@users.noreply.github.com>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/22188",
+      "createdAt": "2024-03-04T11:27:17Z",
+      "content": "bug_report_all/apache_pulsar-22190.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/BrokerServiceAutoSubscriptionCreationTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/22190",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/8c7c9788119197ac78bb90dfb030b1883139c026",
+    "buggy_commit": "ccc2ea67c192b4771c9af30c6eaf994fe01958e5",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.BrokerServiceAutoSubscriptionCreationTest#testDynamicConfigurationTopicAutoSubscriptionCreation"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.BrokerServiceAutoSubscriptionCreationTest#testDynamicConfigurationTopicAutoSubscriptionCreation"
+      ]
+    }
+  },
+  "apache_pulsar-22338": {
+    "bug_id": "apache_pulsar-22338",
+    "PR_number": 22338,
+    "PR_createdAt": "2024-03-25T09:25:06Z",
+    "merge_commit": "cd49defc1383175ef32e18c7f0905567f734318c",
+    "buggy_commits": [
+      {
+        "oid": "023446b73287dea25c22c6db307e5d723306e765",
+        "message": "[fix][cli] Fix typos in CmdSinks class (#22358)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/22312",
+      "createdAt": "2024-03-20T10:07:31Z",
+      "content": "bug_report_all/apache_pulsar-22338.json"
+    },
+    "changed_tests": [
+      "managed-ledger/src/test/java/org/apache/bookkeeper/mledger/impl/ManagedLedgerFactoryTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/22338",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/cd49defc1383175ef32e18c7f0905567f734318c",
+    "buggy_commit": "023446b73287dea25c22c6db307e5d723306e765",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.bookkeeper.mledger.impl.ManagedLedgerFactoryTest#testGetManagedLedgerInfoWithClose"
+      ],
+      "test_tgt": [
+        ".org.apache.bookkeeper.mledger.impl.ManagedLedgerFactoryTest#testGetManagedLedgerInfoWithClose"
+      ]
+    }
+  },
+  "apache_pulsar-22368": {
+    "bug_id": "apache_pulsar-22368",
+    "PR_number": 22368,
+    "PR_createdAt": "2024-03-27T09:17:43Z",
+    "merge_commit": "c184209bfc5a61f143abfa701e5f1b0be2109d77",
+    "buggy_commits": [
+      {
+        "oid": "fc066d727b52f7e412476297995c2eb2f5ab61bf",
+        "message": "[fix] [test] Fix flaky test ManagedLedgerTest.testGetNumberOfEntriesInStorage (#22344)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/22348",
+      "createdAt": "2024-03-26T01:46:56Z",
+      "content": "bug_report_all/apache_pulsar-22368.json"
+    },
+    "changed_tests": [
+      "managed-ledger/src/test/java/org/apache/bookkeeper/mledger/impl/ManagedLedgerErrorsTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/22368",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/c184209bfc5a61f143abfa701e5f1b0be2109d77",
+    "buggy_commit": "fc066d727b52f7e412476297995c2eb2f5ab61bf",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.bookkeeper.mledger.impl.ManagedLedgerErrorsTest#recoverAfterZnodeVersionError"
+      ],
+      "test_tgt": [
+        ".org.apache.bookkeeper.mledger.impl.ManagedLedgerErrorsTest#recoverAfterZnodeVersionError"
+      ]
+    }
+  },
+  "apache_pulsar-22379": {
+    "bug_id": "apache_pulsar-22379",
+    "PR_number": 22379,
+    "PR_createdAt": "2024-03-28T18:50:17Z",
+    "merge_commit": "3eb3b1cd23d2cc11424bf882e244d3bc2e92bf27",
+    "buggy_commits": [
+      {
+        "oid": "9529738efe2faabe5283f74921f780d8589fb437",
+        "message": "[fix][ml] No rollover inactive ledgers when metadata service invalid (#22284)\n\n### Motivation\r\n\r\nWe should not rollover inactive ledgers when metadata service is invailable.\r\n\r\n### Modifications\r\n\r\nChecking metadata service is vailable when schedule `checkInactiveLedgerAndRollOver`"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20157",
+      "createdAt": "2023-04-20T15:43:18Z",
+      "content": "bug_report_all/apache_pulsar-22379.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/loadbalance/extensions/ExtensibleLoadManagerImplBaseTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/loadbalance/extensions/ExtensibleLoadManagerImplTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/loadbalance/extensions/manager/UnloadManagerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/22379",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/3eb3b1cd23d2cc11424bf882e244d3bc2e92bf27",
+    "buggy_commit": "9529738efe2faabe5283f74921f780d8589fb437",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testSuccess",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testFailedStage"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testSuccess",
+        ".org.apache.pulsar.broker.loadbalance.extensions.manager.UnloadManagerTest#testFailedStage"
+      ]
+    }
+  },
+  "apache_pulsar-22494": {
+    "bug_id": "apache_pulsar-22494",
+    "PR_number": 22494,
+    "PR_createdAt": "2024-04-12T15:18:23Z",
+    "merge_commit": "7009071b6d53bbc3d740ea99cdc0c010692679ab",
+    "buggy_commits": [
+      {
+        "oid": "51ecd0235ce5d5ad03c563a3338b29c6a117d216",
+        "message": "[cleanup][broker] Remove unused NamespaceBundleFactory parameter when creating OwnershipCache (#22482)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/22477",
+      "createdAt": "2024-04-10T17:16:32Z",
+      "content": "bug_report_all/apache_pulsar-22494.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/stats/SubscriptionStatsTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/stats/TimeWindowTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/stats/TransactionMetricsTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/transaction/buffer/TransactionBufferClientTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/transaction/pendingack/PendingAckPersistentTest.java",
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/web/WebServiceTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/22494",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/7009071b6d53bbc3d740ea99cdc0c010692679ab",
+    "buggy_commit": "51ecd0235ce5d5ad03c563a3338b29c6a117d216",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.persistent.BucketDelayedDeliveryTest#testBucketDelayedIndexMetrics",
+        ".org.apache.pulsar.broker.service.persistent.PersistentTopicTest#testDelayedDeliveryTrackerMemoryUsageMetric",
+        ".org.apache.pulsar.broker.service.schema.SchemaServiceTest#testSchemaRegistryMetrics",
+        ".org.apache.pulsar.broker.stats.MetadataStoreStatsTest#testMetadataStoreStats",
+        ".org.apache.pulsar.broker.stats.MetadataStoreStatsTest#testBatchMetadataStoreMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPublishRateLimitedTimes",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testMetricsTopicCount",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testMetricsAvgMsgSize2",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerTopicStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerBrokerStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerTopicStatsReconnect",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testStorageReadCacheMissesRate",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerTopicExpiredStat",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testBundlesMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testNonPersistentSubMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerNamespaceStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerProducerStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerConsumerStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testDuplicateMetricTypeDefinitions",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testManagedLedgerCacheStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testManagedLedgerStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testManagedLedgerBookieClientStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testAuthMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testExpiredTokenMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testExpiringTokenMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testManagedCursorPersistStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testBrokerConnection",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testCompaction",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testMetricsWithCache",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testSplitTopicAndPartitionLabel",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testMetricsGroupedByTypeDefinitions",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testEscapeLabelValue",
+        ".org.apache.pulsar.broker.stats.SubscriptionStatsTest#testSubscriptionStats",
+        ".org.apache.pulsar.broker.stats.TransactionMetricsTest#testTransactionCoordinatorMetrics",
+        ".org.apache.pulsar.broker.stats.TransactionMetricsTest#testTransactionCoordinatorRateMetrics",
+        ".org.apache.pulsar.broker.stats.TransactionMetricsTest#testManagedLedgerMetrics",
+        ".org.apache.pulsar.broker.stats.TransactionMetricsTest#testManagedLedgerMetricsWhenPendingAckNotInit",
+        ".org.apache.pulsar.broker.stats.TransactionMetricsTest#testDuplicateMetricTypeDefinitions",
+        ".org.apache.pulsar.broker.transaction.buffer.TransactionBufferClientTest#testTransactionBufferMetrics",
+        ".org.apache.pulsar.broker.transaction.pendingack.PendingAckPersistentTest#testPendingAckMetrics",
+        ".org.apache.pulsar.broker.web.WebServiceTest#testWebExecutorMetrics"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.persistent.BucketDelayedDeliveryTest#testBucketDelayedIndexMetrics",
+        ".org.apache.pulsar.broker.service.persistent.PersistentTopicTest#testDelayedDeliveryTrackerMemoryUsageMetric",
+        ".org.apache.pulsar.broker.service.schema.SchemaServiceTest#testSchemaRegistryMetrics",
+        ".org.apache.pulsar.broker.stats.MetadataStoreStatsTest#testMetadataStoreStats",
+        ".org.apache.pulsar.broker.stats.MetadataStoreStatsTest#testBatchMetadataStoreMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPublishRateLimitedTimes",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testMetricsTopicCount",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testMetricsAvgMsgSize2",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerTopicStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerBrokerStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerTopicStatsReconnect",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testStorageReadCacheMissesRate",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerTopicExpiredStat",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testBundlesMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testNonPersistentSubMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerNamespaceStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerProducerStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testPerConsumerStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testDuplicateMetricTypeDefinitions",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testManagedLedgerCacheStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testManagedLedgerStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testManagedLedgerBookieClientStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testAuthMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testExpiredTokenMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testExpiringTokenMetrics",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testManagedCursorPersistStats",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testBrokerConnection",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testCompaction",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testMetricsWithCache",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testSplitTopicAndPartitionLabel",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testMetricsGroupedByTypeDefinitions",
+        ".org.apache.pulsar.broker.stats.PrometheusMetricsTest#testEscapeLabelValue",
+        ".org.apache.pulsar.broker.stats.SubscriptionStatsTest#testSubscriptionStats",
+        ".org.apache.pulsar.broker.stats.TransactionMetricsTest#testTransactionCoordinatorMetrics",
+        ".org.apache.pulsar.broker.stats.TransactionMetricsTest#testTransactionCoordinatorRateMetrics",
+        ".org.apache.pulsar.broker.stats.TransactionMetricsTest#testManagedLedgerMetrics",
+        ".org.apache.pulsar.broker.stats.TransactionMetricsTest#testManagedLedgerMetricsWhenPendingAckNotInit",
+        ".org.apache.pulsar.broker.stats.TransactionMetricsTest#testDuplicateMetricTypeDefinitions",
+        ".org.apache.pulsar.broker.transaction.buffer.TransactionBufferClientTest#testTransactionBufferMetrics",
+        ".org.apache.pulsar.broker.transaction.pendingack.PendingAckPersistentTest#testPendingAckMetrics",
+        ".org.apache.pulsar.broker.web.WebServiceTest#testWebExecutorMetrics"
+      ]
+    }
+  },
+  "apache_pulsar-22500": {
+    "bug_id": "apache_pulsar-22500",
+    "PR_number": 22500,
+    "PR_createdAt": "2024-04-14T15:38:31Z",
+    "merge_commit": "ffdfc0c4e0881c682132e79c3cbf9768b1ab4f89",
+    "buggy_commits": [
+      {
+        "oid": "70b401b1de9df685283140cff1f83252abc27045",
+        "message": "[improve][fn] Expose `RuntimeFlags` as CLI option for Pulsar Functions and Connectors (#22514)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/22470",
+      "createdAt": "2024-04-10T07:42:24Z",
+      "content": "bug_report_all/apache_pulsar-22500.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/client/api/SimpleProducerConsumerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/22500",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/ffdfc0c4e0881c682132e79c3cbf9768b1ab4f89",
+    "buggy_commit": "70b401b1de9df685283140cff1f83252abc27045",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.client.api.SimpleProducerConsumerTest#testAccessAvroSchemaMetadata"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.client.api.SimpleProducerConsumerTest#testAccessAvroSchemaMetadata"
+      ]
+    }
+  },
+  "apache_pulsar-22506": {
+    "bug_id": "apache_pulsar-22506",
+    "PR_number": 22506,
+    "PR_createdAt": "2024-04-15T09:12:49Z",
+    "merge_commit": "d5b36da9a2e0d4f17bea8e033180e494e93dc442",
+    "buggy_commits": [
+      {
+        "oid": "4ca4e2855267e3b36ee1a27f7144b89ba9194821",
+        "message": "[improve] Make the config `metricsBufferResponse` description more effective (#22490)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/22505",
+      "createdAt": "2024-04-15T07:47:19Z",
+      "content": "bug_report_all/apache_pulsar-22506.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/admin/AdminApi2Test.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/22506",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/d5b36da9a2e0d4f17bea8e033180e494e93dc442",
+    "buggy_commit": "4ca4e2855267e3b36ee1a27f7144b89ba9194821",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.admin.AdminApi2Test#testMaxProducersPerTopicUnlimited"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.admin.AdminApi2Test#testMaxProducersPerTopicUnlimited"
+      ]
+    }
+  },
+  "apache_pulsar-22580": {
+    "bug_id": "apache_pulsar-22580",
+    "PR_number": 22580,
+    "PR_createdAt": "2024-04-25T04:50:48Z",
+    "merge_commit": "340d60df0be32ed26586f292a8d24a8a6663aba2",
+    "buggy_commits": [
+      {
+        "oid": "6fdc0e31bff906446e70965531671389d57e6cda",
+        "message": "[fix] [test] Fix flaky test ReplicatorTest (#22594)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/pulsar/issues/20495",
+      "createdAt": "2023-06-05T14:28:54Z",
+      "content": "bug_report_all/apache_pulsar-22580.json"
+    },
+    "changed_tests": [
+      "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/BrokerServiceTest.java"
+    ],
+    "PR_url": "https://github.com/apache/pulsar/pull/22580",
+    "merge_commit_url": "https://github.com/apache/pulsar/commit/340d60df0be32ed26586f292a8d24a8a6663aba2",
+    "buggy_commit": "6fdc0e31bff906446e70965531671389d57e6cda",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testBrokerStatsTopicLoadFailed"
+      ],
+      "test_tgt": [
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testMetricsPersistentTopicLoadFails",
+        ".org.apache.pulsar.broker.service.BrokerServiceTest#testMetricsNonPersistentTopicLoadFails"
+      ]
+    }
+  }
+}

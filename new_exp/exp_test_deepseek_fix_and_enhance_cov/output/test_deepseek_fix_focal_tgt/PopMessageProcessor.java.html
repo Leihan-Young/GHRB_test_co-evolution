@@ -1,0 +1,1141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PopMessageProcessor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-broker 5.1.1-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.broker.processor</a> &gt; <span class="el_source">PopMessageProcessor.java</span></div><h1>PopMessageProcessor.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.rocketmq.broker.processor;
+
+import com.alibaba.fastjson.JSON;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.FileRegion;
+import io.opentelemetry.api.common.Attributes;
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import org.apache.rocketmq.broker.BrokerController;
+import org.apache.rocketmq.broker.filter.ConsumerFilterData;
+import org.apache.rocketmq.broker.filter.ConsumerFilterManager;
+import org.apache.rocketmq.broker.filter.ExpressionMessageFilter;
+import org.apache.rocketmq.broker.longpolling.PopRequest;
+import org.apache.rocketmq.broker.metrics.BrokerMetricsManager;
+import org.apache.rocketmq.broker.pagecache.ManyMessageTransfer;
+import org.apache.rocketmq.common.KeyBuilder;
+import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.PopAckConstants;
+import org.apache.rocketmq.common.ServiceThread;
+import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.common.constant.ConsumeInitMode;
+import org.apache.rocketmq.common.constant.LoggerName;
+import org.apache.rocketmq.common.constant.PermName;
+import org.apache.rocketmq.common.filter.ExpressionType;
+import org.apache.rocketmq.common.help.FAQUrl;
+import org.apache.rocketmq.common.message.MessageConst;
+import org.apache.rocketmq.common.message.MessageDecoder;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.message.MessageExtBrokerInner;
+import org.apache.rocketmq.common.topic.TopicValidator;
+import org.apache.rocketmq.common.utils.DataConverter;
+import org.apache.rocketmq.logging.org.slf4j.Logger;
+import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+import org.apache.rocketmq.remoting.common.RemotingHelper;
+import org.apache.rocketmq.remoting.exception.RemotingCommandException;
+import org.apache.rocketmq.remoting.metrics.RemotingMetricsManager;
+import org.apache.rocketmq.remoting.netty.NettyRemotingAbstract;
+import org.apache.rocketmq.remoting.netty.NettyRequestProcessor;
+import org.apache.rocketmq.remoting.netty.RequestTask;
+import org.apache.rocketmq.remoting.protocol.RemotingCommand;
+import org.apache.rocketmq.remoting.protocol.ResponseCode;
+import org.apache.rocketmq.remoting.protocol.filter.FilterAPI;
+import org.apache.rocketmq.remoting.protocol.header.ExtraInfoUtil;
+import org.apache.rocketmq.remoting.protocol.header.PopMessageRequestHeader;
+import org.apache.rocketmq.remoting.protocol.header.PopMessageResponseHeader;
+import org.apache.rocketmq.remoting.protocol.heartbeat.ConsumeType;
+import org.apache.rocketmq.remoting.protocol.heartbeat.MessageModel;
+import org.apache.rocketmq.remoting.protocol.heartbeat.SubscriptionData;
+import org.apache.rocketmq.remoting.protocol.subscription.SubscriptionGroupConfig;
+import org.apache.rocketmq.store.GetMessageResult;
+import org.apache.rocketmq.store.GetMessageStatus;
+import org.apache.rocketmq.store.SelectMappedBufferResult;
+import org.apache.rocketmq.store.pop.AckMsg;
+import org.apache.rocketmq.store.pop.PopCheckPoint;
+
+import static org.apache.rocketmq.broker.metrics.BrokerMetricsConstant.LABEL_CONSUMER_GROUP;
+import static org.apache.rocketmq.broker.metrics.BrokerMetricsConstant.LABEL_IS_RETRY;
+import static org.apache.rocketmq.broker.metrics.BrokerMetricsConstant.LABEL_IS_SYSTEM;
+import static org.apache.rocketmq.broker.metrics.BrokerMetricsConstant.LABEL_TOPIC;
+import static org.apache.rocketmq.remoting.metrics.RemotingMetricsConstant.LABEL_REQUEST_CODE;
+import static org.apache.rocketmq.remoting.metrics.RemotingMetricsConstant.LABEL_RESPONSE_CODE;
+import static org.apache.rocketmq.remoting.metrics.RemotingMetricsConstant.LABEL_RESULT;
+
+public class PopMessageProcessor implements NettyRequestProcessor {
+<span class="fc" id="L93">    private static final Logger POP_LOGGER =</span>
+<span class="fc" id="L94">        LoggerFactory.getLogger(LoggerName.ROCKETMQ_POP_LOGGER_NAME);</span>
+    private final BrokerController brokerController;
+<span class="fc" id="L96">    private final Random random = new Random(System.currentTimeMillis());</span>
+    String reviveTopic;
+    private static final String BORN_TIME = &quot;bornTime&quot;;
+
+    private static final int POLLING_SUC = 0;
+    private static final int POLLING_FULL = 1;
+    private static final int POLLING_TIMEOUT = 2;
+    private static final int NOT_POLLING = 3;
+
+    private ConcurrentHashMap&lt;String, ConcurrentHashMap&lt;String, Byte&gt;&gt; topicCidMap;
+    private ConcurrentLinkedHashMap&lt;String, ConcurrentSkipListSet&lt;PopRequest&gt;&gt; pollingMap;
+<span class="fc" id="L107">    private AtomicLong totalPollingNum = new AtomicLong(0);</span>
+    private PopLongPollingService popLongPollingService;
+    private PopBufferMergeService popBufferMergeService;
+    private QueueLockManager queueLockManager;
+    private AtomicLong ckMessageNumber;
+
+<span class="fc" id="L113">    public PopMessageProcessor(final BrokerController brokerController) {</span>
+<span class="fc" id="L114">        this.brokerController = brokerController;</span>
+<span class="fc" id="L115">        this.reviveTopic = PopAckConstants.buildClusterReviveTopic(this.brokerController.getBrokerConfig().getBrokerClusterName());</span>
+        // 100000 topic default,  100000 lru topic + cid + qid
+<span class="fc" id="L117">        this.topicCidMap = new ConcurrentHashMap&lt;&gt;(this.brokerController.getBrokerConfig().getPopPollingMapSize());</span>
+<span class="fc" id="L118">        this.pollingMap = new ConcurrentLinkedHashMap.Builder&lt;String, ConcurrentSkipListSet&lt;PopRequest&gt;&gt;()</span>
+<span class="fc" id="L119">            .maximumWeightedCapacity(this.brokerController.getBrokerConfig().getPopPollingMapSize()).build();</span>
+<span class="fc" id="L120">        this.popLongPollingService = new PopLongPollingService();</span>
+<span class="fc" id="L121">        this.queueLockManager = new QueueLockManager();</span>
+<span class="fc" id="L122">        this.popBufferMergeService = new PopBufferMergeService(this.brokerController, this);</span>
+<span class="fc" id="L123">        this.ckMessageNumber = new AtomicLong();</span>
+<span class="fc" id="L124">    }</span>
+
+    public PopLongPollingService getPopLongPollingService() {
+<span class="nc" id="L127">        return popLongPollingService;</span>
+    }
+
+    public PopBufferMergeService getPopBufferMergeService() {
+<span class="nc" id="L131">        return this.popBufferMergeService;</span>
+    }
+
+    public QueueLockManager getQueueLockManager() {
+<span class="fc" id="L135">        return queueLockManager;</span>
+    }
+
+    public static String genAckUniqueId(AckMsg ackMsg) {
+<span class="nc" id="L139">        return ackMsg.getTopic()</span>
+<span class="nc" id="L140">            + PopAckConstants.SPLIT + ackMsg.getQueueId()</span>
+<span class="nc" id="L141">            + PopAckConstants.SPLIT + ackMsg.getAckOffset()</span>
+<span class="nc" id="L142">            + PopAckConstants.SPLIT + ackMsg.getConsumerGroup()</span>
+<span class="nc" id="L143">            + PopAckConstants.SPLIT + ackMsg.getPopTime()</span>
+<span class="nc" id="L144">            + PopAckConstants.SPLIT + ackMsg.getBrokerName()</span>
+            + PopAckConstants.SPLIT + PopAckConstants.ACK_TAG;
+    }
+
+    public static String genCkUniqueId(PopCheckPoint ck) {
+<span class="nc" id="L149">        return ck.getTopic()</span>
+<span class="nc" id="L150">            + PopAckConstants.SPLIT + ck.getQueueId()</span>
+<span class="nc" id="L151">            + PopAckConstants.SPLIT + ck.getStartOffset()</span>
+<span class="nc" id="L152">            + PopAckConstants.SPLIT + ck.getCId()</span>
+<span class="nc" id="L153">            + PopAckConstants.SPLIT + ck.getPopTime()</span>
+<span class="nc" id="L154">            + PopAckConstants.SPLIT + ck.getBrokerName()</span>
+            + PopAckConstants.SPLIT + PopAckConstants.CK_TAG;
+    }
+
+    @Override
+    public RemotingCommand processRequest(final ChannelHandlerContext ctx,
+        RemotingCommand request) throws RemotingCommandException {
+<span class="fc" id="L161">        request.addExtField(BORN_TIME, String.valueOf(System.currentTimeMillis()));</span>
+<span class="nc" id="L162">        return this.processRequest(ctx.channel(), request);</span>
+    }
+
+    @Override
+    public boolean rejectRequest() {
+<span class="nc" id="L167">        return false;</span>
+    }
+
+    public ConcurrentLinkedHashMap&lt;String, ConcurrentSkipListSet&lt;PopRequest&gt;&gt; getPollingMap() {
+<span class="nc" id="L171">        return pollingMap;</span>
+    }
+
+    public void notifyLongPollingRequestIfNeed(String topic, String group, int queueId) {
+<span class="nc" id="L175">        long popBufferOffset = this.brokerController.getPopMessageProcessor().getPopBufferMergeService().getLatestOffset(topic, group, queueId);</span>
+<span class="nc" id="L176">        long consumerOffset = this.brokerController.getConsumerOffsetManager().queryOffset(group, topic, queueId);</span>
+<span class="nc" id="L177">        long maxOffset = this.brokerController.getMessageStore().getMaxOffsetInQueue(topic, queueId);</span>
+<span class="nc" id="L178">        long offset = Math.max(popBufferOffset, consumerOffset);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        if (maxOffset &gt; offset) {</span>
+<span class="nc" id="L180">            boolean notifySuccess = this.brokerController.getPopMessageProcessor().notifyMessageArriving(topic, group, -1);</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            if (!notifySuccess) {</span>
+                // notify pop queue
+<span class="nc" id="L183">                notifySuccess = this.brokerController.getPopMessageProcessor().notifyMessageArriving(topic, group, queueId);</span>
+            }
+<span class="nc" id="L185">            this.brokerController.getNotificationProcessor().notifyMessageArriving(topic, queueId);</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            if (this.brokerController.getBrokerConfig().isEnablePopLog()) {</span>
+<span class="nc" id="L187">                POP_LOGGER.info(&quot;notify long polling request. topic:{}, group:{}, queueId:{}, success:{}&quot;,</span>
+<span class="nc" id="L188">                    topic, group, queueId, notifySuccess);</span>
+            }
+        }
+<span class="nc" id="L191">    }</span>
+
+    public void notifyMessageArriving(final String topic, final int queueId) {
+<span class="nc" id="L194">        ConcurrentHashMap&lt;String, Byte&gt; cids = topicCidMap.get(topic);</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (cids == null) {</span>
+<span class="nc" id="L196">            return;</span>
+        }
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        for (Entry&lt;String, Byte&gt; cid : cids.entrySet()) {</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">            if (queueId &gt;= 0) {</span>
+<span class="nc" id="L200">                notifyMessageArriving(topic, cid.getKey(), -1);</span>
+            }
+<span class="nc" id="L202">            notifyMessageArriving(topic, cid.getKey(), queueId);</span>
+<span class="nc" id="L203">        }</span>
+<span class="nc" id="L204">    }</span>
+
+    public boolean notifyMessageArriving(final String topic, final String cid, final int queueId) {
+<span class="nc" id="L207">        ConcurrentSkipListSet&lt;PopRequest&gt; remotingCommands = pollingMap.get(KeyBuilder.buildPollingKey(topic, cid, queueId));</span>
+<span class="nc bnc" id="L208" title="All 4 branches missed.">        if (remotingCommands == null || remotingCommands.isEmpty()) {</span>
+<span class="nc" id="L209">            return false;</span>
+        }
+<span class="nc" id="L211">        PopRequest popRequest = remotingCommands.pollFirst();</span>
+        //clean inactive channel
+<span class="nc bnc" id="L213" title="All 4 branches missed.">        while (popRequest != null &amp;&amp; !popRequest.getChannel().isActive()) {</span>
+<span class="nc" id="L214">            totalPollingNum.decrementAndGet();</span>
+<span class="nc" id="L215">            popRequest = remotingCommands.pollFirst();</span>
+        }
+
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        if (popRequest == null) {</span>
+<span class="nc" id="L219">            return false;</span>
+        }
+<span class="nc" id="L221">        totalPollingNum.decrementAndGet();</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        if (brokerController.getBrokerConfig().isEnablePopLog()) {</span>
+<span class="nc" id="L223">            POP_LOGGER.info(&quot;lock release , new msg arrive , wakeUp : {}&quot;, popRequest);</span>
+        }
+<span class="nc" id="L225">        return wakeUp(popRequest);</span>
+    }
+
+    private boolean wakeUp(final PopRequest request) {
+<span class="nc bnc" id="L229" title="All 4 branches missed.">        if (request == null || !request.complete()) {</span>
+<span class="nc" id="L230">            return false;</span>
+        }
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        if (!request.getChannel().isActive()) {</span>
+<span class="nc" id="L233">            return false;</span>
+        }
+<span class="nc" id="L235">        Runnable run = () -&gt; {</span>
+            try {
+<span class="nc" id="L237">                final RemotingCommand response = processRequest(request.getChannel(), request.getRemotingCommand());</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">                if (response != null) {</span>
+<span class="nc" id="L239">                    response.setOpaque(request.getRemotingCommand().getOpaque());</span>
+<span class="nc" id="L240">                    response.markResponseType();</span>
+<span class="nc" id="L241">                    NettyRemotingAbstract.writeResponse(request.getChannel(), request.getRemotingCommand(), response, future -&gt; {</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">                        if (!future.isSuccess()) {</span>
+<span class="nc" id="L243">                            POP_LOGGER.error(&quot;ProcessRequestWrapper response to {} failed&quot;, request.getChannel().remoteAddress(), future.cause());</span>
+<span class="nc" id="L244">                            POP_LOGGER.error(request.toString());</span>
+<span class="nc" id="L245">                            POP_LOGGER.error(response.toString());</span>
+                        }
+<span class="nc" id="L247">                    });</span>
+                }
+<span class="nc" id="L249">            } catch (RemotingCommandException e1) {</span>
+<span class="nc" id="L250">                POP_LOGGER.error(&quot;ExecuteRequestWhenWakeup run&quot;, e1);</span>
+<span class="nc" id="L251">            }</span>
+<span class="nc" id="L252">        };</span>
+<span class="nc" id="L253">        this.brokerController.getPullMessageExecutor().submit(new RequestTask(run, request.getChannel(), request.getRemotingCommand()));</span>
+<span class="nc" id="L254">        return true;</span>
+    }
+
+    private RemotingCommand processRequest(final Channel channel, RemotingCommand request)
+        throws RemotingCommandException {
+<span class="fc" id="L259">        RemotingCommand response = RemotingCommand.createResponseCommand(PopMessageResponseHeader.class);</span>
+<span class="fc" id="L260">        final PopMessageResponseHeader responseHeader = (PopMessageResponseHeader) response.readCustomHeader();</span>
+<span class="fc" id="L261">        final PopMessageRequestHeader requestHeader =</span>
+<span class="fc" id="L262">            (PopMessageRequestHeader) request.decodeCommandCustomHeader(PopMessageRequestHeader.class);</span>
+<span class="fc" id="L263">        StringBuilder startOffsetInfo = new StringBuilder(64);</span>
+<span class="fc" id="L264">        StringBuilder msgOffsetInfo = new StringBuilder(64);</span>
+<span class="fc" id="L265">        StringBuilder orderCountInfo = null;</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">        if (requestHeader.isOrder()) {</span>
+<span class="nc" id="L267">            orderCountInfo = new StringBuilder(64);</span>
+        }
+
+<span class="fc" id="L270">        brokerController.getConsumerManager().compensateBasicConsumerInfo(requestHeader.getConsumerGroup(),</span>
+            ConsumeType.CONSUME_POP, MessageModel.CLUSTERING);
+
+<span class="fc" id="L273">        response.setOpaque(request.getOpaque());</span>
+
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">        if (brokerController.getBrokerConfig().isEnablePopLog()) {</span>
+<span class="nc" id="L276">            POP_LOGGER.info(&quot;receive PopMessage request command, {}&quot;, request);</span>
+        }
+
+<span class="nc bnc" id="L279" title="All 2 branches missed.">        if (requestHeader.isTimeoutTooMuch()) {</span>
+<span class="nc" id="L280">            response.setCode(ResponseCode.POLLING_TIMEOUT);</span>
+<span class="nc" id="L281">            response.setRemark(String.format(&quot;the broker[%s] pop message is timeout too much&quot;,</span>
+<span class="nc" id="L282">                this.brokerController.getBrokerConfig().getBrokerIP1()));</span>
+<span class="nc" id="L283">            return response;</span>
+        }
+<span class="nc bnc" id="L285" title="All 2 branches missed.">        if (!PermName.isReadable(this.brokerController.getBrokerConfig().getBrokerPermission())) {</span>
+<span class="nc" id="L286">            response.setCode(ResponseCode.NO_PERMISSION);</span>
+<span class="nc" id="L287">            response.setRemark(String.format(&quot;the broker[%s] pop message is forbidden&quot;,</span>
+<span class="nc" id="L288">                this.brokerController.getBrokerConfig().getBrokerIP1()));</span>
+<span class="nc" id="L289">            return response;</span>
+        }
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        if (requestHeader.getMaxMsgNums() &gt; 32) {</span>
+<span class="nc" id="L292">            response.setCode(ResponseCode.SYSTEM_ERROR);</span>
+<span class="nc" id="L293">            response.setRemark(String.format(&quot;the broker[%s] pop message's num is greater than 32&quot;,</span>
+<span class="nc" id="L294">                this.brokerController.getBrokerConfig().getBrokerIP1()));</span>
+<span class="nc" id="L295">            return response;</span>
+        }
+
+<span class="nc bnc" id="L298" title="All 2 branches missed.">        if (!brokerController.getMessageStore().getMessageStoreConfig().isTimerWheelEnable()) {</span>
+<span class="nc" id="L299">            response.setCode(ResponseCode.SYSTEM_ERROR);</span>
+<span class="nc" id="L300">            response.setRemark(String.format(&quot;the broker[%s] pop message is forbidden because timerWheelEnable is false&quot;,</span>
+<span class="nc" id="L301">                this.brokerController.getBrokerConfig().getBrokerIP1()));</span>
+<span class="nc" id="L302">            return response;</span>
+        }
+
+<span class="nc" id="L305">        TopicConfig topicConfig =</span>
+<span class="nc" id="L306">            this.brokerController.getTopicConfigManager().selectTopicConfig(requestHeader.getTopic());</span>
+<span class="nc bnc" id="L307" title="All 2 branches missed.">        if (null == topicConfig) {</span>
+<span class="nc" id="L308">            POP_LOGGER.error(&quot;The topic {} not exist, consumer: {} &quot;, requestHeader.getTopic(),</span>
+<span class="nc" id="L309">                RemotingHelper.parseChannelRemoteAddr(channel));</span>
+<span class="nc" id="L310">            response.setCode(ResponseCode.TOPIC_NOT_EXIST);</span>
+<span class="nc" id="L311">            response.setRemark(String.format(&quot;topic[%s] not exist, apply first please! %s&quot;, requestHeader.getTopic(),</span>
+<span class="nc" id="L312">                FAQUrl.suggestTodo(FAQUrl.APPLY_TOPIC_URL)));</span>
+<span class="nc" id="L313">            return response;</span>
+        }
+
+<span class="nc bnc" id="L316" title="All 2 branches missed.">        if (!PermName.isReadable(topicConfig.getPerm())) {</span>
+<span class="nc" id="L317">            response.setCode(ResponseCode.NO_PERMISSION);</span>
+<span class="nc" id="L318">            response.setRemark(&quot;the topic[&quot; + requestHeader.getTopic() + &quot;] peeking message is forbidden&quot;);</span>
+<span class="nc" id="L319">            return response;</span>
+        }
+
+<span class="nc bnc" id="L322" title="All 2 branches missed.">        if (requestHeader.getQueueId() &gt;= topicConfig.getReadQueueNums()) {</span>
+<span class="nc" id="L323">            String errorInfo = String.format(&quot;queueId[%d] is illegal, topic:[%s] topicConfig.readQueueNums:[%d] &quot; +</span>
+                    &quot;consumer:[%s]&quot;,
+<span class="nc" id="L325">                requestHeader.getQueueId(), requestHeader.getTopic(), topicConfig.getReadQueueNums(),</span>
+<span class="nc" id="L326">                channel.remoteAddress());</span>
+<span class="nc" id="L327">            POP_LOGGER.warn(errorInfo);</span>
+<span class="nc" id="L328">            response.setCode(ResponseCode.SYSTEM_ERROR);</span>
+<span class="nc" id="L329">            response.setRemark(errorInfo);</span>
+<span class="nc" id="L330">            return response;</span>
+        }
+<span class="nc" id="L332">        SubscriptionGroupConfig subscriptionGroupConfig =</span>
+<span class="nc" id="L333">            this.brokerController.getSubscriptionGroupManager().findSubscriptionGroupConfig(requestHeader.getConsumerGroup());</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">        if (null == subscriptionGroupConfig) {</span>
+<span class="nc" id="L335">            response.setCode(ResponseCode.SUBSCRIPTION_GROUP_NOT_EXIST);</span>
+<span class="nc" id="L336">            response.setRemark(String.format(&quot;subscription group [%s] does not exist, %s&quot;,</span>
+<span class="nc" id="L337">                requestHeader.getConsumerGroup(), FAQUrl.suggestTodo(FAQUrl.SUBSCRIPTION_GROUP_NOT_EXIST)));</span>
+<span class="nc" id="L338">            return response;</span>
+        }
+
+<span class="nc bnc" id="L341" title="All 2 branches missed.">        if (!subscriptionGroupConfig.isConsumeEnable()) {</span>
+<span class="nc" id="L342">            response.setCode(ResponseCode.NO_PERMISSION);</span>
+<span class="nc" id="L343">            response.setRemark(&quot;subscription group no permission, &quot; + requestHeader.getConsumerGroup());</span>
+<span class="nc" id="L344">            return response;</span>
+        }
+
+<span class="nc" id="L347">        ExpressionMessageFilter messageFilter = null;</span>
+<span class="nc bnc" id="L348" title="All 4 branches missed.">        if (requestHeader.getExp() != null &amp;&amp; requestHeader.getExp().length() &gt; 0) {</span>
+            try {
+<span class="nc" id="L350">                SubscriptionData subscriptionData = FilterAPI.build(requestHeader.getTopic(), requestHeader.getExp(), requestHeader.getExpType());</span>
+<span class="nc" id="L351">                brokerController.getConsumerManager().compensateSubscribeData(requestHeader.getConsumerGroup(),</span>
+<span class="nc" id="L352">                    requestHeader.getTopic(), subscriptionData);</span>
+
+<span class="nc" id="L354">                String retryTopic = KeyBuilder.buildPopRetryTopic(requestHeader.getTopic(), requestHeader.getConsumerGroup());</span>
+<span class="nc" id="L355">                SubscriptionData retrySubscriptionData = FilterAPI.build(retryTopic, SubscriptionData.SUB_ALL, requestHeader.getExpType());</span>
+<span class="nc" id="L356">                brokerController.getConsumerManager().compensateSubscribeData(requestHeader.getConsumerGroup(),</span>
+                    retryTopic, retrySubscriptionData);
+
+<span class="nc" id="L359">                ConsumerFilterData consumerFilterData = null;</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">                if (!ExpressionType.isTagType(subscriptionData.getExpressionType())) {</span>
+<span class="nc" id="L361">                    consumerFilterData = ConsumerFilterManager.build(</span>
+<span class="nc" id="L362">                        requestHeader.getTopic(), requestHeader.getConsumerGroup(), requestHeader.getExp(),</span>
+<span class="nc" id="L363">                        requestHeader.getExpType(), System.currentTimeMillis()</span>
+                    );
+<span class="nc bnc" id="L365" title="All 2 branches missed.">                    if (consumerFilterData == null) {</span>
+<span class="nc" id="L366">                        POP_LOGGER.warn(&quot;Parse the consumer's subscription[{}] failed, group: {}&quot;,</span>
+<span class="nc" id="L367">                            requestHeader.getExp(), requestHeader.getConsumerGroup());</span>
+<span class="nc" id="L368">                        response.setCode(ResponseCode.SUBSCRIPTION_PARSE_FAILED);</span>
+<span class="nc" id="L369">                        response.setRemark(&quot;parse the consumer's subscription failed&quot;);</span>
+<span class="nc" id="L370">                        return response;</span>
+                    }
+                }
+<span class="nc" id="L373">                messageFilter = new ExpressionMessageFilter(subscriptionData, consumerFilterData,</span>
+<span class="nc" id="L374">                    brokerController.getConsumerFilterManager());</span>
+<span class="nc" id="L375">            } catch (Exception e) {</span>
+<span class="nc" id="L376">                POP_LOGGER.warn(&quot;Parse the consumer's subscription[{}] error, group: {}&quot;, requestHeader.getExp(),</span>
+<span class="nc" id="L377">                    requestHeader.getConsumerGroup());</span>
+<span class="nc" id="L378">                response.setCode(ResponseCode.SUBSCRIPTION_PARSE_FAILED);</span>
+<span class="nc" id="L379">                response.setRemark(&quot;parse the consumer's subscription failed&quot;);</span>
+<span class="nc" id="L380">                return response;</span>
+<span class="nc" id="L381">            }</span>
+        } else {
+            try {
+<span class="nc" id="L384">                SubscriptionData subscriptionData = FilterAPI.build(requestHeader.getTopic(), &quot;*&quot;, ExpressionType.TAG);</span>
+<span class="nc" id="L385">                brokerController.getConsumerManager().compensateSubscribeData(requestHeader.getConsumerGroup(),</span>
+<span class="nc" id="L386">                    requestHeader.getTopic(), subscriptionData);</span>
+
+<span class="nc" id="L388">                String retryTopic = KeyBuilder.buildPopRetryTopic(requestHeader.getTopic(), requestHeader.getConsumerGroup());</span>
+<span class="nc" id="L389">                SubscriptionData retrySubscriptionData = FilterAPI.build(retryTopic, &quot;*&quot;, ExpressionType.TAG);</span>
+<span class="nc" id="L390">                brokerController.getConsumerManager().compensateSubscribeData(requestHeader.getConsumerGroup(),</span>
+                    retryTopic, retrySubscriptionData);
+<span class="nc" id="L392">            } catch (Exception e) {</span>
+<span class="nc" id="L393">                POP_LOGGER.warn(&quot;Build default subscription error, group: {}&quot;, requestHeader.getConsumerGroup());</span>
+<span class="nc" id="L394">            }</span>
+        }
+
+<span class="nc" id="L397">        int randomQ = random.nextInt(100);</span>
+        int reviveQid;
+<span class="nc bnc" id="L399" title="All 2 branches missed.">        if (requestHeader.isOrder()) {</span>
+<span class="nc" id="L400">            reviveQid = KeyBuilder.POP_ORDER_REVIVE_QUEUE;</span>
+        } else {
+<span class="nc" id="L402">            reviveQid = (int) Math.abs(ckMessageNumber.getAndIncrement() % this.brokerController.getBrokerConfig().getReviveQueueNum());</span>
+        }
+
+<span class="nc" id="L405">        int commercialSizePerMsg = this.brokerController.getBrokerConfig().getCommercialSizePerMsg();</span>
+<span class="nc" id="L406">        GetMessageResult getMessageResult = new GetMessageResult(commercialSizePerMsg);</span>
+<span class="nc" id="L407">        ExpressionMessageFilter finalMessageFilter = messageFilter;</span>
+<span class="nc" id="L408">        StringBuilder finalOrderCountInfo = orderCountInfo;</span>
+
+<span class="nc bnc" id="L410" title="All 2 branches missed.">        boolean needRetry = randomQ % 5 == 0;</span>
+<span class="nc" id="L411">        long popTime = System.currentTimeMillis();</span>
+<span class="nc" id="L412">        CompletableFuture&lt;Long&gt; getMessageFuture = CompletableFuture.completedFuture(0L);</span>
+<span class="nc bnc" id="L413" title="All 4 branches missed.">        if (needRetry &amp;&amp; !requestHeader.isOrder()) {</span>
+<span class="nc" id="L414">            TopicConfig retryTopicConfig =</span>
+<span class="nc" id="L415">                this.brokerController.getTopicConfigManager().selectTopicConfig(KeyBuilder.buildPopRetryTopic(requestHeader.getTopic(), requestHeader.getConsumerGroup()));</span>
+<span class="nc bnc" id="L416" title="All 2 branches missed.">            if (retryTopicConfig != null) {</span>
+<span class="nc bnc" id="L417" title="All 2 branches missed.">                for (int i = 0; i &lt; retryTopicConfig.getReadQueueNums(); i++) {</span>
+<span class="nc" id="L418">                    int queueId = (randomQ + i) % retryTopicConfig.getReadQueueNums();</span>
+<span class="nc" id="L419">                    getMessageFuture = getMessageFuture.thenCompose(restNum -&gt; popMsgFromQueue(true, getMessageResult, requestHeader, queueId, restNum, reviveQid, channel, popTime, finalMessageFilter,</span>
+                        startOffsetInfo, msgOffsetInfo, finalOrderCountInfo));
+                }
+            }
+        }
+<span class="nc bnc" id="L424" title="All 2 branches missed.">        if (requestHeader.getQueueId() &lt; 0) {</span>
+            // read all queue
+<span class="nc bnc" id="L426" title="All 2 branches missed.">            for (int i = 0; i &lt; topicConfig.getReadQueueNums(); i++) {</span>
+<span class="nc" id="L427">                int queueId = (randomQ + i) % topicConfig.getReadQueueNums();</span>
+<span class="nc" id="L428">                getMessageFuture = getMessageFuture.thenCompose(restNum -&gt; popMsgFromQueue(false, getMessageResult, requestHeader, queueId, restNum, reviveQid, channel, popTime, finalMessageFilter,</span>
+                    startOffsetInfo, msgOffsetInfo, finalOrderCountInfo));
+            }
+        } else {
+<span class="nc" id="L432">            int queueId = requestHeader.getQueueId();</span>
+<span class="nc" id="L433">            getMessageFuture = getMessageFuture.thenCompose(restNum -&gt; popMsgFromQueue(false, getMessageResult, requestHeader, queueId, restNum, reviveQid, channel, popTime, finalMessageFilter,</span>
+                startOffsetInfo, msgOffsetInfo, finalOrderCountInfo));
+        }
+        // if not full , fetch retry again
+<span class="nc bnc" id="L437" title="All 6 branches missed.">        if (!needRetry &amp;&amp; getMessageResult.getMessageMapedList().size() &lt; requestHeader.getMaxMsgNums() &amp;&amp; !requestHeader.isOrder()) {</span>
+<span class="nc" id="L438">            TopicConfig retryTopicConfig =</span>
+<span class="nc" id="L439">                this.brokerController.getTopicConfigManager().selectTopicConfig(KeyBuilder.buildPopRetryTopic(requestHeader.getTopic(), requestHeader.getConsumerGroup()));</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">            if (retryTopicConfig != null) {</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">                for (int i = 0; i &lt; retryTopicConfig.getReadQueueNums(); i++) {</span>
+<span class="nc" id="L442">                    int queueId = (randomQ + i) % retryTopicConfig.getReadQueueNums();</span>
+<span class="nc" id="L443">                    getMessageFuture = getMessageFuture.thenCompose(restNum -&gt; popMsgFromQueue(true, getMessageResult, requestHeader, queueId, restNum, reviveQid, channel, popTime, finalMessageFilter,</span>
+                        startOffsetInfo, msgOffsetInfo, finalOrderCountInfo));
+                }
+            }
+        }
+
+<span class="nc" id="L449">        final RemotingCommand finalResponse = response;</span>
+<span class="nc" id="L450">        getMessageFuture.thenApply(restNum -&gt; {</span>
+<span class="nc bnc" id="L451" title="All 2 branches missed.">            if (!getMessageResult.getMessageBufferList().isEmpty()) {</span>
+<span class="nc" id="L452">                finalResponse.setCode(ResponseCode.SUCCESS);</span>
+<span class="nc" id="L453">                getMessageResult.setStatus(GetMessageStatus.FOUND);</span>
+<span class="nc bnc" id="L454" title="All 2 branches missed.">                if (restNum &gt; 0) {</span>
+                    // all queue pop can not notify specified queue pop, and vice versa
+<span class="nc" id="L456">                    notifyMessageArriving(requestHeader.getTopic(), requestHeader.getConsumerGroup(),</span>
+<span class="nc" id="L457">                        requestHeader.getQueueId());</span>
+                }
+            } else {
+<span class="nc" id="L460">                int pollingResult = polling(channel, request, requestHeader);</span>
+<span class="nc bnc" id="L461" title="All 2 branches missed.">                if (POLLING_SUC == pollingResult) {</span>
+<span class="nc" id="L462">                    return null;</span>
+<span class="nc bnc" id="L463" title="All 2 branches missed.">                } else if (POLLING_FULL == pollingResult) {</span>
+<span class="nc" id="L464">                    finalResponse.setCode(ResponseCode.POLLING_FULL);</span>
+                } else {
+<span class="nc" id="L466">                    finalResponse.setCode(ResponseCode.POLLING_TIMEOUT);</span>
+                }
+<span class="nc" id="L468">                getMessageResult.setStatus(GetMessageStatus.NO_MESSAGE_IN_QUEUE);</span>
+            }
+<span class="nc" id="L470">            responseHeader.setInvisibleTime(requestHeader.getInvisibleTime());</span>
+<span class="nc" id="L471">            responseHeader.setPopTime(popTime);</span>
+<span class="nc" id="L472">            responseHeader.setReviveQid(reviveQid);</span>
+<span class="nc" id="L473">            responseHeader.setRestNum(restNum);</span>
+<span class="nc" id="L474">            responseHeader.setStartOffsetInfo(startOffsetInfo.toString());</span>
+<span class="nc" id="L475">            responseHeader.setMsgOffsetInfo(msgOffsetInfo.toString());</span>
+<span class="nc bnc" id="L476" title="All 4 branches missed.">            if (requestHeader.isOrder() &amp;&amp; finalOrderCountInfo != null) {</span>
+<span class="nc" id="L477">                responseHeader.setOrderCountInfo(finalOrderCountInfo.toString());</span>
+            }
+<span class="nc" id="L479">            finalResponse.setRemark(getMessageResult.getStatus().name());</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">            switch (finalResponse.getCode()) {</span>
+                case ResponseCode.SUCCESS:
+<span class="nc bnc" id="L482" title="All 2 branches missed.">                    if (this.brokerController.getBrokerConfig().isTransferMsgByHeap()) {</span>
+<span class="nc" id="L483">                        final long beginTimeMills = this.brokerController.getMessageStore().now();</span>
+<span class="nc" id="L484">                        final byte[] r = this.readGetMessageResult(getMessageResult, requestHeader.getConsumerGroup(),</span>
+<span class="nc" id="L485">                            requestHeader.getTopic(), requestHeader.getQueueId());</span>
+<span class="nc" id="L486">                        this.brokerController.getBrokerStatsManager().incGroupGetLatency(requestHeader.getConsumerGroup(),</span>
+<span class="nc" id="L487">                            requestHeader.getTopic(), requestHeader.getQueueId(),</span>
+<span class="nc" id="L488">                            (int) (this.brokerController.getMessageStore().now() - beginTimeMills));</span>
+<span class="nc" id="L489">                        finalResponse.setBody(r);</span>
+<span class="nc" id="L490">                    } else {</span>
+<span class="nc" id="L491">                        final GetMessageResult tmpGetMessageResult = getMessageResult;</span>
+                        try {
+<span class="nc" id="L493">                            FileRegion fileRegion =</span>
+<span class="nc" id="L494">                                new ManyMessageTransfer(finalResponse.encodeHeader(getMessageResult.getBufferTotalSize()),</span>
+                                    getMessageResult);
+<span class="nc" id="L496">                            channel.writeAndFlush(fileRegion)</span>
+<span class="nc" id="L497">                                .addListener((ChannelFutureListener) future -&gt; {</span>
+<span class="nc" id="L498">                                    tmpGetMessageResult.release();</span>
+<span class="nc" id="L499">                                    Attributes attributes = RemotingMetricsManager.newAttributesBuilder()</span>
+<span class="nc" id="L500">                                        .put(LABEL_REQUEST_CODE, RemotingMetricsManager.getRequestCodeDesc(request.getCode()))</span>
+<span class="nc" id="L501">                                        .put(LABEL_RESPONSE_CODE, RemotingMetricsManager.getResponseCodeDesc(finalResponse.getCode()))</span>
+<span class="nc" id="L502">                                        .put(LABEL_RESULT, RemotingMetricsManager.getWriteAndFlushResult(future))</span>
+<span class="nc" id="L503">                                        .build();</span>
+<span class="nc" id="L504">                                    RemotingMetricsManager.rpcLatency.record(request.getProcessTimer().elapsed(TimeUnit.MILLISECONDS), attributes);</span>
+<span class="nc bnc" id="L505" title="All 2 branches missed.">                                    if (!future.isSuccess()) {</span>
+<span class="nc" id="L506">                                        POP_LOGGER.error(&quot;Fail to transfer messages from page cache to {}&quot;,</span>
+<span class="nc" id="L507">                                            channel.remoteAddress(), future.cause());</span>
+                                    }
+<span class="nc" id="L509">                                });</span>
+<span class="nc" id="L510">                        } catch (Throwable e) {</span>
+<span class="nc" id="L511">                            POP_LOGGER.error(&quot;Error occurred when transferring messages from page cache&quot;, e);</span>
+<span class="nc" id="L512">                            getMessageResult.release();</span>
+<span class="nc" id="L513">                        }</span>
+
+<span class="nc" id="L515">                        return null;</span>
+                    }
+                    break;
+                default:
+<span class="nc" id="L519">                    return finalResponse;</span>
+            }
+<span class="nc" id="L521">            return finalResponse;</span>
+<span class="nc" id="L522">        }).thenAccept(result -&gt; NettyRemotingAbstract.writeResponse(channel, request, result));</span>
+<span class="nc" id="L523">        return null;</span>
+    }
+
+    private CompletableFuture&lt;Long&gt; popMsgFromQueue(boolean isRetry, GetMessageResult getMessageResult,
+        PopMessageRequestHeader requestHeader, int queueId, long restNum, int reviveQid,
+        Channel channel, long popTime, ExpressionMessageFilter messageFilter, StringBuilder startOffsetInfo,
+        StringBuilder msgOffsetInfo, StringBuilder orderCountInfo) {
+<span class="nc bnc" id="L530" title="All 2 branches missed.">        String topic = isRetry ? KeyBuilder.buildPopRetryTopic(requestHeader.getTopic(),</span>
+<span class="nc" id="L531">            requestHeader.getConsumerGroup()) : requestHeader.getTopic();</span>
+<span class="nc" id="L532">        String lockKey =</span>
+<span class="nc" id="L533">            topic + PopAckConstants.SPLIT + requestHeader.getConsumerGroup() + PopAckConstants.SPLIT + queueId;</span>
+<span class="nc" id="L534">        boolean isOrder = requestHeader.isOrder();</span>
+<span class="nc" id="L535">        long offset = getPopOffset(topic, requestHeader.getConsumerGroup(), queueId, requestHeader.getInitMode(),</span>
+            false, lockKey, false);
+<span class="nc" id="L537">        CompletableFuture&lt;Long&gt; future = new CompletableFuture&lt;&gt;();</span>
+<span class="nc bnc" id="L538" title="All 2 branches missed.">        if (!queueLockManager.tryLock(lockKey)) {</span>
+<span class="nc" id="L539">            restNum = this.brokerController.getMessageStore().getMaxOffsetInQueue(topic, queueId) - offset + restNum;</span>
+<span class="nc" id="L540">            future.complete(restNum);</span>
+<span class="nc" id="L541">            return future;</span>
+        }
+
+        try {
+<span class="nc" id="L545">            future.whenComplete((result, throwable) -&gt; queueLockManager.unLock(lockKey));</span>
+<span class="nc" id="L546">            offset = getPopOffset(topic, requestHeader.getConsumerGroup(), queueId, requestHeader.getInitMode(),</span>
+                true, lockKey, true);
+<span class="nc bnc" id="L548" title="All 4 branches missed.">            if (isOrder &amp;&amp; brokerController.getConsumerOrderInfoManager().checkBlock(topic,</span>
+<span class="nc" id="L549">                requestHeader.getConsumerGroup(), queueId, requestHeader.getInvisibleTime())) {</span>
+<span class="nc" id="L550">                future.complete(this.brokerController.getMessageStore().getMaxOffsetInQueue(topic, queueId) - offset + restNum);</span>
+<span class="nc" id="L551">                return future;</span>
+            }
+
+<span class="nc bnc" id="L554" title="All 2 branches missed.">            if (isOrder) {</span>
+<span class="nc" id="L555">                this.brokerController.getPopInflightMessageCounter().clearInFlightMessageNum(</span>
+                    topic,
+<span class="nc" id="L557">                    requestHeader.getConsumerGroup(),</span>
+                    queueId
+                );
+            }
+
+<span class="nc bnc" id="L562" title="All 2 branches missed.">            if (getMessageResult.getMessageMapedList().size() &gt;= requestHeader.getMaxMsgNums()) {</span>
+<span class="nc" id="L563">                restNum = this.brokerController.getMessageStore().getMaxOffsetInQueue(topic, queueId) - offset + restNum;</span>
+<span class="nc" id="L564">                future.complete(restNum);</span>
+<span class="nc" id="L565">                return future;</span>
+            }
+<span class="nc" id="L567">        } catch (Exception e) {</span>
+<span class="nc" id="L568">            POP_LOGGER.error(&quot;Exception in popMsgFromQueue&quot;, e);</span>
+<span class="nc" id="L569">            future.complete(restNum);</span>
+<span class="nc" id="L570">            return future;</span>
+<span class="nc" id="L571">        }</span>
+
+<span class="nc" id="L573">        AtomicLong atomicRestNum = new AtomicLong(restNum);</span>
+<span class="nc" id="L574">        AtomicLong atomicOffset = new AtomicLong(offset);</span>
+<span class="nc" id="L575">        long finalOffset = offset;</span>
+<span class="nc" id="L576">        return this.brokerController.getMessageStore()</span>
+<span class="nc" id="L577">            .getMessageAsync(requestHeader.getConsumerGroup(), topic, queueId, offset,</span>
+<span class="nc" id="L578">                requestHeader.getMaxMsgNums() - getMessageResult.getMessageMapedList().size(), messageFilter)</span>
+<span class="nc" id="L579">            .thenCompose(result -&gt; {</span>
+<span class="nc bnc" id="L580" title="All 2 branches missed.">                if (result == null) {</span>
+<span class="nc" id="L581">                    return CompletableFuture.completedFuture(null);</span>
+                }
+                // maybe store offset is not correct.
+<span class="nc bnc" id="L584" title="All 2 branches missed.">                if (GetMessageStatus.OFFSET_TOO_SMALL.equals(result.getStatus())</span>
+<span class="nc bnc" id="L585" title="All 2 branches missed.">                    || GetMessageStatus.OFFSET_OVERFLOW_BADLY.equals(result.getStatus())</span>
+<span class="nc bnc" id="L586" title="All 2 branches missed.">                    || GetMessageStatus.OFFSET_FOUND_NULL.equals(result.getStatus())) {</span>
+                    // commit offset, because the offset is not correct
+                    // If offset in store is greater than cq offset, it will cause duplicate messages,
+                    // because offset in PopBuffer is not committed.
+<span class="nc" id="L590">                    POP_LOGGER.warn(&quot;Pop initial offset, because store is no correct, {}, {}-&gt;{}&quot;,</span>
+<span class="nc" id="L591">                        lockKey, atomicOffset.get(), result.getNextBeginOffset());</span>
+<span class="nc" id="L592">                    this.brokerController.getConsumerOffsetManager().commitOffset(channel.remoteAddress().toString(), requestHeader.getConsumerGroup(), topic,</span>
+<span class="nc" id="L593">                        queueId, result.getNextBeginOffset());</span>
+<span class="nc" id="L594">                    atomicOffset.set(result.getNextBeginOffset());</span>
+<span class="nc" id="L595">                    return this.brokerController.getMessageStore().getMessageAsync(requestHeader.getConsumerGroup(), topic, queueId, atomicOffset.get(),</span>
+<span class="nc" id="L596">                        requestHeader.getMaxMsgNums() - getMessageResult.getMessageMapedList().size(), messageFilter);</span>
+                }
+<span class="nc" id="L598">                return CompletableFuture.completedFuture(result);</span>
+<span class="nc" id="L599">            }).thenApply(result -&gt; {</span>
+<span class="nc bnc" id="L600" title="All 2 branches missed.">                if (result == null) {</span>
+<span class="nc" id="L601">                    atomicRestNum.set(brokerController.getMessageStore().getMaxOffsetInQueue(topic, queueId) - atomicOffset.get() + atomicRestNum.get());</span>
+<span class="nc" id="L602">                    return atomicRestNum.get();</span>
+                }
+<span class="nc bnc" id="L604" title="All 2 branches missed.">                if (!result.getMessageMapedList().isEmpty()) {</span>
+<span class="nc" id="L605">                    this.brokerController.getBrokerStatsManager().incBrokerGetNums(requestHeader.getTopic(), result.getMessageCount());</span>
+<span class="nc" id="L606">                    this.brokerController.getBrokerStatsManager().incGroupGetNums(requestHeader.getConsumerGroup(), topic,</span>
+<span class="nc" id="L607">                        result.getMessageCount());</span>
+<span class="nc" id="L608">                    this.brokerController.getBrokerStatsManager().incGroupGetSize(requestHeader.getConsumerGroup(), topic,</span>
+<span class="nc" id="L609">                        result.getBufferTotalSize());</span>
+
+<span class="nc" id="L611">                    Attributes attributes = BrokerMetricsManager.newAttributesBuilder()</span>
+<span class="nc" id="L612">                        .put(LABEL_TOPIC, requestHeader.getTopic())</span>
+<span class="nc" id="L613">                        .put(LABEL_CONSUMER_GROUP, requestHeader.getConsumerGroup())</span>
+<span class="nc bnc" id="L614" title="All 4 branches missed.">                        .put(LABEL_IS_SYSTEM, TopicValidator.isSystemTopic(requestHeader.getTopic()) || MixAll.isSysConsumerGroup(requestHeader.getConsumerGroup()))</span>
+<span class="nc" id="L615">                        .put(LABEL_IS_RETRY, isRetry)</span>
+<span class="nc" id="L616">                        .build();</span>
+<span class="nc" id="L617">                    BrokerMetricsManager.messagesOutTotal.add(result.getMessageCount(), attributes);</span>
+<span class="nc" id="L618">                    BrokerMetricsManager.throughputOutTotal.add(result.getBufferTotalSize(), attributes);</span>
+
+<span class="nc bnc" id="L620" title="All 2 branches missed.">                    if (isOrder) {</span>
+<span class="nc" id="L621">                        this.brokerController.getConsumerOrderInfoManager().update(isRetry, topic,</span>
+<span class="nc" id="L622">                            requestHeader.getConsumerGroup(),</span>
+<span class="nc" id="L623">                            queueId, popTime, requestHeader.getInvisibleTime(), result.getMessageQueueOffset(),</span>
+                            orderCountInfo);
+<span class="nc" id="L625">                        this.brokerController.getConsumerOffsetManager().commitOffset(channel.remoteAddress().toString(),</span>
+<span class="nc" id="L626">                            requestHeader.getConsumerGroup(), topic, queueId, finalOffset);</span>
+                    } else {
+<span class="nc" id="L628">                        appendCheckPoint(requestHeader, topic, reviveQid, queueId, finalOffset, result, popTime, this.brokerController.getBrokerConfig().getBrokerName());</span>
+                    }
+<span class="nc" id="L630">                    ExtraInfoUtil.buildStartOffsetInfo(startOffsetInfo, isRetry, queueId, finalOffset);</span>
+<span class="nc" id="L631">                    ExtraInfoUtil.buildMsgOffsetInfo(msgOffsetInfo, isRetry, queueId,</span>
+<span class="nc" id="L632">                        result.getMessageQueueOffset());</span>
+<span class="nc bnc" id="L633" title="All 2 branches missed.">                } else if ((GetMessageStatus.NO_MATCHED_MESSAGE.equals(result.getStatus())</span>
+<span class="nc bnc" id="L634" title="All 2 branches missed.">                    || GetMessageStatus.OFFSET_FOUND_NULL.equals(result.getStatus())</span>
+<span class="nc bnc" id="L635" title="All 2 branches missed.">                    || GetMessageStatus.MESSAGE_WAS_REMOVING.equals(result.getStatus())</span>
+<span class="nc bnc" id="L636" title="All 2 branches missed.">                    || GetMessageStatus.NO_MATCHED_LOGIC_QUEUE.equals(result.getStatus()))</span>
+<span class="nc bnc" id="L637" title="All 2 branches missed.">                    &amp;&amp; result.getNextBeginOffset() &gt; -1) {</span>
+<span class="nc" id="L638">                    popBufferMergeService.addCkMock(requestHeader.getConsumerGroup(), topic, queueId, finalOffset,</span>
+<span class="nc" id="L639">                        requestHeader.getInvisibleTime(), popTime, reviveQid, result.getNextBeginOffset(), brokerController.getBrokerConfig().getBrokerName());</span>
+//                this.brokerController.getConsumerOffsetManager().commitOffset(channel.remoteAddress().toString(), requestHeader.getConsumerGroup(), topic,
+//                        queueId, getMessageTmpResult.getNextBeginOffset());
+                }
+
+<span class="nc" id="L644">                atomicRestNum.set(result.getMaxOffset() - result.getNextBeginOffset() + atomicRestNum.get());</span>
+<span class="nc" id="L645">                String brokerName = brokerController.getBrokerConfig().getBrokerName();</span>
+<span class="nc bnc" id="L646" title="All 2 branches missed.">                for (SelectMappedBufferResult mapedBuffer : result.getMessageMapedList()) {</span>
+                    // We should not recode buffer for normal topic message
+<span class="nc bnc" id="L648" title="All 2 branches missed.">                    if (!isRetry) {</span>
+<span class="nc" id="L649">                        getMessageResult.addMessage(mapedBuffer);</span>
+                    } else {
+<span class="nc" id="L651">                        List&lt;MessageExt&gt; messageExtList = MessageDecoder.decodesBatch(mapedBuffer.getByteBuffer(),</span>
+                            true, false, true);
+<span class="nc" id="L653">                        mapedBuffer.release();</span>
+<span class="nc bnc" id="L654" title="All 2 branches missed.">                        for (MessageExt messageExt : messageExtList) {</span>
+                            try {
+<span class="nc" id="L656">                                String ckInfo = ExtraInfoUtil.buildExtraInfo(finalOffset, popTime, requestHeader.getInvisibleTime(),</span>
+<span class="nc" id="L657">                                    reviveQid, messageExt.getTopic(), brokerName, messageExt.getQueueId(), messageExt.getQueueOffset());</span>
+<span class="nc" id="L658">                                messageExt.getProperties().putIfAbsent(MessageConst.PROPERTY_POP_CK, ckInfo);</span>
+
+                                // Set retry message topic to origin topic and clear message store size to recode
+<span class="nc" id="L661">                                messageExt.setTopic(requestHeader.getTopic());</span>
+<span class="nc" id="L662">                                messageExt.setStoreSize(0);</span>
+
+<span class="nc" id="L664">                                byte[] encode = MessageDecoder.encode(messageExt, false);</span>
+<span class="nc" id="L665">                                ByteBuffer buffer = ByteBuffer.wrap(encode);</span>
+<span class="nc" id="L666">                                SelectMappedBufferResult tmpResult =</span>
+<span class="nc" id="L667">                                    new SelectMappedBufferResult(mapedBuffer.getStartOffset(), buffer, encode.length, null);</span>
+<span class="nc" id="L668">                                getMessageResult.addMessage(tmpResult);</span>
+<span class="nc" id="L669">                            } catch (Exception e) {</span>
+<span class="nc" id="L670">                                POP_LOGGER.error(&quot;Exception in recode retry message buffer, topic={}&quot;, topic, e);</span>
+<span class="nc" id="L671">                            }</span>
+<span class="nc" id="L672">                        }</span>
+                    }
+<span class="nc" id="L674">                }</span>
+<span class="nc" id="L675">                this.brokerController.getPopInflightMessageCounter().incrementInFlightMessageNum(</span>
+                    topic,
+<span class="nc" id="L677">                    requestHeader.getConsumerGroup(),</span>
+                    queueId,
+<span class="nc" id="L679">                    result.getMessageCount()</span>
+                );
+<span class="nc" id="L681">                return atomicRestNum.get();</span>
+<span class="nc" id="L682">            }).whenComplete((result, throwable) -&gt; {</span>
+<span class="nc bnc" id="L683" title="All 2 branches missed.">                if (throwable != null) {</span>
+<span class="nc" id="L684">                    POP_LOGGER.error(&quot;Pop message error, {}&quot;, lockKey, throwable);</span>
+                }
+<span class="nc" id="L686">                queueLockManager.unLock(lockKey);</span>
+<span class="nc" id="L687">            });</span>
+    }
+
+    private long getPopOffset(String topic, String group, int queueId, int initMode, boolean init, String lockKey,
+        boolean checkResetOffset) {
+
+<span class="nc" id="L693">        long offset = this.brokerController.getConsumerOffsetManager().queryOffset(group, topic, queueId);</span>
+<span class="nc bnc" id="L694" title="All 2 branches missed.">        if (offset &lt; 0) {</span>
+<span class="nc bnc" id="L695" title="All 2 branches missed.">            if (ConsumeInitMode.MIN == initMode) {</span>
+<span class="nc" id="L696">                offset = this.brokerController.getMessageStore().getMinOffsetInQueue(topic, queueId);</span>
+            } else {
+                // pop last one,then commit offset.
+<span class="nc" id="L699">                offset = this.brokerController.getMessageStore().getMaxOffsetInQueue(topic, queueId) - 1;</span>
+                // max &amp; no consumer offset
+<span class="nc bnc" id="L701" title="All 2 branches missed.">                if (offset &lt; 0) {</span>
+<span class="nc" id="L702">                    offset = 0;</span>
+                }
+<span class="nc bnc" id="L704" title="All 2 branches missed.">                if (init) {</span>
+<span class="nc" id="L705">                    this.brokerController.getConsumerOffsetManager().commitOffset(</span>
+                        &quot;getPopOffset&quot;, group, topic, queueId, offset);
+                }
+            }
+        }
+
+<span class="nc bnc" id="L711" title="All 2 branches missed.">        if (checkResetOffset) {</span>
+<span class="nc" id="L712">            Long resetOffset = resetPopOffset(topic, group, queueId);</span>
+<span class="nc bnc" id="L713" title="All 2 branches missed.">            if (resetOffset != null) {</span>
+<span class="nc" id="L714">                return resetOffset;</span>
+            }
+        }
+
+<span class="nc" id="L718">        long bufferOffset = this.popBufferMergeService.getLatestOffset(lockKey);</span>
+<span class="nc bnc" id="L719" title="All 2 branches missed.">        if (bufferOffset &lt; 0) {</span>
+<span class="nc" id="L720">            return offset;</span>
+        } else {
+<span class="nc" id="L722">            return Math.max(bufferOffset, offset);</span>
+        }
+    }
+
+    /**
+     * @param channel
+     * @param remotingCommand
+     * @param requestHeader
+     * @return
+     */
+    private int polling(final Channel channel, RemotingCommand remotingCommand,
+        final PopMessageRequestHeader requestHeader) {
+<span class="nc bnc" id="L734" title="All 4 branches missed.">        if (requestHeader.getPollTime() &lt;= 0 || this.popLongPollingService.isStopped()) {</span>
+<span class="nc" id="L735">            return NOT_POLLING;</span>
+        }
+<span class="nc" id="L737">        ConcurrentHashMap&lt;String, Byte&gt; cids = topicCidMap.get(requestHeader.getTopic());</span>
+<span class="nc bnc" id="L738" title="All 2 branches missed.">        if (cids == null) {</span>
+<span class="nc" id="L739">            cids = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="nc" id="L740">            ConcurrentHashMap&lt;String, Byte&gt; old = topicCidMap.putIfAbsent(requestHeader.getTopic(), cids);</span>
+<span class="nc bnc" id="L741" title="All 2 branches missed.">            if (old != null) {</span>
+<span class="nc" id="L742">                cids = old;</span>
+            }
+        }
+<span class="nc" id="L745">        cids.putIfAbsent(requestHeader.getConsumerGroup(), Byte.MIN_VALUE);</span>
+<span class="nc" id="L746">        long expired = requestHeader.getBornTime() + requestHeader.getPollTime();</span>
+<span class="nc" id="L747">        final PopRequest request = new PopRequest(remotingCommand, channel, expired);</span>
+<span class="nc bnc" id="L748" title="All 2 branches missed.">        boolean isFull = totalPollingNum.get() &gt;= this.brokerController.getBrokerConfig().getMaxPopPollingSize();</span>
+<span class="nc bnc" id="L749" title="All 2 branches missed.">        if (isFull) {</span>
+<span class="nc" id="L750">            POP_LOGGER.info(&quot;polling {}, result POLLING_FULL, total:{}&quot;, remotingCommand, totalPollingNum.get());</span>
+<span class="nc" id="L751">            return POLLING_FULL;</span>
+        }
+<span class="nc" id="L753">        boolean isTimeout = request.isTimeout();</span>
+<span class="nc bnc" id="L754" title="All 2 branches missed.">        if (isTimeout) {</span>
+<span class="nc bnc" id="L755" title="All 2 branches missed.">            if (brokerController.getBrokerConfig().isEnablePopLog()) {</span>
+<span class="nc" id="L756">                POP_LOGGER.info(&quot;polling {}, result POLLING_TIMEOUT&quot;, remotingCommand);</span>
+            }
+<span class="nc" id="L758">            return POLLING_TIMEOUT;</span>
+        }
+<span class="nc" id="L760">        String key = KeyBuilder.buildPollingKey(requestHeader.getTopic(), requestHeader.getConsumerGroup(),</span>
+<span class="nc" id="L761">            requestHeader.getQueueId());</span>
+<span class="nc" id="L762">        ConcurrentSkipListSet&lt;PopRequest&gt; queue = pollingMap.get(key);</span>
+<span class="nc bnc" id="L763" title="All 2 branches missed.">        if (queue == null) {</span>
+<span class="nc" id="L764">            queue = new ConcurrentSkipListSet&lt;&gt;(PopRequest.COMPARATOR);</span>
+<span class="nc" id="L765">            ConcurrentSkipListSet&lt;PopRequest&gt; old = pollingMap.putIfAbsent(key, queue);</span>
+<span class="nc bnc" id="L766" title="All 2 branches missed.">            if (old != null) {</span>
+<span class="nc" id="L767">                queue = old;</span>
+            }
+<span class="nc" id="L769">        } else {</span>
+            // check size
+<span class="nc" id="L771">            int size = queue.size();</span>
+<span class="nc bnc" id="L772" title="All 2 branches missed.">            if (size &gt; brokerController.getBrokerConfig().getPopPollingSize()) {</span>
+<span class="nc" id="L773">                POP_LOGGER.info(&quot;polling {}, result POLLING_FULL, singleSize:{}&quot;, remotingCommand, size);</span>
+<span class="nc" id="L774">                return POLLING_FULL;</span>
+            }
+        }
+<span class="nc bnc" id="L777" title="All 2 branches missed.">        if (queue.add(request)) {</span>
+<span class="nc" id="L778">            remotingCommand.setSuspended(true);</span>
+<span class="nc" id="L779">            totalPollingNum.incrementAndGet();</span>
+<span class="nc bnc" id="L780" title="All 2 branches missed.">            if (brokerController.getBrokerConfig().isEnablePopLog()) {</span>
+<span class="nc" id="L781">                POP_LOGGER.info(&quot;polling {}, result POLLING_SUC&quot;, remotingCommand);</span>
+            }
+<span class="nc" id="L783">            return POLLING_SUC;</span>
+        } else {
+<span class="nc" id="L785">            POP_LOGGER.info(&quot;polling {}, result POLLING_FULL, add fail, {}&quot;, request, queue);</span>
+<span class="nc" id="L786">            return POLLING_FULL;</span>
+        }
+    }
+
+    public final MessageExtBrokerInner buildCkMsg(final PopCheckPoint ck, final int reviveQid) {
+<span class="nc" id="L791">        MessageExtBrokerInner msgInner = new MessageExtBrokerInner();</span>
+
+<span class="nc" id="L793">        msgInner.setTopic(reviveTopic);</span>
+<span class="nc" id="L794">        msgInner.setBody(JSON.toJSONString(ck).getBytes(DataConverter.charset));</span>
+<span class="nc" id="L795">        msgInner.setQueueId(reviveQid);</span>
+<span class="nc" id="L796">        msgInner.setTags(PopAckConstants.CK_TAG);</span>
+<span class="nc" id="L797">        msgInner.setBornTimestamp(System.currentTimeMillis());</span>
+<span class="nc" id="L798">        msgInner.setBornHost(this.brokerController.getStoreHost());</span>
+<span class="nc" id="L799">        msgInner.setStoreHost(this.brokerController.getStoreHost());</span>
+<span class="nc" id="L800">        msgInner.setDeliverTimeMs(ck.getReviveTime() - PopAckConstants.ackTimeInterval);</span>
+<span class="nc" id="L801">        msgInner.getProperties().put(MessageConst.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX, genCkUniqueId(ck));</span>
+<span class="nc" id="L802">        msgInner.setPropertiesString(MessageDecoder.messageProperties2String(msgInner.getProperties()));</span>
+
+<span class="nc" id="L804">        return msgInner;</span>
+    }
+
+    private void appendCheckPoint(final PopMessageRequestHeader requestHeader,
+        final String topic, final int reviveQid, final int queueId, final long offset,
+        final GetMessageResult getMessageTmpResult, final long popTime, final String brokerName) {
+        // add check point msg to revive log
+<span class="nc" id="L811">        final PopCheckPoint ck = new PopCheckPoint();</span>
+<span class="nc" id="L812">        ck.setBitMap(0);</span>
+<span class="nc" id="L813">        ck.setNum((byte) getMessageTmpResult.getMessageMapedList().size());</span>
+<span class="nc" id="L814">        ck.setPopTime(popTime);</span>
+<span class="nc" id="L815">        ck.setInvisibleTime(requestHeader.getInvisibleTime());</span>
+<span class="nc" id="L816">        ck.setStartOffset(offset);</span>
+<span class="nc" id="L817">        ck.setCId(requestHeader.getConsumerGroup());</span>
+<span class="nc" id="L818">        ck.setTopic(topic);</span>
+<span class="nc" id="L819">        ck.setQueueId(queueId);</span>
+<span class="nc" id="L820">        ck.setBrokerName(brokerName);</span>
+<span class="nc bnc" id="L821" title="All 2 branches missed.">        for (Long msgQueueOffset : getMessageTmpResult.getMessageQueueOffset()) {</span>
+<span class="nc" id="L822">            ck.addDiff((int) (msgQueueOffset - offset));</span>
+<span class="nc" id="L823">        }</span>
+
+<span class="nc" id="L825">        final boolean addBufferSuc = this.popBufferMergeService.addCk(</span>
+<span class="nc" id="L826">            ck, reviveQid, -1, getMessageTmpResult.getNextBeginOffset()</span>
+        );
+
+<span class="nc bnc" id="L829" title="All 2 branches missed.">        if (addBufferSuc) {</span>
+<span class="nc" id="L830">            return;</span>
+        }
+
+<span class="nc" id="L833">        this.popBufferMergeService.addCkJustOffset(</span>
+<span class="nc" id="L834">            ck, reviveQid, -1, getMessageTmpResult.getNextBeginOffset()</span>
+        );
+<span class="nc" id="L836">    }</span>
+
+    private Long resetPopOffset(String topic, String group, int queueId) {
+<span class="nc" id="L839">        String lockKey = topic + PopAckConstants.SPLIT + group + PopAckConstants.SPLIT + queueId;</span>
+<span class="nc" id="L840">        Long resetOffset =</span>
+<span class="nc" id="L841">            this.brokerController.getConsumerOffsetManager().queryThenEraseResetOffset(topic, group, queueId);</span>
+<span class="nc bnc" id="L842" title="All 2 branches missed.">        if (resetOffset != null) {</span>
+<span class="nc" id="L843">            this.brokerController.getConsumerOrderInfoManager().clearBlock(topic, group, queueId);</span>
+<span class="nc" id="L844">            this.getPopBufferMergeService().clearOffsetQueue(lockKey);</span>
+<span class="nc" id="L845">            this.brokerController.getConsumerOffsetManager()</span>
+<span class="nc" id="L846">                .commitOffset(&quot;ResetPopOffset&quot;, group, topic, queueId, resetOffset);</span>
+        }
+<span class="nc" id="L848">        return resetOffset;</span>
+    }
+
+    private byte[] readGetMessageResult(final GetMessageResult getMessageResult, final String group, final String topic,
+        final int queueId) {
+<span class="nc" id="L853">        final ByteBuffer byteBuffer = ByteBuffer.allocate(getMessageResult.getBufferTotalSize());</span>
+
+<span class="nc" id="L855">        long storeTimestamp = 0;</span>
+        try {
+<span class="nc" id="L857">            List&lt;ByteBuffer&gt; messageBufferList = getMessageResult.getMessageBufferList();</span>
+<span class="nc bnc" id="L858" title="All 2 branches missed.">            for (ByteBuffer bb : messageBufferList) {</span>
+
+<span class="nc" id="L860">                byteBuffer.put(bb);</span>
+<span class="nc" id="L861">                storeTimestamp = bb.getLong(MessageDecoder.MESSAGE_STORE_TIMESTAMP_POSITION);</span>
+<span class="nc" id="L862">            }</span>
+        } finally {
+<span class="nc" id="L864">            getMessageResult.release();</span>
+        }
+
+<span class="nc" id="L867">        this.brokerController.getBrokerStatsManager().recordDiskFallBehindTime(group, topic, queueId,</span>
+<span class="nc" id="L868">            this.brokerController.getMessageStore().now() - storeTimestamp);</span>
+<span class="nc" id="L869">        return byteBuffer.array();</span>
+    }
+
+<span class="fc" id="L872">    public class PopLongPollingService extends ServiceThread {</span>
+
+<span class="fc" id="L874">        private long lastCleanTime = 0;</span>
+
+        @Override
+        public String getServiceName() {
+<span class="nc bnc" id="L878" title="All 2 branches missed.">            if (PopMessageProcessor.this.brokerController.getBrokerConfig().isInBrokerContainer()) {</span>
+<span class="nc" id="L879">                return PopMessageProcessor.this.brokerController.getBrokerIdentity().getIdentifier() + PopLongPollingService.class.getSimpleName();</span>
+            }
+<span class="nc" id="L881">            return PopLongPollingService.class.getSimpleName();</span>
+        }
+
+        private void cleanUnusedResource() {
+            try {
+                {
+<span class="nc" id="L887">                    Iterator&lt;Entry&lt;String, ConcurrentHashMap&lt;String, Byte&gt;&gt;&gt; topicCidMapIter = topicCidMap.entrySet().iterator();</span>
+<span class="nc bnc" id="L888" title="All 2 branches missed.">                    while (topicCidMapIter.hasNext()) {</span>
+<span class="nc" id="L889">                        Entry&lt;String, ConcurrentHashMap&lt;String, Byte&gt;&gt; entry = topicCidMapIter.next();</span>
+<span class="nc" id="L890">                        String topic = entry.getKey();</span>
+<span class="nc bnc" id="L891" title="All 2 branches missed.">                        if (brokerController.getTopicConfigManager().selectTopicConfig(topic) == null) {</span>
+<span class="nc" id="L892">                            POP_LOGGER.info(&quot;remove not exit topic {} in topicCidMap!&quot;, topic);</span>
+<span class="nc" id="L893">                            topicCidMapIter.remove();</span>
+<span class="nc" id="L894">                            continue;</span>
+                        }
+<span class="nc" id="L896">                        Iterator&lt;Entry&lt;String, Byte&gt;&gt; cidMapIter = entry.getValue().entrySet().iterator();</span>
+<span class="nc bnc" id="L897" title="All 2 branches missed.">                        while (cidMapIter.hasNext()) {</span>
+<span class="nc" id="L898">                            Entry&lt;String, Byte&gt; cidEntry = cidMapIter.next();</span>
+<span class="nc" id="L899">                            String cid = cidEntry.getKey();</span>
+<span class="nc bnc" id="L900" title="All 2 branches missed.">                            if (!brokerController.getSubscriptionGroupManager().getSubscriptionGroupTable().containsKey(cid)) {</span>
+<span class="nc" id="L901">                                POP_LOGGER.info(&quot;remove not exit sub {} of topic {} in topicCidMap!&quot;, cid, topic);</span>
+<span class="nc" id="L902">                                cidMapIter.remove();</span>
+                            }
+<span class="nc" id="L904">                        }</span>
+<span class="nc" id="L905">                    }</span>
+                }
+
+                {
+<span class="nc" id="L909">                    Iterator&lt;Entry&lt;String, ConcurrentSkipListSet&lt;PopRequest&gt;&gt;&gt; pollingMapIter = pollingMap.entrySet().iterator();</span>
+<span class="nc bnc" id="L910" title="All 2 branches missed.">                    while (pollingMapIter.hasNext()) {</span>
+<span class="nc" id="L911">                        Entry&lt;String, ConcurrentSkipListSet&lt;PopRequest&gt;&gt; entry = pollingMapIter.next();</span>
+<span class="nc bnc" id="L912" title="All 2 branches missed.">                        if (entry.getKey() == null) {</span>
+<span class="nc" id="L913">                            continue;</span>
+                        }
+<span class="nc" id="L915">                        String[] keyArray = entry.getKey().split(PopAckConstants.SPLIT);</span>
+<span class="nc bnc" id="L916" title="All 4 branches missed.">                        if (keyArray == null || keyArray.length != 3) {</span>
+<span class="nc" id="L917">                            continue;</span>
+                        }
+<span class="nc" id="L919">                        String topic = keyArray[0];</span>
+<span class="nc" id="L920">                        String cid = keyArray[1];</span>
+<span class="nc bnc" id="L921" title="All 2 branches missed.">                        if (brokerController.getTopicConfigManager().selectTopicConfig(topic) == null) {</span>
+<span class="nc" id="L922">                            POP_LOGGER.info(&quot;remove not exit topic {} in pollingMap!&quot;, topic);</span>
+<span class="nc" id="L923">                            pollingMapIter.remove();</span>
+<span class="nc" id="L924">                            continue;</span>
+                        }
+<span class="nc bnc" id="L926" title="All 2 branches missed.">                        if (!brokerController.getSubscriptionGroupManager().getSubscriptionGroupTable().containsKey(cid)) {</span>
+<span class="nc" id="L927">                            POP_LOGGER.info(&quot;remove not exit sub {} of topic {} in pollingMap!&quot;, cid, topic);</span>
+<span class="nc" id="L928">                            pollingMapIter.remove();</span>
+<span class="nc" id="L929">                            continue;</span>
+                        }
+<span class="nc" id="L931">                    }</span>
+                }
+<span class="nc" id="L933">            } catch (Throwable e) {</span>
+<span class="nc" id="L934">                POP_LOGGER.error(&quot;cleanUnusedResource&quot;, e);</span>
+<span class="nc" id="L935">            }</span>
+
+<span class="nc" id="L937">            lastCleanTime = System.currentTimeMillis();</span>
+<span class="nc" id="L938">        }</span>
+
+        @Override
+        public void run() {
+<span class="nc" id="L942">            int i = 0;</span>
+<span class="nc bnc" id="L943" title="All 2 branches missed.">            while (!this.stopped) {</span>
+                try {
+<span class="nc" id="L945">                    this.waitForRunning(20);</span>
+<span class="nc" id="L946">                    i++;</span>
+<span class="nc bnc" id="L947" title="All 2 branches missed.">                    if (pollingMap.isEmpty()) {</span>
+<span class="nc" id="L948">                        continue;</span>
+                    }
+<span class="nc" id="L950">                    long tmpTotalPollingNum = 0;</span>
+<span class="nc" id="L951">                    Iterator&lt;Entry&lt;String, ConcurrentSkipListSet&lt;PopRequest&gt;&gt;&gt; pollingMapIterator = pollingMap.entrySet().iterator();</span>
+<span class="nc bnc" id="L952" title="All 2 branches missed.">                    while (pollingMapIterator.hasNext()) {</span>
+<span class="nc" id="L953">                        Entry&lt;String, ConcurrentSkipListSet&lt;PopRequest&gt;&gt; entry = pollingMapIterator.next();</span>
+<span class="nc" id="L954">                        String key = entry.getKey();</span>
+<span class="nc" id="L955">                        ConcurrentSkipListSet&lt;PopRequest&gt; popQ = entry.getValue();</span>
+<span class="nc bnc" id="L956" title="All 2 branches missed.">                        if (popQ == null) {</span>
+<span class="nc" id="L957">                            continue;</span>
+                        }
+                        PopRequest first;
+                        do {
+<span class="nc" id="L961">                            first = popQ.pollFirst();</span>
+<span class="nc bnc" id="L962" title="All 2 branches missed.">                            if (first == null) {</span>
+<span class="nc" id="L963">                                break;</span>
+                            }
+<span class="nc bnc" id="L965" title="All 2 branches missed.">                            if (!first.isTimeout()) {</span>
+<span class="nc bnc" id="L966" title="All 2 branches missed.">                                if (popQ.add(first)) {</span>
+<span class="nc" id="L967">                                    break;</span>
+                                } else {
+<span class="nc" id="L969">                                    POP_LOGGER.info(&quot;polling, add fail again: {}&quot;, first);</span>
+                                }
+                            }
+<span class="nc bnc" id="L972" title="All 2 branches missed.">                            if (brokerController.getBrokerConfig().isEnablePopLog()) {</span>
+<span class="nc" id="L973">                                POP_LOGGER.info(&quot;timeout , wakeUp polling : {}&quot;, first);</span>
+                            }
+<span class="nc" id="L975">                            totalPollingNum.decrementAndGet();</span>
+<span class="nc" id="L976">                            wakeUp(first);</span>
+                        }
+<span class="nc" id="L978">                        while (true);</span>
+<span class="nc bnc" id="L979" title="All 2 branches missed.">                        if (i &gt;= 100) {</span>
+<span class="nc" id="L980">                            long tmpPollingNum = popQ.size();</span>
+<span class="nc" id="L981">                            tmpTotalPollingNum = tmpTotalPollingNum + tmpPollingNum;</span>
+<span class="nc bnc" id="L982" title="All 2 branches missed.">                            if (tmpPollingNum &gt; 100) {</span>
+<span class="nc" id="L983">                                POP_LOGGER.info(&quot;polling queue {} , size={} &quot;, key, tmpPollingNum);</span>
+                            }
+                        }
+<span class="nc" id="L986">                    }</span>
+
+<span class="nc bnc" id="L988" title="All 2 branches missed.">                    if (i &gt;= 100) {</span>
+<span class="nc" id="L989">                        POP_LOGGER.info(&quot;pollingMapSize={},tmpTotalSize={},atomicTotalSize={},diffSize={}&quot;,</span>
+<span class="nc" id="L990">                            pollingMap.size(), tmpTotalPollingNum, totalPollingNum.get(),</span>
+<span class="nc" id="L991">                            Math.abs(totalPollingNum.get() - tmpTotalPollingNum));</span>
+<span class="nc" id="L992">                        totalPollingNum.set(tmpTotalPollingNum);</span>
+<span class="nc" id="L993">                        i = 0;</span>
+                    }
+
+                    // clean unused
+<span class="nc bnc" id="L997" title="All 4 branches missed.">                    if (lastCleanTime == 0 || System.currentTimeMillis() - lastCleanTime &gt; 5 * 60 * 1000) {</span>
+<span class="nc" id="L998">                        cleanUnusedResource();</span>
+                    }
+<span class="nc" id="L1000">                } catch (Throwable e) {</span>
+<span class="nc" id="L1001">                    POP_LOGGER.error(&quot;checkPolling error&quot;, e);</span>
+<span class="nc" id="L1002">                }</span>
+            }
+            // clean all;
+            try {
+<span class="nc" id="L1006">                Iterator&lt;Entry&lt;String, ConcurrentSkipListSet&lt;PopRequest&gt;&gt;&gt; pollingMapIterator = pollingMap.entrySet().iterator();</span>
+<span class="nc bnc" id="L1007" title="All 2 branches missed.">                while (pollingMapIterator.hasNext()) {</span>
+<span class="nc" id="L1008">                    Entry&lt;String, ConcurrentSkipListSet&lt;PopRequest&gt;&gt; entry = pollingMapIterator.next();</span>
+<span class="nc" id="L1009">                    ConcurrentSkipListSet&lt;PopRequest&gt; popQ = entry.getValue();</span>
+                    PopRequest first;
+<span class="nc bnc" id="L1011" title="All 2 branches missed.">                    while ((first = popQ.pollFirst()) != null) {</span>
+<span class="nc" id="L1012">                        wakeUp(first);</span>
+                    }
+<span class="nc" id="L1014">                }</span>
+<span class="nc" id="L1015">            } catch (Throwable e) {</span>
+<span class="nc" id="L1016">            }</span>
+<span class="nc" id="L1017">        }</span>
+    }
+
+    static class TimedLock {
+        private final AtomicBoolean lock;
+        private volatile long lockTime;
+
+<span class="nc" id="L1024">        public TimedLock() {</span>
+<span class="nc" id="L1025">            this.lock = new AtomicBoolean(true);</span>
+<span class="nc" id="L1026">            this.lockTime = System.currentTimeMillis();</span>
+<span class="nc" id="L1027">        }</span>
+
+        public boolean tryLock() {
+<span class="nc" id="L1030">            boolean ret = lock.compareAndSet(true, false);</span>
+<span class="nc bnc" id="L1031" title="All 2 branches missed.">            if (ret) {</span>
+<span class="nc" id="L1032">                this.lockTime = System.currentTimeMillis();</span>
+<span class="nc" id="L1033">                return true;</span>
+            } else {
+<span class="nc" id="L1035">                return false;</span>
+            }
+        }
+
+        public void unLock() {
+<span class="nc" id="L1040">            lock.set(true);</span>
+<span class="nc" id="L1041">        }</span>
+
+        public boolean isLock() {
+<span class="nc bnc" id="L1044" title="All 2 branches missed.">            return !lock.get();</span>
+        }
+
+        public long getLockTime() {
+<span class="nc" id="L1048">            return lockTime;</span>
+        }
+    }
+
+<span class="fc" id="L1052">    public class QueueLockManager extends ServiceThread {</span>
+<span class="fc" id="L1053">        private ConcurrentHashMap&lt;String, TimedLock&gt; expiredLocalCache = new ConcurrentHashMap&lt;&gt;(100000);</span>
+
+        public String buildLockKey(String topic, String consumerGroup, int queueId) {
+<span class="nc" id="L1056">            return topic + PopAckConstants.SPLIT + consumerGroup + PopAckConstants.SPLIT + queueId;</span>
+        }
+
+        public boolean tryLock(String topic, String consumerGroup, int queueId) {
+<span class="nc" id="L1060">            return tryLock(buildLockKey(topic, consumerGroup, queueId));</span>
+        }
+
+        public boolean tryLock(String key) {
+<span class="nc" id="L1064">            TimedLock timedLock = expiredLocalCache.get(key);</span>
+
+<span class="nc bnc" id="L1066" title="All 2 branches missed.">            if (timedLock == null) {</span>
+<span class="nc" id="L1067">                TimedLock old = expiredLocalCache.putIfAbsent(key, new TimedLock());</span>
+<span class="nc bnc" id="L1068" title="All 2 branches missed.">                if (old != null) {</span>
+<span class="nc" id="L1069">                    return false;</span>
+                } else {
+<span class="nc" id="L1071">                    timedLock = expiredLocalCache.get(key);</span>
+                }
+            }
+
+<span class="nc bnc" id="L1075" title="All 2 branches missed.">            if (timedLock == null) {</span>
+<span class="nc" id="L1076">                return false;</span>
+            }
+
+<span class="nc" id="L1079">            return timedLock.tryLock();</span>
+        }
+
+        /**
+         * is not thread safe, may cause duplicate lock
+         *
+         * @param usedExpireMillis
+         * @return
+         */
+        public int cleanUnusedLock(final long usedExpireMillis) {
+<span class="nc" id="L1089">            Iterator&lt;Entry&lt;String, TimedLock&gt;&gt; iterator = expiredLocalCache.entrySet().iterator();</span>
+
+<span class="nc" id="L1091">            int total = 0;</span>
+<span class="nc bnc" id="L1092" title="All 2 branches missed.">            while (iterator.hasNext()) {</span>
+<span class="nc" id="L1093">                Entry&lt;String, TimedLock&gt; entry = iterator.next();</span>
+
+<span class="nc bnc" id="L1095" title="All 2 branches missed.">                if (System.currentTimeMillis() - entry.getValue().getLockTime() &gt; usedExpireMillis) {</span>
+<span class="nc" id="L1096">                    iterator.remove();</span>
+<span class="nc" id="L1097">                    POP_LOGGER.info(&quot;Remove unused queue lock: {}, {}, {}&quot;, entry.getKey(),</span>
+<span class="nc" id="L1098">                        entry.getValue().getLockTime(),</span>
+<span class="nc" id="L1099">                        entry.getValue().isLock());</span>
+                }
+
+<span class="nc" id="L1102">                total++;</span>
+<span class="nc" id="L1103">            }</span>
+
+<span class="nc" id="L1105">            return total;</span>
+        }
+
+        public void unLock(String topic, String consumerGroup, int queueId) {
+<span class="nc" id="L1109">            unLock(buildLockKey(topic, consumerGroup, queueId));</span>
+<span class="nc" id="L1110">        }</span>
+
+        public void unLock(String key) {
+<span class="nc" id="L1113">            TimedLock timedLock = expiredLocalCache.get(key);</span>
+<span class="nc bnc" id="L1114" title="All 2 branches missed.">            if (timedLock != null) {</span>
+<span class="nc" id="L1115">                timedLock.unLock();</span>
+            }
+<span class="nc" id="L1117">        }</span>
+
+        @Override
+        public String getServiceName() {
+<span class="nc bnc" id="L1121" title="All 2 branches missed.">            if (PopMessageProcessor.this.brokerController.getBrokerConfig().isInBrokerContainer()) {</span>
+<span class="nc" id="L1122">                return PopMessageProcessor.this.brokerController.getBrokerIdentity().getIdentifier() + QueueLockManager.class.getSimpleName();</span>
+            }
+<span class="nc" id="L1124">            return QueueLockManager.class.getSimpleName();</span>
+        }
+
+        @Override
+        public void run() {
+<span class="nc bnc" id="L1129" title="All 2 branches missed.">            while (!isStopped()) {</span>
+                try {
+<span class="nc" id="L1131">                    this.waitForRunning(60000);</span>
+<span class="nc" id="L1132">                    int count = cleanUnusedLock(60000);</span>
+<span class="nc" id="L1133">                    POP_LOGGER.info(&quot;QueueLockSize={}&quot;, count);</span>
+<span class="nc" id="L1134">                } catch (Exception e) {</span>
+<span class="nc" id="L1135">                    PopMessageProcessor.POP_LOGGER.error(&quot;QueueLockManager run error&quot;, e);</span>
+<span class="nc" id="L1136">                }</span>
+            }
+<span class="nc" id="L1138">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

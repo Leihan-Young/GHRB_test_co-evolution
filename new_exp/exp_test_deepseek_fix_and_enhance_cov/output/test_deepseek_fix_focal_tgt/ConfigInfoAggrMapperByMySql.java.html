@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConfigInfoAggrMapperByMySql.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">nacos-datasource-plugin 2.3.0-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">com.alibaba.nacos.plugin.datasource.impl.mysql</a> &gt; <span class="el_source">ConfigInfoAggrMapperByMySql.java</span></div><h1>ConfigInfoAggrMapperByMySql.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 1999-2022 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.alibaba.nacos.plugin.datasource.impl.mysql;
+
+import com.alibaba.nacos.common.utils.CollectionUtils;
+import com.alibaba.nacos.plugin.datasource.constants.DataSourceConstant;
+import com.alibaba.nacos.plugin.datasource.constants.FieldConstant;
+import com.alibaba.nacos.plugin.datasource.mapper.AbstractMapper;
+import com.alibaba.nacos.plugin.datasource.mapper.ConfigInfoAggrMapper;
+import com.alibaba.nacos.plugin.datasource.model.MapperContext;
+import com.alibaba.nacos.plugin.datasource.model.MapperResult;
+
+import java.util.List;
+
+/**
+ * The mysql implementation of ConfigInfoAggrMapper.
+ *
+ * @author hyx
+ **/
+<span class="fc" id="L34">public class ConfigInfoAggrMapperByMySql extends AbstractMapper implements ConfigInfoAggrMapper {</span>
+    
+    @Override
+    public MapperResult findConfigInfoAggrByPageFetchRows(MapperContext context) {
+<span class="fc" id="L38">        Integer startRow =  context.getStartRow();</span>
+<span class="fc" id="L39">        Integer pageSize =  context.getPageSize();</span>
+<span class="fc" id="L40">        String dataId = (String) context.getWhereParameter(FieldConstant.DATA_ID);</span>
+<span class="fc" id="L41">        String groupId = (String) context.getWhereParameter(FieldConstant.GROUP_ID);</span>
+<span class="fc" id="L42">        String tenantId = (String) context.getWhereParameter(FieldConstant.TENANT_ID);</span>
+        
+<span class="fc" id="L44">        String sql =</span>
+                &quot;SELECT data_id,group_id,tenant_id,datum_id,app_name,content FROM config_info_aggr WHERE data_id= ? AND &quot;
+                        + &quot;group_id= ? AND tenant_id= ? ORDER BY datum_id LIMIT &quot; + startRow + &quot;,&quot; + pageSize;
+<span class="fc" id="L47">        List&lt;Object&gt; paramList = CollectionUtils.list(dataId, groupId, tenantId);</span>
+<span class="fc" id="L48">        return new MapperResult(sql, paramList);</span>
+    }
+    
+    @Override
+    public String getDataSource() {
+<span class="nc" id="L53">        return DataSourceConstant.MYSQL;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

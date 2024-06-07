@@ -1732,6 +1732,6 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void toEnumVarNameShouldNotResultInSingleUnderscore() throws Exception { assertEquals(fakeJavaCodegen.toEnumVarName(\" \", \"String\"), \"SPACE\"); assertEquals(fakeJavaCodegen.toEnumVarName(\" \" + \"1\", \"String\"), \"SPACE\"); assertEquals(fakeJavaCodegen.toEnumVarName(\" \" + \"2\", \"String\"), \"SPACE\"); assertEquals(fakeJavaCodegen.toEnumVarName(\"1\", \"1\"), \"SPACE\"); assertEquals(fakeJavaCodegen.toEnumVarName(\"2\", \"2\", \"String\"), \"SPACE\"); assertEquals(fakeJavaCodegen.toEnumVarName(\"3\", \"3\", \"2\", \""
+    "CEPROT_gen_test_tgt": "@Test\n    public void toEnumVarNameShouldNotResultInSingleUnderscore() throws Exception { assertEquals(fakeJavaCodegen.toEnumVarName(\" \", \"String\"), \"SPACE\");\n    }\n\n    @Test\n    public void toEnumVarNameShouldNotResultInSingleUnderscore() throws Exception { assertEquals(fakeJavaCodegen.toEnumVarName(\" \", \"String\"), \"SPACE\");\n    }\n\n    @Test\n    public void toEnumVarNameShouldNotResultInSingleUnderscore() throws Exception {\n        Assert.assertEquals(fakeJavaCodegen.toEnumVarName(\" \", \"String\"), \"SPACE\");\n    }\n"
   }
 }

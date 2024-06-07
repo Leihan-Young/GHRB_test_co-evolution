@@ -1,0 +1,828 @@
+{
+  "apache_shardingsphere-28225": {
+    "bug_id": "apache_shardingsphere-28225",
+    "PR_number": 28225,
+    "PR_createdAt": "2023-08-23T00:37:54Z",
+    "merge_commit": "c1dff3328d25ba71c3db0205c4ab6c3f8fee69e6",
+    "buggy_commits": [
+      {
+        "oid": "88a7cec5ad18fcc5da97e7a9f07f9fcb54d447f1",
+        "message": "Remove useless ContextManager.getDataSourceMap() (#28224)\n\n* Refactor usage of ContextManager\r\n\r\n* Refactor usage of ContextManager\r\n\r\n* Remove useless ContextManager.getDataSourceMap()\r\n\r\n* Refactor ConfigurationContextManager\r\n\r\n* Refactor ContextManager"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/28016",
+      "createdAt": "2023-08-10T08:11:28Z",
+      "content": "bug_report_all/apache_shardingsphere-28225.json"
+    },
+    "changed_tests": [
+      "features/encrypt/core/src/test/java/org/apache/shardingsphere/encrypt/rewrite/token/generator/EncryptGroupByItemTokenGeneratorTest.java",
+      "features/encrypt/core/src/test/java/org/apache/shardingsphere/encrypt/rewrite/token/generator/EncryptOrderByItemTokenGeneratorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/28225",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/c1dff3328d25ba71c3db0205c4ab6c3f8fee69e6",
+    "buggy_commit": "88a7cec5ad18fcc5da97e7a9f07f9fcb54d447f1",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.encrypt.rewrite.token.generator.EncryptOrderByItemTokenGeneratorTest#assertGenerateSQLTokens"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.encrypt.rewrite.token.generator.EncryptOrderByItemTokenGeneratorTest#assertGenerateSQLTokens"
+      ]
+    }
+  },
+  "apache_shardingsphere-28236": {
+    "bug_id": "apache_shardingsphere-28236",
+    "PR_number": 28236,
+    "PR_createdAt": "2023-08-23T08:53:10Z",
+    "merge_commit": "034c7bde9c0d84a35275374e7faeca14c18fa059",
+    "buggy_commits": [
+      {
+        "oid": "0f13f5bab2e2df4dc441327cc4b630d31d440b4c",
+        "message": "Add more sharding sql rewrite test case for mysql (#28237)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/28217",
+      "createdAt": "2023-08-22T06:20:57Z",
+      "content": "bug_report_all/apache_shardingsphere-28236.json"
+    },
+    "changed_tests": [
+      "db-protocol/mysql/src/test/java/org/apache/shardingsphere/db/protocol/mysql/packet/command/query/binary/execute/protocol/MySQLBinaryProtocolValueFactoryTest.java",
+      "db-protocol/mysql/src/test/java/org/apache/shardingsphere/db/protocol/mysql/packet/command/query/binary/execute/protocol/MySQLByteLenencBinaryProtocolValueTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/28236",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/034c7bde9c0d84a35275374e7faeca14c18fa059",
+    "buggy_commit": "0f13f5bab2e2df4dc441327cc4b630d31d440b4c",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.db.protocol.mysql.packet.command.query.binary.execute.protocol.MySQLBinaryProtocolValueFactoryTest#assertGetBinaryProtocolValueWithMySQLTypeString",
+        ".org.apache.shardingsphere.db.protocol.mysql.packet.command.query.binary.execute.protocol.MySQLBinaryProtocolValueFactoryTest#assertGetBinaryProtocolValueWithMySQLTypeLongBlob",
+        ".org.apache.shardingsphere.db.protocol.mysql.packet.command.query.binary.execute.protocol.MySQLBinaryProtocolValueFactoryTest#assertGetBinaryProtocolValueWithMySQLTypeMediumBlob",
+        ".org.apache.shardingsphere.db.protocol.mysql.packet.command.query.binary.execute.protocol.MySQLBinaryProtocolValueFactoryTest#assertGetBinaryProtocolValueWithMySQLTypeBlob",
+        ".org.apache.shardingsphere.db.protocol.mysql.packet.command.query.binary.execute.protocol.MySQLBinaryProtocolValueFactoryTest#assertGetBinaryProtocolValueWithMySQLTypeTinyBlob"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.db.protocol.mysql.packet.command.query.binary.execute.protocol.MySQLBinaryProtocolValueFactoryTest#assertGetBinaryProtocolValueWithMySQLTypeString",
+        ".org.apache.shardingsphere.db.protocol.mysql.packet.command.query.binary.execute.protocol.MySQLBinaryProtocolValueFactoryTest#assertGetBinaryProtocolValueWithMySQLTypeLongBlob",
+        ".org.apache.shardingsphere.db.protocol.mysql.packet.command.query.binary.execute.protocol.MySQLBinaryProtocolValueFactoryTest#assertGetBinaryProtocolValueWithMySQLTypeMediumBlob",
+        ".org.apache.shardingsphere.db.protocol.mysql.packet.command.query.binary.execute.protocol.MySQLBinaryProtocolValueFactoryTest#assertGetBinaryProtocolValueWithMySQLTypeBlob",
+        ".org.apache.shardingsphere.db.protocol.mysql.packet.command.query.binary.execute.protocol.MySQLBinaryProtocolValueFactoryTest#assertGetBinaryProtocolValueWithMySQLTypeTinyBlob"
+      ]
+    }
+  },
+  "apache_shardingsphere-28428": {
+    "bug_id": "apache_shardingsphere-28428",
+    "PR_number": 28428,
+    "PR_createdAt": "2023-09-13T07:55:07Z",
+    "merge_commit": "871cedbd12c4639a845929b37bf64c9195187fd1",
+    "buggy_commits": [
+      {
+        "oid": "c865d0329230e55777da8ae0262b0515a1ed750b",
+        "message": "Fis sonar issue in InsertStatementConverter (#28437)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/28421",
+      "createdAt": "2023-09-12T11:16:50Z",
+      "content": "bug_report_all/apache_shardingsphere-28428.json"
+    },
+    "changed_tests": [
+      "proxy/bootstrap/src/test/java/org/apache/shardingsphere/proxy/database/DatabaseServerInfoTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/28428",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/871cedbd12c4639a845929b37bf64c9195187fd1",
+    "buggy_commit": "c865d0329230e55777da8ae0262b0515a1ed750b",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.proxy.database.DatabaseServerInfoTest#assertToString"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.proxy.database.DatabaseServerInfoTest#assertToString"
+      ]
+    }
+  },
+  "apache_shardingsphere-28553": {
+    "bug_id": "apache_shardingsphere-28553",
+    "PR_number": 28553,
+    "PR_createdAt": "2023-09-22T14:12:50Z",
+    "merge_commit": "745d259844891fb287645a80b3203152685434b4",
+    "buggy_commits": [
+      {
+        "oid": "0d95caf0da5e702a064c8f7e600a4670990ca621",
+        "message": "Fix sonar issues (#28560)\n\n* Refactor ShardingRule\r\n\r\n* Fix sonar issue on ShardingIndexReviser\r\n\r\n* Fix sonar issue on MySQLComStmtPrepareExecutor\r\n\r\n* For code format"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/28550",
+      "createdAt": "2023-09-22T02:19:55Z",
+      "content": "bug_report_all/apache_shardingsphere-28553.json"
+    },
+    "changed_tests": [
+      "infra/data-source-pool/core/src/test/java/org/apache/shardingsphere/infra/datasource/pool/destroyer/DataSourcePoolDestroyerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/28553",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/745d259844891fb287645a80b3203152685434b4",
+    "buggy_commit": "0d95caf0da5e702a064c8f7e600a4670990ca621",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.infra.datasource.pool.destroyer.DataSourcePoolDestroyerTest#assertAsyncDestroyWithAutoCloseableDataSource"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.infra.datasource.pool.destroyer.DataSourcePoolDestroyerTest#assertAsyncDestroyWithAutoCloseableDataSource"
+      ]
+    }
+  },
+  "apache_shardingsphere-28610": {
+    "bug_id": "apache_shardingsphere-28610",
+    "PR_number": 28610,
+    "PR_createdAt": "2023-09-27T15:15:29Z",
+    "merge_commit": "abc51b5cf547abc653a609926fdd69b05e09c806",
+    "buggy_commits": [
+      {
+        "oid": "b695780852af5df4ba0e23778e10bf6b1daae6ff",
+        "message": "Fix compile error (#28608)\n\n* Refactor ResourceMetaData\r\n\r\n* Refactor ResourceMetaData\r\n\r\n* Fix compile error\r\n\r\n* Fix compile error"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/22899",
+      "createdAt": "2022-12-15T17:06:48Z",
+      "content": "bug_report_all/apache_shardingsphere-28610.json"
+    },
+    "changed_tests": [
+      "infra/expr/type/espresso/src/test/java/org/apache/shardingsphere/infra/expr/espresso/EspressoInlineExpressionParserTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/28610",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/abc51b5cf547abc653a609926fdd69b05e09c806",
+    "buggy_commit": "b695780852af5df4ba0e23778e10bf6b1daae6ff",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.infra.expr.espresso.EspressoInlineExpressionParserTest#assertEvaluateClosure"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.infra.expr.espresso.EspressoInlineExpressionParserTest#assertEvaluateClosure"
+      ]
+    }
+  },
+  "apache_shardingsphere-28805": {
+    "bug_id": "apache_shardingsphere-28805",
+    "PR_number": 28805,
+    "PR_createdAt": "2023-10-19T13:11:35Z",
+    "merge_commit": "97825a1b5f3d7a36836c0b3a2e5a02238fa85a36",
+    "buggy_commits": [
+      {
+        "oid": "83eb124abcda2772433134f0258df7615577d1d6",
+        "message": "fix grammar (#28794)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/25291",
+      "createdAt": "2023-04-23T10:43:11Z",
+      "content": "bug_report_all/apache_shardingsphere-28805.json"
+    },
+    "changed_tests": [
+      "infra/util/src/test/java/org/apache/shardingsphere/infra/util/yaml/YamlEngineTest.java",
+      "infra/util/src/test/java/org/apache/shardingsphere/infra/util/yaml/constructor/ShardingSphereYamlConstructorTest.java",
+      "infra/util/src/test/java/org/apache/shardingsphere/infra/util/yaml/representer/ShardingSphereYamlRepresenterTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/28805",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/97825a1b5f3d7a36836c0b3a2e5a02238fa85a36",
+    "buggy_commit": "83eb124abcda2772433134f0258df7615577d1d6",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.infra.util.yaml.YamlEngineTest#assertUnmarshalInvalidYaml",
+        ".org.apache.shardingsphere.infra.util.yaml.constructor.ShardingSphereYamlConstructorTest#assertToObjectWithNotAcceptClass",
+        ".org.apache.shardingsphere.infra.util.yaml.representer.ShardingSphereYamlRepresenterTest#assertToYamlWithoutContent",
+        ".org.apache.shardingsphere.infra.util.yaml.representer.ShardingSphereYamlRepresenterTest#assertToYamlWithAllContents"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.infra.util.yaml.YamlEngineTest#assertUnmarshalInvalidYaml",
+        ".org.apache.shardingsphere.infra.util.yaml.constructor.ShardingSphereYamlConstructorTest#assertToObjectWithNotAcceptClass",
+        ".org.apache.shardingsphere.infra.util.yaml.representer.ShardingSphereYamlRepresenterTest#assertToYamlWithoutContent",
+        ".org.apache.shardingsphere.infra.util.yaml.representer.ShardingSphereYamlRepresenterTest#assertToYamlWithAllContents"
+      ]
+    }
+  },
+  "apache_shardingsphere-28911": {
+    "bug_id": "apache_shardingsphere-28911",
+    "PR_number": 28911,
+    "PR_createdAt": "2023-11-01T03:30:24Z",
+    "merge_commit": "90e7d183b45e3e2f05a782ff57d1155553c2ae45",
+    "buggy_commits": [
+      {
+        "oid": "1e1096ca5e035ca9db8ad59da02281e4007ece6a",
+        "message": "Adjust parameter naming (#28899)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/28910",
+      "createdAt": "2023-11-01T03:21:04Z",
+      "content": "bug_report_all/apache_shardingsphere-28911.json"
+    },
+    "changed_tests": [
+      "proxy/backend/core/src/test/java/org/apache/shardingsphere/proxy/backend/handler/distsql/rdl/storage/unit/UnregisterStorageUnitBackendHandlerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/28911",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/90e7d183b45e3e2f05a782ff57d1155553c2ae45",
+    "buggy_commit": "1e1096ca5e035ca9db8ad59da02281e4007ece6a",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertExecute",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertStorageUnitNameNotExistedExecute",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertStorageUnitNameInUseExecute",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertStorageUnitNameInUseWithoutIgnoreSingleTables",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertStorageUnitNameInUseIgnoreSingleTables",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertExecuteWithIfExists",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertStorageUnitNameInUseWithIfExists"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertExecute",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertStorageUnitNameNotExistedExecute",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertStorageUnitNameInUseExecute",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertStorageUnitNameInUseWithoutIgnoreSingleTables",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertStorageUnitNameInUseIgnoreSingleTables",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertExecuteWithIfExists",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.rdl.storage.unit.UnregisterStorageUnitBackendHandlerTest#assertStorageUnitNameInUseWithIfExists"
+      ]
+    }
+  },
+  "apache_shardingsphere-28970": {
+    "bug_id": "apache_shardingsphere-28970",
+    "PR_number": 28970,
+    "PR_createdAt": "2023-11-07T08:08:42Z",
+    "merge_commit": "d49bc1499e3fc836ceb6088a66e8a4e2ab856e17",
+    "buggy_commits": [
+      {
+        "oid": "f9c5dd6c100c64e92c654e40bc89fbe8cd849669",
+        "message": "Refactor pipeline's SPI package (#28964)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/28968",
+      "createdAt": "2023-11-07T04:46:23Z",
+      "content": "bug_report_all/apache_shardingsphere-28970.json"
+    },
+    "changed_tests": [
+      "proxy/backend/core/src/test/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowDistVariableExecutorTest.java",
+      "proxy/backend/core/src/test/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowDistVariablesExecutorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/28970",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/d49bc1499e3fc836ceb6088a66e8a4e2ab856e17",
+    "buggy_commit": "f9c5dd6c100c64e92c654e40bc89fbe8cd849669",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowDistVariableExecutorTest#assertShowPropsVariable",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowDistVariablesExecutorTest#assertExecute",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowDistVariablesExecutorTest#assertExecuteWithLike"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowDistVariableExecutorTest#assertShowPropsVariable",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowDistVariableExecutorTest#assertShowPropsVariableForTypedSPI",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowDistVariablesExecutorTest#assertExecute",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowDistVariablesExecutorTest#assertExecuteWithLike"
+      ]
+    }
+  },
+  "apache_shardingsphere-29025": {
+    "bug_id": "apache_shardingsphere-29025",
+    "PR_number": 29025,
+    "PR_createdAt": "2023-11-13T08:29:08Z",
+    "merge_commit": "29bffb50de1692f81414441e85081a08f54262d7",
+    "buggy_commits": [
+      {
+        "oid": "e9aa53dc4d4eac56bdf758faa8178a920858a62f",
+        "message": "Fix set dist variable for proxy_frontend_database_protocol_type (#29024)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/28928",
+      "createdAt": "2023-11-03T07:44:39Z",
+      "content": "bug_report_all/apache_shardingsphere-29025.json"
+    },
+    "changed_tests": [
+      "features/broadcast/core/src/test/java/org/apache/shardingsphere/broadcast/route/engine/type/broadcast/BroadcastDatabaseBroadcastRoutingEngineTest.java",
+      "features/broadcast/core/src/test/java/org/apache/shardingsphere/broadcast/route/engine/type/broadcast/BroadcastInstanceBroadcastRoutingEngineTest.java",
+      "features/broadcast/core/src/test/java/org/apache/shardingsphere/broadcast/route/engine/type/broadcast/BroadcastTableBroadcastRoutingEngineTest.java",
+      "features/broadcast/core/src/test/java/org/apache/shardingsphere/broadcast/route/engine/type/unicast/BroadcastUnicastRoutingEngineTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/29025",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/29bffb50de1692f81414441e85081a08f54262d7",
+    "buggy_commit": "e9aa53dc4d4eac56bdf758faa8178a920858a62f",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.broadcast.route.engine.type.broadcast.BroadcastDatabaseBroadcastRoutingEngineTest#assertRoute",
+        ".org.apache.shardingsphere.broadcast.route.engine.type.broadcast.BroadcastInstanceBroadcastRoutingEngineTest#assertRoute",
+        ".org.apache.shardingsphere.broadcast.route.engine.type.broadcast.BroadcastTableBroadcastRoutingEngineTest#assertRouteWithBroadcastRuleTable",
+        ".org.apache.shardingsphere.broadcast.route.engine.type.broadcast.BroadcastTableBroadcastRoutingEngineTest#assertRouteWithoutBroadcastRuleTable"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.broadcast.route.engine.type.broadcast.BroadcastDatabaseBroadcastRoutingEngineTest#assertRoute",
+        ".org.apache.shardingsphere.broadcast.route.engine.type.broadcast.BroadcastInstanceBroadcastRoutingEngineTest#assertRoute",
+        ".org.apache.shardingsphere.broadcast.route.engine.type.broadcast.BroadcastTableBroadcastRoutingEngineTest#assertRouteWithBroadcastRuleTable",
+        ".org.apache.shardingsphere.broadcast.route.engine.type.broadcast.BroadcastTableBroadcastRoutingEngineTest#assertRouteWithoutBroadcastRuleTable"
+      ]
+    }
+  },
+  "apache_shardingsphere-29065": {
+    "bug_id": "apache_shardingsphere-29065",
+    "PR_number": 29065,
+    "PR_createdAt": "2023-11-17T06:15:04Z",
+    "merge_commit": "1003190cca96526727510915aeb66305de601dbd",
+    "buggy_commits": [
+      {
+        "oid": "130abc9746b8bd4e1a047d7069952964241ce77c",
+        "message": "add more SQL test case for create-materialized-view (#29061)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/29039",
+      "createdAt": "2023-11-15T09:12:52Z",
+      "content": "bug_report_all/apache_shardingsphere-29065.json"
+    },
+    "changed_tests": [
+      "features/encrypt/distsql/handler/src/test/java/org/apache/shardingsphere/encrypt/distsql/handler/query/ShowEncryptRuleExecutorTest.java",
+      "features/mask/distsql/handler/src/test/java/org/apache/shardingsphere/mask/distsql/handler/query/ShowMaskRuleExecutorTest.java",
+      "features/shadow/distsql/handler/src/test/java/org/apache/shardingsphere/shadow/distsql/query/ShowShadowRuleExecutorTest.java",
+      "features/sharding/distsql/handler/src/test/java/org/apache/shardingsphere/sharding/distsql/query/ShowShardingTableRuleExecutorTest.java",
+      "features/sharding/distsql/handler/src/test/java/org/apache/shardingsphere/sharding/distsql/query/ShowUnusedShardingKeyGeneratorExecutorTest.java",
+      "infra/common/src/test/java/org/apache/shardingsphere/infra/props/PropertiesConverterTest.java",
+      "kernel/traffic/distsql/handler/src/test/java/org/apache/shardingsphere/traffic/distsql/handler/query/ShowTrafficRuleExecutorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/29065",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/1003190cca96526727510915aeb66305de601dbd",
+    "buggy_commit": "130abc9746b8bd4e1a047d7069952964241ce77c",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.encrypt.distsql.handler.query.ShowEncryptRuleExecutorTest#assertGetRowData"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.encrypt.distsql.handler.query.ShowEncryptRuleExecutorTest#assertGetRowData"
+      ]
+    }
+  },
+  "apache_shardingsphere-29228": {
+    "bug_id": "apache_shardingsphere-29228",
+    "PR_number": 29228,
+    "PR_createdAt": "2023-11-28T09:25:40Z",
+    "merge_commit": "da95e15bf00aa078c1b23382a4a7faba8dae6199",
+    "buggy_commits": [
+      {
+        "oid": "7bfc3d49bb718fd014e6fc187243fe52ef7393b7",
+        "message": "Fix oracle create table listPartitionDesc and subpartitionTemplate syntax (#29222)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/29227",
+      "createdAt": "2023-11-28T09:13:24Z",
+      "content": "bug_report_all/apache_shardingsphere-29228.json"
+    },
+    "changed_tests": [
+      "proxy/backend/core/src/test/java/org/apache/shardingsphere/proxy/backend/handler/distsql/ral/queryable/ShowTableMetaDataExecutorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/29228",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/da95e15bf00aa078c1b23382a4a7faba8dae6199",
+    "buggy_commit": "7bfc3d49bb718fd014e6fc187243fe52ef7393b7",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowTableMetaDataExecutorTest#assertGetColumnNames",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowTableMetaDataExecutorTest#assertExecute"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowTableMetaDataExecutorTest#assertGetColumnNames",
+        ".org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable.ShowTableMetaDataExecutorTest#assertExecute"
+      ]
+    }
+  },
+  "apache_shardingsphere-29297": {
+    "bug_id": "apache_shardingsphere-29297",
+    "PR_number": 29297,
+    "PR_createdAt": "2023-12-05T12:39:23Z",
+    "merge_commit": "1ca8a9d8c1efa743574fbbe009fdc6445ff780f5",
+    "buggy_commits": [
+      {
+        "oid": "a0519cfb74da00fa876b9a2502e0e3faaa7065b9",
+        "message": "Support sqlServer SEARCH unreserved word parsing (#29305)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/28892",
+      "createdAt": "2023-10-30T07:23:48Z",
+      "content": "bug_report_all/apache_shardingsphere-29297.json"
+    },
+    "changed_tests": [
+      "infra/database/type/mariadb/src/test/java/org/apache/shardingsphere/infra/database/mariadb/type/MariaDBDatabaseTypeTest.java",
+      "infra/database/type/mysql/src/test/java/org/apache/shardingsphere/infra/database/mysql/type/MySQLDatabaseTypeTest.java",
+      "infra/database/type/oracle/src/test/java/org/apache/shardingsphere/infra/database/oracle/type/OracleDatabaseTypeTest.java",
+      "infra/database/type/postgresql/src/test/java/org/apache/shardingsphere/infra/database/postgresql/type/PostgreSQLDatabaseTypeTest.java",
+      "infra/database/type/sqlserver/src/test/java/org/apache/shardingsphere/infra/database/sqlserver/type/SQLServerDatabaseTypeTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/29297",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/1ca8a9d8c1efa743574fbbe009fdc6445ff780f5",
+    "buggy_commit": "a0519cfb74da00fa876b9a2502e0e3faaa7065b9",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.infra.database.mariadb.type.MariaDBDatabaseTypeTest#assertGetJdbcUrlPrefixes"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.infra.database.mariadb.type.MariaDBDatabaseTypeTest#assertGetJdbcUrlPrefixes"
+      ]
+    }
+  },
+  "apache_shardingsphere-29461": {
+    "bug_id": "apache_shardingsphere-29461",
+    "PR_number": 29461,
+    "PR_createdAt": "2023-12-19T15:19:34Z",
+    "merge_commit": "9a3d47ef77441a78181e5bbf0f8b53eb5315316c",
+    "buggy_commits": [
+      {
+        "oid": "4fd6850ae03520c774cc396320e4fe5e0827e5aa",
+        "message": "Add GraalVM Reachability Metadata and corresponding nativeTest for Zookeeper integration (#29425)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/29459",
+      "createdAt": "2023-12-19T14:57:31Z",
+      "content": "bug_report_all/apache_shardingsphere-29461.json"
+    },
+    "changed_tests": [
+      "features/readwrite-splitting/core/src/test/java/org/apache/shardingsphere/readwritesplitting/checker/ReadwriteSplittingRuleConfigurationCheckerTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/29461",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/9a3d47ef77441a78181e5bbf0f8b53eb5315316c",
+    "buggy_commit": "4fd6850ae03520c774cc396320e4fe5e0827e5aa",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.readwritesplitting.checker.ReadwriteSplittingRuleConfigurationCheckerTest#assertCheckWhenConfigInvalidWriteDataSource"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.readwritesplitting.checker.ReadwriteSplittingRuleConfigurationCheckerTest#assertCheckWhenConfigInvalidWriteDataSource"
+      ]
+    }
+  },
+  "apache_shardingsphere-29582": {
+    "bug_id": "apache_shardingsphere-29582",
+    "PR_number": 29582,
+    "PR_createdAt": "2023-12-28T08:02:04Z",
+    "merge_commit": "d6df81c0cf2d8d77dddcbcc9d397152cf5e75587",
+    "buggy_commits": [
+      {
+        "oid": "d5a7575ff307be3729d6302ac6424116bad77e4e",
+        "message": "Refactor AuthorityRuleConfiguration (#29580)\n\n* Add SingletonSPI for AuthorityRegistryProvider\r\n\r\n* Refactor AllPermittedAuthorityRegistryProvider\r\n\r\n* Refactor AuthorityRuleConfiguration"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/29578",
+      "createdAt": "2023-12-28T05:49:22Z",
+      "content": "bug_report_all/apache_shardingsphere-29582.json"
+    },
+    "changed_tests": [
+      "proxy/backend/core/src/test/java/org/apache/shardingsphere/proxy/backend/handler/ProxyBackendHandlerFactoryTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/29582",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/d6df81c0cf2d8d77dddcbcc9d397152cf5e75587",
+    "buggy_commit": "d5a7575ff307be3729d6302ac6424116bad77e4e",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertUnsupportedNonQueryDistSQLInTransaction",
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertUnsupportedQueryableRALStatementInTransaction",
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertUnsupportedRQLStatementInTransaction",
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertDistSQLRULStatementInTransaction"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertNewInstanceWithUnsupportedDCLSQLStatement",
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertNewInstanceWithUnsupportedDALSQLStatement",
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertNewInstanceWithUnsupportedDDLSQLStatement",
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertNewInstanceWithUnsupportedNonQueryDistSQLInTransaction",
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertNewInstanceWithQueryableRALStatementInTransaction",
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertNewInstanceWithRQLStatementInTransaction",
+        ".org.apache.shardingsphere.proxy.backend.handler.ProxyBackendHandlerFactoryTest#assertNewInstanceWithRULStatementInTransaction"
+      ]
+    }
+  },
+  "apache_shardingsphere-29656": {
+    "bug_id": "apache_shardingsphere-29656",
+    "PR_number": 29656,
+    "PR_createdAt": "2024-01-04T15:57:31Z",
+    "merge_commit": "645c63b03ea186690affb4b245839e00b9772437",
+    "buggy_commits": [
+      {
+        "oid": "45fad86141c356e9fa8982c3ea354aa35786a73d",
+        "message": "Support Create Trigger with Assignment Statement (#29654)\n\nadd new line"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/29581",
+      "createdAt": "2023-12-28T07:40:27Z",
+      "content": "bug_report_all/apache_shardingsphere-29656.json"
+    },
+    "changed_tests": [
+      "kernel/authority/core/src/test/java/org/apache/shardingsphere/authority/rule/builder/DefaultAuthorityRuleConfigurationBuilderTest.java",
+      "kernel/authority/core/src/test/java/org/apache/shardingsphere/authority/yaml/swapper/NewYamlAuthorityRuleConfigurationSwapperTest.java",
+      "kernel/authority/core/src/test/java/org/apache/shardingsphere/authority/yaml/swapper/YamlAuthorityRuleConfigurationSwapperTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/29656",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/645c63b03ea186690affb4b245839e00b9772437",
+    "buggy_commit": "45fad86141c356e9fa8982c3ea354aa35786a73d",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.authority.rule.builder.DefaultAuthorityRuleConfigurationBuilderTest#assertBuild"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.authority.rule.builder.DefaultAuthorityRuleConfigurationBuilderTest#assertBuild"
+      ]
+    }
+  },
+  "apache_shardingsphere-29759": {
+    "bug_id": "apache_shardingsphere-29759",
+    "PR_number": 29759,
+    "PR_createdAt": "2024-01-18T02:32:57Z",
+    "merge_commit": "1e7e681c6f49517724a8e88b7e4b7e580177cc10",
+    "buggy_commits": [
+      {
+        "oid": "f3094a149be90be02904eab41b48facb44336684",
+        "message": "Refactor ShowSingleTableExecutor (#29758)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/29757",
+      "createdAt": "2024-01-17T12:13:32Z",
+      "content": "bug_report_all/apache_shardingsphere-29759.json"
+    },
+    "changed_tests": [
+      "proxy/backend/type/mysql/src/test/java/org/apache/shardingsphere/proxy/backend/mysql/handler/admin/executor/ShowDatabasesExecutorTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/29759",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/1e7e681c6f49517724a8e88b7e4b7e580177cc10",
+    "buggy_commit": "f3094a149be90be02904eab41b48facb44336684",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.proxy.backend.mysql.handler.admin.executor.ShowDatabasesExecutorTest#assertExecute"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.proxy.backend.mysql.handler.admin.executor.ShowDatabasesExecutorTest#assertExecute"
+      ]
+    }
+  },
+  "apache_shardingsphere-29975": {
+    "bug_id": "apache_shardingsphere-29975",
+    "PR_number": 29975,
+    "PR_createdAt": "2024-02-03T16:59:34Z",
+    "merge_commit": "148a086eb2f4d85d66734343b20591098871c153",
+    "buggy_commits": [
+      {
+        "oid": "74ec4d8581e84f78b9f0174d341adf30662a5356",
+        "message": "Move RuleDefinitionExecuteEngine to distsql module (#29974)\n\n* Move RuleDefinitionExecuteEngine to distsql module\r\n\r\n* Refactor DistSQLUpdateExecuteEngine\r\n\r\n* Refactor DistSQLUpdateExecuteEngine"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/28909",
+      "createdAt": "2023-11-01T02:42:58Z",
+      "content": "bug_report_all/apache_shardingsphere-29975.json"
+    },
+    "changed_tests": [
+      "features/sharding/core/src/test/java/org/apache/shardingsphere/sharding/algorithm/sharding/datetime/IntervalShardingAlgorithmTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/29975",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/148a086eb2f4d85d66734343b20591098871c153",
+    "buggy_commit": "74ec4d8581e84f78b9f0174d341adf30662a5356",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.sharding.algorithm.sharding.datetime.IntervalShardingAlgorithmTest#assertRangeDoShardingByDays"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.sharding.algorithm.sharding.datetime.IntervalShardingAlgorithmTest#assertRangeDoShardingByDays"
+      ]
+    }
+  },
+  "apache_shardingsphere-29982": {
+    "bug_id": "apache_shardingsphere-29982",
+    "PR_number": 29982,
+    "PR_createdAt": "2024-02-04T06:57:11Z",
+    "merge_commit": "26662f77faa301c30040ffa0f07e24b250928667",
+    "buggy_commits": [
+      {
+        "oid": "030a0bd995f101989f43707a13d86b58ac23ac2f",
+        "message": "Add EOF in SQL92 (#30433)\n\n* Add EOF in sql92\r\n\r\n* Fix oracle antlr code style\r\nRemove rewrite error sql92 sql"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/29388",
+      "createdAt": "2023-12-13T03:03:56Z",
+      "content": "bug_report_all/apache_shardingsphere-29982.json"
+    },
+    "changed_tests": [
+      "infra/common/src/test/java/org/apache/shardingsphere/infra/metadata/database/schema/SystemSchemaManagerTest.java",
+      "infra/common/src/test/java/org/apache/shardingsphere/infra/metadata/database/schema/builder/SystemSchemaBuilderTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/29982",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/26662f77faa301c30040ffa0f07e24b250928667",
+    "buggy_commit": "030a0bd995f101989f43707a13d86b58ac23ac2f",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.infra.metadata.database.schema.SystemSchemaManagerTest#assertValueOfSchemaPathSuccess",
+        ".org.apache.shardingsphere.infra.metadata.database.schema.builder.SystemSchemaBuilderTest#assertBuildForMySQL"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.infra.metadata.database.schema.SystemSchemaManagerTest#assertValueOfSchemaPathSuccess",
+        ".org.apache.shardingsphere.infra.metadata.database.schema.builder.SystemSchemaBuilderTest#assertBuildForMySQL"
+      ]
+    }
+  },
+  "apache_shardingsphere-30237": {
+    "bug_id": "apache_shardingsphere-30237",
+    "PR_number": 30237,
+    "PR_createdAt": "2024-02-21T15:04:37Z",
+    "merge_commit": "00bf31e9c9aa6c2a155d5ffe428421be2d19bb6c",
+    "buggy_commits": [
+      {
+        "oid": "f61f1b92dff2bc2d5efcb5647602b8a2f7e2fdd9",
+        "message": "Fix : fix the deadlink (#30233)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/30234",
+      "createdAt": "2024-02-21T12:28:03Z",
+      "content": "bug_report_all/apache_shardingsphere-30237.json"
+    },
+    "changed_tests": [
+      "infra/url/type/absolutepath/src/test/java/org/apache/shardingsphere/infra/url/absolutepath/AbsolutePathURLLoaderTest.java",
+      "infra/url/type/classpath/src/test/java/org/apache/shardingsphere/infra/url/classpath/ClassPathURLLoaderTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/30237",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/00bf31e9c9aa6c2a155d5ffe428421be2d19bb6c",
+    "buggy_commit": "f61f1b92dff2bc2d5efcb5647602b8a2f7e2fdd9",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.infra.url.absolutepath.AbsolutePathURLLoaderTest#assertGetContentOnWindows"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.infra.url.absolutepath.AbsolutePathURLLoaderTest#assertGetContentOnWindows"
+      ]
+    }
+  },
+  "apache_shardingsphere-30361": {
+    "bug_id": "apache_shardingsphere-30361",
+    "PR_number": 30361,
+    "PR_createdAt": "2024-03-01T09:19:10Z",
+    "merge_commit": "5789fc2c7d609f99789cf8b2de76e6b55232ef81",
+    "buggy_commits": [
+      {
+        "oid": "e9c1603236c66247abe6b794e31483db36650dd1",
+        "message": "Bump pgjbdc version to prevent CVE from being passed in Proxy (#30369)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/30365",
+      "createdAt": "2024-03-01T10:15:47Z",
+      "content": "bug_report_all/apache_shardingsphere-30361.json"
+    },
+    "changed_tests": [
+      "infra/util/src/test/java/org/apache/shardingsphere/infra/util/directory/ClasspathResourceDirectoryReaderTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/30361",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/5789fc2c7d609f99789cf8b2de76e6b55232ef81",
+    "buggy_commit": "e9c1603236c66247abe6b794e31483db36650dd1",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.infra.util.directory.ClasspathResourceDirectoryReaderTest#assertIsDirectory",
+        ".org.apache.shardingsphere.infra.util.directory.ClasspathResourceDirectoryReaderTest#read"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.infra.util.directory.ClasspathResourceDirectoryReaderTest#assertIsDirectoryTest",
+        ".org.apache.shardingsphere.infra.util.directory.ClasspathResourceDirectoryReaderTest#assertReadTest",
+        ".org.apache.shardingsphere.infra.util.directory.ClasspathResourceDirectoryReaderTest#assertReadNestedTest"
+      ]
+    }
+  },
+  "apache_shardingsphere-30518": {
+    "bug_id": "apache_shardingsphere-30518",
+    "PR_number": 30518,
+    "PR_createdAt": "2024-03-17T06:23:20Z",
+    "merge_commit": "0cc83bc722e69c7d6d423a1e2e046c822ca780b1",
+    "buggy_commits": [
+      {
+        "oid": "097556f689b400837e7949d80d52d5fc1f426b06",
+        "message": "Refactor SnowflakeClockMoveBackException to AlgorithmExecuteException (#30517)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/30466",
+      "createdAt": "2024-03-12T06:54:45Z",
+      "content": "bug_report_all/apache_shardingsphere-30518.json"
+    },
+    "changed_tests": [
+      "infra/common/src/test/java/org/apache/shardingsphere/infra/metadata/ShardingSphereMetaDataTest.java",
+      "kernel/transaction/core/src/test/java/org/apache/shardingsphere/transaction/rule/TransactionRuleTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/30518",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/0cc83bc722e69c7d6d423a1e2e046c822ca780b1",
+    "buggy_commit": "097556f689b400837e7949d80d52d5fc1f426b06",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.infra.metadata.ShardingSphereMetaDataTest#assertDropDatabase"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.infra.metadata.ShardingSphereMetaDataTest#assertDropDatabase"
+      ]
+    }
+  },
+  "apache_shardingsphere-30534": {
+    "bug_id": "apache_shardingsphere-30534",
+    "PR_number": 30534,
+    "PR_createdAt": "2024-03-18T11:48:16Z",
+    "merge_commit": "d952966c3473642b344af019f5385202e7c2d638",
+    "buggy_commits": [
+      {
+        "oid": "3b6baaee929a14c2f633b57815545c355b183358",
+        "message": "Remove updateCurrentRuleConfiguration interface (#30549)\n\n* Remove updateCurrentRuleConfiguration interface\r\n\r\n* Fix RDL test cases\r\n\r\n* Fix checkstyle\r\n\r\n---------\r\n\r\nCo-authored-by: Pace2Car <chenjiahao@apache.org>"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/30342",
+      "createdAt": "2024-02-28T11:11:36Z",
+      "content": "bug_report_all/apache_shardingsphere-30534.json"
+    },
+    "changed_tests": [
+      "features/sharding/core/src/test/java/org/apache/shardingsphere/sharding/merge/dql/ShardingDQLResultMergerTest.java",
+      "features/sharding/core/src/test/java/org/apache/shardingsphere/sharding/route/engine/validator/ddl/ShardingCreateTableStatementValidatorTest.java",
+      "infra/binder/src/test/java/org/apache/shardingsphere/infra/binder/context/statement/SQLStatementContextFactoryTest.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/30534",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/d952966c3473642b344af019f5385202e7c2d638",
+    "buggy_commit": "3b6baaee929a14c2f633b57815545c355b183358",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.sharding.route.engine.validator.ddl.ShardingCreateTableStatementValidatorTest#assertPreValidateCreateTableForSQLServer"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.sharding.route.engine.validator.ddl.ShardingCreateTableStatementValidatorTest#assertPreValidateCreateTableForSQLServer"
+      ]
+    }
+  },
+  "apache_shardingsphere-30898": {
+    "bug_id": "apache_shardingsphere-30898",
+    "PR_number": 30898,
+    "PR_createdAt": "2024-04-15T10:07:49Z",
+    "merge_commit": "2ad4e194defae2b182e1a2f3a98b1d053f716e3e",
+    "buggy_commits": [
+      {
+        "oid": "0ab150a1e435ce58792311ff0a0d3a878d6b3817",
+        "message": "Refactor ShardingSphereSQLException (#30944)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/30897",
+      "createdAt": "2024-04-15T10:02:53Z",
+      "content": "bug_report_all/apache_shardingsphere-30898.json"
+    },
+    "changed_tests": [
+      "test/e2e/env/src/test/java/org/apache/shardingsphere/test/e2e/env/container/atomic/constants/ProxyContainerConstants.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/30898",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/2ad4e194defae2b182e1a2f3a98b1d053f716e3e",
+    "buggy_commit": "0ab150a1e435ce58792311ff0a0d3a878d6b3817",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.test.e2e.agent.file.FilePluginE2EIT#assertWithAgent"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.test.e2e.agent.file.FilePluginE2EIT#assertWithAgent"
+      ]
+    }
+  },
+  "apache_shardingsphere-31024": {
+    "bug_id": "apache_shardingsphere-31024",
+    "PR_number": 31024,
+    "PR_createdAt": "2024-04-26T09:17:22Z",
+    "merge_commit": "b49b323a02ee10e8268c2bc5ffd8f88289af4400",
+    "buggy_commits": [
+      {
+        "oid": "03ee8ff3202629df1e9d24a75b5df4ec8c806c0c",
+        "message": "Remove AutoDataSource and unused test yaml (#31023)\n\n* Remove AutoDataSource and unused test yaml\r\n\r\n* Remove AutoDataSource and unused test yaml\r\n\r\n* fix\r\n\r\n* Revert \"Remove AutoDataSource and unused test yaml\"\r\n\r\nThis reverts commit cd3e530d82afce7602807b2836adb162c6a6d93d.\r\n\r\n* fix test\r\n\r\n* fix test\r\n\r\n* fix test"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/apache/shardingsphere/issues/31025",
+      "createdAt": "2024-04-26T09:29:01Z",
+      "content": "bug_report_all/apache_shardingsphere-31024.json"
+    },
+    "changed_tests": [
+      "features/mask/core/src/test/java/org/apache/shardingsphere/mask/merge/MaskResultDecoratorEngineTest.java",
+      "infra/merge/src/test/java/org/apache/shardingsphere/infra/merge/MergeEngineTest.java",
+      "infra/merge/src/test/java/org/apache/shardingsphere/infra/merge/fixture/decorator/ResultDecoratorEngineFixture.java"
+    ],
+    "PR_url": "https://github.com/apache/shardingsphere/pull/31024",
+    "merge_commit_url": "https://github.com/apache/shardingsphere/commit/b49b323a02ee10e8268c2bc5ffd8f88289af4400",
+    "buggy_commit": "03ee8ff3202629df1e9d24a75b5df4ec8c806c0c",
+    "execution_result": {
+      "test_src": [
+        ".org.apache.shardingsphere.mask.merge.MaskResultDecoratorEngineTest#assertNewInstanceWithSelectStatement",
+        ".org.apache.shardingsphere.mask.merge.MaskResultDecoratorEngineTest#assertNewInstanceWithOtherStatement"
+      ],
+      "test_tgt": [
+        ".org.apache.shardingsphere.mask.merge.MaskResultDecoratorEngineTest#assertNewInstanceWithSelectStatement",
+        ".org.apache.shardingsphere.mask.merge.MaskResultDecoratorEngineTest#assertNewInstanceWithOtherStatement"
+      ]
+    }
+  }
+}

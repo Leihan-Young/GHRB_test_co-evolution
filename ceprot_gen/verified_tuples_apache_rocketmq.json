@@ -11186,7 +11186,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testCheck_withDiscard() {        when(bridge.fetchMessageQueues(TopicValidator.RMQ_TRANS_HALF_TOPIC)).thenReturn(createMessageQueueSet(TopicValidator.RMQ_TRANS_HALF_TOPIC));\n        when(bridge.getHalfMessage(0, 0, 1)).thenReturn(createDiscardResult(TopicValidator.RMQ_TRANS_HALF_TOPIC, 5, \"hellp\", 0));\n        when(bridge.getOpMessage(anyInt(), anyLong(), anyInt())).thenReturn(createOpPulResult(TopicValidator.RMQ_TRANS_OP_HALF_TOPIC, 1, \"10\", 1));\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testCheck_withDiscard() {\n        when(bridge.fetchMessageQueues(TopicValidator.RMQ_SYS_TRANS_HALF_TOPIC)).thenReturn(createMessageQueueSet(TopicValidator.RMQ_SYS_TRANS_HALF_TOPIC));\n        when(bridge.getHalfMessage(0, 0, 1)).thenReturn(createDiscardPullResult(TopicValidator.RMQ_SYS_TRANS_HALF_TOPIC, 5, \"hellp\", 1));\n        when(bridge.getHalfMessage(0, 1, 1)).thenReturn(createPullResult(TopicValidator.RMQ_"
   },
   "2": {
     "commit_src": "a7c1d49454ce405fc651f95d036571d91bd8c9e0",
@@ -12863,7 +12863,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void getMessageTest() { when(brokerController.peekMasterBroker()).thenReturn(brokerController);\n        when(brokerController.getMessageStoreByBrokerName(any())).thenReturn(defaultMessageStore);\n        Assertions.assertThatCode(() -> escapeBridge.putMessage(messageExtBrokerInner, false)).doesNotThrowAnyException();\n\n        Assertions.assertThatCode(() -> escapeBridge.getMessage(TEST_TOPIC, 0, DEFAULT_QUEUE_ID, BROKER_NAME)).doesNotThrowAnyException();\n    }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void getMessageTest() {\n        when(brokerController.peekMasterBroker()).thenReturn(brokerController);\n        when(brokerController.getMessageStoreByBrokerName(any())).thenReturn(defaultMessageStore);\n        when(brokerController.getMessageStoreByBrokerName(any())).thenReturn(defaultMessageStore);\n        when(brokerController.getMessageStoreByBrokerName(any())).thenReturn(messageExtBrokerInner, false)).doesNotThrowAnyException();\n\n        Assertions.assertThatCode(() -> escapeBridge.putMessage(TEST_TOPIC, 0, DEFAULT_QUEUE_ID, BROKER_NAME)"
   },
   "3": {
     "commit_src": "a7c1d49454ce405fc651f95d036571d91bd8c9e0",
@@ -14310,7 +14310,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void decodeMsgListTest() {        ByteBuffer byteBuffer = ByteBuffer.allocate(10);\n        MappedFile mappedFile = new DefaultMappedFile();\n        SelectMappedBufferResult result = new SelectMappedBufferResult(0, byteBuffer, 10, mappedFile, true);\n\n        getMessageResult.addMessage(result);\n        Assertions.assertThatCode(() -> escapeBridge.decodeMsgList(getMessageResult, false)).doesNotThrowAnyException();\n    }\n    public void decodeMsgListTest() {        ByteBuffer byteBuffer = ByteBuffer.allocate(10);\n        MappedFile mappedFile = new DefaultMappedFile();\n        SelectMappedBufferResult result = new SelectMappedBufferResult(0, byteBuffer,"
+    "CEPROT_gen_test_tgt": "@Test\n    public void decodeMsgListTest() {        ByteBuffer byteBuffer = ByteBuffer.allocate(10);\n        MappedFile mappedFile = new DefaultMappedFile();\n        SelectMappedBufferResult result = new SelectMappedBufferResult(0, byteBuffer, 10, mappedFile, false, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null"
   },
   "4": {
     "commit_src": "48ed8980719c14fde8ce145e5d585c6c0852920f",
@@ -16440,7 +16440,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetLocalAddress()throws Exception { String localAddress = NetworkUtil.getLocalAddress();\n        assertThat(localAddress).isNotNull();\n        assertThat(localAddress.length()).isGreaterThan(0);\n    }\n\n            } "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetLocalAddress() throws Exception { String localAddress = NetworkUtil.getLocalAddress();\n        assertThat(localAddress).isNotNull();\n        assertThat(localAddress.length()).isGreaterThan(0);\n    }\n\n                final Enumeration < InetAddress > en = networkInterface.getInetAddresses();\n        assertThat(en.nextElement().getIpAddress().getHostAddress().getHostAddress().getHostAddress().getHostAddress().getHostAddress().getIpAddress().getPort().getHostAddress().getHostAddress().getIpAddress().getHostAddress().getHostAddress().getHostAddress().getHostAddress().getHost"
   },
   "5": {
     "commit_src": "44072e62bdba8ef1111808046f06c081c766d4ae",
@@ -21040,7 +21040,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void test_encode_decode()throws IOException { RegisterBrokerBody registerBrokerBody = new RegisterBrokerBody(); TopicConfigAndMappingSerializeWrapper topicConfigSerializeWrapper = new TopicConfigAndMappingSerializeWrapper();\n        registerBrokerBody.setTopicConfigSerializeWrapper(topicConfigSerializeWrapper);\n\n        ConcurrentMap<String, TopicConfig> topicConfigTable = new ConcurrentHashMap<>();\n        for (int i = 0; i < 10000; i++) {\n            topicConfigTable.put(String.valueOf(i), new TopicConfig(String.valueOf(i)));\n }\n\n        topicConfigSerializeWrapper.setTopicConfigTable(topicConfigTable);\n\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void test_encode_decode()throws IOException { RegisterBrokerBody registerBrokerBody = new RegisterBrokerBody();\n        TopicConfigAndMappingSerializeWrapper topicConfigSerializeWrapper = new TopicConfigAndMappingSerializeWrapper();\n        registerBrokerBody.setTopicConfigSerializeWrapper(topicConfigSerializeWrapper);\n\n        ConcurrentMap<String, TopicConfig> topicConfigTable = new ConcurrentHashMap<>();\n        for (int i = 0; i < 10000; i++) {\n            topicConfigTable.put(String.valueOf(i), new TopicConfig(String.valueOf(i)));\n        }\n\n        topicConfigSerializeWrapper"
   },
   "6": {
     "commit_src": "59acc7d3554d61f046233fc00308b07b7a7b39fb",
@@ -21215,7 +21215,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumerCommitSyncWithMQOffset()throws Exception { DefaultLitePullConsumer litePullConsumer = createNotStartLitePullConsumer();\n        RemoteBrokerOffsetStore store = new RemoteBrokerOffsetStore(mQClientFactory, consumerGroup);\n        litePullConsumer.setOffsetStore(store);\n\n        litePullConsumer.start();\n        initDefaultLitePullConsumer(litePullConsumer);\n\n        MessageQueue messageQueue = createMessageQueue();\n HashSet<MessageQueue> set = new HashSet<>();\n        set.add(messageQueue);\n\n        //mock assign and reset offset\n        litePullConsumer.assign(set);\n        litePullConsumer.seek(messageQueue, 0);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumerCommitSyncWithMQOffset() throws Exception {\n        DefaultLitePullConsumer litePullConsumer = createNotStartLitePullConsumer();\n        RemoteBrokerOffsetStore store = new RemoteBrokerOffsetStore(mQClientFactory, consumerGroup);\n        litePullConsumer.setOffsetStore(store);\n        litePullConsumer.start();\n        initDefaultLitePullConsumer(litePullConsumer);\n\n        //replace with real offsetStore.\n        Field offsetStore = litePullConsumerImpl.getClass().getDeclaredField(\"offsetStore\");\n        offsetStore.setAccessible(true);\n        offsetStore.set(l"
   },
   "7": {
     "commit_src": "0533816d42961d0ba0ea012a115261ea71dd30c4",
@@ -21950,7 +21950,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testExecute()throws SubCommandException { BrokerStatusSubCommand cmd = new BrokerStatusSubCommand();\n        Options options = ServerUtil.buildCommandlineOptions(new Options());\n        String[] subargs = new String[] {\"-b 127.0.0.1:\" + listenPort(), \"-c default-cluster\"};\n        final CommandLine commandLine =\n            ServerUtil.parseCmdLine(\"mqadmin \" + cmd.commandName(), subargs,\n                cmd.buildCommandlineOptions(options), new DefaultParser());\n\n        cmd.execute(commandLine, options, null);\n }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testExecute() throws SubCommandException { BrokerStatusSubCommand cmd = new BrokerStatusSubCommand();\n        Options options = ServerUtil.buildCommandlineOptions(new Options());\n        String[] subargs = new String[] {\"-b 127.0.0.1:\" + listenPort(), \"-c default-cluster\"};\n        final CommandLine commandLine =\n            ServerUtil.parseCmdLine(\"mqadmin \" + cmd.commandName(), subargs,\n                cmd.buildCommandlineOptions(options), new DefaultParser());\n\n        cmd.execute(commandLine, options, null);\n    }\n"
   },
   "8": {
     "commit_src": "61c4ba5009a9fe1fa2d68135e2349e85d556db3a",
@@ -44041,7 +44041,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessRequest_TopicNotExist()throws RemotingCommandException {        brokerController.getTopicConfigManager().getTopicConfigTable().remove(topic);\n        final RemotingCommand request = createPopMsgCommand();\n        RemotingCommand response = popMessageProcessor.processRequest(handlerContext, request);\n        assertThat(response).isNotNull();\n        assertThat(response.getCode()).isEqualTo(ResponseCode.TOPIC_NOT_EXIST);\n        assertThat(response.getRemark()).contains(\"topic[\" + topic + \"] not exist\");\n    }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessRequest_TopicNotExist()throws RemotingCommandException {\n        brokerController.getTopicConfigManager().getTopicConfigTable().remove(topic);\n        final RemotingCommand request = createPopMsgCommand();\n        RemotingCommand response = popMessageProcessor.processRequest(handlerContext, request);\n        assertThat(response).isNotNull();\n        assertThat(response.getCode()).isEqualTo(ResponseCode.TOPIC_NOT_EXIST);\n        assertThat(response.getRemark()).contains(\"topic[\" + topic + \"] not exist\");\n    }\n"
   },
   "9": {
     "commit_src": "61c4ba5009a9fe1fa2d68135e2349e85d556db3a",
@@ -66132,7 +66132,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessRequest_Found()throws RemotingCommandException, InterruptedException {\n        GetMessageResult getMessageResult = createGetMessageResult(1);\n        when(messageStore.getMessageAsync(anyString(), anyString(), anyInt(), anyLong(), anyInt(), any())).thenReturn(CompletableFuture.completedFuture(getMessageResult));\n\n        final RemotingCommand request = createPopMsgCommand();\n        popMessageProcessor.processRequest(handlerContext, request);\n RemotingCommand response = embeddedChannel.readOutbound();\n        assertThat(response).isNotNull();\n        assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessRequest_Found() throws RemotingCommandException, InterruptedException {\n        GetMessageResult getMessageResult = createGetMessageResult(1);\n        when(messageStore.getMessageAsync(anyString(), anyString(), anyInt(), anyLong(), anyInt(), any())).thenReturn(CompletableFuture.completedFuture(getMessageResult));\n\n        final RemotingCommand request = createPopMsgCommand();\n        popMessageProcessor.processRequest(handlerContext, request);\n        RemotingCommand response = embeddedChannel.readOutbound();\n        assertThat(response).isNotNull();\n        assertThat(response.getCode()).isEqualTo(0"
   },
   "10": {
     "commit_src": "61c4ba5009a9fe1fa2d68135e2349e85d556db3a",
@@ -88223,7 +88223,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessRequest_MsgWasRemoving()throws RemotingCommandException {        GetMessageResult getMessageResult = createGetMessageResult(1);\n        getMessageResult.setStatus(GetMessageStatus.MESSAGE_WAS_REMOVING);\n        when(messageStore.getMessageAsync(anyString(), anyString(), anyInt(), anyLong(), anyInt(), any())).thenReturn(CompletableFuture.completedFuture(getMessageResult));\n\n        final RemotingCommand request = createPopMsgCommand();\n        popMessageProcessor.processRequest(handlerContext, request);\n        RemotingCommand response = embeddedChannel.readOutbound();\n        assertThat(response).isNotNull();\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessRequest_MsgWasRemoving() throws RemotingCommandException {        GetMessageResult getMessageResult = createGetMessageResult(1);\n        getMessageResult.setStatus(GetMessageStatus.MESSAGE_WAS_REMOVING);\n        when(messageStore.getMessageAsync(anyString(), anyString(), anyInt(), anyLong(), anyInt(), any())).thenReturn(CompletableFuture.completedFuture(getMessageResult));\n\n        final RemotingCommand request = createPopMsgCommand();\n        popMessageProcessor.processRequest(handlerContext, request);\n        RemotingCommand response = embeddedChannel.readOutbound();\n        assertThat(response.get"
   },
   "11": {
     "commit_src": "61c4ba5009a9fe1fa2d68135e2349e85d556db3a",
@@ -110314,7 +110314,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessRequest_NoMsgInQueue()throws RemotingCommandException {        GetMessageResult getMessageResult = createGetMessageResult(0);\n        getMessageResult.setStatus(GetMessageStatus.NO_MESSAGE_IN_QUEUE);\n        when(messageStore.getMessageAsync(anyString(), anyString(), anyInt(), anyLong(), anyInt(), any())).thenReturn(CompletableFuture.completedFuture(getMessageResult));\n\n        final RemotingCommand request = createPopMsgCommand();\n        RemotingCommand response = popMessageProcessor.processRequest(handlerContext, request);\n        assertThat(response).isNull();\n    }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessRequest_NoMsgInQueue()throws RemotingCommandException {        GetMessageResult getMessageResult = createGetMessageResult(0);\n        getMessageResult.setStatus(GetMessageStatus.NO_MESSAGE_IN_QUEUE);\n        when(messageStore.getMessageAsync(anyString(), anyString(), anyInt(), anyLong(), anyInt(), any())).thenReturn(CompletableFuture.completedFuture(getMessageResult));\n\n        final RemotingCommand request = createPopMsgCommand();\n        RemotingCommand response = popMessageProcessor.processRequest(handlerContext, request);\n        assertThat(response).isNull();\n    }"
   },
   "12": {
     "commit_src": "b00c82caccea8d8a23614c1854885d0a187e159e",
@@ -115819,7 +115819,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetMessageAsync() { \n        mockContainer();\n        GetMessageResult result1 = new GetMessageResult();\n        result1.setStatus(GetMessageStatus.FOUND);\n        GetMessageResult result2 = new GetMessageResult();\n result2.setStatus(GetMessageStatus.MESSAGE_WAS_REMOVING);\n\n        when(fetcher.getMessageAsync(anyString(), anyString(), anyInt(), anyInt(), any())).thenReturn(result2);\n        when(nextStore.getMessage(anyString(), anyString(), anyInt(), anyLong(), anyInt(), any())).thenReturn(result2);\n        result1.setStatus(GetMessageStatus.OFFSET_FOUND_NULL"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetMessageAsync() {\n        mockContainer();\n        GetMessageResult result1 = new GetMessageResult();\n        result1.setStatus(GetMessageStatus.FOUND);\n        GetMessageResult result2 = new GetMessageResult();\n        result2.setStatus(GetMessageStatus.MESSAGE_WAS_REMOVING);\n\n        when(fetcher.getMessageAsync(anyString(), anyString(), anyInt(), anyLong(), anyInt(), any())).thenReturn(CompletableFuture.completedFuture(result1));\n        when(nextStore.getMessage(anyString(), anyString(), anyInt(), anyLong(), anyInt(),"
   },
   "13": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -118849,7 +118849,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumeMessageThenNoAck() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        await().atLeast(Duration.ofSeconds(2)).atMost(Duration.ofSeconds(4)).until(notified::get());\n        assertTrue(consumerOrderInfoManager.getConsumerOrderInfoLockManager().getTimeoutMap().isEmpty());\n    }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumeMessageThenNoAck() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        await().atLeast(Duration.ofSeconds(2)).atMost(Duration.ofSeconds(4)).until(notified::get);\n        assertTrue(consumerOrderInfoManager.getConsumerOrderInfoLockManager().getTimeoutMap().isEmpty());\n    }\n"
   },
   "14": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -121879,7 +121879,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumeMessageThenAck() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        consumerOrderInfoManager.commitAndNext(\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            1,\n            popTime\n        );\n        await().atMost(Duration.ofSeconds(1)).until(notified::get);\n        assertTrue(consumerOrderInfoManager.getConsumerOrderInfoLockManager().getTimeoutMap().isEmpty());\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumeMessageThenAck() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        consumerOrderInfoManager.commitAndNext(\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            1,\n            popTime\n        );\n        await().atMost(Duration.ofSeconds(1)).until(notified::get);\n        assertTrue(consumerOrderInfoManager.get"
   },
   "15": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -124909,7 +124909,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumeTheChangeInvisibleLonger() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        consumerOrderInfoManager.updateNextVisibleTime(\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            popTime + 5000\n        );\n        await().atLeast(Duration.ofSeconds(4)).atMost(Duration.ofSeconds(6)).until(notified::get);"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumeTheChangeInvisibleLonger() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        consumerOrderInfoManager.updateNextVisibleTime(\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            1,\n            popTime,\n            popTime + 5000\n        );\n        await().atLeast(Duration.ofSeconds(4)).atMost(Duration.of"
   },
   "16": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -127939,7 +127939,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumeTheChangeInvisibleShorter() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        consumerOrderInfoManager.updateNextVisibleTime(\n            TOPIC,\n            GROUP,\n            popTime,\n            popTime + 1000\n        );\n        await().atLeast(Duration.ofMillis(500)).atMost(Duration.ofSeconds(2)).until(notified::get);\n        assertTrue(consumerOrderInfoManager.getConsumerOrderInfoLockManager()."
+    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumeTheChangeInvisibleShorter() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        consumerOrderInfoManager.updateNextVisibleTime(\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            1,\n            popTime,\n            popTime + 1000\n        );\n        await().atLeast(Duration.ofMillis(500)).atMost(Duration.of"
   },
   "17": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -130969,7 +130969,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRecover() { ConsumerOrderInfoManager savedConsumerOrderInfoManager = new ConsumerOrderInfoManager();\n        savedConsumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n String encodedData = savedConsumerOrderInfoManager.encode();\n\n        consumerOrderInfoManager.decode(encodedData);\n        await().atLeast(Duration.ofSeconds(2)).atMost(Duration.ofSeconds(4)).until(notified::get);\n        assertTrue(consumerOrderInfoManager.getConsumerOrderInfoLockManager()."
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRecover() {\n        ConsumerOrderInfoManager savedConsumerOrderInfoManager = new ConsumerOrderInfoManager();\n        savedConsumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        String encodedData = savedConsumerOrderInfoManager.encode();\n\n        consumerOrderInfoManager.decode(encodedData);\n        await().atLeast(Duration.ofSeconds(2)).atMost(Duration.ofSeconds(4)).until"
   },
   "18": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -134000,7 +134000,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testCommitAndNext() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        assertEncodeAndDecode();\n        assertEquals(-2, consumerOrderInfoManager.commitAndNext(\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            1L,\n            popTime - 10\n        ));\n\n        assertEquals(2, consumerOrderInfoManager.commitAndNext(\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testCommitAndNext() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        assertEncodeAndDecode();\n        assertEquals(-2, consumerOrderInfoManager.commitAndNext(\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            1L,\n            popTime - 10\n        ));\n        assertEncodeAndDecode();\n        assertTrue(consumerOrderInfoManager.check"
   },
   "19": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -134876,7 +134876,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testCommitAndNext() {        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        assertEncodeAndDecode();\n        assertEquals(-2, consumerOrderInfoManager.commitAndNext(\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            1L,\n            popTime - 10\n        ));\n\n        assertEquals(2, consumerOrderInfoManager.commitAndNext(\n            TOPIC,\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testCommitAndNext() {\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            3000,\n            Lists.newArrayList(1L),\n            new StringBuilder()\n        );\n        assertEncodeAndDecode();\n        assertEquals(-2, consumerOrderInfoManager.commitAndNext(\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            1L,\n            popTime - 10\n        ));\n        assertEncodeAndDecode();\n        assertTrue(consumerOrderInfoManager.checkBlock"
   },
   "20": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -137907,7 +137907,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumedCount() {\n            // consume three new messages\n            StringBuilder orderInfoBuilder = new StringBuilder();\n            consumerOrderInfoManager.update(\n                false,\n                TOPIC,\n                GROUP,\n                QUEUE_ID_0,\n popTime,\n                3000,\n                Lists.newArrayList(1L, 2L, 3L),\n                orderInfoBuilder\n            );\n            assertEncodeAndDecode();\n            Map<String, Integer> orderInfoMap = ExtraInfoUtil.parseOrderCountInfo(orderInfoBuilder.toString());\n            assertEquals(1, orderInfoMap.size());\n            assertEquals(0, orderInfoMap.get(ExtraInfoUtil.getStartOffsetInfoMapKey(TOPIC, QUEUE_ID_0"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumedCount() {\n        {\n            // consume three new messages\n            StringBuilder orderInfoBuilder = new StringBuilder();\n            consumerOrderInfoManager.update(\n                false,\n                TOPIC,\n                GROUP,\n                QUEUE_ID_0,\n                popTime,\n                3000,\n                Lists.newArrayList(1L, 2L, 3L),\n                orderInfoBuilder\n            );\n            assertEncodeAndDecode();\n            Map<String, Integer> orderInfoMap = ExtraInfoUtil.parseOrderCountInfo(orderInfoBuilder.toString());\n            assertEquals(1, orderInfoMap.size"
   },
   "21": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -140938,7 +140938,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumedCountForMultiQueue() {        {\n            consumerOrderInfoManager.update(\n                false,\n                TOPIC,\n                GROUP,\n                QUEUE_ID_0,\n                popTime,\n                3000,\n                Lists.newArrayList(0L),\n                orderInfoBuilder\n            );\n            assertEncodeAndDecode();\n            Map<String, Integer> orderInfoMap = ExtraInfoUtil.parseOrderCountInfo(orderInfoBuilder.toString());\n            assertEquals(2, orderInfoMap.size());\n            assertEquals(0, orderInfoMap.get(ExtraInfoUtil.getStartOffsetInfoMapKey(TOPIC, QUEUE_ID_0)).intValue());\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testConsumedCountForMultiQueue() {\n            // consume two new messages\n            StringBuilder orderInfoBuilder = new StringBuilder();\n            consumerOrderInfoManager.update(\n                false,\n                TOPIC,\n                GROUP,\n                QUEUE_ID_0,\n                popTime,\n                3000,\n                Lists.newArrayList(0L),\n                orderInfoBuilder\n            );\n            consumerOrderInfoManager.update(\n                false,\n                TOPIC,\n                GROUP,\n                QUEUE_ID_1,\n                popTime,\n                3000,\n                Lists.newArrayList(0L),\n"
   },
   "22": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -143969,7 +143969,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testUpdateNextVisibleTime() { long invisibleTime = 3000;\n\n        long invisibleTime = 3000;\n\n        StringBuilder orderInfoBuilder = new StringBuilder();\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            1,\n            Lists.newArrayList(1L, 2L, 3L),\n            orderInfoBuilder\n        );\n\n        consumerOrderInfoManager.updateNextVisibleTime(TOPIC, GROUP, QUEUE_ID_0, popTime, invisibleTime, System.currentTimeMillis() + invisibleTime,"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testUpdateNextVisibleTime() {\n        long invisibleTime = 3000;\n\n        StringBuilder orderInfoBuilder = new StringBuilder();\n        consumerOrderInfoManager.update(\n            false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            1,\n            Lists.newArrayList(1L, 2L, 3L),\n            orderInfoBuilder\n        );\n\n        consumerOrderInfoManager.updateNextVisibleTime(TOPIC, GROUP, QUEUE_ID_0, 2L, popTime, System.currentTimeMillis() + invisibleTime);\n        assertEncodeAndDecode"
   },
   "23": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -147000,7 +147000,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testAutoCleanAndEncode() { BrokerConfig brokerConfig = new BrokerConfig();\n        BrokerController brokerController = mock(BrokerController.class);\n        TopicConfigManager topicConfigManager = mock(TopicConfigManager.class);\n        when(brokerController.getTopicConfigManager()).thenReturn(topicConfigManager);\n\n        ConcurrentMap<String, SubscriptionGroupConfig> subscriptionGroupConfigConcurrentMap = new ConcurrentHashMap<>();\n        when(subscriptionGroupManager.getSubscriptionGroupTable()).thenReturn(subscriptionGroupConfigConcurrentMap);\n\n        TopicConfig topicConfig = new TopicConfig(TOPIC);\n        when(topicConfigManager.selectTopicConfig(eq(TOPIC))).thenReturn(topicConfig"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testAutoCleanAndEncode() {\n        BrokerConfig brokerConfig = new BrokerConfig();\n        BrokerController brokerController = mock(BrokerController.class);\n        TopicConfigManager topicConfigManager = mock(TopicConfigManager.class);\n        when(brokerController.getBrokerConfig()).thenReturn(brokerConfig);\n        when(brokerController.getTopicConfigManager()).thenReturn(topicConfigManager);\n\n        SubscriptionGroupManager subscriptionGroupManager = mock(SubscriptionGroupManager.class);\n        when(brokerController.getSubscriptionGroupManager()).thenReturn(subscriptionGroupManager);\n        ConcurrentMap<String, SubscriptionGroupConfig> subscriptionGroup ="
   },
   "24": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -150031,7 +150031,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testLoadFromOldVersionOrderInfoData() {\n        consumerOrderInfoManager.update(false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n popTime,\n            1,\n            Lists.newArrayList(2L, 3L, 4L),\n            new StringBuilder());\n        ConsumerOrderInfoManager.OrderInfo orderInfo = consumerOrderInfoManager.getTable().values().findFirst()\n           .get().get(QUEUE_ID_0);\n\n        consumerOrderInfoManager.checkBlock(TOPIC, GROUP, QUEUE_ID_0, 3000));\n\n        StringBuilder orderInfoBuilder = new StringBuilder();\n consumerOrderInfoManager.update(false"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testLoadFromOldVersionOrderInfoData() {\n        consumerOrderInfoManager.update(false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            1,\n            Lists.newArrayList(2L, 3L, 4L),\n            new StringBuilder());\n        ConsumerOrderInfoManager.OrderInfo orderInfo = consumerOrderInfoManager.getTable().values().stream().findFirst()\n           .get().get(QUEUE_ID_0);\n\n        orderInfo.setInvisibleTime(null);\n        orderInfo.setOffsetConsumedCount(null);\n        orderInfo"
   },
   "25": {
     "commit_src": "6f6032e9eb812d42a67bea3cdb02cf4ef6e7f6c3",
@@ -150907,7 +150907,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testLoadFromOldVersionOrderInfoData() {\n        consumerOrderInfoManager.update(false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            1,\n            Lists.newArrayList(2L, 3L, 4L),\n            new StringBuilder());\n        ConsumerOrderInfoManager.OrderInfo orderInfo = consumerOrderInfoManager.getTable().values().stream().findFirst()\n           .get().get(QUEUE_ID_0);\n\n        orderInfo.setInvisibleTime(null);\n        orderInfo.setOffsetConsumedCount(null);\n        orderInfo.setOffsetNextVisibleTime(null"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testLoadFromOldVersionOrderInfoData() {\n        consumerOrderInfoManager.update(false,\n            TOPIC,\n            GROUP,\n            QUEUE_ID_0,\n            popTime,\n            1,\n            Lists.newArrayList(2L, 3L, 4L),\n            new StringBuilder());\n        ConsumerOrderInfoManager.OrderInfo orderInfo = consumerOrderInfoManager.getTable().values().stream().findFirst()\n           .get().get(QUEUE_ID_0);\n\n        orderInfo.setInvisibleTime(null);\n        orderInfo.setOffsetConsumedCount(null);\n        orderInfo"
   },
   "26": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -152671,7 +152671,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetWhenComputeIfPresent() { String handle1 = createHandle();\n        String handle2 = createHandle();\n        AtomicReference<MessageReceiptHandle> getHandleRef = new AtomicReference<>();\n\n        receiptHandleGroup.put(msgID, handle1, createMessageReceiptHandle(handle1, msgID));\n        CountDownLatch latch = new CountDownLatch(2);\n        Thread getThread = new Thread(() -> {\n inviteHandleGroup.computeIfPresent(msgID, handle1, messageReceiptHandle -> {\n inviteHandleGroup.computeIfPresent(new HandleKey(handle1), messageReceiptHandle -> {\n inviteHandleGroup.computeIfPresent(new HandleKey(handle1), messageReceiptHandle"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetWhenComputeIfPresent() {\n        String handle1 = createHandle();\n        String handle2 = createHandle();\n        AtomicReference<MessageReceiptHandle> getHandleRef = new AtomicReference<>();\n\n        receiptHandleGroup.put(msgID, handle1, createMessageReceiptHandle(handle1, msgID));\n        CountDownLatch latch = new CountDownLatch(2);\n        Thread getThread = new Thread(() -> {\n            try {\n                latch.countDown();\n                latch.await();\n                getHandleRef.set(receiptHandleGroup.get(msgID, handle1));\n           "
   },
   "27": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -154435,7 +154435,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetWhenComputeIfPresentReturnNull() {\n        String handle1 = createHandle();\n AtomicBoolean getCalled = new AtomicBoolean(false);\n        AtomicReference<MessageReceiptHandle> getHandleRef = new AtomicReference<>();\n\n        receiptHandleGroup.put(msgID, handle1, createMessageReceiptHandle(handle1, msgID));\n        CountDownLatch latch = new CountDownLatch(2);\n        Thread computeThread = new Thread(() -> {\n try {\n                latch.countDown();\n                        latch.await();\n                    } catch (Exception ignored) {\n                    }\n                    return FutureUtils.addExecutor(CompletableFuture.completedFuture(null), Executors.newCachedThreadPool());\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetWhenComputeIfPresentReturnNull() {\n        String handle1 = createHandle();\n        AtomicBoolean getCalled = new AtomicBoolean(false);\n        AtomicReference<MessageReceiptHandle> getHandleRef = new AtomicReference<>();\n\n        receiptHandleGroup.put(msgID, handle1, createMessageReceiptHandle(handle1, msgID));\n        CountDownLatch latch = new CountDownLatch(2);\n        Thread getThread = new Thread(() -> {\n            try {\n                latch.countDown();\n                latch.await();\n                getHandleRef.set(receiptHandleGroup.get(msgID, handle"
   },
   "28": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -156199,7 +156199,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRemoveWhenComputeIfPresent() { String handle1 = createHandle();\n        String handle2 = createHandle();\n AtomicReference<MessageReceiptHandle> removeHandleRef = new AtomicReference<>();\n\n        receiptHandleGroup.put(msgID, handle1, createMessageReceiptHandle(handle1, msgID));\n        CountDownLatch latch = new CountDownLatch(2);\n        Thread computeThread = new Thread(() -> {\n inviteHandleGroup.computeIfPresent(msgID, handle1, messageReceiptHandle -> {\n                    try {\n                        latch.countDown();\n                        latch.await();\n                    messageReceiptHandle.updateReceiptHandle(handle2);\n                    return FutureUtils.addExecutor(CompletableFuture.completedFuture(messageReceiptHandle), Executors."
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRemoveWhenComputeIfPresent() {\n        String handle1 = createHandle();\n        String handle2 = createHandle();\n        AtomicReference<MessageReceiptHandle> removeHandleRef = new AtomicReference<>();\n\n        receiptHandleGroup.put(msgID, handle1, createMessageReceiptHandle(handle1, msgID));\n        CountDownLatch latch = new CountDownLatch(2);\n        Thread removeThread = new Thread(() -> {\n            try {\n                latch.countDown();\n                latch.await();\n                removeHandleRef.set(receiptHandleGroup.remove(msgID, handle1));"
   },
   "29": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -157963,7 +157963,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRemoveWhenComputeIfPresentReturnNull() {\n        String handle1 = createHandle();\n AtomicBoolean removeCalled = new AtomicBoolean(false);\n        AtomicReference<MessageReceiptHandle> removeHandleRef = new AtomicReference<>();\n\n        receiptHandleGroup.put(msgID, handle1, createMessageReceiptHandle(handle1, msgID));\n        CountDownLatch latch = new CountDownLatch(2);\n        Thread computeThread = new Thread(() -> {\n            try {\n                latch.countDown();\n                        latch.await();\n                    } catch (Exception ignored) {\n                    }\n                    return FutureUtils.addExecutor(CompletableFuture.completedFuture(null), Executors.newCachedThreadPool());\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRemoveWhenComputeIfPresentReturnNull() {\n        String handle1 = createHandle();\n        AtomicBoolean removeCalled = new AtomicBoolean(false);\n        AtomicReference<MessageReceiptHandle> removeHandleRef = new AtomicReference<>();\n\n        receiptHandleGroup.put(msgID, handle1, createMessageReceiptHandle(handle1, msgID));\n        CountDownLatch latch = new CountDownLatch(2);\n        Thread removeThread = new Thread(() -> {\n            try {\n                latch.countDown();\n                latch.await();\n                removeHandleRef.set(receiptHandleGroup.remove(msgID"
   },
   "30": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -159337,7 +159337,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRemoveMultiThread() { String handle1 = createHandle();\n        AtomicReference<MessageReceiptHandle> removeHandleRef = new AtomicReference<>();\n        AtomicInteger count = new AtomicInteger();\n\n        receiptHandleGroup.put(msgID, handle1, createMessageReceiptHandle(handle1, msgID));\n        int threadNum = Math.max(Runtime.getRuntime().availableProcessors(), 3);\n        CountDownLatch latch = new CountDownLatch(threadNum); Thread thread = new Thread(() -> {\n                    latch.countDown();\n                    latch.await();\n                    MessageReceiptHandle handle = receiptHandleGroup.remove(msgID, handle1);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRemoveMultiThread() {        String handle1 = createHandle();\n        AtomicReference<MessageReceiptHandle> removeHandleRef = new AtomicReference<>();\n        AtomicInteger count = new AtomicInteger();\n\n        receiptHandleGroup.put(msgID, handle1, createMessageReceiptHandle(handle1, msgID));\n        int threadNum = Math.max(Runtime.getRuntime().availableProcessors(), 3);\n        CountDownLatch latch = new CountDownLatch(threadNum);\n        for (int i = 0; i < threadNum; i++) {\n            Thread thread = new Thread(() -> {\n                    try {\n                   "
   },
   "31": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -166015,7 +166015,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testReceiveMessagePollingTime() {\n        StreamObserver<ReceiveMessageResponse> receiveStreamObserver = mock(ServerCallStreamObserver.class);\n        ArgumentCaptor<ReceiveMessageResponse> responseArgumentCaptor = ArgumentCaptor.forClass(ReceiveMessageResponse.class);\n        doNothing().when(receiveStreamObserver).onNext(responseArgumentCaptor.capture());\n\n        ArgumentCaptor<Long> pollTimeCaptor = ArgumentCaptor.forClass(Long.class);\n        when(this.messagingProcessor.popMessage(any(), any(), anyString(), anyInt(), anyLong(), \n            pollTimeCaptor.capture(), anyInt(), any(), anyBoolean(), any(), anyLong()))\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testReceiveMessagePollingTime() {\n        StreamObserver<ReceiveMessageResponse> receiveStreamObserver = mock(ServerCallStreamObserver.class);\n        ArgumentCaptor<ReceiveMessageResponse> responseArgumentCaptor = ArgumentCaptor.forClass(ReceiveMessageResponse.class);\n        doNothing().when(receiveStreamObserver).onNext(responseArgumentCaptor.capture());\n\n        ArgumentCaptor<Long> pollTimeCaptor = ArgumentCaptor.forClass(Long.class);\n        when(this.grpcClientSettingsManager.getClientSettings(any())).thenReturn(Settings.newBuilder()\n           .setRequestTimeout(Duration."
   },
   "32": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -172693,7 +172693,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testReceiveMessage() {\n        StreamObserver<ReceiveMessageResponse> receiveStreamObserver = mock(ServerCallStreamObserver.class);\n        ArgumentCaptor<ReceiveMessageResponse> responseArgumentCaptor = ArgumentCaptor.forClass(ReceiveMessageResponse.class);\n        doNothing().when(receiveStreamObserver).onNext(responseArgumentCaptor.capture());\n\n        when(this.messagingProcessor.popMessage(\n            any(),\n            anyString(),\n            anyInt(),\n            anyLong(),\n            anyInt(),\n            any(),\n            anyBoolean(),\n            any(),\n            anyLong())).thenReturn(CompletableFuture.completedFuture(popResult));\n\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testReceiveMessage() {\n        StreamObserver<ReceiveMessageResponse> receiveStreamObserver = mock(ServerCallStreamObserver.class);\n        ArgumentCaptor<ReceiveMessageResponse> responseArgumentCaptor = ArgumentCaptor.forClass(ReceiveMessageResponse.class);\n        doNothing().when(receiveStreamObserver).onNext(responseArgumentCaptor.capture());\n\n        when(this.grpcClientSettingsManager.getClientSettings(any())).thenReturn(Settings.newBuilder().getDefaultInstanceForType());\n\n        PopResult popResult = new PopResult(PopStatus.NO_NEW_MSG, new ArrayList<>());\n       "
   },
   "33": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -174071,7 +174071,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testPopMessage()throws Throwable {\n        final String tag = \"tag\";\n        final long invisibleTime = Duration.ofSeconds(15).toMillis();\n        ArgumentCaptor<AddressableMessageQueue> messageQueueArgumentCaptor = ArgumentCaptor.forClass(AddressableMessageQueue.class);\n        ArgumentCaptor<PopMessageRequestHeader> requestHeaderArgumentCaptor = ArgumentCaptor.forClass(PopMessageRequestHeader.class);\n\n        List<PopResult> messageExtList = new ArrayList<>();\n        messageExtList.add(createMessageExt(TOPIC, \"noMatch\", 0, invisibleTime));\n        messageExtList.add(createMessageExt(TOPIC, tag, 1, invisibleTime"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testPopMessage() throws Throwable {\n        final String tag = \"tag\";\n        final long invisibleTime = Duration.ofSeconds(15).toMillis();\n        ArgumentCaptor<AddressableMessageQueue> messageQueueArgumentCaptor = ArgumentCaptor.forClass(AddressableMessageQueue.class);\n        ArgumentCaptor<PopMessageRequestHeader> requestHeaderArgumentCaptor = ArgumentCaptor.forClass(PopMessageRequestHeader.class);\n\n        List<MessageExt> messageExtList = new ArrayList<>();\n        messageExtList.add(createMessageExt(TOPIC, \"noMatch\", 0, invisibleTime));\n"
   },
   "34": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -174500,7 +174500,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testAddReceiptHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle);\n        MetadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(new SubscriptionGroupConfig());\n        MetadataService.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.scheduleRenewTask();\n        MetadataService."
+    "CEPROT_gen_test_tgt": "@Test\n    public void testAddReceiptHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(new SubscriptionGroupConfig());\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n       "
   },
   "35": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -174929,7 +174929,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandle() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        long newInvisibleTime = 18000L;\n\n        ReceiptHandle newReceiptHandleClass = ReceiptHandle.builder()\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandle() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP),"
   },
   "36": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -175583,7 +175583,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandle() { ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        ReceiptHandle newReceiptHandleClass = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis() - newInvisibleTime + config.getRenewAheadTimeMillis() - 5)\n           .invisibleTime(newInvisibleTime)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(0L)\n           .brokerId(BROKER_NAME)\n           .messageId("
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandle() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        ReceiptHandleGroupKey key = new ReceiptHandleGroupKey();\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, key, MSG_ID, receiptHandle, messageReceiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        Mockito.when(messagingProcessor.findConsumerChannel("
   },
   "37": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -176237,7 +176237,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandle() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        ReceiptHandle newReceiptHandleClass = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis() - newInvisibleTime + config.getRenewAheadTimeMillis() - 5)\n           .invisibleTime(newInvisibleTime)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandle() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mock"
   },
   "38": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -176811,7 +176811,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandle() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        ReceiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        AtomicBoolean newInvisibleTime = 18000L;\n\n        ReceiptHandle newReceiptHandleClass = ReceiptHandle.builder()\n           .startOffset(0L"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandle() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP),"
   },
   "39": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -177240,7 +177240,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewExceedMaxRenewTimes() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle = new MessageReceiptHandle(); messageReceiptHandle.setRenewTimes(1); ackResultFuture.completeExceptionally(new MQClientException(0, \"error\")"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewExceedMaxRenewTimes() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle = new MessageReceiptHandle();\n ackResultFuture = new CompletableFuture<>();\n ack"
   },
   "40": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -177894,7 +177894,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewExceedMaxRenewTimes() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        AtomicReference < MessageReceiptHandle > receiptHandle = new AtomicReference < MessageReceiptHandle > (); AtomicReference < String > receiptHandle1 = new AtomicReference < String > (); AtomicReference < String > receiptHandle2 = new AtomicReference < String > (); receiptHandle1.setReceiptHandle(receiptHandle1.getReceiptHandle()); AtomicReference < String > receiptHandle3 = new AtomicReference < String > (); AtomicReference < String > receiptHandle4 = new AtomicReference < String > ("
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewExceedMaxRenewTimes() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResult"
   },
   "41": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -178548,7 +178548,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewExceedMaxRenewTimes() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResultFuture.completeExceptionally(new MQClientException(0, \"error\")"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewExceedMaxRenewTimes() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResult"
   },
   "42": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -179122,7 +179122,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewExceedMaxRenewTimes() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResultFuture.completeExceptionally(new MQClientException(0, \"error\"));\n\n       "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewExceedMaxRenewTimes() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResult"
   },
   "43": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -179551,7 +179551,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithInvalidHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResultFuture.completeExceptionally(new ProxyException(ProxyExceptionCode.INVALID_RECEIPT_HANDLE, \"error\"));\n       "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithInvalidHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResultFuture.completeExceptionally(new ProxyException(ProxyExceptionCode.INVALID_HANDLE"
   },
   "44": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -180205,7 +180205,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithInvalidHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, MSG_ID, receiptHandle, null); \n        ackResultFuture = new CompletableFuture<>();\n        ackResultFuture.completeExceptionally(new ProxyException(ProxyExceptionCode.INVALID_RECEIPT_HANDLE, \"error\"));\n        ackResultFuture."
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithInvalidHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResultFuture.completeExceptionally(new ProxyException(ProxyExceptionCode.INVALID_HANDLE"
   },
   "45": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -180859,7 +180859,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithInvalidHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, MessageReceiptHandle.create(Mockito.eq(TOPIC), MSG_ID, MessageReceiptHandle.create(Mockito.any(MessageReceiptHandle.class), Mockito.eq(MESSAGE_ID), Mockito.eq(GROUP), Mockito.eq(TOPIC"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithInvalidHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResultFuture.completeExceptionally(new ProxyException(ProxyExceptionCode.INVALID_HANDLE"
   },
   "46": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -181433,7 +181433,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithInvalidHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResultFuture.completeExceptionally(new ProxyException(ProxyExceptionCode.INVALID_RECEIPT_HANDLE, \"error\"));\n       "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithInvalidHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        CompletableFuture<AckResult> ackResultFuture = new CompletableFuture<>();\n        ackResultFuture.completeExceptionally(new ProxyException(ProxyExceptionCode.INVALID_HANDLE"
   },
   "47": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -181862,7 +181862,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithErrorThenOK() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle = new MessageReceiptHandle.builder();\n               .retrieveTime(System.currentTimeMillis() - newInvisibleTime + config.getRenewAheadTimeMillis() - 5)\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithErrorThenOK() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        AtomicInteger count = new AtomicInteger(0);\n        List<CompletableFuture<AckResult>> futureList = new ArrayList < CompletableFuture"
   },
   "48": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -182516,7 +182516,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithErrorThenOK() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        AtomicInteger count = new AtomicInteger(0);\n        List<CompletableFuture<AckResult>> futureList = new ArrayList<>();\n       "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithErrorThenOK() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        AtomicInteger count = new AtomicInteger(0);\n        List<CompletableFuture<AckResult>> futureList"
   },
   "49": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -183170,7 +183170,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithErrorThenOK() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        AtomicInteger count = new AtomicInteger(0);\n        List<CompletableFuture<AckResult>> futureList = new ArrayList<>();\n       "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithErrorThenOK() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        AtomicInteger count = new AtomicInteger(0);\n        List<CompletableFuture<AckResult>> futureList"
   },
   "50": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -183744,7 +183744,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithErrorThenOK() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        AtomicInteger count = new AtomicInteger(0);\n        List<CompletableFuture<AckResult>> futureList = new ArrayList<>();\n       "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewWithErrorThenOK() {\n        ProxyConfig config = ConfigurationManager.getProxyConfig();\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        Mockito.when(messagingProcessor.findConsumerChannel(Mockito.any(), Mockito.eq(GROUP), Mockito.eq(channel))).thenReturn(Mockito.mock(ClientChannelInfo.class));\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n\n        AtomicInteger count = new AtomicInteger(0);\n        List<CompletableFuture<AckResult>> futureList"
   },
   "51": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -184173,7 +184173,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeout() {\n        long newInvisibleTime = 200L;\n        long maxRenewMs = ConfigurationManager.getProxyConfig().getRenewMaxTimeMillis();\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis() - maxRenewMs)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, QUEUE_ID, newReceiptHandle, MESSAGE_ID, OFFSET"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeout() {\n        long newInvisibleTime = 200L;\n        long maxRenewMs = ConfigurationManager.getProxyConfig().getRenewMaxTimeMillis();\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis() - maxRenewMs)\n           .invisibleTime(newInvisibleTime)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset("
   },
   "52": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -184827,7 +184827,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeout() {\n        long newInvisibleTime = 200L;\n        long maxRenewMs = ConfigurationManager.getProxyConfig().getRenewMaxTimeMillis();\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis() - maxRenewMs)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, QUEUE_ID, newReceiptHandle, MESSAGE_ID, OFFSET, RECONSUME_TIMES"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeout() {\n        long newInvisibleTime = 200L;\n        long maxRenewMs = ConfigurationManager.getProxyConfig().getRenewMaxTimeMillis();\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis() - maxRenewMs)\n           .invisibleTime(newInvisibleTime)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset("
   },
   "53": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -185481,7 +185481,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeout() {\n        long newInvisibleTime = 200L;\n        long maxRenewMs = ConfigurationManager.getProxyConfig().getRenewMaxTimeMillis();\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis() - maxRenewMs)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, MSG_ID, newReceiptHandle, OFFSET,\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeout() {\n        long newInvisibleTime = 200L;\n        long maxRenewMs = ConfigurationManager.getProxyConfig().getRenewMaxTimeMillis();\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis() - maxRenewMs)\n           .invisibleTime(newInvisibleTime)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset("
   },
   "54": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -186055,7 +186055,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeout() {\n        long newInvisibleTime = 200L;\n        long maxRenewMs = ConfigurationManager.getProxyConfig().getRenewMaxTimeMillis();\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis() - maxRenewMs)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, QUEUE_ID, newReceiptHandle, MESSAGE_ID, OFFSET"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeout() {\n        long newInvisibleTime = 200L;\n        long maxRenewMs = ConfigurationManager.getProxyConfig().getRenewMaxTimeMillis();\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis() - maxRenewMs)\n           .invisibleTime(newInvisibleTime)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset("
   },
   "55": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -186484,7 +186484,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeoutWithNoSubscription() {\n        long newInvisibleTime = 0L;\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(0)\n           .invisibleTime(newInvisibleTime)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n        MessageReceiptHandle messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, QUEUE_ID, newReceiptHandle, MESSAGE_ID, OFFSET,\n            RECONSUME_TIMES);\n        MetadataService.getSubscriptionGroupConfig(Mockito.any"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeoutWithNoSubscription() {\n        long newInvisibleTime = 0L;\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(0)\n           .invisibleTime(newInvisibleTime)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle"
   },
   "56": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -187138,7 +187138,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeoutWithNoSubscription() {\n        long newInvisibleTime = 0L;\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(0)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n        MessageReceiptHandle messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, MSG_ID, newReceiptHandle, OFFSET, RECONSUME_TIMES);\n        MetadataService.getSubscriptionGroupConfig(Mockito.any(),"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeoutWithNoSubscription() {\n        long newInvisibleTime = 0L;\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(0)\n           .invisibleTime(newInvisibleTime)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle"
   },
   "57": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -187792,7 +187792,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeoutWithNoSubscription() {\n        long newInvisibleTime = 0L;\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(0)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n        MessageReceiptHandle messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, MSG_ID, newReceiptHandle, OFFSET,\n            RECONSUME_TIMES);\n        MetadataService.getSubscriptionGroupConfig(Mockito.any"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeoutWithNoSubscription() {\n        long newInvisibleTime = 0L;\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(0)\n           .invisibleTime(newInvisibleTime)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle"
   },
   "58": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -188366,7 +188366,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeoutWithNoSubscription() {\n        long newInvisibleTime = 0L;\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(0)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build();\n        messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, QUEUE_ID, newReceiptHandle, MESSAGE_ID, OFFSET, RECONSUME_TIMES"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenTimeoutWithNoSubscription() {\n        long newInvisibleTime = 0L;\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(0)\n           .invisibleTime(newInvisibleTime)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle"
   },
   "59": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -188795,7 +188795,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenNotArrivingTime() {\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis())\n           .invisibleTime(INVISIBLE_TIME)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n        MessageReceiptHandle messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, MSG_ID, newReceiptHandle, OFFSET, RECONSUME_TIMES);\n        channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenNotArrivingTime() {\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis())\n           .invisibleTime(INVISIBLE_TIME)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle = new MessageReceiptHandle(GROUP"
   },
   "60": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -189449,7 +189449,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenNotArrivingTime() {\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis())\n           .invisibleTime(INVISIBLE_TIME)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n        MessageReceiptHandle messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, MSG_ID, OFFSET, RECONSUME_TIMES, newReceiptHandle);\n        MetadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenNotArrivingTime() {\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis())\n           .invisibleTime(INVISIBLE_TIME)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle = new MessageReceiptHandle(GROUP"
   },
   "61": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -190103,7 +190103,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenNotArrivingTime() {\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis())\n           .invisibleTime(INVISIBLE_TIME)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n        MessageReceiptHandle messageReceiptHandle = new MessageReceiptHandle(GROUP, TOPIC, MSG_ID, OFFSET, RECONSUME_TIMES, newReceiptHandle);\n        MetadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenNotArrivingTime() {\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis())\n           .invisibleTime(INVISIBLE_TIME)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle = new MessageReceiptHandle(GROUP"
   },
   "62": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -190677,7 +190677,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenNotArrivingTime() {\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis())\n           .invisibleTime(INVISIBLE_TIME)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, newReceiptHandle, messageReceiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testRenewReceiptHandleWhenNotArrivingTime() {\n        String newReceiptHandle = ReceiptHandle.builder()\n           .startOffset(0L)\n           .retrieveTime(System.currentTimeMillis())\n           .invisibleTime(INVISIBLE_TIME)\n           .reviveQueueId(1)\n           .topicType(ReceiptHandle.NORMAL_TOPIC)\n           .brokerName(BROKER_NAME)\n           .queueId(QUEUE_ID)\n           .offset(OFFSET)\n           .commitLogOffset(0L)\n           .build().encode();\n        messageReceiptHandle = new MessageReceiptHandle(GROUP"
   },
   "63": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -191106,7 +191106,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testAddReceiptHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle);\n        receiptHandleProcessor.removeReceiptHandle(channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.verify(messagingProcessor, Mockito.timeout(1000).times(0))\n           .changeInvisibleTime(Mockito.any(ProxyContext.class), Mockito.any(ReceiptHandle.class), Mockito.anyString(),"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testAddReceiptHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle);\n        receiptHandleProcessor.removeReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\\"
   },
   "64": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -191760,7 +191760,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testAddReceiptHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.removeReceiptHandle(channel, GROUP, MSG_ID, receiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n        Mockito.verify(messagingProcessor, Mockito.timeout(1000).times(0))\n           "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testAddReceiptHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.removeReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n        Mockito"
   },
   "65": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -192414,7 +192414,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testAddReceiptHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.removeReceiptHandle(channel, GROUP, MSG_ID, receiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n        Mockito.verify(messagingProcessor, Mockito.timeout(1000).times(0))\n           "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testAddReceiptHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.removeReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n        Mockito"
   },
   "66": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -192988,7 +192988,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testRemoveReceiptHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.removeReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.verify(messagingProcessor, Mockito.timeout(1000).times(0))\n           .changeInvisibleTime(Mockito.any(ProxyContext.class), Mockito.any(ReceiptHandle.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyLong());\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testAddReceiptHandle() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.removeReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle);\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n        Mockito"
   },
   "67": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -193417,7 +193417,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testClearGroup() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle);\n        receiptHandleProcessor.clearGroup(new ReceiptHandleProcessor.ReceiptHandleGroupKey(channel, GROUP));\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.verify(messagingProcessor, Mockito.timeout(1000).times(1))\n           .changeInvisibleTime(Mockito.any(ProxyContext.class), Mockito.any(ReceiptHandle.class), Mockito.eq(MESSAGE_ID),\n               "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testClearGroup() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle);\n        receiptHandleProcessor.clearGroup(new ReceiptHandleProcessor.ReceiptHandleGroupKey(channel, GROUP));\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n       "
   },
   "68": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -194071,7 +194071,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testClearGroup() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.clearGroup(new ReceiptHandleProcessor.ReceiptHandleGroupKey(channel, GROUP));\n        subscriptionGroupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(subscriptionGroupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n       "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testClearGroup() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.clearGroup(new ReceiptHandleProcessor.ReceiptHandleGroupKey(channel, GROUP));\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n        Mockito.verify"
   },
   "69": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -194725,7 +194725,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testClearGroup() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.clearGroup(new ReceiptHandleProcessor.ReceiptHandleGroupKey(channel, GROUP));\n        subscriptionGroupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(subscriptionGroupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n        Mockito.verify(messagingProcessor, Mockito.timeout(1000).times(1))\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testClearGroup() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.clearGroup(new ReceiptHandleProcessor.ReceiptHandleGroupKey(channel, GROUP));\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n        Mockito.verify"
   },
   "70": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -195299,7 +195299,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testClearGroup() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.clearGroup(new ReceiptHandleProcessor.ReceiptHandleGroupKey(channel, GROUP));\n        subscriptionGroupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(subscriptionGroupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n        subscriptionGroupConfig = new SubscriptionGroupConfig();\n        subscriptionGroupConfig.setInvisibleTimeMillis"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testClearGroup() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        receiptHandleProcessor.clearGroup(new ReceiptHandleProcessor.ReceiptHandleGroupKey(channel, GROUP));\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleProcessor.scheduleRenewTask();\n        Mockito.verify"
   },
   "71": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -195728,7 +195728,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testClientOffline() {\n        ArgumentCaptor<ConsumerIdsChangeListener> listenerArgumentCaptor = ArgumentCaptor.forClass(ConsumerIdsChangeListener.class);\n        Mockito.verify(messagingProcessor, Mockito.times(1)).registerConsumerListener(listenerArgumentCaptor.capture());\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle,\n        MessageReceiptHandle messageReceiptHandle);\n        listenerArgumentCaptor.getValue().handle(ConsumerGroupEvent.CLIENT_UNREGISTER, GROUP, new ClientChannelInfo(channel, \"\", LanguageCode.JAVA, 0));\n        assertTrue(receiptHandleProcessor.receiptHandleGroupMap"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testClientOffline() {\n        ArgumentCaptor<ConsumerIdsChangeListener> listenerArgumentCaptor = ArgumentCaptor.forClass(ConsumerIdsChangeListener.class);\n        Mockito.verify(messagingProcessor, Mockito.times(1)).registerConsumerListener(listenerArgumentCaptor.capture());\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        listenerArgumentCaptor.getValue().handle(ConsumerGroupEvent.CLIENT_UNREGISTER, GROUP, new ClientChannelInfo(channel, \"\", Language"
   },
   "72": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -196382,7 +196382,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testClientOffline() {\n        ArgumentCaptor<ConsumerIdsChangeListener> listenerArgumentCaptor = ArgumentCaptor.forClass(ConsumerIdsChangeListener.class);\n        Mockito.verify(messagingProcessor, Mockito.times(1)).registerConsumerListener(listenerArgumentCaptor.capture());\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, MSG_ID, receiptHandle, messageReceiptHandle);\n        listenerArgumentCaptor.getValue().handle(ConsumerGroupEvent.CLIENT_UNREGISTER, GROUP, new ClientChannelInfo(channel, \"\", LanguageCode.JAVA, 0));\n        assertTrue(receiptHandleProcessor.receiptHandleGroupMap"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testClientOffline() {\n        ArgumentCaptor<ConsumerIdsChangeListener> listenerArgumentCaptor = ArgumentCaptor.forClass(ConsumerIdsChangeListener.class);\n        Mockito.verify(messagingProcessor, Mockito.times(1)).registerConsumerListener(listenerArgumentCaptor.capture());\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        listenerArgumentCaptor.getValue().handle(ConsumerGroupEvent.CLIENT_UNREGISTER, GROUP, new ClientChannelInfo(channel, \"\", Language"
   },
   "73": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -197036,7 +197036,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testClientOffline() {\n        ArgumentCaptor<ConsumerIdsChangeListener> listenerArgumentCaptor = ArgumentCaptor.forClass(ConsumerIdsChangeListener.class);\n        Mockito.verify(messagingProcessor, Mockito.times(1)).registerConsumerListener(listenerArgumentCaptor.capture());\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);\n        listenerArgumentCaptor.getValue().handle(ConsumerGroupEvent.CLIENT_UNREGISTER, GROUP, new ClientChannelInfo(channel, \"\", LanguageCode.JAVA, 0));\n        assertTrue(receiptHandleProcessor.receiptHandleGroupMap"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testClientOffline() {\n        ArgumentCaptor<ConsumerIdsChangeListener> listenerArgumentCaptor = ArgumentCaptor.forClass(ConsumerIdsChangeListener.class);\n        Mockito.verify(messagingProcessor, Mockito.times(1)).registerConsumerListener(listenerArgumentCaptor.capture());\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        listenerArgumentCaptor.getValue().handle(ConsumerGroupEvent.CLIENT_UNREGISTER, GROUP, new ClientChannelInfo(channel, \"\", Language"
   },
   "74": {
     "commit_src": "c96a0b56658b48b17b762a1d2894e6d0576acad1",
@@ -197610,7 +197610,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testClientOffline() {\n        ArgumentCaptor<ConsumerIdsChangeListener> listenerArgumentCaptor = ArgumentCaptor.forClass(ConsumerIdsChangeListener.class);\n        Mockito.verify(messagingProcessor, Mockito.times(1)).registerConsumerListener(listenerArgumentCaptor.capture());\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);\n        listenerArgumentCaptor.getValue().handle(ConsumerGroupEvent.CLIENT_UNREGISTER, GROUP, new ClientChannelInfo(channel, \"\", LanguageCode.JAVA, 0));\n        assertTrue(receiptHandleProcessor.receiptHandleGroupMap.isEmpty());\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testClientOffline() {\n        ArgumentCaptor<ConsumerIdsChangeListener> listenerArgumentCaptor = ArgumentCaptor.forClass(ConsumerIdsChangeListener.class);\n        Mockito.verify(messagingProcessor, Mockito.times(1)).registerConsumerListener(listenerArgumentCaptor.capture());\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleProcessor.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, receiptHandle, messageReceiptHandle);\n        listenerArgumentCaptor.getValue().handle(ConsumerGroupEvent.CLIENT_UNREGISTER, GROUP, new ClientChannelInfo(channel, \"\", Language"
   },
   "75": {
     "commit_src": "3ac885705d9fa36870c1b059e1089c158fa66285",
@@ -198327,7 +198327,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController); assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0, 3, 0, 2));\n        counter.decrementInFlightMessageNum(topic, group, 0, 3, 0, 2);\n        assertEquals(3, counter.getGroupPopInFlightMessageNum(topic, group, 0, 3, 0));\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() {\n        BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController);\n\n        final String topic = \"topic\";\n        final String group = \"group\";\n\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0, 0, 3));\n\n        counter.incrementInFlightMessageNum(topic, group, 0, 3);\n       "
   },
   "76": {
     "commit_src": "3ac885705d9fa36870c1b059e1089c158fa66285",
@@ -199124,7 +199124,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0, 3));\n        assertEquals(3, counter.getGroupPopInFlightMessageNum(topic, group, 0, 2));\n\n        counter.decrementInFlightMessageNum(topic, group, 0, ExtraInfoUtil.buildExtraInfo(0, System.currentTimeMillis() - 1000,\n            0, 0, topic, \"broker\", 0));\n \n        counter.decrementInFlightMessageNum(topic, group,"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() {\n        BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController);\n\n        final String topic = \"topic\";\n        final String group = \"group\";\n\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0));\n\n        counter.incrementInFlightMessageNum(topic, group, 0, 3);\n        assertEquals("
   },
   "77": {
     "commit_src": "3ac885705d9fa36870c1b059e1089c158fa66285",
@@ -200171,7 +200171,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        long queueId = 0;\n        long popTime = 0;\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, queueId, 3));\n\n        counter.incrementInFlightMessageNum(topic, group, queueId, 3);\n        assertEquals(3, counter.getGroupPopInFlightMessageNum(topic, group, queueId, 0));\n\n        counter.decrementInFlightMessageNum(topic, group, queueId, 0, 3);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController);\n\n        final String topic = \"topic\";\n        final String group = \"group\";\n\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0));\n\n        counter.incrementInFlightMessageNum(topic, group, 0, 3);\n        assertEquals(1, counter"
   },
   "78": {
     "commit_src": "3ac885705d9fa36870c1b059e1089c158fa66285",
@@ -200783,7 +200783,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        long popTime = System.currentTimeMillis();\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, popTime, 0, 3));\n\n        counter.incrementInFlightMessageNum(topic, group, popTime, 0, 3);\n        assertEquals(3, counter.getGroupPopInFlightMessageNum(topic, group, popTime, 0, 3));\n\n        counter.decrementInFlightMessageNum(topic, group, popTime, 0, 1000);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController);\n\n        final String topic = \"topic\";\n        final String group = \"group\";\n\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0, 0, 3));\n\n        counter.incrementInFlightMessageNum(topic, group, 0, 3);\n        assertEquals("
   },
   "79": {
     "commit_src": "3ac885705d9fa36870c1b059e1089c158fa66285",
@@ -201325,7 +201325,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController); assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0, 3));\n\n        counter.decrementInFlightMessageNum(topic, group, 0, ExtraInfoUtil.buildExtraInfo(0, System.currentTimeMillis() - 1000,\n            0, 0, topic, \"broker\", 0));\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() {\n        BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController);\n\n        final String topic = \"topic\";\n        final String group = \"group\";\n\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0));\n\n        counter.incrementInFlightMessageNum(topic, group, 0, 3);\n        assertEquals("
   },
   "80": {
     "commit_src": "3ac885705d9fa36870c1b059e1089c158fa66285",
@@ -202317,7 +202317,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController); counter.incrementInFlightMessageNum(topic, group, 0, 3);\n        assertEquals(3, counter.getGroupPopInFlightMessageNum(topic, group, 0));\n\n        counter.decrementInFlightMessageNum(topic, group, 0, ExtraInfoUtil.buildExtraInfo(0, System.currentTimeMillis() - 1000,\n            0, 0, topic, \"broker\", 0));\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController);\n\n        final String topic = \"topic\";\n        final String group = \"group\";\n\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0));\n\n        counter.incrementInFlightMessageNum(topic, group, 0, 3);\n        assertEquals(1, counter"
   },
   "81": {
     "commit_src": "3ac885705d9fa36870c1b059e1089c158fa66285",
@@ -203164,7 +203164,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);        counter = new PopInflightMessageCounter(brokerController); counter.incrementInFlightMessageNum(topic, group, 0, 3, 0, 2); assertEquals(3, counter.getGroupPopInFlightMessageNum(topic, group, 0, 2, 0));\n\n        counter.decrementInFlightMessageNum(topic, group, 0, 2, 0, 3, 0, 0, 0, - 1000);\n       "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() {        BrokerController brokerController = mock(BrokerController.class);\n        long popTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(popTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController);\n\n        final String topic = \"topic\";\n        final String group = \"group\";\n\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, popTime, 0, 3));\n\n        counter.incrementInFlightMessageNum(topic, group, 0, 3);\n       "
   },
   "82": {
     "commit_src": "3ac885705d9fa36870c1b059e1089c158fa66285",
@@ -204141,7 +204141,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopCheckPoint checkPoint = new PopCheckPoint(); checkPoint.setPopTime(3); assertEquals(3, counter.getGroupPopInFlightMessageNum(topic, group, 0, 3));\n\n        counter.decrementInFlightMessageNum(topic, group, 0, ExtraInfoUtil.buildExtraInfo(0, System.currentTimeMillis() - 1000,            0, 0, topic, \"broker\", 0));\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() {\n        BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime + 1);\n        PopCheckPoint counter = new PopCheckPoint(brokerController);\n        assertEquals(brokerStartTime, counter.getPopTime());\n        assertEquals(brokerStartTime, counter.getGroupPopInFlightMessageNum(checkPoint.getTopic(), group, 0));\n\n        counter.incrementInFlightMessageNum(checkPoint.getQueueId(), 3);\n        assertEquals(brokerStartTime, counter."
   },
   "83": {
     "commit_src": "3ac885705d9fa36870c1b059e1089c158fa66285",
@@ -204858,7 +204858,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() { BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController);\n\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0, 3));\n        counter.decrementInFlightMessageNum(topic, group, 0, ExtraInfoUtil.buildExtraInfo(0, System.currentTimeMillis() - 1000,            0, 0, topic, \"broker\", 0));\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testNum() {        BrokerController brokerController = mock(BrokerController.class);\n        long brokerStartTime = System.currentTimeMillis();\n        when(brokerController.getShouldStartTime()).thenReturn(brokerStartTime);\n        PopInflightMessageCounter counter = new PopInflightMessageCounter(brokerController);\n\n        final String topic = \"topic\";\n        final String group = \"group\";\n\n        assertEquals(0, counter.getGroupPopInFlightMessageNum(topic, group, 0));\n\n        counter.incrementInFlightMessageNum(topic, group, 0, 3);\n        assertEquals("
   },
   "84": {
     "commit_src": "bee5077bcb77411f103aafb2220184f59db2c95e",
@@ -206722,7 +206722,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testSendMessage()throws Exception {        when(metadataServiceMock.getTopicMessageType(eq(topic))).thenReturn(TopicMessageType.NORMAL);\n        Message message = new Message(topic, \"123\".getBytes());\n        message.putUserProperty(\"a\", \"b\");\n        sendMessageRequestHeader = new SendMessageRequestHeader();\n        sendMessageRequestHeader.setTopic(topic);\n        sendMessageRequestHeader.setProducerGroup(producerGroup);\n sendMessageRequestHeader.setQueueId(0);\n        sendMessageRequestHeader.setSysFlag(0);\n        sendMessageRequestHeader.setBody(message.getBody());\n        RemotingCommand expectResponse = RemotingCommand.createResponseCommand(ResponseCode.SUCCESS,"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testSendMessage()throws Exception {        when(metadataServiceMock.getTopicMessageType(eq(topic))).thenReturn(TopicMessageType.NORMAL);\n        Message message = new Message(topic, \"123\".getBytes());\n        message.putUserProperty(\"a\", \"b\");\n        SendMessageRequestHeader sendMessageRequestHeader = new SendMessageRequestHeader();\n        sendMessageRequestHeader.setTopic(topic);\n        sendMessageRequestHeader.setProducerGroup(producerGroup);\n        sendMessageRequestHeader.setDefaultTopic(\"\");\n        sendMessageRequestHeader.setDefaultTopicQueueNums(0);\n        sendMessageRequestHeader.setQueueId(0"
   },
   "85": {
     "commit_src": "bee5077bcb77411f103aafb2220184f59db2c95e",
@@ -207246,7 +207246,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testAckMessageByInvalidBrokerNameHandle()throws Exception {        when(topicRouteService.getBrokerAddr(anyString())).thenThrow(new MQClientException(ResponseCode.TOPIC_NOT_EXIST, \"\"));\n        try {\n            this.clusterMessageService.ackMessage(\n                ProxyContext.create(),\n                ReceiptHandle.builder()\n                   .startOffset(0L)\n                   .retrieveTime(System.currentTimeMillis())\n                   .queueId(0)\n                   .offset(123)\n                   .commitLogOffset(0L)\n            fail();\n        } catch (Exception e) {\n            assertTrue(e instanceof ProxyException);\n            ProxyException proxyException = (ProxyException"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testAckMessageByInvalidBrokerNameHandle() throws Exception {\n        when(topicRouteService.getBrokerAddr(anyString())).thenThrow(new MQClientException(ResponseCode.TOPIC_NOT_EXIST, \"\"));\n        try {\n            this.clusterMessageService.ackMessage(\n                ProxyContext.create(),\n                ReceiptHandle.builder()\n                   .startOffset(0L)\n                   .retrieveTime(System.currentTimeMillis())\n                   .invisibleTime(3000)\n                   .reviveQueueId(1)\n                   .topicType(ReceiptHandle.NORMAL_TOPIC)\n                   .brokerName(\"MQ"
   },
   "86": {
     "commit_src": "bee5077bcb77411f103aafb2220184f59db2c95e",
@@ -207985,7 +207985,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetTopicMessageType() { assertEquals(TopicMessageType.UNSPECIFIED, this.clusterMetadataService.getTopicMessageType(ERR_TOPIC));\n        assertEquals(1, this.clusterMetadataService.topicConfigCache.asMap().size());\n        assertEquals(TopicMessageType.UNSPECIFIED, this.clusterMetadataService.getTopicMessageType(ERR_TOPIC));\n\n        assertEquals(TopicMessageType.NORMAL, this.clusterMetadataService.getTopicMessageType(TOPIC));\n        assertEquals(2, this.clusterMetadataService.topicConfigCache.asMap().size());\n    }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetTopicMessageType() {\n        assertEquals(TopicMessageType.UNSPECIFIED, this.clusterMetadataService.getTopicMessageType(ERR_TOPIC));\n        assertEquals(1, this.clusterMetadataService.topicConfigCache.asMap().size());\n        assertEquals(TopicMessageType.UNSPECIFIED, this.clusterMetadataService.getTopicMessageType(ERR_TOPIC));\n\n        assertEquals(TopicMessageType.NORMAL, this.clusterMetadataService.getTopicMessageType(TOPIC));\n        assertEquals(2, this.clusterMetadataService.topicConfigCache.asMap().size());\n    }\n"
   },
   "87": {
     "commit_src": "bee5077bcb77411f103aafb2220184f59db2c95e",
@@ -208459,7 +208459,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetSubscriptionGroupConfig() { assertNotNull(this.clusterMetadataService.getSubscriptionGroupConfig(CONTEXT, GROUP));\n        assertEquals(1, this.clusterMetadataService.subscriptionGroupConfigCache.asMap().size());\n    }\n\npublic SubscriptionGroupConfig getSubscriptionGroupConfig(ProxyContext ctx, GROUP) { assertEquals(CONTEXT, this.clusterMetadataService.getSubscriptionGroupConfig(CONTEXT, GROUP));\n        assertEquals(1, this.clusterMetadataService.subscriptionGroupConfigCache.asMap().size());\n    }\npublic SubscriptionGroupConfig getSubscriptionGroupConfig(CONTEXT, GROUP);"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetSubscriptionGroupConfig() {\n        assertNotNull(this.clusterMetadataService.getSubscriptionGroupConfig(CONTEXT, GROUP));\n        assertEquals(1, this.clusterMetadataService.subscriptionGroupConfigCache.asMap().size());\n    }\n    @Test\n    public void testGetSubscriptionGroupConfig() {\n        assertNotNull(this.clusterMetadataService.getSubscriptionGroupConfig(PROXY_CONTEXT, GROUP));\n        assertEquals(1, this.clusterMetadataService.subscriptionGroupConfigCache.asMap().size());\n    }\n"
   },
   "88": {
     "commit_src": "bee5077bcb77411f103aafb2220184f59db2c95e",
@@ -208738,7 +208738,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetCurrentMessageQueueView()throws Throwable { ProxyContext ctx = new ProxyContext(new MessageQueueService()); MessageQueueView view = this.topicRouteService.getCurrentMessageQueueView(ctx, TOPIC); assertTrue(TopicRouteHelper.isTopicNotExistError(exception));\n        assertEquals(1, this.topicRouteService.topicCache.size());\n\n        assertNotNull(this.topicRouteService.getCurrentMessageQueueView(TOPIC));\n        assertEquals(2, this.topicRouteService.topicCache.size());\n    }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetCurrentMessageQueueView()throws Throwable {\n        MQClientException exception = catchThrowableOfType(() -> this.topicRouteService.getCurrentMessageQueueView(ERR_TOPIC), MQClientException.class);\n        assertTrue(TopicRouteHelper.isTopicNotExistError(exception));\n        assertEquals(1, this.topicRouteService.topicCache.asMap().size());\n\n        assertNotNull(this.topicRouteService.getCurrentMessageQueueView(TOPIC));\n        assertEquals(2, this.topicRouteService.topicCache.asMap().size());\n    }\n"
   },
   "89": {
     "commit_src": "bee5077bcb77411f103aafb2220184f59db2c95e",
@@ -210467,7 +210467,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetTopicRouteForProxy()throws Throwable { ProxyContext ctx = new ProxyContext(); ProxyTopicRouteData topicRouteData = getAllMessageQueueView(ctx, TOPIC); ProxyTopicRouteData proxyTopicRouteData = this.topicRouteService.getTopicRouteForProxy(ctx, TOPIC); assertEquals(1, proxyTopicRouteData.getBrokerDatas().size());\n        assertEquals(addressList, proxyTopicRouteData.getBrokerAddrs().get(MixAll.MASTER_ID));\n    }\n\n        ProxyTopicRouteData proxyTopicRouteData = new ProxyTopicRouteData(); proxyTopicRouteData.setQueueDatas(topicRouteData.getQueueDatas());"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetTopicRouteForProxy()throws Throwable {\n        List<Address> addressList = Lists.newArrayList(new Address(Address.AddressScheme.IPv4, HostAndPort.fromParts(\"127.0.0.1\", 8888)));\n        ProxyTopicRouteData proxyTopicRouteData = this.topicRouteService.getTopicRouteForProxy(new ProxyContext(Context.getDefaultContext(), addressList, TOPIC));\n\n        assertEquals(1, proxyTopicRouteData.getBrokerDatas().size());\n        assertEquals(addressList, proxyTopicRouteData.getBrokerDatas().get(0).getBrokerAddrs()."
   },
   "90": {
     "commit_src": "bee5077bcb77411f103aafb2220184f59db2c95e",
@@ -210956,7 +210956,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetCurrentMessageQueueView()throws Throwable { this.topicConfigTable.put(TOPIC, new TopicConfig(TOPIC, 3, 2, PermName.PERM_WRITE | PermName.PERM_READ));\n        MessageQueueView messageQueueView = this.topicRouteService.getCurrentMessageQueueView(TOPIC, null); assertEquals(3, messageQueueView.getReadSelector().getQueues().size());\n        assertEquals(2, messageQueueView.getWriteSelector().getQueues().size());\n        assertEquals(1, messageQueueView.getReadSelector().getBrokerActingQueues().size());\n\n        assertEquals(LOCAL_ADDR, messageQueueView.getReadSelector().selectOne(true),"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetCurrentMessageQueueView()throws Throwable {        this.topicConfigTable.put(TOPIC, new TopicConfig(TOPIC, 3, 2, PermName.PERM_WRITE | PermName.PERM_READ));\n        MessageQueueView messageQueueView = this.topicRouteService.getCurrentMessageQueueView(PROXY_CONTEXT, TOPIC); assertEquals(3, messageQueueView.getReadSelector().getQueues().size());\n        assertEquals(2, messageQueueView.getWriteSelector().getQueues().size());\n        assertEquals(1, messageQueueView.getReadSelector().getBrokerActingQueues().size());"
   },
   "91": {
     "commit_src": "bee5077bcb77411f103aafb2220184f59db2c95e",
@@ -213345,7 +213345,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetTopicRouteForProxy()throws Throwable { ProxyTopicRouteData proxyTopicRouteData = this.topicRouteService.getTopicRouteForProxy(new ArrayList<>(), TOPIC);\n\n        assertEquals(1, proxyTopicRouteData.getBrokerDatas().size());\n        assertEquals(\n            Lists.newArrayList(new Address(Address.AddressScheme.IPv4, HostAndPort.fromParts(\n                HostAndPort.fromString(BROKER_ADDR).getHost(),\n                ConfigurationManager.getProxyConfig().getGrpcServerPort()))),\n            proxyTopicRouteData.getBrokerDatas().get(0).getBrokerAddrs().get(MixAll.MASTER_ID));\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetTopicRouteForProxy()throws Throwable {        ProxyTopicRouteData proxyTopicRouteData = this.topicRouteService.getTopicRouteForProxy(new ArrayList<>(), TOPIC);\n\n        assertEquals(1, proxyTopicRouteData.getBrokerDatas().size());\n        assertEquals(\n            Lists.newArrayList(new Address(Address.AddressScheme.IPv4, HostAndPort.fromParts(\n                HostAndPort.fromString(BROKER_ADDR).getHost(),\n                ConfigurationManager.getProxyConfig().getGrpcServerPort()))),\n            proxyTopicRouteData.getBrokerDatas().get"
   },
   "92": {
     "commit_src": "737c1e53383350a5671fa207ee0e4ce932850bac",
@@ -214095,7 +214095,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void computeIfAbsent() { ConcurrentHashMap < String, String > map = new ConcurrentHashMap<>();\n        map.put(\"123\", \"1111\");\n        String value = ConcurrentHashMapUtils.computeIfAbsent(map, \"123\", k -> \"234\");\n        assertEquals(\"1111\", value);\n        String value1 = ConcurrentHashMapUtils.computeIfAbsent(map, \"1232\", k -> \"2342\");\n        assertEquals(\"2342\", value1);\n        String value2 = ConcurrentHashMapUtils.computeIfAbsent(map, \"123\", k -> \"2342\");\n        assertEquals(\"1111\", value2);\n    }"
+    "CEPROT_gen_test_tgt": "@Test\n    public void computeIfAbsent() {\n\n        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();\n        map.put(\"123\", \"1111\");\n        String value = ConcurrentHashMapUtils.computeIfAbsent(map, \"123\", k -> \"234\");\n        assertEquals(\"1111\", value);\n        String value1 = ConcurrentHashMapUtils.computeIfAbsent(map, \"1232\", k -> \"2342\");\n        assertEquals(\"2342\", value1);\n        String value2 = ConcurrentHashMapUtils.computeIfAbsent(map, \"123\", k -> \"2342\");\n        assertEquals(\"1111\", value2);\n"
   },
   "93": {
     "commit_src": "3dda55e812240ee5bb667d078fb49acc13f0ccb4",
@@ -214855,7 +214855,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testSyncGrpcV2Channel()throws Exception { String consumerGroup = \"consumerGroup\";\n        GrpcClientSettingsManager grpcClientSettingsManager = mock(GrpcClientSettingsManager.class);\n        GrpcClientChannelManager grpcChannelManager = mock(GrpcChannelManager.class);\n        GrpcClientChannel = new GrpcClientChannel(\n            proxyRelayService, grpcClientSettingsManager, grpcChannelManager,\n            clientId,\n            LanguageCode.JAVA,\n            5\n        );\n\n        ArgumentCaptor<Message> messageArgumentCaptor = ArgumentCaptor.forClass(Message.class);\n sendResult.setSendStatus(SendStatus.SEND_OK);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testSyncGrpcV2Channel()throws Exception {\n        String consumerGroup = \"consumerGroup\";\n        GrpcClientSettingsManager grpcClientSettingsManager = mock(GrpcClientSettingsManager.class);\n        GrpcChannelManager grpcChannelManager = mock(GrpcChannelManager.class);\n        GrpcClientChannel grpcClientChannel = new GrpcClientChannel(\n            proxyRelayService, grpcClientSettingsManager, grpcChannelManager,\n            ProxyContext.create().setRemoteAddress(remoteAddress).setLocalAddress(localAddress),\n            clientId);\n        ClientChannelInfo clientChannelInfo = new ClientChannelInfo(\n            grpcClientChannel,\n"
   },
   "94": {
     "commit_src": "3dda55e812240ee5bb667d078fb49acc13f0ccb4",
@@ -215615,7 +215615,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testSyncRemotingChannel()throws Exception { String consumerGroup = \"consumerGroup\";\n        String consumerGroup2 = \"consumerGroup2\";\n Channel channel = createMockChannel();\n        Set<SubscriptionData> subscriptionDataSet = new HashSet<>();\n        subscriptionDataSet.add(FilterAPI.buildSubscriptionData(\"topic\", \"tagSub\"));\n        Set<SubscriptionData> subscriptionDataSet2 = new HashSet<>();\n        RemotingProxyOutClient remotingProxyOutClient = mock(RemotingProxyOutClient.class);\n        RemotingChannel remotingChannel = new RemotingChannel(remotingProxyOutClient, proxyRelayService, channel, clientId, subscriptionDataSet2);\n ClientChannelInfo clientChannelInfo2 = new ClientChannelInfo"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testSyncRemotingChannel() throws Exception {        String consumerGroup = \"consumerGroup\";\n        String consumerGroup2 = \"consumerGroup2\";\n        Channel channel = createMockChannel();\n        Set<SubscriptionData> subscriptionDataSet = new HashSet<>();\n        subscriptionDataSet.add(FilterAPI.buildSubscriptionData(\"topic\", \"tagSub\"));\n        Set<SubscriptionData> subscriptionDataSet2 = new HashSet<>();\n        subscriptionDataSet2.add(FilterAPI.buildSubscriptionData(\"topic2\", \"tagSub2\"));\n        RemotingProxyOutClient remotingProxyOutClient = mock(RemotingProxyOutClient.class);"
   },
   "95": {
     "commit_src": "e369d7deac6e4dde950a8da7c3d976bb26d0e6b5",
@@ -223205,7 +223205,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testSubAfterTraceDataFormatTest() { TraceContext subAfterContext = new TraceContext();\n        subAfterContext.setTraceType(TraceType.SubAfter);\n        subAfterContext.setRequestId(\"3455848576927\");\n        subAfterContext.setCostTime(20);\n        subAfterContext.setGroupName(\"GroupName-test\");\n        subAfterContext.setContextCode(98623046);\n TraceBean bean = new TraceBean();\n        subAfterContext.setTraceBeans(new ArrayList<>(1));\n        subAfterContext.getTraceBeans().add(bean);\n\n        TraceTransferBean traceTransferBean = TraceDataEncoder.encoderFromContextBean(subAfterContext);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testSubAfterTraceDataFormatTest() {\n        TraceContext subAfterContext = new TraceContext();\n        subAfterContext.setTraceType(TraceType.SubAfter);\n        subAfterContext.setRequestId(\"3455848576927\");\n        subAfterContext.setCostTime(20);\n        subAfterContext.setSuccess(true);\n        subAfterContext.setTimeStamp(1625883640000L);\n        subAfterContext.setGroupName(\"GroupName-test\");\n        subAfterContext.setContextCode(98623046);\n        TraceBean bean = new TraceBean();\n        bean"
   },
   "96": {
     "commit_src": "87075c26623c2c40486c4189e2fb1855426a8ae9",
@@ -224013,7 +224013,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetProducerData() { ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_ID, CLIENT_ID);\n\n        this.grpcClientSettingsManager.updateClientSettings(CLIENT_ID, Settings.newBuilder()\n           .setBackoffPolicy(RetryPolicy.getDefaultInstance())\n           .setPublishing(Publishing.getDefaultInstance())\n           .build());\n        Settings settings = this.grpcClientSettingsManager.getClientSettings(context);\n        assertNotEquals(settings.getBackoffPolicy(), settings.getBackoffPolicy().getDefaultInstanceForType());\n        assertNotEquals(settings.getPublishing(), settings.getPublishing().getDefaultInstanceForType());\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetProducerData() {\n        ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_ID, CLIENT_ID);\n\n        this.grpcClientSettingsManager.updateClientSettings(CLIENT_ID, Settings.newBuilder()\n           .setBackoffPolicy(RetryPolicy.getDefaultInstance())\n           .setPublishing(Publishing.getDefaultInstance())\n           .build());\n        Settings settings = this.grpcClientSettingsManager.getClientSettings(context);\n        assertNotEquals(settings.getBackoffPolicy(), settings.getBackoffPolicy().getDefaultInstanceForType());\n        assertNotEquals(settings"
   },
   "97": {
     "commit_src": "87075c26623c2c40486c4189e2fb1855426a8ae9",
@@ -224431,7 +224431,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetProducerData() {\n        ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_ID, CLIENT_ID);\n\n        this.grpcClientSettingsManager.updateClientSettings(ctx, CLIENT_ID, Settings.newBuilder()\n           .setBackoffPolicy(RetryPolicy.getDefaultInstance())\n           .setPublishing(Publishing.getDefaultInstance())\n           .build());\n        Settings settings = this.grpcClientSettingsManager.getClientSettings(context);\n        assertNotEquals(settings.getBackoffPolicy(), settings.getBackoffPolicy().getDefaultInstanceForType());\n        assertNotEquals(settings.getPublishing(), settings.getPublishing().getDefaultInstanceForType());\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetProducerData() {\n        ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_ID, CLIENT_ID);\n\n        this.grpcClientSettingsManager.updateClientSettings(ctx, CLIENT_ID, Settings.newBuilder()\n           .setBackoffPolicy(RetryPolicy.getDefaultInstance())\n           .setPublishing(Publishing.getDefaultInstance())\n           .build());\n        Settings settings = this.grpcClientSettingsManager.getClientSettings(context);\n        assertNotEquals(settings.getBackoffPolicy(), settings.getBackoffPolicy().getDefaultInstanceForType());\n        assertNotEquals"
   },
   "98": {
     "commit_src": "87075c26623c2c40486c4189e2fb1855426a8ae9",
@@ -225239,7 +225239,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetSubscriptionData() {        SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig();\n        when(this.messagingProcessor.getSubscriptionGroupConfig(any(), any()))\n           .thenReturn(subscriptionGroupConfig);\n\n        this.grpcClientSettingsManager.updateClientSettings(CLIENT_ID, Settings.newBuilder()\n           .setSubscription(Subscription.newBuilder()\n               .setGroup(Resource.newBuilder().setName(\"group\").build())\n           .build())\n\n        subscriptionGroupConfig = this.grpcClientSettingsManager.getClientSettings(context);\n        assertEquals(RetryPolicy.newBuilder(), this.grpcClientSettingsManager.get"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetSubscriptionData() {\n        SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig();\n        when(this.messagingProcessor.getSubscriptionGroupConfig(any(), any()))\n           .thenReturn(subscriptionGroupConfig);\n\n        this.grpcClientSettingsManager.updateClientSettings(CLIENT_ID, Settings.newBuilder()\n           .setSubscription(Subscription.newBuilder()\n               .setGroup(Resource.newBuilder().setName(\"group\").build())\n               .build())\n           .build());\n\n        ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_ID"
   },
   "99": {
     "commit_src": "87075c26623c2c40486c4189e2fb1855426a8ae9",
@@ -225657,7 +225657,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetSubscriptionData() {\n        SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig();\n        when(this.messagingProcessor.getSubscriptionGroupConfig(any(), any()))\n           .thenReturn(subscriptionGroupConfig);\n\n        this.grpcClientSettingsManager.updateClientSettings(CLIENT_ID, Settings.newBuilder()\n           .setSubscription(Subscription.newBuilder()\n               .setGroup(Resource.newBuilder().setName(\"group\").build())\n           .build())\n           .build());\n\n        ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_ID, CLIENT_ID);\n\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetSubscriptionData() {\n        SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig();\n        when(this.messagingProcessor.getSubscriptionGroupConfig(any(), any()))\n           .thenReturn(subscriptionGroupConfig);\n\n        this.grpcClientSettingsManager.updateClientSettings(CLIENT_ID, Settings.newBuilder()\n           .setSubscription(Subscription.newBuilder()\n               .setGroup(Resource.newBuilder().setName(\"group\").build())\n               .build())\n           .build());\n\n        ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_"
   },
   "100": {
     "commit_src": "87075c26623c2c40486c4189e2fb1855426a8ae9",
@@ -226385,7 +226385,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetSubscriptionData() {        SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig();\n        when(this.messagingProcessor.getSubscriptionGroupConfig(any(), any()))\n           .thenReturn(subscriptionGroupConfig);\n\n        this.grpcClientSettingsManager.updateClientSettings(CLIENT_ID, Settings.newBuilder()\n           .setSubscription(Subscription.newBuilder()\n               .setGroup(Resource.newBuilder().setName(\"group\").build())\n           .build())\n           .build());\n\n        ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_ID, CLIENT_ID);\n\n       "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetSubscriptionData() {\n        SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig();\n        when(this.messagingProcessor.getSubscriptionGroupConfig(any(), any()))\n           .thenReturn(subscriptionGroupConfig);\n\n        this.grpcClientSettingsManager.updateClientSettings(CLIENT_ID, Settings.newBuilder()\n           .setSubscription(Subscription.newBuilder()\n               .setGroup(Resource.newBuilder().setName(\"group\").build())\n               .build())\n           .build());\n\n        ProxyContext context = ProxyContext.create().withVal(ContextVariable.CLIENT_ID"
   },
   "101": {
     "commit_src": "87075c26623c2c40486c4189e2fb1855426a8ae9",
@@ -228518,7 +228518,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testPullMessageWithoutSub()throws Exception {        when(messagingProcessorMock.getConsumerGroupInfo(eq(group)))\n           .thenReturn(consumerGroupInfoMock);\n        SubscriptionData subscriptionData = new SubscriptionData();\n subscriptionData.setSubString(subString);\n        subscriptionData.setExpressionType(type);\n when(consumerGroupInfoMock.findSubscriptionData(eq(topic)))\n           .thenReturn(subscriptionData);\n\n        PullMessageRequestHeader header = new PullMessageRequestHeader();\n        header.setTopic(topic);\n        header.setConsumerGroup(group);\n header.setQueueOffset(0L);\n        header.setSuspendTimeoutMillis(1000L"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testPullMessageWithoutSub() throws Exception {        when(messagingProcessorMock.getConsumerGroupInfo(eq(group)))\n           .thenReturn(consumerGroupInfoMock);\n        SubscriptionData subscriptionData = new SubscriptionData();\n        subscriptionData.setSubString(subString);\n        subscriptionData.setExpressionType(type);\n        when(consumerGroupInfoMock.findSubscriptionData(eq(topic)))\n           .thenReturn(subscriptionData);\n\n        PullMessageRequestHeader header = new PullMessageRequestHeader();\n        header.setTopic(topic);\n        header.setConsumerGroup(group);\n header.setExpressionType"
   },
   "102": {
     "commit_src": "87075c26623c2c40486c4189e2fb1855426a8ae9",
@@ -230651,7 +230651,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testPullMessageWithSub()throws Exception {        when(messagingProcessorMock.getConsumerGroupInfo(eq(group)))\n           .thenReturn(consumerGroupInfoMock);\n        SubscriptionData subscriptionData = new SubscriptionData();\n subscriptionData.setSubString(subString);\n subscriptionData.setExpressionType(type);\n when(consumerGroupInfoMock.findSubscriptionData(eq(topic)))\n           .thenReturn(subscriptionData);\n\n        PullMessageRequestHeader header = new PullMessageRequestHeader();\n        header.setTopic(topic);\n        header.setConsumerGroup(group);\n header.setQueueOffset(0L);\n header.setCommitOffset(0L"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testPullMessageWithSub() throws Exception {        when(messagingProcessorMock.getConsumerGroupInfo(eq(group)))\n           .thenReturn(consumerGroupInfoMock);\n        SubscriptionData subscriptionData = new SubscriptionData();\n        subscriptionData.setSubString(subString);\n        subscriptionData.setExpressionType(type);\n        when(consumerGroupInfoMock.findSubscriptionData(eq(topic)))\n           .thenReturn(subscriptionData);\n\n        PullMessageRequestHeader header = new PullMessageRequestHeader();\n        header.setTopic(topic);\n        header.setConsumerGroup(group);\n header.setExpressionType"
   },
   "103": {
     "commit_src": "a1bf49d5d07cf64374bc3dde5ab43add831433ad",
@@ -231956,7 +231956,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testClearGroup() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);\n        receiptHandleManager.clearGroup(new ReceiptHandleGroupKey(channel, GROUP));\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleManager.scheduleRenewTask();\n        Mockito.verify(messagingProcessor, Mockito.timeout(1000).times(1))\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testClearGroup() {\n        Channel channel = PROXY_CONTEXT.getVal(ContextVariable.CHANNEL);\n        receiptHandleManager.addReceiptHandle(PROXY_CONTEXT, channel, GROUP, MSG_ID, messageReceiptHandle);\n        receiptHandleManager.clearGroup(new ReceiptHandleProcessor.ReceiptHandleGroupKey(channel, GROUP));\n        SubscriptionGroupConfig groupConfig = new SubscriptionGroupConfig();\n        Mockito.when(metadataService.getSubscriptionGroupConfig(Mockito.any(), Mockito.eq(GROUP))).thenReturn(groupConfig);\n        receiptHandleManager.scheduleRenewTask();\n        Mockito.verify(messagingProcessor"
   },
   "104": {
     "commit_src": "017ad110475e8024585327b44f47e5e97aabc63b",
@@ -235095,7 +235095,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testAckMessage()throws Throwable { when(this.messagingProcessor.ackMessage(any(), any(), eq(\"msg1\"), anyString(), anyString()))\n           .thenThrow(new ProxyException(ProxyExceptionCode.INVALID_RECEIPT_HANDLE, \"receipt handle is expired\"));\n\n        when(this.messagingProcessor.ackMessage(any(), any(), eq(\"msg2\"), anyString(), anyString()))\n           .thenReturn(CompletableFuture.completedFuture(msg2AckResult));\n\n        AckResult msg3AckResult = new AckResult();\n        msg3AckResult.setStatus(AckStatus.NO_EXIST"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testAckMessage() throws Throwable {        when(this.messagingProcessor.ackMessage(any(), any(), eq(\"msg1\"), anyString(), anyString()))\n           .thenThrow(new ProxyException(ProxyExceptionCode.INVALID_RECEIPT_HANDLE, \"receipt handle is expired\"));\n\n        AckResult msg2AckResult = new AckResult();\n        msg2AckResult.setStatus(AckStatus.OK);\n        when(this.messagingProcessor.ackMessage(any(), any(), eq(\"msg2\"), anyString(), anyString()))\n           .thenReturn(CompletableFuture.completedFuture(msg2"
   },
   "105": {
     "commit_src": "c36bb78e850129b9db40adc5b0e1b9bfd5c8fd2e",
@@ -236149,7 +236149,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessResponseCommand()throws InterruptedException {\n        final Semaphore semaphore = new Semaphore(0);\n        ResponseFuture responseFuture = new ResponseFuture(null, 1, 3000, new InvokeCallback() {\n            @Override\n            public void operationComplete(final ResponseFuture responseFuture) {\n                assertThat(semaphore.availablePermits()).isEqualTo(0);\n            }\n        }, new SemaphoreReleaseOnlyOnce(semaphore));\n\n        RemotingCommand response = RemotingCommand.createResponseCommand(0, \"Foo\");\n        response.setOpaque(1);\n remotingAbstract.processResponseCommand(null, response);\n\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessResponseCommand() throws InterruptedException {\n        final Semaphore semaphore = new Semaphore(0);\n        ResponseFuture responseFuture = new ResponseFuture(null, 1, 3000, new InvokeCallback() {\n            @Override\n            public void operationComplete(final ResponseFuture responseFuture) {\n                assertThat(semaphore.availablePermits()).isEqualTo(0);\n            }\n        }, new SemaphoreReleaseOnlyOnce(semaphore));\n\n        remotingAbstract.responseTable.putIfAbsent(1, responseFuture);\n\n        RemotingCommand response = RemotingCommand.createResponseCommand(0"
   },
   "106": {
     "commit_src": "c36bb78e850129b9db40adc5b0e1b9bfd5c8fd2e",
@@ -237203,7 +237203,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessResponseCommand_RunCallBackInCurrentThread()throws InterruptedException {\n        final Semaphore semaphore = new Semaphore(0);\n        ResponseFuture responseFuture = new ResponseFuture(null, 1, 3000, new InvokeCallback() {\n            @Override\n            public void operationComplete(final ResponseFuture responseFuture) {\n                assertThat(semaphore.availablePermits()).isEqualTo(0);\n            }\n        when(remotingAbstract.getCallbackExecutor()).thenReturn(null);\n\n        RemotingCommand response = RemotingCommand.createResponseCommand(0, \"Foo\");\n        semaphore.acquire(1);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessResponseCommand_RunCallBackInCurrentThread() throws InterruptedException {\n        final Semaphore semaphore = new Semaphore(0);\n        ResponseFuture responseFuture = new ResponseFuture(null, 1, 3000, new InvokeCallback() {\n            @Override\n            public void operationComplete(final ResponseFuture responseFuture) {\n                assertThat(semaphore.availablePermits()).isEqualTo(0);\n            }\n        }, new SemaphoreReleaseOnlyOnce(semaphore));\n\n        remotingAbstract.responseTable.putIfAbsent(1, responseFuture);\n        when(remotingAbstract.getCallbackExecutor()"
   },
   "107": {
     "commit_src": "c36bb78e850129b9db40adc5b0e1b9bfd5c8fd2e",
@@ -238257,7 +238257,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessRequestCommand()throws InterruptedException { final Semaphore semaphore = new Semaphore(0);\n        final RemotingCommand request = RemotingCommand.createRequestCommand(1, null);\n        ResponseFuture responseFuture = new ResponseFuture(null, 1, request, 3000,\n            responseFuture1 -> assertThat(semaphore.availablePermits()).isEqualTo(0), new SemaphoreReleaseOnlyOnce(semaphore));\n\n        remotingAbstract.processResponseCommand(null, response);\n\n        // Acquire the release permit after call back\n        semaphore.acquire(1);\n        assertThat(semaphore.availablePermits()).isEqualTo(0);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testProcessRequestCommand() throws InterruptedException {\n        final Semaphore semaphore = new Semaphore(0);\n        RemotingCommand request = RemotingCommand.createRequestCommand(1, null);\n        ResponseFuture responseFuture = new ResponseFuture(null, 1, request, 3000,\n            responseFuture1 -> assertThat(semaphore.availablePermits()).isEqualTo(0), new SemaphoreReleaseOnlyOnce(semaphore));\n\n        remotingAbstract.responseTable.putIfAbsent(1, responseFuture);\n        RemotingCommand response = RemotingCommand.createResponseCommand(0, \"Foo\");\n"
   },
   "108": {
     "commit_src": "fd32dae2ab59f86dd215eeec405bf4fa6212bcb3",
@@ -242575,7 +242575,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testUpdateAndCreateTopicOnSlaveInRocksdb()throws Exception { if (notToBeExecuted()) {\n            return;\n        }\n initRocksdbTopicManager();\n        testUpdateAndCreateTopicOnSlave();\n    }\n\n        TopicConfig topicConfig = new TopicConfig();\ntopicConfig.setTopicName(\"testTopic\"); Assert.assertNull(topicConfig.getTopic()); Assert.assertEquals(topicConfig.getTopic(), \"testTopic\"); Assert.assertTrue(topicConfig.getTopic().equals(\"testTopic\"); }\ntopicConfig.setTopicType(\"topic\"); Assert.assertTrue(topicConfig.getTopic().equals(\"testTopic"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testUpdateAndCreateTopicOnSlaveInRocksdb() throws Exception { final String topic = requestHeader.getTopic(); TopicValidator.ValidateTopicResult result = new TopicValidator.ValidateTopicResult(); RemotingCommand updateAndCreateTopic = new RemotingCommand(topic, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null"
   },
   "109": {
     "commit_src": "fd32dae2ab59f86dd215eeec405bf4fa6212bcb3",
@@ -246893,7 +246893,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testUpdateAndCreateTopicOnSlave()throws Exception { // setup\n        MessageStoreConfig messageStoreConfig = mock(MessageStoreConfig.class);\n        when(messageStoreConfig.getBrokerRole()).thenReturn(BrokerRole.SLAVE);\n        defaultMessageStore = mock(DefaultMessageStore.class);\n        when(brokerController.getMessageStoreConfig()).thenReturn(messageStoreConfig);\n\n        // test on slave\n        String topic = \"TEST_CREATE_TOPIC\";\n RemotingCommand request = buildCreateTopicRequest(topic);\n        RemotingCommand response = adminBrokerProcessor.processRequest(handlerContext, request);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testUpdateAndCreateTopicOnSlave()throws Exception { // setup\n        MessageStoreConfig messageStoreConfig = mock(MessageStoreConfig.class);\n        when(messageStoreConfig.getBrokerRole()).thenReturn(BrokerRole.SLAVE);\n        defaultMessageStore = mock(DefaultMessageStore.class);\n        when(brokerController.getMessageStoreConfig()).thenReturn(messageStoreConfig);\n\n        TopicValidator.ValidateTopicResult result = brokerController.updateAndCreateTopic(topic, null); RemotingCommand request = buildCreateTopicRequest(topic);\n        RemotingCommand response = adminBrokerProcessor.processRequest(request, null,"
   },
   "110": {
     "commit_src": "fd32dae2ab59f86dd215eeec405bf4fa6212bcb3",
@@ -249436,7 +249436,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testDeleteTopicOnSlaveInRocksdb()throws Exception {        if (notToBeExecuted()) {\n            return;\n        }\n initRocksdbTopicManager();\n        testDeleteTopicOnSlave();\n    }\n\n        final Set<String> groups = new HashSet < String > (); groups.add(topicManager.getTopic().getName()); assertThat(groups, contains(topicManager.getTopic().getName())); assertThat(groups, contains(topicManager.getTopic().getName())); }\n        initRocksdbTopicManager();\n        testDeleteTopicOnSlave();\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testDeleteTopicOnSlaveInRocksdb()throws Exception {        if (notToBeExecuted()) {\n            return;\n        }\n        initRocksdbTopicManager();\n        testDeleteTopicOnSlave();\n    }\n\n        TopicValidator.ValidateTopicResult result = deleteTopic(ctx, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,"
   },
   "111": {
     "commit_src": "fd32dae2ab59f86dd215eeec405bf4fa6212bcb3",
@@ -251979,7 +251979,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testDeleteTopicOnSlave()throws Exception { // setup\n        MessageStoreConfig messageStoreConfig = mock(MessageStoreConfig.class);\n        when(messageStoreConfig.getBrokerRole()).thenReturn(BrokerRole.SLAVE);\n        defaultMessageStore = mock(DefaultMessageStore.class);\n        when(brokerController.getMessageStoreConfig()).thenReturn(messageStoreConfig);\n\n        String topic = \"TEST_DELETE_TOPIC\";\n RemotingCommand request = buildDeleteTopicRequest(topic);\n        RemotingCommand response = adminBrokerProcessor.processRequest(handlerContext, request);\n        assertThat(response.getCode()).isEqualTo(ResponseCode.SYSTEM_ERROR);\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testDeleteTopicOnSlave()throws Exception { // setup\n        MessageStoreConfig messageStoreConfig = mock(MessageStoreConfig.class);\n        when(messageStoreConfig.getBrokerRole()).thenReturn(BrokerRole.SLAVE);\n        defaultMessageStore = mock(DefaultMessageStore.class);\n        when(brokerController.getMessageStoreConfig()).thenReturn(messageStoreConfig);\n\n        String topic = \"TEST_DELETE_TOPIC\";\n RemotingCommand request = buildDeleteTopicRequest(topic);\n        RemotingCommand response = adminBrokerProcessor.processRequest(handlerContext, request);\n        assertThat(response.get"
   },
   "112": {
     "commit_src": "fd32dae2ab59f86dd215eeec405bf4fa6212bcb3",
@@ -253027,7 +253027,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testUpdateAndCreateSubscriptionGroupOnSlaveInRocksdb()throws Exception { initRocksdbSubscriptionManager();\n        testUpdateAndCreateSubscriptionGroupOnSlave();\n    }\n\n        initRocksdbSubscriptionManager();\n        testUpdateAndCreateSubscriptionGroupOnSlave();\n    }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testUpdateAndCreateSubscriptionGroupOnSlaveInRocksdb()throws Exception { initRocksdbSubscriptionManager();\n        testUpdateAndCreateSubscriptionGroupOnSlave();\n    }\n\n        response = updateAndCreateSubscriptionGroup(ctx, RemotingCommand.createRequestCommand(null)); Assert.assertNull(response.getBody()); Assert.assertEquals(1, response.getStatus()); Assert.assertEquals(2, response.getStatus()); Assert.assertEquals(3, response.getStatus()); Assert.assertEquals(4, response.getStatus()); Assert.assertEquals(5, response.getStatus()); Assert.assertEquals(6,"
   },
   "113": {
     "commit_src": "fd32dae2ab59f86dd215eeec405bf4fa6212bcb3",
@@ -254075,7 +254075,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testUpdateAndCreateSubscriptionGroupOnSlave()throws RemotingCommandException { // Setup\n        MessageStoreConfig messageStoreConfig = mock(MessageStoreConfig.class);\n        when(messageStoreConfig.getBrokerRole()).thenReturn(BrokerRole.SLAVE);\n        defaultMessageStore = mock(DefaultMessageStore.class);\n when(brokerController.getMessageStoreConfig()).thenReturn(messageStoreConfig);\n        subscriptionGroupConfig.setConsumeEnable(Boolean.TRUE);\n        subscriptionGroupConfig.setConsumeBroadcastEnable(Boolean.TRUE);\n        subscriptionGroupConfig.setConsumeFromMinEnable(Boolean.TRUE);\n request.setBody(JSON.toJSON(subscriptionGroupConfig).toString().getBytes());\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testUpdateAndCreateSubscriptionGroupOnSlave()throws RemotingCommandException { // Setup\n        MessageStoreConfig messageStoreConfig = mock(MessageStoreConfig.class);\n        when(messageStoreConfig.getBrokerRole()).thenReturn(BrokerRole.SLAVE);\n        defaultMessageStore = mock(DefaultMessageStore.class);\n        when(brokerController.getMessageStoreConfig()).thenReturn(messageStoreConfig);\n\n        // Test\n        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.UPDATE_AND_CREATE_SUBSCRIPTIONGROUP, null);\n        SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig"
   },
   "114": {
     "commit_src": "fd32dae2ab59f86dd215eeec405bf4fa6212bcb3",
@@ -256003,7 +256003,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testDeleteSubscriptionGroupOnSlaveInRocksdb()throws Exception { initRocksdbSubscriptionManager();\n        testDeleteSubscriptionGroupOnSlave();\n } "
+    "CEPROT_gen_test_tgt": "@Test\n    public void testDeleteSubscriptionGroupOnSlaveInRocksdb()throws Exception { initRocksdbSubscriptionManager();\n        testDeleteSubscriptionGroupOnSlave();\n    }\nif (requestHeader.getGroupName()!= null) { assertThat(brokerController.getSubscriptionGroupManager().getSubscriptionGroupConfig(requestHeader.getGroupName()).isEqualTo(new String[] { \"admin\", \"slave\" }).anyTimes(); }\n if (requestHeader.getGroupName()!= null) { assertThat(brokerController.getSubscriptionGroupManager().getSubscriptionGroupConfig(requestHeader.getGroupName()).isEqualTo(new String[] { \"admin\", \""
   },
   "115": {
     "commit_src": "fd32dae2ab59f86dd215eeec405bf4fa6212bcb3",
@@ -257931,7 +257931,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testDeleteSubscriptionGroupOnSlave()throws RemotingCommandException {        // Setup\n        MessageStoreConfig messageStoreConfig = mock(MessageStoreConfig.class);\n        when(messageStoreConfig.getBrokerRole()).thenReturn(BrokerRole.SLAVE);\n        defaultMessageStore = mock(DefaultMessageStore.class);\n        when(brokerController.getMessageStoreConfig()).thenReturn(messageStoreConfig);\n\n        RemotingCommand response = adminBrokerProcessor.processRequest(handlerContext, request);\n        assertThat(response.getCode()).isEqualTo(ResponseCode.SYSTEM_ERROR);\n        assertThat(response.getRemark()).isEqualTo(\"Can\\'t modify topic or subscription group from slave broker, \" +\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testDeleteSubscriptionGroupOnSlave()throws RemotingCommandException {        // Setup\n        MessageStoreConfig messageStoreConfig = mock(MessageStoreConfig.class);\n        when(messageStoreConfig.getBrokerRole()).thenReturn(BrokerRole.SLAVE);\n        defaultMessageStore = mock(DefaultMessageStore.class);\n        when(brokerController.getMessageStoreConfig()).thenReturn(messageStoreConfig);\n\n        // Test\n        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.DELETE_SUBSCRIPTIONGROUP, null);\n        request.addExtField(\"groupName\", \"GID-Group-"
   },
   "116": {
     "commit_src": "73b3fde83765e066541e3455cd1e6604292a9b7c",
@@ -258476,7 +258476,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testTimingCount() { String baseDir = StoreTestUtils.createBaseDir();\n\n        TimerMetrics first = new TimerMetrics(baseDir); \n        Assert.assertTrue(first.load());\n        first.addAndGet(\"AAA\", 1000);\n        first.addAndGet(\"BBB\", 2000);\n        Assert.assertEquals(1000, first.getTimingCount(\"AAA\"));\n        Assert.assertEquals(2000, first.getTimingCount(\"BBB\"));\n        second = new TimerMetrics(baseDir);\n        Assert.assertTrue(second.load());\n        Assert.assertEquals(1000, second.getTimingCount(\"AAA\"));\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testTimingCount() {        String baseDir = StoreTestUtils.createBaseDir();\n\n        TimerMetrics first = new TimerMetrics(baseDir);\n        Assert.assertTrue(first.load());\n        first.addAndGet(\"AAA\", 1000);\n        first.addAndGet(\"BBB\", 2000);\n        Assert.assertEquals(1000, first.getTimingCount(\"AAA\"));\n        Assert.assertEquals(2000, first.getTimingCount(\"BBB\"));\n        long curr = System.currentTimeMillis();\n        Assert.assertTrue(first.getTopicPair(\"AAA\").getTimeStamp() > curr - 10);\n"
   },
   "117": {
     "commit_src": "84285d13a7d056a444e52f0f58e713b9a6343c08",
@@ -259761,6 +259761,6 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testGetLocalhostByNetworkInterface()throws Exception { assertThat(MixAll.LOCALHOST).isNotNull(); assertThat(MixAll.getLocalhostByNetworkInterface()).isNotNull();\n        assertThat(MixAll.getLocalhostByNetworkInterface()).isNotNull();\n    }\n\n        public void testGetLocalhostByNetworkInterface()throws Exception { assertThat(MixAll.LOCALHOST).isNotNull(); assertThat(MixAll.getLocalhostByNetworkInterface()).isNotNull();\n        }\n\n        assertThat(MixAll.getLocalhostByNetworkInterface()).isNotNull(); }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testGetLocalhostByNetworkInterface()throws Exception { assertThat(MixAll.LOCALHOST).isNotNull();\n        assertThat(MixAll.getLocalhostByNetworkInterface()).isNotNull();\n    }\n} "
   }
 }

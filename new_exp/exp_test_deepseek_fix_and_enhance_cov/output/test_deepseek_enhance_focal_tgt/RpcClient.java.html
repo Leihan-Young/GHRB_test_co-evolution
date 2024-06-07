@@ -1,0 +1,1029 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RpcClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">nacos-common 2.3.0-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">com.alibaba.nacos.common.remote.client</a> &gt; <span class="el_source">RpcClient.java</span></div><h1>RpcClient.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 1999-2020 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.alibaba.nacos.common.remote.client;
+
+import com.alibaba.nacos.api.ability.ClientAbilities;
+import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.remote.RequestCallBack;
+import com.alibaba.nacos.api.remote.RequestFuture;
+import com.alibaba.nacos.api.remote.request.ClientDetectionRequest;
+import com.alibaba.nacos.api.remote.request.ConnectResetRequest;
+import com.alibaba.nacos.api.remote.request.HealthCheckRequest;
+import com.alibaba.nacos.api.remote.request.Request;
+import com.alibaba.nacos.api.remote.response.ClientDetectionResponse;
+import com.alibaba.nacos.api.remote.response.ConnectResetResponse;
+import com.alibaba.nacos.api.remote.response.ErrorResponse;
+import com.alibaba.nacos.api.remote.response.Response;
+import com.alibaba.nacos.common.lifecycle.Closeable;
+import com.alibaba.nacos.common.packagescan.resource.DefaultResourceLoader;
+import com.alibaba.nacos.common.packagescan.resource.ResourceLoader;
+import com.alibaba.nacos.common.remote.ConnectionType;
+import com.alibaba.nacos.common.remote.PayloadRegistry;
+import com.alibaba.nacos.common.utils.CollectionUtils;
+import com.alibaba.nacos.common.utils.InternetAddressUtil;
+import com.alibaba.nacos.common.utils.LoggerUtils;
+import com.alibaba.nacos.common.utils.NumberUtils;
+import com.alibaba.nacos.common.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.alibaba.nacos.api.exception.NacosException.SERVER_ERROR;
+
+/**
+ * abstract remote client to connect to server.
+ *
+ * @author liuzunfei
+ * @version $Id: RpcClient.java, v 0.1 2020年07月13日 9:15 PM liuzunfei Exp $
+ */
+@SuppressWarnings(&quot;PMD.AbstractClassShouldStartWithAbstractNamingRule&quot;)
+public abstract class RpcClient implements Closeable {
+    
+<span class="fc" id="L71">    private static final Logger LOGGER = LoggerFactory.getLogger(&quot;com.alibaba.nacos.common.remote.client&quot;);</span>
+    
+    private ServerListFactory serverListFactory;
+    
+<span class="fc" id="L75">    protected BlockingQueue&lt;ConnectionEvent&gt; eventLinkedBlockingQueue = new LinkedBlockingQueue&lt;&gt;();</span>
+    
+<span class="fc" id="L77">    protected volatile AtomicReference&lt;RpcClientStatus&gt; rpcClientStatus = new AtomicReference&lt;&gt;(</span>
+            RpcClientStatus.WAIT_INIT);
+    
+    protected ScheduledExecutorService clientEventExecutor;
+    
+<span class="fc" id="L82">    private final BlockingQueue&lt;ReconnectContext&gt; reconnectionSignal = new ArrayBlockingQueue&lt;&gt;(1);</span>
+    
+    protected volatile Connection currentConnection;
+    
+    private String tenant;
+    
+    protected ClientAbilities clientAbilities;
+    
+<span class="fc" id="L90">    private long lastActiveTimeStamp = System.currentTimeMillis();</span>
+    
+    /**
+     * listener called where connection's status changed.
+     */
+<span class="fc" id="L95">    protected List&lt;ConnectionEventListener&gt; connectionEventListeners = new ArrayList&lt;&gt;();</span>
+    
+    /**
+     * handlers to process server push request.
+     */
+<span class="fc" id="L100">    protected List&lt;ServerRequestHandler&gt; serverRequestHandlers = new ArrayList&lt;&gt;();</span>
+    
+<span class="fc" id="L102">    private static final Pattern EXCLUDE_PROTOCOL_PATTERN = Pattern.compile(&quot;(?&lt;=\\w{1,5}://)(.*)&quot;);</span>
+    
+    protected RpcClientConfig rpcClientConfig;
+    
+<span class="fc" id="L106">    protected final ResourceLoader resourceLoader = new DefaultResourceLoader();</span>
+    
+    static {
+<span class="fc" id="L109">        PayloadRegistry.init();</span>
+<span class="fc" id="L110">    }</span>
+    
+    public RpcClient(RpcClientConfig rpcClientConfig) {
+<span class="fc" id="L113">        this(rpcClientConfig, null);</span>
+<span class="fc" id="L114">    }</span>
+    
+<span class="fc" id="L116">    public RpcClient(RpcClientConfig rpcClientConfig, ServerListFactory serverListFactory) {</span>
+<span class="fc" id="L117">        this.rpcClientConfig = rpcClientConfig;</span>
+<span class="fc" id="L118">        this.serverListFactory = serverListFactory;</span>
+<span class="fc" id="L119">        init();</span>
+<span class="fc" id="L120">    }</span>
+    
+    protected void init() {
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">        if (this.serverListFactory != null) {</span>
+<span class="nc" id="L124">            rpcClientStatus.compareAndSet(RpcClientStatus.WAIT_INIT, RpcClientStatus.INITIALIZED);</span>
+<span class="nc" id="L125">            LoggerUtils.printIfInfoEnabled(LOGGER, &quot;RpcClient init in constructor, ServerListFactory = {}&quot;,</span>
+<span class="nc" id="L126">                    serverListFactory.getClass().getName());</span>
+        }
+<span class="fc" id="L128">    }</span>
+    
+    public Map&lt;String, String&gt; labels() {
+<span class="nc" id="L131">        return Collections.unmodifiableMap(rpcClientConfig.labels());</span>
+    }
+    
+    /**
+     * init client abilities.
+     *
+     * @param clientAbilities clientAbilities.
+     */
+    public RpcClient clientAbilities(ClientAbilities clientAbilities) {
+<span class="nc" id="L140">        this.clientAbilities = clientAbilities;</span>
+<span class="nc" id="L141">        return this;</span>
+    }
+    
+    /**
+     * init server list factory. only can init once.
+     *
+     * @param serverListFactory serverListFactory
+     */
+    public RpcClient serverListFactory(ServerListFactory serverListFactory) {
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        if (!isWaitInitiated()) {</span>
+<span class="nc" id="L151">            return this;</span>
+        }
+<span class="nc" id="L153">        this.serverListFactory = serverListFactory;</span>
+<span class="nc" id="L154">        rpcClientStatus.compareAndSet(RpcClientStatus.WAIT_INIT, RpcClientStatus.INITIALIZED);</span>
+        
+<span class="nc" id="L156">        LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] RpcClient init, ServerListFactory = {}&quot;, rpcClientConfig.name(),</span>
+<span class="nc" id="L157">                serverListFactory.getClass().getName());</span>
+<span class="nc" id="L158">        return this;</span>
+    }
+    
+    /**
+     * Notify when client disconnected.
+     */
+    protected void notifyDisConnected() {
+<span class="nc bnc" id="L165" title="All 2 branches missed.">        if (connectionEventListeners.isEmpty()) {</span>
+<span class="nc" id="L166">            return;</span>
+        }
+<span class="nc" id="L168">        LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] Notify disconnected event to listeners&quot;, rpcClientConfig.name());</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        for (ConnectionEventListener connectionEventListener : connectionEventListeners) {</span>
+            try {
+<span class="nc" id="L171">                connectionEventListener.onDisConnect();</span>
+<span class="nc" id="L172">            } catch (Throwable throwable) {</span>
+<span class="nc" id="L173">                LoggerUtils.printIfErrorEnabled(LOGGER, &quot;[{}] Notify disconnect listener error, listener = {}&quot;,</span>
+<span class="nc" id="L174">                        rpcClientConfig.name(), connectionEventListener.getClass().getName());</span>
+<span class="nc" id="L175">            }</span>
+<span class="nc" id="L176">        }</span>
+<span class="nc" id="L177">    }</span>
+    
+    /**
+     * Notify when client new connected.
+     */
+    protected void notifyConnected() {
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (connectionEventListeners.isEmpty()) {</span>
+<span class="nc" id="L184">            return;</span>
+        }
+<span class="nc" id="L186">        LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] Notify connected event to listeners.&quot;, rpcClientConfig.name());</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">        for (ConnectionEventListener connectionEventListener : connectionEventListeners) {</span>
+            try {
+<span class="nc" id="L189">                connectionEventListener.onConnected();</span>
+<span class="nc" id="L190">            } catch (Throwable throwable) {</span>
+<span class="nc" id="L191">                LoggerUtils.printIfErrorEnabled(LOGGER, &quot;[{}] Notify connect listener error, listener = {}&quot;,</span>
+<span class="nc" id="L192">                        rpcClientConfig.name(), connectionEventListener.getClass().getName());</span>
+<span class="nc" id="L193">            }</span>
+<span class="nc" id="L194">        }</span>
+<span class="nc" id="L195">    }</span>
+    
+    /**
+     * check is this client is initiated.
+     *
+     * @return is wait initiated or not.
+     */
+    public boolean isWaitInitiated() {
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        return this.rpcClientStatus.get() == RpcClientStatus.WAIT_INIT;</span>
+    }
+    
+    /**
+     * check is this client is running.
+     *
+     * @return is running or not.
+     */
+    public boolean isRunning() {
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">        return this.rpcClientStatus.get() == RpcClientStatus.RUNNING;</span>
+    }
+    
+    /**
+     * check is this client is shutdown.
+     *
+     * @return is shutdown or not.
+     */
+    public boolean isShutdown() {
+<span class="nc bnc" id="L221" title="All 2 branches missed.">        return this.rpcClientStatus.get() == RpcClientStatus.SHUTDOWN;</span>
+    }
+    
+    /**
+     * check if current connected server is in server list, if not switch server.
+     */
+    public void onServerListChange() {
+<span class="nc bnc" id="L228" title="All 4 branches missed.">        if (currentConnection != null &amp;&amp; currentConnection.serverInfo != null) {</span>
+<span class="nc" id="L229">            ServerInfo serverInfo = currentConnection.serverInfo;</span>
+<span class="nc" id="L230">            boolean found = false;</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">            for (String serverAddress : serverListFactory.getServerList()) {</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">                if (resolveServerInfo(serverAddress).getAddress().equalsIgnoreCase(serverInfo.getAddress())) {</span>
+<span class="nc" id="L233">                    found = true;</span>
+<span class="nc" id="L234">                    break;</span>
+                }
+<span class="nc" id="L236">            }</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">            if (!found) {</span>
+<span class="nc" id="L238">                LoggerUtils.printIfInfoEnabled(LOGGER,</span>
+                        &quot;Current connected server {} is not in latest server list, switch switchServerAsync&quot;,
+<span class="nc" id="L240">                        serverInfo.getAddress());</span>
+<span class="nc" id="L241">                switchServerAsync();</span>
+            }
+            
+        }
+<span class="nc" id="L245">    }</span>
+    
+    /**
+     * Start this client.
+     */
+    public final void start() throws NacosException {
+        
+<span class="nc" id="L252">        boolean success = rpcClientStatus.compareAndSet(RpcClientStatus.INITIALIZED, RpcClientStatus.STARTING);</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        if (!success) {</span>
+<span class="nc" id="L254">            return;</span>
+        }
+        
+<span class="nc" id="L257">        clientEventExecutor = new ScheduledThreadPoolExecutor(2, r -&gt; {</span>
+<span class="nc" id="L258">            Thread t = new Thread(r);</span>
+<span class="nc" id="L259">            t.setName(&quot;com.alibaba.nacos.client.remote.worker&quot;);</span>
+<span class="nc" id="L260">            t.setDaemon(true);</span>
+<span class="nc" id="L261">            return t;</span>
+        });
+        
+        // connection event consumer.
+<span class="nc" id="L265">        clientEventExecutor.submit(() -&gt; {</span>
+<span class="nc bnc" id="L266" title="All 4 branches missed.">            while (!clientEventExecutor.isTerminated() &amp;&amp; !clientEventExecutor.isShutdown()) {</span>
+                ConnectionEvent take;
+                try {
+<span class="nc" id="L269">                    take = eventLinkedBlockingQueue.take();</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">                    if (take.isConnected()) {</span>
+<span class="nc" id="L271">                        notifyConnected();</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">                    } else if (take.isDisConnected()) {</span>
+<span class="nc" id="L273">                        notifyDisConnected();</span>
+                    }
+<span class="nc" id="L275">                } catch (Throwable e) {</span>
+                    // Do nothing
+<span class="nc" id="L277">                }</span>
+            }
+<span class="nc" id="L279">        });</span>
+        
+<span class="nc" id="L281">        clientEventExecutor.submit(() -&gt; {</span>
+            while (true) {
+                try {
+<span class="nc bnc" id="L284" title="All 2 branches missed.">                    if (isShutdown()) {</span>
+<span class="nc" id="L285">                        break;</span>
+                    }
+<span class="nc" id="L287">                    ReconnectContext reconnectContext = reconnectionSignal.poll(rpcClientConfig.connectionKeepAlive(),</span>
+                            TimeUnit.MILLISECONDS);
+<span class="nc bnc" id="L289" title="All 2 branches missed.">                    if (reconnectContext == null) {</span>
+                        // check alive time.
+<span class="nc bnc" id="L291" title="All 2 branches missed.">                        if (System.currentTimeMillis() - lastActiveTimeStamp &gt;= rpcClientConfig.connectionKeepAlive()) {</span>
+<span class="nc" id="L292">                            boolean isHealthy = healthCheck();</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">                            if (!isHealthy) {</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">                                if (currentConnection == null) {</span>
+<span class="nc" id="L295">                                    continue;</span>
+                                }
+<span class="nc" id="L297">                                LoggerUtils.printIfInfoEnabled(LOGGER,</span>
+                                        &quot;[{}] Server healthy check fail, currentConnection = {}&quot;,
+<span class="nc" id="L299">                                        rpcClientConfig.name(), currentConnection.getConnectionId());</span>
+                                
+<span class="nc" id="L301">                                RpcClientStatus rpcClientStatus = RpcClient.this.rpcClientStatus.get();</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">                                if (RpcClientStatus.SHUTDOWN.equals(rpcClientStatus)) {</span>
+<span class="nc" id="L303">                                    break;</span>
+                                }
+                                
+<span class="nc" id="L306">                                boolean statusFLowSuccess = RpcClient.this.rpcClientStatus.compareAndSet(</span>
+                                        rpcClientStatus, RpcClientStatus.UNHEALTHY);
+<span class="nc bnc" id="L308" title="All 2 branches missed.">                                if (statusFLowSuccess) {</span>
+<span class="nc" id="L309">                                    reconnectContext = new ReconnectContext(null, false);</span>
+                                } else {
+<span class="nc" id="L311">                                    continue;</span>
+                                }
+                                
+<span class="nc" id="L314">                            } else {</span>
+<span class="nc" id="L315">                                lastActiveTimeStamp = System.currentTimeMillis();</span>
+<span class="nc" id="L316">                                continue;</span>
+                            }
+<span class="nc" id="L318">                        } else {</span>
+<span class="nc" id="L319">                            continue;</span>
+                        }
+                        
+                    }
+                    
+<span class="nc bnc" id="L324" title="All 2 branches missed.">                    if (reconnectContext.serverInfo != null) {</span>
+                        // clear recommend server if server is not in server list.
+<span class="nc" id="L326">                        boolean serverExist = false;</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">                        for (String server : getServerListFactory().getServerList()) {</span>
+<span class="nc" id="L328">                            ServerInfo serverInfo = resolveServerInfo(server);</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">                            if (serverInfo.getServerIp().equals(reconnectContext.serverInfo.getServerIp())) {</span>
+<span class="nc" id="L330">                                serverExist = true;</span>
+<span class="nc" id="L331">                                reconnectContext.serverInfo.serverPort = serverInfo.serverPort;</span>
+<span class="nc" id="L332">                                break;</span>
+                            }
+<span class="nc" id="L334">                        }</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">                        if (!serverExist) {</span>
+<span class="nc" id="L336">                            LoggerUtils.printIfInfoEnabled(LOGGER,</span>
+                                    &quot;[{}] Recommend server is not in server list, ignore recommend server {}&quot;,
+<span class="nc" id="L338">                                    rpcClientConfig.name(), reconnectContext.serverInfo.getAddress());</span>
+                            
+<span class="nc" id="L340">                            reconnectContext.serverInfo = null;</span>
+                            
+                        }
+                    }
+<span class="nc" id="L344">                    reconnect(reconnectContext.serverInfo, reconnectContext.onRequestFail);</span>
+<span class="nc" id="L345">                } catch (Throwable throwable) {</span>
+                    // Do nothing
+<span class="nc" id="L347">                }</span>
+            }
+<span class="nc" id="L349">        });</span>
+        
+        // connect to server, try to connect to server sync retryTimes times, async starting if failed.
+<span class="nc" id="L352">        Connection connectToServer = null;</span>
+<span class="nc" id="L353">        rpcClientStatus.set(RpcClientStatus.STARTING);</span>
+        
+<span class="nc" id="L355">        int startUpRetryTimes = rpcClientConfig.retryTimes();</span>
+<span class="nc bnc" id="L356" title="All 4 branches missed.">        while (startUpRetryTimes &gt;= 0 &amp;&amp; connectToServer == null) {</span>
+            try {
+<span class="nc" id="L358">                startUpRetryTimes--;</span>
+<span class="nc" id="L359">                ServerInfo serverInfo = nextRpcServer();</span>
+                
+<span class="nc" id="L361">                LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] Try to connect to server on start up, server: {}&quot;,</span>
+<span class="nc" id="L362">                        rpcClientConfig.name(), serverInfo);</span>
+                
+<span class="nc" id="L364">                connectToServer = connectToServer(serverInfo);</span>
+<span class="nc" id="L365">            } catch (Throwable e) {</span>
+<span class="nc" id="L366">                LoggerUtils.printIfWarnEnabled(LOGGER,</span>
+                        &quot;[{}] Fail to connect to server on start up, error message = {}, start up retry times left: {}&quot;,
+<span class="nc" id="L368">                        rpcClientConfig.name(), e.getMessage(), startUpRetryTimes, e);</span>
+<span class="nc" id="L369">            }</span>
+            
+        }
+        
+<span class="nc bnc" id="L373" title="All 2 branches missed.">        if (connectToServer != null) {</span>
+<span class="nc" id="L374">            LoggerUtils.printIfInfoEnabled(LOGGER,</span>
+<span class="nc" id="L375">                    &quot;[{}] Success to connect to server [{}] on start up, connectionId = {}&quot;, rpcClientConfig.name(),</span>
+<span class="nc" id="L376">                    connectToServer.serverInfo.getAddress(), connectToServer.getConnectionId());</span>
+<span class="nc" id="L377">            this.currentConnection = connectToServer;</span>
+<span class="nc" id="L378">            rpcClientStatus.set(RpcClientStatus.RUNNING);</span>
+<span class="nc" id="L379">            eventLinkedBlockingQueue.offer(new ConnectionEvent(ConnectionEvent.CONNECTED));</span>
+        } else {
+<span class="nc" id="L381">            switchServerAsync();</span>
+        }
+        
+<span class="nc" id="L384">        registerServerRequestHandler(new ConnectResetRequestHandler());</span>
+        
+        // register client detection request.
+<span class="nc" id="L387">        registerServerRequestHandler(request -&gt; {</span>
+<span class="nc bnc" id="L388" title="All 2 branches missed.">            if (request instanceof ClientDetectionRequest) {</span>
+<span class="nc" id="L389">                return new ClientDetectionResponse();</span>
+            }
+            
+<span class="nc" id="L392">            return null;</span>
+        });
+        
+<span class="nc" id="L395">    }</span>
+    
+<span class="nc" id="L397">    class ConnectResetRequestHandler implements ServerRequestHandler {</span>
+        
+        @Override
+        public Response requestReply(Request request) {
+            
+<span class="nc bnc" id="L402" title="All 2 branches missed.">            if (request instanceof ConnectResetRequest) {</span>
+                
+                try {
+<span class="nc" id="L405">                    synchronized (RpcClient.this) {</span>
+<span class="nc bnc" id="L406" title="All 2 branches missed.">                        if (isRunning()) {</span>
+<span class="nc" id="L407">                            ConnectResetRequest connectResetRequest = (ConnectResetRequest) request;</span>
+<span class="nc bnc" id="L408" title="All 2 branches missed.">                            if (StringUtils.isNotBlank(connectResetRequest.getServerIp())) {</span>
+<span class="nc" id="L409">                                ServerInfo serverInfo = resolveServerInfo(</span>
+<span class="nc" id="L410">                                        connectResetRequest.getServerIp() + Constants.COLON</span>
+<span class="nc" id="L411">                                                + connectResetRequest.getServerPort());</span>
+<span class="nc" id="L412">                                switchServerAsync(serverInfo, false);</span>
+<span class="nc" id="L413">                            } else {</span>
+<span class="nc" id="L414">                                switchServerAsync();</span>
+                            }
+                        }
+<span class="nc" id="L417">                    }</span>
+<span class="nc" id="L418">                } catch (Exception e) {</span>
+<span class="nc" id="L419">                    LoggerUtils.printIfErrorEnabled(LOGGER, &quot;[{}] Switch server error, {}&quot;, rpcClientConfig.name(), e);</span>
+<span class="nc" id="L420">                }</span>
+<span class="nc" id="L421">                return new ConnectResetResponse();</span>
+            }
+<span class="nc" id="L423">            return null;</span>
+        }
+    }
+    
+    @Override
+    public void shutdown() throws NacosException {
+<span class="nc" id="L429">        LOGGER.info(&quot;Shutdown rpc client, set status to shutdown&quot;);</span>
+<span class="nc" id="L430">        rpcClientStatus.set(RpcClientStatus.SHUTDOWN);</span>
+<span class="nc" id="L431">        LOGGER.info(&quot;Shutdown client event executor &quot; + clientEventExecutor);</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">        if (clientEventExecutor != null) {</span>
+<span class="nc" id="L433">            clientEventExecutor.shutdownNow();</span>
+        }
+<span class="nc" id="L435">        closeConnection(currentConnection);</span>
+<span class="nc" id="L436">    }</span>
+    
+    private boolean healthCheck() {
+<span class="nc" id="L439">        HealthCheckRequest healthCheckRequest = new HealthCheckRequest();</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">        if (this.currentConnection == null) {</span>
+<span class="nc" id="L441">            return false;</span>
+        }
+<span class="nc" id="L443">        int reTryTimes = rpcClientConfig.healthCheckRetryTimes();</span>
+<span class="nc" id="L444">        Random random = new Random();</span>
+<span class="nc bnc" id="L445" title="All 2 branches missed.">        while (reTryTimes &gt;= 0) {</span>
+<span class="nc" id="L446">            reTryTimes--;</span>
+            try {
+<span class="nc bnc" id="L448" title="All 2 branches missed.">                if (reTryTimes &gt; 1) {</span>
+<span class="nc" id="L449">                    Thread.sleep(random.nextInt(500));</span>
+                }
+<span class="nc" id="L451">                Response response = this.currentConnection.request(healthCheckRequest,</span>
+<span class="nc" id="L452">                        rpcClientConfig.healthCheckTimeOut());</span>
+                // not only check server is ok, also check connection is register.
+<span class="nc bnc" id="L454" title="All 4 branches missed.">                return response != null &amp;&amp; response.isSuccess();</span>
+<span class="nc" id="L455">            } catch (Exception e) {</span>
+                // ignore
+<span class="nc" id="L457">            }</span>
+        }
+<span class="nc" id="L459">        return false;</span>
+    }
+    
+    public void switchServerAsyncOnRequestFail() {
+<span class="fc" id="L463">        switchServerAsync(null, true);</span>
+<span class="fc" id="L464">    }</span>
+    
+    public void switchServerAsync() {
+<span class="nc" id="L467">        switchServerAsync(null, false);</span>
+<span class="nc" id="L468">    }</span>
+    
+    protected void switchServerAsync(final ServerInfo recommendServerInfo, boolean onRequestFail) {
+<span class="fc" id="L471">        reconnectionSignal.offer(new ReconnectContext(recommendServerInfo, onRequestFail));</span>
+<span class="fc" id="L472">    }</span>
+    
+    /**
+     * switch server .
+     */
+    protected void reconnect(final ServerInfo recommendServerInfo, boolean onRequestFail) {
+        
+        try {
+            
+<span class="nc" id="L481">            AtomicReference&lt;ServerInfo&gt; recommendServer = new AtomicReference&lt;&gt;(recommendServerInfo);</span>
+<span class="nc bnc" id="L482" title="All 4 branches missed.">            if (onRequestFail &amp;&amp; healthCheck()) {</span>
+<span class="nc" id="L483">                LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] Server check success, currentServer is {} &quot;,</span>
+<span class="nc" id="L484">                        rpcClientConfig.name(), currentConnection.serverInfo.getAddress());</span>
+<span class="nc" id="L485">                rpcClientStatus.set(RpcClientStatus.RUNNING);</span>
+<span class="nc" id="L486">                return;</span>
+            }
+            
+<span class="nc" id="L489">            LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] Try to reconnect to a new server, server is {}&quot;,</span>
+<span class="nc bnc" id="L490" title="All 2 branches missed.">                    rpcClientConfig.name(), recommendServerInfo == null ? &quot; not appointed, will choose a random server.&quot;</span>
+<span class="nc" id="L491">                            : (recommendServerInfo.getAddress() + &quot;, will try it once.&quot;));</span>
+            
+            // loop until start client success.
+<span class="nc" id="L494">            boolean switchSuccess = false;</span>
+            
+<span class="nc" id="L496">            int reConnectTimes = 0;</span>
+<span class="nc" id="L497">            int retryTurns = 0;</span>
+            Exception lastException;
+<span class="nc bnc" id="L499" title="All 4 branches missed.">            while (!switchSuccess &amp;&amp; !isShutdown()) {</span>
+                
+                // 1.get a new server
+<span class="nc" id="L502">                ServerInfo serverInfo = null;</span>
+                try {
+<span class="nc bnc" id="L504" title="All 2 branches missed.">                    serverInfo = recommendServer.get() == null ? nextRpcServer() : recommendServer.get();</span>
+                    // 2.create a new channel to new server
+<span class="nc" id="L506">                    Connection connectionNew = connectToServer(serverInfo);</span>
+<span class="nc bnc" id="L507" title="All 2 branches missed.">                    if (connectionNew != null) {</span>
+<span class="nc" id="L508">                        LoggerUtils.printIfInfoEnabled(LOGGER,</span>
+<span class="nc" id="L509">                                &quot;[{}] Success to connect a server [{}], connectionId = {}&quot;, rpcClientConfig.name(),</span>
+<span class="nc" id="L510">                                serverInfo.getAddress(), connectionNew.getConnectionId());</span>
+                        // successfully create a new connect.
+<span class="nc bnc" id="L512" title="All 2 branches missed.">                        if (currentConnection != null) {</span>
+<span class="nc" id="L513">                            LoggerUtils.printIfInfoEnabled(LOGGER,</span>
+                                    &quot;[{}] Abandon prev connection, server is {}, connectionId is {}&quot;,
+<span class="nc" id="L515">                                    rpcClientConfig.name(), currentConnection.serverInfo.getAddress(),</span>
+<span class="nc" id="L516">                                    currentConnection.getConnectionId());</span>
+                            // set current connection to enable connection event.
+<span class="nc" id="L518">                            currentConnection.setAbandon(true);</span>
+<span class="nc" id="L519">                            closeConnection(currentConnection);</span>
+                        }
+<span class="nc" id="L521">                        currentConnection = connectionNew;</span>
+<span class="nc" id="L522">                        rpcClientStatus.set(RpcClientStatus.RUNNING);</span>
+<span class="nc" id="L523">                        switchSuccess = true;</span>
+<span class="nc" id="L524">                        eventLinkedBlockingQueue.add(new ConnectionEvent(ConnectionEvent.CONNECTED));</span>
+<span class="nc" id="L525">                        return;</span>
+                    }
+                    
+                    // close connection if client is already shutdown.
+<span class="nc bnc" id="L529" title="All 2 branches missed.">                    if (isShutdown()) {</span>
+<span class="nc" id="L530">                        closeConnection(currentConnection);</span>
+                    }
+                    
+<span class="nc" id="L533">                    lastException = null;</span>
+                    
+<span class="nc" id="L535">                } catch (Exception e) {</span>
+<span class="nc" id="L536">                    lastException = e;</span>
+                } finally {
+<span class="nc" id="L538">                    recommendServer.set(null);</span>
+                }
+                
+<span class="nc bnc" id="L541" title="All 2 branches missed.">                if (CollectionUtils.isEmpty(RpcClient.this.serverListFactory.getServerList())) {</span>
+<span class="nc" id="L542">                    throw new Exception(&quot;server list is empty&quot;);</span>
+                }
+                
+<span class="nc bnc" id="L545" title="All 2 branches missed.">                if (reConnectTimes &gt; 0</span>
+<span class="nc bnc" id="L546" title="All 2 branches missed.">                        &amp;&amp; reConnectTimes % RpcClient.this.serverListFactory.getServerList().size() == 0) {</span>
+<span class="nc" id="L547">                    LoggerUtils.printIfInfoEnabled(LOGGER,</span>
+                            &quot;[{}] Fail to connect server, after trying {} times, last try server is {}, error = {}&quot;,
+<span class="nc bnc" id="L549" title="All 2 branches missed.">                            rpcClientConfig.name(), reConnectTimes, serverInfo,</span>
+                            lastException == null ? &quot;unknown&quot; : lastException);
+<span class="nc bnc" id="L551" title="All 2 branches missed.">                    if (Integer.MAX_VALUE == retryTurns) {</span>
+<span class="nc" id="L552">                        retryTurns = 50;</span>
+                    } else {
+<span class="nc" id="L554">                        retryTurns++;</span>
+                    }
+                }
+                
+<span class="nc" id="L558">                reConnectTimes++;</span>
+                
+                try {
+                    // sleep x milliseconds to switch next server.
+<span class="nc bnc" id="L562" title="All 2 branches missed.">                    if (!isRunning()) {</span>
+                        // first round, try servers at a delay 100ms;second round, 200ms; max delays 5s. to be reconsidered.
+<span class="nc" id="L564">                        Thread.sleep(Math.min(retryTurns + 1, 50) * 100L);</span>
+                    }
+<span class="nc" id="L566">                } catch (InterruptedException e) {</span>
+                    // Do nothing.
+                    // set the interrupted flag
+<span class="nc" id="L569">                    Thread.currentThread().interrupt();</span>
+<span class="nc" id="L570">                }</span>
+<span class="nc" id="L571">            }</span>
+            
+<span class="nc bnc" id="L573" title="All 2 branches missed.">            if (isShutdown()) {</span>
+<span class="nc" id="L574">                LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] Client is shutdown, stop reconnect to server&quot;,</span>
+<span class="nc" id="L575">                        rpcClientConfig.name());</span>
+            }
+            
+<span class="nc" id="L578">        } catch (Exception e) {</span>
+<span class="nc" id="L579">            LoggerUtils.printIfWarnEnabled(LOGGER, &quot;[{}] Fail to reconnect to server, error is {}&quot;,</span>
+<span class="nc" id="L580">                    rpcClientConfig.name(), e);</span>
+<span class="nc" id="L581">        }</span>
+<span class="nc" id="L582">    }</span>
+    
+    private void closeConnection(Connection connection) {
+<span class="nc bnc" id="L585" title="All 2 branches missed.">        if (connection != null) {</span>
+<span class="nc" id="L586">            LOGGER.info(&quot;Close current connection &quot; + connection.getConnectionId());</span>
+<span class="nc" id="L587">            connection.close();</span>
+<span class="nc" id="L588">            eventLinkedBlockingQueue.add(new ConnectionEvent(ConnectionEvent.DISCONNECTED));</span>
+        }
+<span class="nc" id="L590">    }</span>
+    
+    /**
+     * get connection type of this client.
+     *
+     * @return ConnectionType.
+     */
+    public abstract ConnectionType getConnectionType();
+    
+    /**
+     * increase offset of the nacos server port for the rpc server port.
+     *
+     * @return rpc port offset
+     */
+    public abstract int rpcPortOffset();
+    
+    /**
+     * get current server.
+     *
+     * @return server info.
+     */
+    public ServerInfo getCurrentServer() {
+<span class="nc bnc" id="L612" title="All 2 branches missed.">        if (this.currentConnection != null) {</span>
+<span class="nc" id="L613">            return currentConnection.serverInfo;</span>
+        }
+<span class="nc" id="L615">        return null;</span>
+    }
+    
+    /**
+     * send request.
+     *
+     * @param request request.
+     * @return response from server.
+     */
+    public Response request(Request request) throws NacosException {
+<span class="nc" id="L625">        return request(request, rpcClientConfig.timeOutMills());</span>
+    }
+    
+    /**
+     * send request.
+     *
+     * @param request request.
+     * @return response from server.
+     */
+    public Response request(Request request, long timeoutMills) throws NacosException {
+<span class="nc" id="L635">        int retryTimes = 0;</span>
+        Response response;
+<span class="nc" id="L637">        Throwable exceptionThrow = null;</span>
+<span class="nc" id="L638">        long start = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L639" title="All 4 branches missed.">        while (retryTimes &lt;= rpcClientConfig.retryTimes() &amp;&amp; (timeoutMills &lt;= 0</span>
+<span class="nc bnc" id="L640" title="All 2 branches missed.">                || System.currentTimeMillis() &lt; timeoutMills + start)) {</span>
+<span class="nc" id="L641">            boolean waitReconnect = false;</span>
+            try {
+<span class="nc bnc" id="L643" title="All 4 branches missed.">                if (this.currentConnection == null || !isRunning()) {</span>
+<span class="nc" id="L644">                    waitReconnect = true;</span>
+<span class="nc" id="L645">                    throw new NacosException(NacosException.CLIENT_DISCONNECT,</span>
+<span class="nc" id="L646">                            &quot;Client not connected, current status:&quot; + rpcClientStatus.get());</span>
+                }
+<span class="nc" id="L648">                response = this.currentConnection.request(request, timeoutMills);</span>
+<span class="nc bnc" id="L649" title="All 2 branches missed.">                if (response == null) {</span>
+<span class="nc" id="L650">                    throw new NacosException(SERVER_ERROR, &quot;Unknown Exception.&quot;);</span>
+                }
+<span class="nc bnc" id="L652" title="All 2 branches missed.">                if (response instanceof ErrorResponse) {</span>
+<span class="nc bnc" id="L653" title="All 2 branches missed.">                    if (response.getErrorCode() == NacosException.UN_REGISTER) {</span>
+<span class="nc" id="L654">                        synchronized (this) {</span>
+<span class="nc" id="L655">                            waitReconnect = true;</span>
+<span class="nc bnc" id="L656" title="All 2 branches missed.">                            if (rpcClientStatus.compareAndSet(RpcClientStatus.RUNNING, RpcClientStatus.UNHEALTHY)) {</span>
+<span class="nc" id="L657">                                LoggerUtils.printIfErrorEnabled(LOGGER,</span>
+                                        &quot;Connection is unregistered, switch server, connectionId = {}, request = {}&quot;,
+<span class="nc" id="L659">                                        currentConnection.getConnectionId(), request.getClass().getSimpleName());</span>
+<span class="nc" id="L660">                                switchServerAsync();</span>
+                            }
+<span class="nc" id="L662">                        }</span>
+                        
+                    }
+<span class="nc" id="L665">                    throw new NacosException(response.getErrorCode(), response.getMessage());</span>
+                }
+                // return response.
+<span class="nc" id="L668">                lastActiveTimeStamp = System.currentTimeMillis();</span>
+<span class="nc" id="L669">                return response;</span>
+                
+<span class="nc" id="L671">            } catch (Throwable e) {</span>
+<span class="nc bnc" id="L672" title="All 2 branches missed.">                if (waitReconnect) {</span>
+                    try {
+                        // wait client to reconnect.
+<span class="nc" id="L675">                        Thread.sleep(Math.min(100, timeoutMills / 3));</span>
+<span class="nc" id="L676">                    } catch (Exception exception) {</span>
+                        // Do nothing.
+<span class="nc" id="L678">                    }</span>
+                }
+                
+<span class="nc" id="L681">                LoggerUtils.printIfErrorEnabled(LOGGER,</span>
+<span class="nc" id="L682">                        &quot;Send request fail, request = {}, retryTimes = {}, errorMessage = {}&quot;, request, retryTimes,</span>
+<span class="nc" id="L683">                        e.getMessage());</span>
+                
+<span class="nc" id="L685">                exceptionThrow = e;</span>
+                
+            }
+<span class="nc" id="L688">            retryTimes++;</span>
+            
+<span class="nc" id="L690">        }</span>
+        
+<span class="nc bnc" id="L692" title="All 2 branches missed.">        if (rpcClientStatus.compareAndSet(RpcClientStatus.RUNNING, RpcClientStatus.UNHEALTHY)) {</span>
+<span class="nc" id="L693">            switchServerAsyncOnRequestFail();</span>
+        }
+        
+<span class="nc bnc" id="L696" title="All 2 branches missed.">        if (exceptionThrow != null) {</span>
+<span class="nc bnc" id="L697" title="All 2 branches missed.">            throw (exceptionThrow instanceof NacosException) ? (NacosException) exceptionThrow</span>
+                    : new NacosException(SERVER_ERROR, exceptionThrow);
+        } else {
+<span class="nc" id="L700">            throw new NacosException(SERVER_ERROR, &quot;Request fail, unknown Error&quot;);</span>
+        }
+    }
+    
+    /**
+     * send async request.
+     *
+     * @param request request.
+     */
+    public void asyncRequest(Request request, RequestCallBack callback) throws NacosException {
+<span class="nc" id="L710">        int retryTimes = 0;</span>
+<span class="nc" id="L711">        Throwable exceptionToThrow = null;</span>
+<span class="nc" id="L712">        long start = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L713" title="All 2 branches missed.">        while (retryTimes &lt;= rpcClientConfig.retryTimes()</span>
+<span class="nc bnc" id="L714" title="All 2 branches missed.">                &amp;&amp; System.currentTimeMillis() &lt; start + callback.getTimeout()) {</span>
+<span class="nc" id="L715">            boolean waitReconnect = false;</span>
+            try {
+<span class="nc bnc" id="L717" title="All 4 branches missed.">                if (this.currentConnection == null || !isRunning()) {</span>
+<span class="nc" id="L718">                    waitReconnect = true;</span>
+<span class="nc" id="L719">                    throw new NacosException(NacosException.CLIENT_DISCONNECT, &quot;Client not connected.&quot;);</span>
+                }
+<span class="nc" id="L721">                this.currentConnection.asyncRequest(request, callback);</span>
+<span class="nc" id="L722">                return;</span>
+<span class="nc" id="L723">            } catch (Throwable e) {</span>
+<span class="nc bnc" id="L724" title="All 2 branches missed.">                if (waitReconnect) {</span>
+                    try {
+                        // wait client to reconnect.
+<span class="nc" id="L727">                        Thread.sleep(Math.min(100, callback.getTimeout() / 3));</span>
+<span class="nc" id="L728">                    } catch (Exception exception) {</span>
+                        // Do nothing.
+<span class="nc" id="L730">                    }</span>
+                }
+<span class="nc" id="L732">                LoggerUtils.printIfErrorEnabled(LOGGER,</span>
+                        &quot;[{}] Send request fail, request = {}, retryTimes = {}, errorMessage = {}&quot;,
+<span class="nc" id="L734">                        rpcClientConfig.name(), request, retryTimes, e.getMessage());</span>
+<span class="nc" id="L735">                exceptionToThrow = e;</span>
+                
+            }
+<span class="nc" id="L738">            retryTimes++;</span>
+            
+<span class="nc" id="L740">        }</span>
+        
+<span class="nc bnc" id="L742" title="All 2 branches missed.">        if (rpcClientStatus.compareAndSet(RpcClientStatus.RUNNING, RpcClientStatus.UNHEALTHY)) {</span>
+<span class="nc" id="L743">            switchServerAsyncOnRequestFail();</span>
+        }
+<span class="nc bnc" id="L745" title="All 2 branches missed.">        if (exceptionToThrow != null) {</span>
+<span class="nc bnc" id="L746" title="All 2 branches missed.">            throw (exceptionToThrow instanceof NacosException) ? (NacosException) exceptionToThrow</span>
+                    : new NacosException(SERVER_ERROR, exceptionToThrow);
+        } else {
+<span class="nc" id="L749">            throw new NacosException(SERVER_ERROR, &quot;AsyncRequest fail, unknown error&quot;);</span>
+        }
+    }
+    
+    /**
+     * send async request.
+     *
+     * @param request request.
+     * @return request future.
+     */
+    public RequestFuture requestFuture(Request request) throws NacosException {
+<span class="fc" id="L760">        int retryTimes = 0;</span>
+<span class="fc" id="L761">        long start = System.currentTimeMillis();</span>
+<span class="fc" id="L762">        Exception exceptionToThrow = null;</span>
+<span class="fc bfc" id="L763" title="All 2 branches covered.">        while (retryTimes &lt;= rpcClientConfig.retryTimes()</span>
+<span class="pc bpc" id="L764" title="1 of 2 branches missed.">                &amp;&amp; System.currentTimeMillis() &lt; start + rpcClientConfig.timeOutMills()) {</span>
+<span class="fc" id="L765">            boolean waitReconnect = false;</span>
+            try {
+<span class="nc bnc" id="L767" title="All 4 branches missed.">                if (this.currentConnection == null || !isRunning()) {</span>
+<span class="nc" id="L768">                    waitReconnect = true;</span>
+<span class="nc" id="L769">                    throw new NacosException(NacosException.CLIENT_DISCONNECT, &quot;Client not connected.&quot;);</span>
+                }
+<span class="nc" id="L771">                return this.currentConnection.requestFuture(request);</span>
+<span class="fc" id="L772">            } catch (Exception e) {</span>
+<span class="pc bpc" id="L773" title="1 of 2 branches missed.">                if (waitReconnect) {</span>
+                    try {
+                        // wait client to reconnect.
+<span class="nc" id="L776">                        Thread.sleep(100L);</span>
+<span class="nc" id="L777">                    } catch (Exception exception) {</span>
+                        // Do nothing.
+<span class="nc" id="L779">                    }</span>
+                }
+<span class="fc" id="L781">                LoggerUtils.printIfErrorEnabled(LOGGER,</span>
+                        &quot;[{}] Send request fail, request = {}, retryTimes = {}, errorMessage = {}&quot;,
+<span class="fc" id="L783">                        rpcClientConfig.name(), request, retryTimes, e.getMessage());</span>
+<span class="fc" id="L784">                exceptionToThrow = e;</span>
+                
+            }
+<span class="fc" id="L787">            retryTimes++;</span>
+<span class="fc" id="L788">        }</span>
+        
+<span class="pc bpc" id="L790" title="1 of 2 branches missed.">        if (rpcClientStatus.compareAndSet(RpcClientStatus.RUNNING, RpcClientStatus.UNHEALTHY)) {</span>
+<span class="fc" id="L791">            switchServerAsyncOnRequestFail();</span>
+        }
+        
+<span class="pc bpc" id="L794" title="1 of 2 branches missed.">        if (exceptionToThrow != null) {</span>
+<span class="pc bpc" id="L795" title="1 of 2 branches missed.">            throw (exceptionToThrow instanceof NacosException) ? (NacosException) exceptionToThrow</span>
+                    : new NacosException(SERVER_ERROR, exceptionToThrow);
+        } else {
+<span class="nc" id="L798">            throw new NacosException(SERVER_ERROR, &quot;Request future fail, unknown error&quot;);</span>
+        }
+        
+    }
+    
+    /**
+     * connect to server.
+     *
+     * @param serverInfo server address to connect.
+     * @return return connection when successfully connect to server, or null if failed.
+     * @throws Exception exception when fail to connect to server.
+     */
+    public abstract Connection connectToServer(ServerInfo serverInfo) throws Exception;
+    
+    /**
+     * handle server request.
+     *
+     * @param request request.
+     * @return response.
+     */
+    protected Response handleServerRequest(final Request request) {
+        
+<span class="nc" id="L820">        LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] Receive server push request, request = {}, requestId = {}&quot;,</span>
+<span class="nc" id="L821">                rpcClientConfig.name(), request.getClass().getSimpleName(), request.getRequestId());</span>
+<span class="nc" id="L822">        lastActiveTimeStamp = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L823" title="All 2 branches missed.">        for (ServerRequestHandler serverRequestHandler : serverRequestHandlers) {</span>
+            try {
+<span class="nc" id="L825">                Response response = serverRequestHandler.requestReply(request);</span>
+                
+<span class="nc bnc" id="L827" title="All 2 branches missed.">                if (response != null) {</span>
+<span class="nc" id="L828">                    LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] Ack server push request, request = {}, requestId = {}&quot;,</span>
+<span class="nc" id="L829">                            rpcClientConfig.name(), request.getClass().getSimpleName(), request.getRequestId());</span>
+<span class="nc" id="L830">                    return response;</span>
+                }
+<span class="nc" id="L832">            } catch (Exception e) {</span>
+<span class="nc" id="L833">                LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] HandleServerRequest:{}, errorMessage = {}&quot;,</span>
+<span class="nc" id="L834">                        rpcClientConfig.name(), serverRequestHandler.getClass().getName(), e.getMessage());</span>
+<span class="nc" id="L835">                throw e;</span>
+<span class="nc" id="L836">            }</span>
+            
+<span class="nc" id="L838">        }</span>
+<span class="nc" id="L839">        return null;</span>
+    }
+    
+    /**
+     * Register connection handler. Will be notified when inner connection's state changed.
+     *
+     * @param connectionEventListener connectionEventListener
+     */
+    public synchronized void registerConnectionListener(ConnectionEventListener connectionEventListener) {
+        
+<span class="nc" id="L849">        LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] Registry connection listener to current client:{}&quot;,</span>
+<span class="nc" id="L850">                rpcClientConfig.name(), connectionEventListener.getClass().getName());</span>
+<span class="nc" id="L851">        this.connectionEventListeners.add(connectionEventListener);</span>
+<span class="nc" id="L852">    }</span>
+    
+    /**
+     * Register serverRequestHandler, the handler will handle the request from server side.
+     *
+     * @param serverRequestHandler serverRequestHandler
+     */
+    public synchronized void registerServerRequestHandler(ServerRequestHandler serverRequestHandler) {
+<span class="nc" id="L860">        LoggerUtils.printIfInfoEnabled(LOGGER, &quot;[{}] Register server push request handler:{}&quot;, rpcClientConfig.name(),</span>
+<span class="nc" id="L861">                serverRequestHandler.getClass().getName());</span>
+        
+<span class="nc" id="L863">        this.serverRequestHandlers.add(serverRequestHandler);</span>
+<span class="nc" id="L864">    }</span>
+    
+    /**
+     * Getter method for property &lt;tt&gt;name&lt;/tt&gt;.
+     *
+     * @return property value of name
+     */
+    public String getName() {
+<span class="nc" id="L872">        return rpcClientConfig.name();</span>
+    }
+    
+    /**
+     * Getter method for property &lt;tt&gt;serverListFactory&lt;/tt&gt;.
+     *
+     * @return property value of serverListFactory
+     */
+    public ServerListFactory getServerListFactory() {
+<span class="nc" id="L881">        return serverListFactory;</span>
+    }
+    
+    protected ServerInfo nextRpcServer() {
+<span class="nc" id="L885">        String serverAddress = getServerListFactory().genNextServer();</span>
+<span class="nc" id="L886">        return resolveServerInfo(serverAddress);</span>
+    }
+    
+    protected ServerInfo currentRpcServer() {
+<span class="nc" id="L890">        String serverAddress = getServerListFactory().getCurrentServer();</span>
+<span class="nc" id="L891">        return resolveServerInfo(serverAddress);</span>
+    }
+    
+    /**
+     * resolve server info.
+     *
+     * @param serverAddress address.
+     * @return
+     */
+    @SuppressWarnings(&quot;PMD.UndefineMagicConstantRule&quot;)
+    private ServerInfo resolveServerInfo(String serverAddress) {
+<span class="nc" id="L902">        Matcher matcher = EXCLUDE_PROTOCOL_PATTERN.matcher(serverAddress);</span>
+<span class="nc bnc" id="L903" title="All 2 branches missed.">        if (matcher.find()) {</span>
+<span class="nc" id="L904">            serverAddress = matcher.group(1);</span>
+        }
+<span class="nc" id="L906">        String[] ipPortTuple = InternetAddressUtil.splitIPPortStr(serverAddress);</span>
+<span class="nc" id="L907">        int defaultPort = Integer.parseInt(System.getProperty(&quot;nacos.server.port&quot;, &quot;8848&quot;));</span>
+<span class="nc" id="L908">        String serverPort = CollectionUtils.getOrDefault(ipPortTuple, 1, Integer.toString(defaultPort));</span>
+        
+<span class="nc" id="L910">        return new ServerInfo(ipPortTuple[0], NumberUtils.toInt(serverPort, defaultPort));</span>
+    }
+    
+    public static class ServerInfo {
+        
+        protected String serverIp;
+        
+        protected int serverPort;
+        
+<span class="nc" id="L919">        public ServerInfo() {</span>
+        
+<span class="nc" id="L921">        }</span>
+        
+<span class="nc" id="L923">        public ServerInfo(String serverIp, int serverPort) {</span>
+<span class="nc" id="L924">            this.serverPort = serverPort;</span>
+<span class="nc" id="L925">            this.serverIp = serverIp;</span>
+<span class="nc" id="L926">        }</span>
+        
+        /**
+         * get address, ip:port.
+         *
+         * @return address.
+         */
+        public String getAddress() {
+<span class="nc" id="L934">            return serverIp + Constants.COLON + serverPort;</span>
+        }
+        
+        /**
+         * Setter method for property &lt;tt&gt;serverIp&lt;/tt&gt;.
+         *
+         * @param serverIp value to be assigned to property serverIp
+         */
+        public void setServerIp(String serverIp) {
+<span class="nc" id="L943">            this.serverIp = serverIp;</span>
+<span class="nc" id="L944">        }</span>
+        
+        /**
+         * Setter method for property &lt;tt&gt;serverPort&lt;/tt&gt;.
+         *
+         * @param serverPort value to be assigned to property serverPort
+         */
+        public void setServerPort(int serverPort) {
+<span class="nc" id="L952">            this.serverPort = serverPort;</span>
+<span class="nc" id="L953">        }</span>
+        
+        /**
+         * Getter method for property &lt;tt&gt;serverIp&lt;/tt&gt;.
+         *
+         * @return property value of serverIp
+         */
+        public String getServerIp() {
+<span class="nc" id="L961">            return serverIp;</span>
+        }
+        
+        /**
+         * Getter method for property &lt;tt&gt;serverPort&lt;/tt&gt;.
+         *
+         * @return property value of serverPort
+         */
+        public int getServerPort() {
+<span class="nc" id="L970">            return serverPort;</span>
+        }
+        
+        @Override
+        public String toString() {
+<span class="nc" id="L975">            return &quot;{serverIp = '&quot; + serverIp + '\'' + &quot;, server main port = &quot; + serverPort + '}';</span>
+        }
+    }
+    
+    public class ConnectionEvent {
+        
+        public static final int CONNECTED = 1;
+        
+        public static final int DISCONNECTED = 0;
+        
+        int eventType;
+        
+<span class="nc" id="L987">        public ConnectionEvent(int eventType) {</span>
+<span class="nc" id="L988">            this.eventType = eventType;</span>
+<span class="nc" id="L989">        }</span>
+        
+        public boolean isConnected() {
+<span class="nc bnc" id="L992" title="All 2 branches missed.">            return eventType == CONNECTED;</span>
+        }
+        
+        public boolean isDisConnected() {
+<span class="nc bnc" id="L996" title="All 2 branches missed.">            return eventType == DISCONNECTED;</span>
+        }
+    }
+    
+    /**
+     * Getter method for property &lt;tt&gt;labels&lt;/tt&gt;.
+     *
+     * @return property value of labels
+     */
+    public Map&lt;String, String&gt; getLabels() {
+<span class="nc" id="L1006">        return rpcClientConfig.labels();</span>
+    }
+    
+    class ReconnectContext {
+        
+<span class="fc" id="L1011">        public ReconnectContext(ServerInfo serverInfo, boolean onRequestFail) {</span>
+<span class="fc" id="L1012">            this.onRequestFail = onRequestFail;</span>
+<span class="fc" id="L1013">            this.serverInfo = serverInfo;</span>
+<span class="fc" id="L1014">        }</span>
+        
+        boolean onRequestFail;
+        
+        ServerInfo serverInfo;
+    }
+    
+    public String getTenant() {
+<span class="nc" id="L1022">        return tenant;</span>
+    }
+    
+    public void setTenant(String tenant) {
+<span class="nc" id="L1026">        this.tenant = tenant;</span>
+<span class="nc" id="L1027">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

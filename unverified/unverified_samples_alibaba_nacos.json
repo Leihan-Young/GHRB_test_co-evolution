@@ -1,106 +1,145 @@
 {
-  "alibaba_nacos-9080": {
-    "bug_id": "alibaba_nacos-9080",
-    "PR_number": 9080,
-    "PR_createdAt": "2022-09-02T14:38:38Z",
-    "merge_commit": "b8bd1cb90d3722d91c8f9cd830e7ebd289258fc7",
+  "alibaba_nacos-9893": {
+    "bug_id": "alibaba_nacos-9893",
+    "PR_number": 9893,
+    "PR_createdAt": "2023-02-03T03:33:37Z",
+    "merge_commit": "4db3e8c28fa12ab38e18ddd9db5955a6d23396ca",
     "buggy_commits": [
       {
-        "oid": "cdb11448ac09b2a4f83efb96b971e88ee717657c",
-        "message": "[ISSUE #7459] add eBook link (#9076)"
+        "oid": "71389b0f568f9a3da04ef26409f6a45e59dcec07",
+        "message": "add feature -- list instance record which enabled was false (#9855)"
       }
     ],
     "issue": {
-      "url": "https://github.com/alibaba/nacos/issues/9079",
-      "createdAt": "2022-09-02T14:24:56Z",
-      "content": "bug_report_all/alibaba_nacos-9080.json"
+      "url": "https://github.com/alibaba/nacos/issues/9816",
+      "createdAt": "2023-01-08T14:14:11Z",
+      "content": "bug_report_all/alibaba_nacos-9893.json"
     },
     "changed_tests": [
-      "common/src/test/java/com/alibaba/nacos/common/remote/client/RpcClientTest.java"
+      "client/src/test/java/com/alibaba/nacos/client/naming/remote/gprc/NamingGrpcClientProxyTest.java",
+      "client/src/test/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoServiceTest.java",
+      "client/src/test/java/com/alibaba/nacos/client/naming/remote/gprc/redo/RedoScheduledTaskTest.java",
+      "client/src/test/java/com/alibaba/nacos/client/naming/remote/gprc/redo/data/BatchInstanceRedoDataTest.java"
     ],
-    "PR_url": "https://github.com/alibaba/nacos/pull/9080",
-    "merge_commit_url": "https://github.com/alibaba/nacos/commit/b8bd1cb90d3722d91c8f9cd830e7ebd289258fc7",
-    "buggy_commit": "cdb11448ac09b2a4f83efb96b971e88ee717657c",
+    "PR_url": "https://github.com/alibaba/nacos/pull/9893",
+    "merge_commit_url": "https://github.com/alibaba/nacos/commit/4db3e8c28fa12ab38e18ddd9db5955a6d23396ca",
+    "buggy_commit": "71389b0f568f9a3da04ef26409f6a45e59dcec07",
     "execution_result": {
       "test_src": [
-        ".com.alibaba.nacos.common.remote.client.RpcClientTest#testHealthCheck"
+        ".com.alibaba.nacos.client.naming.remote.gprc.NamingGrpcClientProxyTest#testDeleteService",
+        ".com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoServiceTest#testCacheInstanceForRedo",
+        ".com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoServiceTest#testInstanceDeregister"
       ],
       "test_tgt": [
-        ".com.alibaba.nacos.common.remote.client.RpcClientTest#testHealthCheck"
+        ".com.alibaba.nacos.client.naming.remote.gprc.NamingGrpcClientProxyTest#testBatchDeregisterServiceWithEmptyInstances",
+        ".com.alibaba.nacos.client.naming.remote.gprc.NamingGrpcClientProxyTest#testBatchDeregisterServiceWithoutCacheData",
+        ".com.alibaba.nacos.client.naming.remote.gprc.NamingGrpcClientProxyTest#testBatchDeregisterServiceNotBatchData",
+        ".com.alibaba.nacos.client.naming.remote.gprc.NamingGrpcClientProxyTest#testBatchDeregisterServiceWithEmptyBatchData",
+        ".com.alibaba.nacos.client.naming.remote.gprc.NamingGrpcClientProxyTest#testBatchDeregisterService",
+        ".com.alibaba.nacos.client.naming.remote.gprc.NamingGrpcClientProxyTest#testDeleteService",
+        ".com.alibaba.nacos.client.naming.remote.gprc.NamingGrpcClientProxyTest#testIsSubscribed",
+        ".com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoServiceTest#testCacheInstanceForRedo",
+        ".com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoServiceTest#testInstanceDeregister",
+        ".com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoServiceTest#testInstanceDeregistered",
+        ".com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoServiceTest#testIsSubscriberRegistered"
       ]
     }
   },
-  "alibaba_nacos-9193": {
-    "bug_id": "alibaba_nacos-9193",
-    "PR_number": 9193,
-    "PR_createdAt": "2022-09-22T03:56:55Z",
-    "merge_commit": "a2b997f6a79dfc1530c16f5dfabe650713911254",
+  "alibaba_nacos-9907": {
+    "bug_id": "alibaba_nacos-9907",
+    "PR_number": 9907,
+    "PR_createdAt": "2023-02-06T11:52:44Z",
+    "merge_commit": "30954dc612209e0f77ec68c2061d7154fff60c5a",
     "buggy_commits": [
       {
-        "oid": "6278e7eadb9fb1c941067e5cd7bd14dce1b0c11f",
-        "message": "[ISSUE #8622] \u79fb\u9664 environment \u6982\u5ff5 (#8991)\n\n* [ISSUE #8622] \u79fb\u9664 environment \u6982\u5ff5\r\n\r\n* [ISSUE #8622] \u4f7f\u7528\u5c3e\u9012\u5f52\u4f18\u5316\u5faa\u73af\r\n\r\n- SYS\u66f4\u540d\u4e3aENV\r\n- SHARED\u66f4\u6539\u4e3aPROTOTYPE\r\n\r\n* [ISSUE #8622] rename lookingForProperties\r\n\r\n* [ISSUE #8622] NProperties is renamed SearchableProperties and add some comments\r\n\r\n* [ISSUE #8622] update some comments"
+        "oid": "428e0bc66875465cbc35ce946969dee7afafd9ca",
+        "message": "Develop add unit test api (#9910)\n\n* Add some unit test for api.\r\n\r\n* Add Unit test for api.naming.utils.\r\n\r\n* Add Unit test for api.naming.ability.\r\n\r\n* Add Unit test for some pojo.\r\n\r\n* Add Unit test for naming.pojo.\r\n\r\n* For checkstyle."
       }
     ],
     "issue": {
-      "url": "https://github.com/alibaba/nacos/issues/9060",
-      "createdAt": "2022-08-31T10:53:25Z",
-      "content": "bug_report_all/alibaba_nacos-9193.json"
+      "url": "https://github.com/alibaba/nacos/issues/9816",
+      "createdAt": "2023-01-08T14:14:11Z",
+      "content": "bug_report_all/alibaba_nacos-9907.json"
     },
     "changed_tests": [
-      "naming/src/test/java/com/alibaba/nacos/naming/core/v2/event/publisher/NamingEventPublisherTest.java"
+      "client/src/test/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoServiceTest.java"
     ],
-    "PR_url": "https://github.com/alibaba/nacos/pull/9193",
-    "merge_commit_url": "https://github.com/alibaba/nacos/commit/a2b997f6a79dfc1530c16f5dfabe650713911254",
-    "buggy_commit": "6278e7eadb9fb1c941067e5cd7bd14dce1b0c11f",
+    "PR_url": "https://github.com/alibaba/nacos/pull/9907",
+    "merge_commit_url": "https://github.com/alibaba/nacos/commit/30954dc612209e0f77ec68c2061d7154fff60c5a",
+    "buggy_commit": "428e0bc66875465cbc35ce946969dee7afafd9ca",
     "execution_result": {
       "test_src": [
-        ".com.alibaba.nacos.naming.core.v2.event.publisher.NamingEventPublisherTest#testPublishOverFlow"
+        ".com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoServiceTest#testRemoveInstanceForRedo",
+        ".com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoServiceTest#testRemoveSubscriberForRedo"
       ],
       "test_tgt": [
-        ".com.alibaba.nacos.naming.core.v2.event.publisher.NamingEventPublisherTest#testPublishOverFlow"
+        ".com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoServiceTest#testRemoveInstanceForRedo",
+        ".com.alibaba.nacos.client.naming.remote.gprc.redo.NamingGrpcRedoServiceTest#testRemoveSubscriberForRedo"
       ]
     }
   },
-  "alibaba_nacos-9228": {
-    "bug_id": "alibaba_nacos-9228",
-    "PR_number": 9228,
-    "PR_createdAt": "2022-09-28T03:05:15Z",
-    "merge_commit": "45165f7c065ff33f6a875b6c7babf2b09cb9a752",
+  "alibaba_nacos-10048": {
+    "bug_id": "alibaba_nacos-10048",
+    "PR_number": 10048,
+    "PR_createdAt": "2023-03-06T06:53:27Z",
+    "merge_commit": "62ef024da4f046fe0ffbd791d7c0ce1cc03a74f9",
     "buggy_commits": [
       {
-        "oid": "04fe7eab2fa20423e09d2019da18fba3fa4b6191",
-        "message": "Support client hash revision for DISTRO (#9214)\n\n* [ISSUE #9210] Using hash as ephemeral clients' revision for DISTRO verification.\r\n\r\n* [ISSUE #9210] Improve performance of ephemeral client hash calc.\r\n\r\n* [ISSUE #9210] Remove calculation for ephemeral client's subscribers.\r\n\r\n* [ISSUE #9210] Persist and sync revision for clients.\r\n\r\n* [ISSUE #9210] Improve hash of ephemeral client.\r\n\r\n* [ISSUE #9210] Improve performance of hash calc for clients.\r\n\r\n* [ISSUE #9210] Make distro verification compatible with zero revision from old servers.\r\n\r\n* [ISSUE #9210] Log clientId when VERIFY-FAILED.\r\n\r\n* [ISSUE #9210] Fix long class cast exception to REVISION.\r\n\r\n* [ISSUE #9210] Just renew clients when verify v2 clients on v1 mode.\r\n\r\n* [ISSUE #9210] Add UTs for ephemeral client verification.\r\n\r\n* [ISSUE #9210] Fix codestyle.\r\n\r\n* [ISSUE #9210] Fix IpPortBasedClientTest.\r\n\r\n* [ISSUE #9210] Fix codestyle.\r\n\r\n* [ISSUE #9210] Fix license.\r\n\r\n* [ISSUE #9210] Fix ConcurrentHashSetTest cases to verify concurrent modification properly.\r\n\r\n* [ISSUE #9210] Fix codestyle."
+        "oid": "000f943fd11b1be039494867f0feac219035417d",
+        "message": "syntax error (#10041)\n\nanyOne - anyone"
       }
     ],
     "issue": {
-      "url": "https://github.com/alibaba/nacos/issues/8650",
-      "createdAt": "2022-06-28T12:59:10Z",
-      "content": "bug_report_all/alibaba_nacos-9228.json"
+      "url": "https://github.com/alibaba/nacos/issues/10038",
+      "createdAt": "2023-03-03T07:49:36Z",
+      "content": "bug_report_all/alibaba_nacos-10048.json"
     },
     "changed_tests": [
-      "core/src/test/java/com/alibaba/nacos/core/cluster/MemberUtilTest.java",
-      "core/src/test/java/com/alibaba/nacos/core/cluster/ServerMemberManagerTest.java",
-      "core/src/test/java/com/alibaba/nacos/core/controller/NacosClusterControllerTest.java"
+      "client/src/test/java/com/alibaba/nacos/client/naming/remote/AbstractNamingClientProxyTest.java"
     ],
-    "PR_url": "https://github.com/alibaba/nacos/pull/9228",
-    "merge_commit_url": "https://github.com/alibaba/nacos/commit/45165f7c065ff33f6a875b6c7babf2b09cb9a752",
-    "buggy_commit": "04fe7eab2fa20423e09d2019da18fba3fa4b6191",
+    "PR_url": "https://github.com/alibaba/nacos/pull/10048",
+    "merge_commit_url": "https://github.com/alibaba/nacos/commit/62ef024da4f046fe0ffbd791d7c0ce1cc03a74f9",
+    "buggy_commit": "000f943fd11b1be039494867f0feac219035417d",
     "execution_result": {
       "test_src": [
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testSelf",
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testListNodes",
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testListSimpleNodes",
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testGetHealth",
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testReport",
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testLeave"
+        ".com.alibaba.nacos.client.naming.remote.AbstractNamingClientProxyTest#testGetSecurityHeadersForRam"
       ],
       "test_tgt": [
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testSelf",
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testListNodes",
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testListSimpleNodes",
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testGetHealth",
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testReport",
-        ".com.alibaba.nacos.core.controller.NacosClusterControllerTest#testLeave"
+        ".com.alibaba.nacos.client.naming.remote.AbstractNamingClientProxyTest#testGetSecurityHeadersForRam"
+      ]
+    }
+  },
+  "alibaba_nacos-10063": {
+    "bug_id": "alibaba_nacos-10063",
+    "PR_number": 10063,
+    "PR_createdAt": "2023-03-09T06:53:21Z",
+    "merge_commit": "383287c616e3d229d3fbf175f93ef390d3feff22",
+    "buggy_commits": [
+      {
+        "oid": "02a5e389812d0bf2848bdb40a3edf20594487cf4",
+        "message": "fix #10044 -- only update existed config. (#10045)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/nacos/issues/10062",
+      "createdAt": "2023-03-09T03:23:23Z",
+      "content": "bug_report_all/alibaba_nacos-10063.json"
+    },
+    "changed_tests": [
+      "client/src/test/java/com/alibaba/nacos/client/auth/ram/identify/StsCredentialHolderTest.java",
+      "client/src/test/java/com/alibaba/nacos/client/auth/ram/injector/ConfigResourceInjectorTest.java",
+      "client/src/test/java/com/alibaba/nacos/client/auth/ram/injector/NamingResourceInjectorTest.java",
+      "client/src/test/java/com/alibaba/nacos/client/env/NacosClientPropertiesTest.java"
+    ],
+    "PR_url": "https://github.com/alibaba/nacos/pull/10063",
+    "merge_commit_url": "https://github.com/alibaba/nacos/commit/383287c616e3d229d3fbf175f93ef390d3feff22",
+    "buggy_commit": "02a5e389812d0bf2848bdb40a3edf20594487cf4",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.nacos.client.env.NacosClientPropertiesTest#testGetPropertyFrom"
+      ],
+      "test_tgt": [
+        ".com.alibaba.nacos.client.env.NacosClientPropertiesTest#testGetPropertyFrom"
       ]
     }
   },
@@ -135,6 +174,68 @@
       ],
       "test_tgt": [
         ".com.alibaba.nacos.client.env.NacosClientPropertiesTest#testGetPropertyFrom"
+      ]
+    }
+  },
+  "alibaba_nacos-10324": {
+    "bug_id": "alibaba_nacos-10324",
+    "PR_number": 10324,
+    "PR_createdAt": "2023-04-14T08:02:47Z",
+    "merge_commit": "260a3e65164b2077dec25757d55591b8d3e83fad",
+    "buggy_commits": [
+      {
+        "oid": "c0dcbde91ead7a8872b865acf11644bd3ca65bec",
+        "message": "Develop add unit test for api remote and remote.response (#10322)\n\n* Add UT for api module remote package\r\n\r\n* Add UT for api module remote.response package\r\n\r\n* For checkstyle."
+      },
+      {
+        "oid": "5c4bbe85f741ca0cc0632525f5144610bb1adafe",
+        "message": "\u8865\u5145\u5b8c\u6574\u5269\u4f59dataSource\u7684MapperContext\u6539\u9020 (#10140)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/nacos/issues/9821",
+      "createdAt": "2023-01-09T07:42:32Z",
+      "content": "bug_report_all/alibaba_nacos-10324.json"
+    },
+    "changed_tests": [
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/derby/HistoryConfigInfoMapperByDerbyTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/derby/TenantCapacityMapperByDerbyTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoAggrMapperByMySqlTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoBetaMapperByMySqlTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoMapperByMySqlTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoTagMapperByMySqlTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigTagsRelationMapperByMySqlTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/mysql/GroupCapacityMapperByMysqlTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/mysql/HistoryConfigInfoMapperByMySqlTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/mysql/TenantCapacityMapperByMySqlTest.java"
+    ],
+    "PR_url": "https://github.com/alibaba/nacos/pull/10324",
+    "merge_commit_url": "https://github.com/alibaba/nacos/commit/260a3e65164b2077dec25757d55591b8d3e83fad",
+    "buggy_commit": "c0dcbde91ead7a8872b865acf11644bd3ca65bec",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoAggrMapperByDerbyTest#testBatchRemoveAggr",
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoAggrMapperByDerbyTest#testAggrConfigInfoCount",
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoAggrMapperByDerbyTest#testFindConfigInfoAggrIsOrdered",
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoAggrMapperByDerbyTest#testFindConfigInfoAggrByPageFetchRows",
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoAggrMapperByDerbyTest#testFindAllAggrGroupByDistinct",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoAggrMapperByMySqlTest#testBatchRemoveAggr",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoAggrMapperByMySqlTest#testAggrConfigInfoCount",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoAggrMapperByMySqlTest#testFindConfigInfoAggrIsOrdered",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoAggrMapperByMySqlTest#testFindConfigInfoAggrByPageFetchRows",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoAggrMapperByMySqlTest#testFindAllAggrGroupByDistinct"
+      ],
+      "test_tgt": [
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoAggrMapperByDerbyTest#testBatchRemoveAggr",
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoAggrMapperByDerbyTest#testAggrConfigInfoCount",
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoAggrMapperByDerbyTest#testFindConfigInfoAggrIsOrdered",
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoAggrMapperByDerbyTest#testFindConfigInfoAggrByPageFetchRows",
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.ConfigInfoAggrMapperByDerbyTest#testFindAllAggrGroupByDistinct",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoAggrMapperByMySqlTest#testBatchRemoveAggr",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoAggrMapperByMySqlTest#testAggrConfigInfoCount",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoAggrMapperByMySqlTest#testFindConfigInfoAggrIsOrdered",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoAggrMapperByMySqlTest#testFindConfigInfoAggrByPageFetchRows",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.ConfigInfoAggrMapperByMySqlTest#testFindAllAggrGroupByDistinct"
       ]
     }
   },
@@ -259,6 +360,47 @@
       ]
     }
   },
+  "alibaba_nacos-11204": {
+    "bug_id": "alibaba_nacos-11204",
+    "PR_number": 11204,
+    "PR_createdAt": "2023-09-28T03:05:00Z",
+    "merge_commit": "1192e4c36e781a51f9c787bb317d6d76cd76dffd",
+    "buggy_commits": [
+      {
+        "oid": "76861a989ee856478cce651ac0d139c26a9dcdf3",
+        "message": "Build console ui. (#11202)"
+      },
+      {
+        "oid": "3cfe5e82f228c6a5082378eb174371091e60c94d",
+        "message": "Fix server push is intercepted by SetupRequestHandler problem."
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/nacos/issues/8458",
+      "createdAt": "2022-05-25T10:02:22Z",
+      "content": "bug_report_all/alibaba_nacos-11204.json"
+    },
+    "changed_tests": [
+      "core/src/test/java/com/alibaba/nacos/core/ability/AbilityControlManagerTest.java",
+      "core/src/test/java/com/alibaba/nacos/core/ability/TestServerAbilityControlManager.java",
+      "core/src/test/java/com/alibaba/nacos/core/ability/config/AbilityConfigsTest.java",
+      "core/src/test/java/com/alibaba/nacos/core/ability/config/TestAbilityConfig.java",
+      "core/src/test/java/com/alibaba/nacos/core/cluster/MemberUtilTest.java",
+      "test/core-test/src/test/java/com/alibaba/nacos/test/ability/AbilityDiscovery.java",
+      "test/core-test/src/test/java/com/alibaba/nacos/test/ability/component/TestServerAbilityControlManager.java"
+    ],
+    "PR_url": "https://github.com/alibaba/nacos/pull/11204",
+    "merge_commit_url": "https://github.com/alibaba/nacos/commit/1192e4c36e781a51f9c787bb317d6d76cd76dffd",
+    "buggy_commit": "76861a989ee856478cce651ac0d139c26a9dcdf3",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.nacos.core.cluster.MemberUtilTest#testIsBasicInfoChangedForChangedAbilities"
+      ],
+      "test_tgt": [
+        ".com.alibaba.nacos.core.cluster.MemberUtilTest#testIsBasicInfoChangedForChangedAbilities"
+      ]
+    }
+  },
   "alibaba_nacos-11240": {
     "bug_id": "alibaba_nacos-11240",
     "PR_number": 11240,
@@ -290,6 +432,37 @@
         ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefixForMap",
         ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testGetPropertiesWithPrefix",
         ".com.alibaba.nacos.sys.utils.PropertiesUtilTest#testHandleSpringBinder"
+      ]
+    }
+  },
+  "alibaba_nacos-11346": {
+    "bug_id": "alibaba_nacos-11346",
+    "PR_number": 11346,
+    "PR_createdAt": "2023-11-08T06:59:50Z",
+    "merge_commit": "5994e3739461db0d6052f6e816f309e59c0d0c4b",
+    "buggy_commits": [
+      {
+        "oid": "753a30b37d21bada8511f8e26a3331bab26f202a",
+        "message": "strip groupNamePrefix of instance serviceName at register or deregister (#11354)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/nacos/issues/11390",
+      "createdAt": "2023-11-16T11:57:22Z",
+      "content": "bug_report_all/alibaba_nacos-11346.json"
+    },
+    "changed_tests": [
+      "client/src/test/java/com/alibaba/nacos/client/config/filter/impl/ConfigEncryptionFilterTest.java"
+    ],
+    "PR_url": "https://github.com/alibaba/nacos/pull/11346",
+    "merge_commit_url": "https://github.com/alibaba/nacos/commit/5994e3739461db0d6052f6e816f309e59c0d0c4b",
+    "buggy_commit": "753a30b37d21bada8511f8e26a3331bab26f202a",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.nacos.client.config.filter.impl.ConfigEncryptionFilterTest#testDoFilter"
+      ],
+      "test_tgt": [
+        ".com.alibaba.nacos.client.config.filter.impl.ConfigEncryptionFilterTest#testDoFilter"
       ]
     }
   },
@@ -334,6 +507,77 @@
       ]
     }
   },
+  "alibaba_nacos-11658": {
+    "bug_id": "alibaba_nacos-11658",
+    "PR_number": 11658,
+    "PR_createdAt": "2024-01-15T09:34:16Z",
+    "merge_commit": "849393c4a1eeaeee20dbbd7101cf60b36f91cf08",
+    "buggy_commits": [
+      {
+        "oid": "9722ad8dd53066cb8edca66c9ba51e7e437d0d47",
+        "message": "Auth check fix (#11672)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/nacos/issues/11632",
+      "createdAt": "2024-01-10T09:53:57Z",
+      "content": "bug_report_all/alibaba_nacos-11658.json"
+    },
+    "changed_tests": [
+      "config/src/test/java/com/alibaba/nacos/config/server/service/repository/extrnal/ExternalConfigInfoPersistServiceImplTest.java",
+      "config/src/test/java/com/alibaba/nacos/config/server/service/repository/extrnal/ExternalHistoryConfigInfoPersistServiceImplTest.java",
+      "config/src/test/java/com/alibaba/nacos/config/server/utils/PropertyUtilTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/derby/ConfigInfoMapperByDerbyTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoMapperByMySqlTest.java"
+    ],
+    "PR_url": "https://github.com/alibaba/nacos/pull/11658",
+    "merge_commit_url": "https://github.com/alibaba/nacos/commit/849393c4a1eeaeee20dbbd7101cf60b36f91cf08",
+    "buggy_commit": "9722ad8dd53066cb8edca66c9ba51e7e437d0d47",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.nacos.config.server.service.repository.embedded.EmbeddedHistoryConfigInfoPersistServiceImplTest#testFindDeletedConfig",
+        ".com.alibaba.nacos.config.server.service.repository.extrnal.ExternalHistoryConfigInfoPersistServiceImplTest#testFindDeletedConfig"
+      ],
+      "test_tgt": [
+        ".com.alibaba.nacos.config.server.service.repository.embedded.EmbeddedHistoryConfigInfoPersistServiceImplTest#testFindDeletedConfig",
+        ".com.alibaba.nacos.config.server.service.repository.extrnal.ExternalHistoryConfigInfoPersistServiceImplTest#testFindDeletedConfig"
+      ]
+    }
+  },
+  "alibaba_nacos-11707": {
+    "bug_id": "alibaba_nacos-11707",
+    "PR_number": 11707,
+    "PR_createdAt": "2024-01-26T15:05:13Z",
+    "merge_commit": "817eb58597c8410278a143327eb859a52851ca81",
+    "buggy_commits": [
+      {
+        "oid": "bd5caa64a6b42d06d2342ced1265e827f88dd99e",
+        "message": "Clean up system property after running the test case (#11711)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/nacos/issues/11695",
+      "createdAt": "2024-01-24T07:25:40Z",
+      "content": "bug_report_all/alibaba_nacos-11707.json"
+    },
+    "changed_tests": [
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/derby/HistoryConfigInfoMapperByDerbyTest.java",
+      "plugin/datasource/src/test/java/com/alibaba/nacos/plugin/datasource/impl/mysql/HistoryConfigInfoMapperByMySqlTest.java"
+    ],
+    "PR_url": "https://github.com/alibaba/nacos/pull/11707",
+    "merge_commit_url": "https://github.com/alibaba/nacos/commit/817eb58597c8410278a143327eb859a52851ca81",
+    "buggy_commit": "bd5caa64a6b42d06d2342ced1265e827f88dd99e",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.HistoryConfigInfoMapperByDerbyTest#testDetailPreviousConfigHistory",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.HistoryConfigInfoMapperByMySqlTest#testDetailPreviousConfigHistory"
+      ],
+      "test_tgt": [
+        ".com.alibaba.nacos.plugin.datasource.impl.derby.HistoryConfigInfoMapperByDerbyTest#testDetailPreviousConfigHistory",
+        ".com.alibaba.nacos.plugin.datasource.impl.mysql.HistoryConfigInfoMapperByMySqlTest#testDetailPreviousConfigHistory"
+      ]
+    }
+  },
   "alibaba_nacos-11893": {
     "bug_id": "alibaba_nacos-11893",
     "PR_number": 11893,
@@ -368,6 +612,37 @@
         ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithThrowable",
         ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosException",
         ".com.alibaba.nacos.api.remote.response.ErrorResponseTest#testBuildWithNacosRuntimeException"
+      ]
+    }
+  },
+  "alibaba_nacos-12040": {
+    "bug_id": "alibaba_nacos-12040",
+    "PR_number": 12040,
+    "PR_createdAt": "2024-04-28T11:06:33Z",
+    "merge_commit": "b016e79dfe68036a31ce9225c2c51c507ac50c7d",
+    "buggy_commits": [
+      {
+        "oid": "da3e88b3d4918093a555a4fbfebfe29cb2a6a1c2",
+        "message": "[ISSUE#11956] Fix logging module old bugs (#12011)\n\n* Remove log4j dependencies from nacos-client.\r\n\r\n* Fix logback listener don't add to context.\r\n\r\n* Fix can't adapter low version logback below 1.1.10.\r\n\r\n* For checkstyle."
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/nacos/issues/12041",
+      "createdAt": "2024-04-28T11:07:57Z",
+      "content": "bug_report_all/alibaba_nacos-12040.json"
+    },
+    "changed_tests": [
+      "logger-adapter-impl/log4j2-adapter/src/test/java/com/alibaba/nacos/logger/adapter/log4j2/Log4J2NacosLoggingAdapterTest.java"
+    ],
+    "PR_url": "https://github.com/alibaba/nacos/pull/12040",
+    "merge_commit_url": "https://github.com/alibaba/nacos/commit/b016e79dfe68036a31ce9225c2c51c507ac50c7d",
+    "buggy_commit": "da3e88b3d4918093a555a4fbfebfe29cb2a6a1c2",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.nacos.logger.adapter.log4j2.Log4J2NacosLoggingAdapterTest#testLoadConfiguration"
+      ],
+      "test_tgt": [
+        ".com.alibaba.nacos.logger.adapter.log4j2.Log4J2NacosLoggingAdapterTest#testLoadConfiguration"
       ]
     }
   }

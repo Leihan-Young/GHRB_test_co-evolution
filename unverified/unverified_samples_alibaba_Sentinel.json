@@ -1,0 +1,134 @@
+{
+  "alibaba_Sentinel-3045": {
+    "bug_id": "alibaba_Sentinel-3045",
+    "PR_number": 3045,
+    "PR_createdAt": "2023-02-19T09:40:39Z",
+    "merge_commit": "fd8966a50498f53ba8bd8e17a63349873160688b",
+    "buggy_commits": [
+      {
+        "oid": "f5d736c0bfcaf16a663dbbab126193e0b594d6bc",
+        "message": "doc: Update issue templates"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/Sentinel/issues/3000",
+      "createdAt": "2022-12-15T02:52:11Z",
+      "content": "bug_report_all/alibaba_Sentinel-3045.json"
+    },
+    "changed_tests": [
+      "sentinel-extension/sentinel-datasource-redis/src/test/java/com/alibaba/csp/sentinel/datasource/redis/RedisConnectionConfigTest.java"
+    ],
+    "PR_url": "https://github.com/alibaba/Sentinel/pull/3045",
+    "merge_commit_url": "https://github.com/alibaba/Sentinel/commit/fd8966a50498f53ba8bd8e17a63349873160688b",
+    "buggy_commit": "f5d736c0bfcaf16a663dbbab126193e0b594d6bc",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.csp.sentinel.datasource.redis.RedisConnectionConfigTest#testRedisDefaultPropertySuccess"
+      ],
+      "test_tgt": [
+        ".com.alibaba.csp.sentinel.datasource.redis.RedisConnectionConfigTest#testRedisDefaultPropertySuccess",
+        ".com.alibaba.csp.sentinel.datasource.redis.RedisConnectionConfigTest#testRedisSsl"
+      ]
+    }
+  },
+  "alibaba_Sentinel-3070": {
+    "bug_id": "alibaba_Sentinel-3070",
+    "PR_number": 3070,
+    "PR_createdAt": "2023-03-22T13:41:26Z",
+    "merge_commit": "72c4072f460cf7c9d205e9cb02aeb6909fb4919b",
+    "buggy_commits": [
+      {
+        "oid": "62487998465bf14b21ee93f1f4f433d43008b8d3",
+        "message": "dashboard support regex match (#3305)"
+      },
+      {
+        "oid": "b681790ce07c4174e9bb225722455e802febec55",
+        "message": "Fix unit test testEmitSingleLongTimeRt() in MonoSentinelOperatorIntegrationTest (#2974)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/Sentinel/issues/2974",
+      "createdAt": "2022-11-26T08:34:26Z",
+      "content": "bug_report_all/alibaba_Sentinel-3070.json"
+    },
+    "changed_tests": [
+      "sentinel-adapter/sentinel-reactor-adapter/src/test/java/com/alibaba/csp/sentinel/adapter/reactor/MonoSentinelOperatorIntegrationTest.java"
+    ],
+    "PR_url": "https://github.com/alibaba/Sentinel/pull/3070",
+    "merge_commit_url": "https://github.com/alibaba/Sentinel/commit/72c4072f460cf7c9d205e9cb02aeb6909fb4919b",
+    "buggy_commit": "62487998465bf14b21ee93f1f4f433d43008b8d3",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.csp.sentinel.adapter.reactor.MonoSentinelOperatorIntegrationTest#testEmitSingleLongTimeRt"
+      ],
+      "test_tgt": [
+        ".com.alibaba.csp.sentinel.adapter.reactor.MonoSentinelOperatorIntegrationTest#testEmitSingleLongTimeRt"
+      ]
+    }
+  },
+  "alibaba_Sentinel-3136": {
+    "bug_id": "alibaba_Sentinel-3136",
+    "PR_number": 3136,
+    "PR_createdAt": "2023-06-01T11:14:29Z",
+    "merge_commit": "a64e818e11885d08e33f66c59e82d3e631f7b230",
+    "buggy_commits": [
+      {
+        "oid": "1fbc2269640cbbac16c9e6a0d93414884980d24a",
+        "message": "Remove the requirement of carrying batchCount and args in entry.exit() (#3114)"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/Sentinel/issues/1463",
+      "createdAt": "2020-05-07T14:27:34Z",
+      "content": "bug_report_all/alibaba_Sentinel-3136.json"
+    },
+    "changed_tests": [
+      "sentinel-core/src/test/java/com/alibaba/csp/sentinel/log/jul/ConsoleHandlerTest.java"
+    ],
+    "PR_url": "https://github.com/alibaba/Sentinel/pull/3136",
+    "merge_commit_url": "https://github.com/alibaba/Sentinel/commit/a64e818e11885d08e33f66c59e82d3e631f7b230",
+    "buggy_commit": "1fbc2269640cbbac16c9e6a0d93414884980d24a",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.csp.sentinel.log.jul.ConsoleHandlerTest#testPublish"
+      ],
+      "test_tgt": [
+        ".com.alibaba.csp.sentinel.log.jul.ConsoleHandlerTest#testInfoPublish",
+        ".com.alibaba.csp.sentinel.log.jul.ConsoleHandlerTest#testWarnPublish",
+        ".com.alibaba.csp.sentinel.log.jul.ConsoleHandlerTest#testFinePublish",
+        ".com.alibaba.csp.sentinel.log.jul.ConsoleHandlerTest#testSeverePublish"
+      ]
+    }
+  },
+  "alibaba_Sentinel-3282": {
+    "bug_id": "alibaba_Sentinel-3282",
+    "PR_number": 3282,
+    "PR_createdAt": "2023-11-30T20:46:49Z",
+    "merge_commit": "6879fdd505a0ef13e9ef0ddaec0aa04b47e87403",
+    "buggy_commits": [
+      {
+        "oid": "5108046ba2bb5371841caedd6f5e9b5d47c52827",
+        "message": "make all ThreadPool static final (#3243)\n\n* make all ThreadPool static final\r\n\r\n* update github workflow"
+      }
+    ],
+    "issue": {
+      "url": "https://github.com/alibaba/Sentinel/issues/3281",
+      "createdAt": "2023-11-30T20:46:40Z",
+      "content": "bug_report_all/alibaba_Sentinel-3282.json"
+    },
+    "changed_tests": [
+      "sentinel-adapter/sentinel-sofa-rpc-adapter/src/test/java/com/alibaba/csp/sentinel/adapter/sofa/rpc/fallback/SofaRpcFallbackRegistryTest.java"
+    ],
+    "PR_url": "https://github.com/alibaba/Sentinel/pull/3282",
+    "merge_commit_url": "https://github.com/alibaba/Sentinel/commit/6879fdd505a0ef13e9ef0ddaec0aa04b47e87403",
+    "buggy_commit": "5108046ba2bb5371841caedd6f5e9b5d47c52827",
+    "execution_result": {
+      "test_src": [
+        ".com.alibaba.csp.sentinel.adapter.sofa.rpc.fallback.SofaRpcFallbackRegistryTest#testCustomFallback"
+      ],
+      "test_tgt": [
+        ".com.alibaba.csp.sentinel.adapter.sofa.rpc.fallback.SofaRpcFallbackRegistryTest#testCustomFallback"
+      ]
+    }
+  }
+}

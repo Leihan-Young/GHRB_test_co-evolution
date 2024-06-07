@@ -111,10 +111,10 @@ def call_checkout(pid, tid, dir):
 
     if commit != None:
 
-        sp.run(['git', 'reset', '--hard', 'HEAD'],
-            cwd=repo_path, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-        sp.run(['git', 'clean', '-df'],
-            cwd=repo_path, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+        sp.run('git reset --hard HEAD',
+            cwd=repo_path, stdout=sp.DEVNULL, stderr=sp.DEVNULL, shell=True)
+        sp.run('git clean -df',
+            cwd=repo_path, stdout=sp.DEVNULL, stderr=sp.DEVNULL, shell=True)
 
         # checkout to the buggy version and apply patch to the buggy version
 
@@ -124,10 +124,10 @@ def call_checkout(pid, tid, dir):
                 os.mkdir(dir)
 
             if pid == "skywalking":
-                p = sp.run(['git', 'clone', repo_path, dir], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
-                p = sp.run(['git', 'submodule', 'init'], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
-                p = sp.run(['git', 'submodule', 'update'], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
-                p = sp.run(['git', 'checkout', commit], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                p = sp.run(f'git clone {repo_path} {dir}', stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                p = sp.run('git submodule init', stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                p = sp.run('git submodule update', stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                p = sp.run(f'git checkout {commit}', stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
                 output += (f"Checking out \033[92m{commit}\033[0m to \033[92m{dir}\033[0m\n")
             else:
                 
@@ -137,11 +137,11 @@ def call_checkout(pid, tid, dir):
                 #                             cwd=repo_path)
 
                 # run = sp.run(['git', f'--work-tree={dir}', 'checkout', commit, '--', '.'], cwd=repo_path, shell=True)
-                p = sp.run(['git', 'clone', repo_path, dir], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
-                p = sp.run(['git', 'checkout', commit], stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                p = sp.run(f'git clone {repo_path} {dir}', stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
+                p = sp.run(f'git checkout {commit}', stdout=sp.PIPE, stderr=sp.PIPE, cwd=dir, shell=True)
                 output += (f"Checking out \033[92m{commit}\033[0m to \033[92m{dir}\033[0m\n")
         else:
-            sp.run(['git', 'checkout', commit], cwd=repo_path,
+            sp.run(f'git checkout {commit}', cwd=repo_path,
                 stdout=sp.DEVNULL, stderr=sp.DEVNULL)
             output += (f"Checking out {commit} to {repo_path}\n")
 
@@ -249,14 +249,14 @@ def call_compile(dir):
         fix_build_env(pid, path)
 
     if not mvnw and not gradlew:
-        out = sp.run([f'{new_env["MAVEN_HOME"]}/mvn', 'clean', 'compile'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
+        out = sp.run(f'{new_env["MAVEN_HOME"]}/mvn clean compile', env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
     elif mvnw:
-        out = sp.run(['./mvnw', 'clean', 'compile'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
+        out = sp.run(['./mvnw clean compile'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
     
     elif gradlew:
-        out = sp.run(['./gradlew', 'clean', 'compileJava'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
+        out = sp.run(['./gradlew clean compileJava'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
 
-    if "BUILD SUCCESS" in out.stdout.decode(encoding='gbk', errors='ignore'):
+    if "BUILD SUCCESS" in out.stdout.decode(encoding='utf-8', errors='ignore'):
         output += "\033[92mBuild Success\033[0m"
     else:
         output += "\033[91mBuild Failed\033[0m"
@@ -266,54 +266,58 @@ def call_compile(dir):
     '''
     return output
 
-def run_test (new_env, mvnw, gradlew, test_case, path, command=None, tidy_pom = False):
+def run_test (new_env, mvnw, gradlew, test_case, path, command=None, tidy_pom = False, verify = False):
 
     output = ""
 
     if tidy_pom:
-        run = sp.run([f'{new_env["MAVEN_HOME"]}/mvn', 'tidy:pom'],
+        run = sp.run(f'{new_env["MAVEN_HOME"]}/mvn tidy:pom',
                     env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
 
     if not mvnw and not gradlew:
-        default = [f'{new_env["MAVEN_HOME"]}/mvn', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
+        default = [f'{new_env["MAVEN_HOME"]}/mvn', '-T', '0.8C', 'verify' if verify else 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
         if command is not None:
             extra_command = command.split()
             new_command = default + extra_command
+            new_command = ' '.join(new_command)
             run = sp.run(new_command,
                          env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
         else:
+            default = ' '.join(default)
             run = sp.run(default,
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
 
     elif mvnw:
-        default = [f'./mvnw', 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
+        default = [f'./mvnw', '-T', '0.8C', 'verify' if verify else 'test', f'-Dtest={test_case}', '-DfailIfNoTests=false', '--errors']
         if command is not None:
             extra_command = command.split()
             new_command = default + extra_command
-
+            new_command = ' '.join(new_command)
             run = sp.run(new_command,
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
         else:
+            default = ' '.join(default)
             run = sp.run(default,
                         env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
     elif gradlew:
-        default = [f"./gradlew", "test", "--tests", f'{test_case}', '--info', '--stacktrace']
+        default = [f"./gradlew", '-T', '0.8C', 'verify' if verify else "test", "--tests", f'{test_case}', '--info', '--stacktrace']
         if command is not None:
             if 'test' in command:
-                new_command = ["gradlew", command, '--tests', f'{test_case}']
+                new_command = ["./gradlew", command, '--tests', f'{test_case}']
+                new_command = ' '.join(new_command)
                 run = sp.run(new_command,
                              env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
             else:
+                new_command = ' '.join(new_command)
                 run = sp.run(new_command,
                              env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
         else:
+            default = ' '.join(default)
             run = sp.run(default,
                          env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
-    '''
-    Modify for gradle
-    '''
-    stdout = run.stdout.decode(encoding='gbk', errors='ignore')
-    stderr = run.stderr.decode(encoding='gbk', errors='ignore')
+
+    stdout = run.stdout.decode(encoding='utf-8', errors='ignore')
+    stderr = run.stderr.decode(encoding='utf-8', errors='ignore')
 
     test_output = False
     if "BUILD SUCCESS" in stdout:
@@ -355,10 +359,61 @@ def run_test (new_env, mvnw, gradlew, test_case, path, command=None, tidy_pom = 
     {fail_part}
 ------------------------------------------------------------------------\n''')
         test_output = False
+    else:
+        output += (f'''
+\033[1mBUILD FAILURE\033[0m
+------------------------------------------------------------------------\n''')
 
     # output += stdout
 
     return output, test_output, stdout
+
+def call_clean(dir):
+    output = ""
+
+    if not os.path.isfile(os.path.join(dir, ".pidtid.config")):
+        output += "pidtid config file not found...\n"
+        output += "Re-run compile"
+        return output
+    
+    with open(f"{dir}/.pidtid.config", "r") as f:
+        content = f.read()
+
+    pid_pattern = r'(pid=)(.*)\n'
+    out = re.search(pid_pattern, content)
+    pid = out.group(2)
+    new_env, mvnw, gradlew = find_env(pid)
+    is_install = False
+    if pid == 'pulsar' or pid == 'shardingsphere':
+        is_install = True
+    stdout, stderr = run_clean(new_env, mvnw, gradlew, dir, is_install)
+    output = f"stdout={stdout}\nstderr={stderr}"
+    return output
+
+def run_clean (new_env, mvnw, gradlew, path, is_install):
+
+    if not mvnw and not gradlew:
+        default = f'{new_env["MAVEN_HOME"]}/mvn clean'
+        if is_install:
+            default += ' install -DskipTests -Dlicense.skip=true -Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true'
+        run = sp.run(default, env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
+
+    elif mvnw:
+        default = f'./mvnw clean'
+        if is_install:
+            default += ' install -DskipTests -Dlicense.skip=true -Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true'
+        run = sp.run(default, env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
+
+    elif gradlew:
+        default = f"./gradlew clean"
+        if is_install:
+            default += ' install -DskipTests -Dlicense.skip=true -Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true'
+        run = sp.run(default, env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, cwd=path, shell=True)
+
+    stdout = run.stdout.decode(encoding='utf-8', errors='ignore')
+    stderr = run.stderr.decode(encoding='utf-8', errors='ignore')
+
+    return stdout, stderr
 
 def call_test(dir, test_case, test_class, test_suite, log, quiet):
     '''
@@ -517,6 +572,7 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
 
     test_src = verified_db[tid]['test_src']
     test_tgt = verified_db[tid]['test_tgt']
+    focal_src_path = verified_db[tid]['focal_path_src']
     changed_tests = verified_db[tid]['changed_tests']
 
     new_env, mvnw, gradlew = find_env(pid)
@@ -547,13 +603,10 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
                 method_lines = f.readlines()
                 tree = javalang.parse.parse("public class tempClassName { $TEST_METHODS$ }".replace("$TEST_METHODS$", ''.join(method_lines)))
             for _, node in tree:
-                if isinstance(node, javalang.tree.MethodDeclaration) and 'annotations' in node.attrs:
-                    for anno in getattr(node, 'annotations'):
-                        if anno.name == 'Test':
-                            t.append(f'{prefix}#{node.name}')
-                            break
+                if isinstance(node, javalang.tree.MethodDeclaration):
+                    t.append(f'{prefix}#{node.name}')
             test_cases = ','.join(t)
-        except:
+        except Exception as e:
             output = f"Fail to parse {input_file}"
             return output
 
@@ -592,6 +645,8 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
             list = str.split('\n')
             write_content = '\n'.join([l for l in list if len(l.lstrip()) != 0])
             write_content = write_content.replace("<jacoco.skip>true</jacoco.skip>", "<jacoco.skip>false</jacoco.skip>")
+            write_content = write_content.replace("<jacoco.report.skip>true</jacoco.report.skip>", "<jacoco.report.skip>false</jacoco.report.skip>")
+            write_content = write_content.replace(r"${testJacocoAgentArgument}", r"@{argLine}")
             f.write(write_content)
     except Exception as e:
         output = f"Fail to add jacoco dependency and set plugin config to {path}/pom.xml"
@@ -629,29 +684,67 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
         x = f.read()
         if "org.codehaus.mojo" in x and "tidy-maven-plugin" in x:
             tidy_pom = True
-    output, test_output, stdout = run_test(new_env, mvnw, gradlew, test_cases, path, command, tidy_pom)
+    verify = False
+    if pid == 'pulsar':
+        verify = True
+    output, test_output, stdout = run_test(new_env, mvnw, gradlew, test_cases, path, command, tidy_pom, verify)
+    if "Test Success" in output:
+        output += "Test passed\n"
+    elif "Failure/Error info" in output:
+        output += "Test failed\n"
+    elif "BUILD FAILURE" in output:
+        output += "Build failed\n"
     tgt_cov_xml = None
+    jacoco_out_path = None
     if len(tgt_modules) == 0:
         if os.path.exists(os.path.join(path, 'target', 'site', 'jacoco', 'jacoco.xml')):
             tgt_cov_xml = os.path.join(path, 'target', 'site', 'jacoco', 'jacoco.xml')
+            jacoco_out_path = os.path.join(path, 'target', 'site', 'jacoco')
     else:
         for tgt_module in tgt_modules:
             if os.path.exists(os.path.join(tgt_module, 'target', 'site', 'jacoco', 'jacoco.xml')):
                 tgt_cov_xml = os.path.join(tgt_module, 'target', 'site', 'jacoco', 'jacoco.xml')
+                jacoco_out_path = os.path.join(tgt_module, 'target', 'site', 'jacoco')
     if tgt_cov_xml == None:
         output += f"Fail to generate jacoco report for {path}"
         return output
     
     output += (f"Coverage report generated to \033[4m{os.path.join(cur, 'target', 'site', 'jacoco', 'jacoco.xml')}\033[0m\n")
 
+    tgt_cov_html_files = []
+    focal_files = set()
+    for focal_path in focal_src_path:
+        focal_files.add(focal_path.split('#')[0])
+    for focal_file in focal_files:
+        ind = focal_file.rfind('/')
+        folders = focal_file[:ind].replace('/', '.')
+        focal_class = focal_file[ind+1:]
+        folder_name = folders[folders.find('.java.') + len('.java.'):]
+        tgt_cov_html_files.append(os.path.join(jacoco_out_path, folder_name, f'{focal_class}.html'))
+
     with open(tgt_cov_xml, 'r', encoding='utf-8') as f:
         s = f.read()
+    os.remove(tgt_cov_xml)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    with open(os.path.join(output_dir, f'{pid}-{full_tid}_cov_jacoco.xml'), 'w', encoding='utf-8') as f:
-        f.write(minidom.parseString(s).toprettyxml(indent="  "))
+    try:
+        with open(os.path.join(output_dir, f'{pid}-{full_tid}_cov_jacoco.xml'), 'w', encoding='utf-8') as f:
+            f.write(minidom.parseString(s).toprettyxml(indent="  "))
+    except Exception as e:
+        output += (f"Error coverage report, no content")
+        return output
 
     output += (f"Formatted report xml is written to \033[4m{os.path.join(output_dir, f'{pid}_{full_tid}-cov-jacoco.xml')}\033[0m\n")
+
+    for html_file in tgt_cov_html_files:
+        with open(html_file, 'r', encoding='utf-8') as f:
+            s = f.read()
+        os.remove(html_file)
+        file_name = html_file.split('/')[-1]
+        with open(os.path.join(output_dir, file_name), 'w', encoding='utf-8') as f:
+            f.write(s)
+    
+    output += (f"Jacoco report html is written to \033[4m{','.join([os.path.join(output_dir, x.split('/')[-1]) for x in tgt_cov_html_files])}\033[0m\n")
 
     return output
 
@@ -812,7 +905,12 @@ def add_plugin_config(root, prefix):
         configuration_node.append(create_element(prefix+"dataFile", "target/jacoco.exec"))
         formats_node = et.Element(prefix+"formats")
         formats_node.append(create_element(prefix+"format", "XML"))
+        formats_node.append(create_element(prefix+"format", "HTML"))
+        formats_node.append(create_element(prefix+"format", "CSV"))
         configuration_node.append(formats_node)
+        excludes_node = et.Element(prefix+"excludes")
+        excludes_node.append(create_element(prefix+"exclude", "META-INF/**"))
+        configuration_node.append(excludes_node)
         execution_node.append(configuration_node)
         executions_node.append(execution_node)
         jacoco.append(executions_node)
@@ -877,6 +975,8 @@ def add_plugin_config(root, prefix):
             configuration_node.append(create_element(prefix+"dataFile", "target/jacoco.exec"))
             formats_node = et.Element(prefix+"formats")
             formats_node.append(create_element(prefix+"format", "XML"))
+            formats_node.append(create_element(prefix+"format", "HTML"))
+            formats_node.append(create_element(prefix+"format", "CSV"))
             configuration_node.append(formats_node)
             execution_node.append(configuration_node)
             executions_node.append(execution_node)
@@ -913,13 +1013,22 @@ def add_plugin_config(root, prefix):
             if formats_node == None:
                 new_formats_node = True
                 formats_node = et.Element(prefix+"formats")
-            add_new_format = True
+            add_new_format_xml = True
+            add_new_format_html = True
+            add_new_format_csv = True
             for format_node in formats_node.findall(prefix+"format"):
                 if format_node.text == "XML":
-                    add_new_format = False
-                    break
-            if add_new_format:
+                    add_new_format_xml = False
+                if format_node.text == "HTML":
+                    add_new_format_html = False
+                if format_node.text == "CSV":
+                    add_new_format_csv = False
+            if add_new_format_xml:
                 formats_node.append(create_element(prefix+"format", "XML"))
+            if add_new_format_html:
+                formats_node.append(create_element(prefix+"format", "HTML"))
+            if add_new_format_csv:
+                formats_node.append(create_element(prefix+"format", "CSV"))
             if new_formats_node:
                 configuration_node.append(formats_node)
             if new_config_node:
@@ -1281,6 +1390,13 @@ if __name__ == '__main__':
                                 help="The working directory of the checked-out project version (optional). Default is the current directory")
     
 
+    parser_clean = subparsers.add_parser('clean',
+                                        help="Clean the work dir")
+    
+    parser_clean.add_argument("-w", dest="work_dir", action="store",
+                                help="The working directory of the checked-out project version (optional). Default is the current directory")
+    
+
     #  d4j-test [-w work_dir] [-r | [-t single_test] [-s test_suite]]
     parser_cov = subparsers.add_parser('coverage',
                                         help="Run tests in the input test file on a buggy or a fixed project version and calculate the coverage with jacoco")
@@ -1395,6 +1511,9 @@ if __name__ == '__main__':
         print(output)
     elif args.command == "coverage":
         output = call_coverage(args.work_dir, args.input_file, args.output_dir, args.test_tgt)
+        print(output)
+    elif args.command == "clean":
+        output = call_clean(args.work_dir)
         print(output)
     # elif args.command == "ptr":
     #     output = call_ptr(args.project_id)

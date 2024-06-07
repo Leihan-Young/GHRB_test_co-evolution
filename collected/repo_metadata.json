@@ -1,716 +1,32 @@
 {
-  "dubbo": {
+  "netty": {
     "repository": {
-      "name": "dubbo",
+      "name": "netty",
       "owner": {
-        "login": "apache"
+        "login": "netty"
       },
-      "url": "https://github.com/apache/dubbo",
-      "descriptionHTML": "<div>The java implementation of Apache Dubbo. An RPC and microservice framework.</div>",
-      "updatedAt": "2024-04-01T15:51:06Z",
-      "createdAt": "2012-06-19T07:56:02Z",
-      "stargazerCount": 39942,
+      "url": "https://github.com/netty/netty",
+      "descriptionHTML": "<div>Netty project - an event-driven asynchronous network application framework</div>",
+      "updatedAt": "2024-05-05T04:37:26Z",
+      "createdAt": "2010-11-09T09:22:21Z",
+      "stargazerCount": 32811,
       "languages": {
-        "totalSize": 16006374,
+        "totalSize": 19634277,
         "edges": [
           {
-            "size": 15918828,
+            "size": 19350123,
             "node": {
               "name": "Java"
             }
           },
           {
-            "size": 15510,
-            "node": {
-              "name": "Shell"
-            }
-          },
-          {
-            "size": 1959,
-            "node": {
-              "name": "Batchfile"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "incubator-seata": {
-    "repository": {
-      "name": "incubator-seata",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/incubator-seata",
-      "descriptionHTML": "<div>\ud83d\udd25 Seata is an easy-to-use, high-performance, open source distributed transaction solution.</div>",
-      "updatedAt": "2024-04-01T17:22:04Z",
-      "createdAt": "2018-12-28T08:37:22Z",
-      "stargazerCount": 24879,
-      "languages": {
-        "totalSize": 12503635,
-        "edges": [
-          {
-            "size": 12120055,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 51514,
-            "node": {
-              "name": "Shell"
-            }
-          },
-          {
-            "size": 4781,
-            "node": {
-              "name": "Python"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "skywalking": {
-    "repository": {
-      "name": "skywalking",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/skywalking",
-      "descriptionHTML": "<div>APM, Application Performance Monitoring System</div>",
-      "updatedAt": "2024-04-02T03:17:05Z",
-      "createdAt": "2015-11-07T03:30:36Z",
-      "stargazerCount": 23154,
-      "languages": {
-        "totalSize": 7403675,
-        "edges": [
-          {
-            "size": 7272729,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 37685,
-            "node": {
-              "name": "Shell"
-            }
-          },
-          {
-            "size": 6422,
-            "node": {
-              "name": "Batchfile"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "flink": {
-    "repository": {
-      "name": "flink",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/flink",
-      "descriptionHTML": "<div>Apache Flink</div>",
-      "updatedAt": "2024-04-02T02:54:25Z",
-      "createdAt": "2014-06-07T07:00:10Z",
-      "stargazerCount": 23051,
-      "languages": {
-        "totalSize": 115387436,
-        "edges": [
-          {
-            "size": 98995256,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 208862,
+            "size": 21029,
             "node": {
               "name": "HTML"
             }
           },
           {
-            "size": 7038,
-            "node": {
-              "name": "JavaScript"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "rocketmq": {
-    "repository": {
-      "name": "rocketmq",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/rocketmq",
-      "descriptionHTML": "<div>Apache RocketMQ is a cloud native messaging and streaming platform, making it simple to build event-driven applications.</div>",
-      "updatedAt": "2024-04-02T00:17:59Z",
-      "createdAt": "2016-11-30T08:00:08Z",
-      "stargazerCount": 20456,
-      "languages": {
-        "totalSize": 13312287,
-        "edges": [
-          {
-            "size": 60723,
-            "node": {
-              "name": "Shell"
-            }
-          },
-          {
-            "size": 13145406,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 22715,
-            "node": {
-              "name": "Batchfile"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "hadoop": {
-    "repository": {
-      "name": "hadoop",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/hadoop",
-      "descriptionHTML": "<div>Apache Hadoop</div>",
-      "updatedAt": "2024-04-02T03:33:00Z",
-      "createdAt": "2014-08-28T07:00:08Z",
-      "stargazerCount": 14266,
-      "languages": {
-        "totalSize": 111436827,
-        "edges": [
-          {
-            "size": 563611,
-            "node": {
-              "name": "Shell"
-            }
-          },
-          {
-            "size": 21593,
-            "node": {
-              "name": "Python"
-            }
-          },
-          {
-            "size": 103470134,
-            "node": {
-              "name": "Java"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "jfreechart": {
-    "repository": {
-      "name": "jfreechart",
-      "owner": {
-        "login": "jfree"
-      },
-      "url": "https://github.com/jfree/jfreechart",
-      "descriptionHTML": "<div>A 2D chart library for Java applications (JavaFX, Swing or server-side).</div>",
-      "updatedAt": "2024-03-31T14:17:22Z",
-      "createdAt": "2016-02-01T21:43:12Z",
-      "stargazerCount": 1142,
-      "languages": {
-        "totalSize": 9566549,
-        "edges": [
-          {
-            "size": 9534521,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 24476,
-            "node": {
-              "name": "HTML"
-            }
-          },
-          {
-            "size": 7327,
-            "node": {
-              "name": "JavaScript"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "commons-cli": {
-    "repository": {
-      "name": "commons-cli",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/commons-cli",
-      "descriptionHTML": "<div>Apache Commons CLI</div>",
-      "updatedAt": "2024-03-31T14:11:36Z",
-      "createdAt": "2009-05-28T08:00:15Z",
-      "stargazerCount": 321,
-      "languages": {
-        "totalSize": 534239,
-        "edges": [
-          {
-            "size": 510835,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 1693,
-            "node": {
-              "name": "HTML"
-            }
-          },
-          {
-            "size": 157,
-            "node": {
-              "name": "Shell"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "closure-compiler": {
-    "repository": {
-      "name": "closure-compiler",
-      "owner": {
-        "login": "google"
-      },
-      "url": "https://github.com/google/closure-compiler",
-      "descriptionHTML": "<div>A JavaScript checker and optimizer.</div>",
-      "updatedAt": "2024-04-02T00:56:23Z",
-      "createdAt": "2014-04-16T15:30:36Z",
-      "stargazerCount": 7233,
-      "languages": {
-        "totalSize": 36642346,
-        "edges": [
-          {
-            "size": 15469106,
-            "node": {
-              "name": "JavaScript"
-            }
-          },
-          {
-            "size": 21125217,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 2029,
-            "node": {
-              "name": "HTML"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "commons-codec": {
-    "repository": {
-      "name": "commons-codec",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/commons-codec",
-      "descriptionHTML": "<div>Apache Commons Codec</div>",
-      "updatedAt": "2024-03-31T14:11:34Z",
-      "createdAt": "2009-05-21T01:20:25Z",
-      "stargazerCount": 442,
-      "languages": {
-        "totalSize": 1873252,
-        "edges": [
-          {
-            "size": 3572,
-            "node": {
-              "name": "HTML"
-            }
-          },
-          {
-            "size": 1869523,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 157,
-            "node": {
-              "name": "Shell"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "commons-collections": {
-    "repository": {
-      "name": "commons-collections",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/commons-collections",
-      "descriptionHTML": "<div>Apache Commons Collections</div>",
-      "updatedAt": "2024-03-31T14:11:34Z",
-      "createdAt": "2009-05-21T01:12:20Z",
-      "stargazerCount": 655,
-      "languages": {
-        "totalSize": 4719312,
-        "edges": [
-          {
-            "size": 14555,
-            "node": {
-              "name": "HTML"
-            }
-          },
-          {
-            "size": 4687956,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 157,
-            "node": {
-              "name": "Shell"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "commons-compress": {
-    "repository": {
-      "name": "commons-compress",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/commons-compress",
-      "descriptionHTML": "<div>Apache Commons Compress</div>",
-      "updatedAt": "2024-04-01T14:06:38Z",
-      "createdAt": "2011-10-15T07:00:08Z",
-      "stargazerCount": 311,
-      "languages": {
-        "totalSize": 4819477,
-        "edges": [
-          {
-            "size": 4818135,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 1342,
-            "node": {
-              "name": "Shell"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "commons-csv": {
-    "repository": {
-      "name": "commons-csv",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/commons-csv",
-      "descriptionHTML": "<div>Apache Commons CSV</div>",
-      "updatedAt": "2024-03-31T14:13:46Z",
-      "createdAt": "2013-06-12T07:00:17Z",
-      "stargazerCount": 363,
-      "languages": {
-        "totalSize": 604906,
-        "edges": [
-          {
-            "size": 603757,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 1149,
-            "node": {
-              "name": "Shell"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "gson": {
-    "repository": {
-      "name": "gson",
-      "owner": {
-        "login": "google"
-      },
-      "url": "https://github.com/google/gson",
-      "descriptionHTML": "<div>A Java serialization/deserialization library to convert Java Objects into JSON and back</div>",
-      "updatedAt": "2024-04-01T23:06:44Z",
-      "createdAt": "2015-03-19T18:21:20Z",
-      "stargazerCount": 22908,
-      "languages": {
-        "totalSize": 1811770,
-        "edges": [
-          {
-            "size": 1811770,
-            "node": {
-              "name": "Java"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "jackson-core": {
-    "repository": {
-      "name": "jackson-core",
-      "owner": {
-        "login": "FasterXML"
-      },
-      "url": "https://github.com/FasterXML/jackson-core",
-      "descriptionHTML": "<div>Core part of Jackson that defines Streaming API as well as basic shared abstractions</div>",
-      "updatedAt": "2024-04-01T07:42:27Z",
-      "createdAt": "2011-12-23T02:00:51Z",
-      "stargazerCount": 2224,
-      "languages": {
-        "totalSize": 4181434,
-        "edges": [
-          {
-            "size": 1527,
-            "node": {
-              "name": "Shell"
-            }
-          },
-          {
-            "size": 4126180,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 53727,
-            "node": {
-              "name": "Logos"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "jackson-databind": {
-    "repository": {
-      "name": "jackson-databind",
-      "owner": {
-        "login": "FasterXML"
-      },
-      "url": "https://github.com/FasterXML/jackson-databind",
-      "descriptionHTML": "<div>General data-binding package for Jackson (2.x): works on streaming API (core) implementation(s)</div>",
-      "updatedAt": "2024-03-31T14:12:28Z",
-      "createdAt": "2011-12-23T07:17:41Z",
-      "stargazerCount": 3440,
-      "languages": {
-        "totalSize": 8785302,
-        "edges": [
-          {
-            "size": 8588311,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 264,
-            "node": {
-              "name": "Shell"
-            }
-          },
-          {
-            "size": 196727,
-            "node": {
-              "name": "Logos"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "jackson-dataformat-xml": {
-    "repository": {
-      "name": "jackson-dataformat-xml",
-      "owner": {
-        "login": "FasterXML"
-      },
-      "url": "https://github.com/FasterXML/jackson-dataformat-xml",
-      "descriptionHTML": "<div>Extension for Jackson JSON processor that adds support for serializing POJOs as XML (and deserializing from XML) as an alternative to JSON</div>",
-      "updatedAt": "2024-03-31T14:11:55Z",
-      "createdAt": "2010-12-31T05:00:50Z",
-      "stargazerCount": 555,
-      "languages": {
-        "totalSize": 888680,
-        "edges": [
-          {
-            "size": 860017,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 28663,
-            "node": {
-              "name": "Logos"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "jsoup": {
-    "repository": {
-      "name": "jsoup",
-      "owner": {
-        "login": "jhy"
-      },
-      "url": "https://github.com/jhy/jsoup",
-      "descriptionHTML": "<div>jsoup: the Java HTML parser, built for HTML editing, cleaning, scraping, and XSS safety.</div>",
-      "updatedAt": "2024-04-02T03:29:30Z",
-      "createdAt": "2009-12-19T01:29:58Z",
-      "stargazerCount": 10565,
-      "languages": {
-        "totalSize": 2010841,
-        "edges": [
-          {
-            "size": 1693976,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 316865,
-            "node": {
-              "name": "HTML"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "commons-jxpath": {
-    "repository": {
-      "name": "commons-jxpath",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/commons-jxpath",
-      "descriptionHTML": "<div>Apache Commons JXPath</div>",
-      "updatedAt": "2024-03-31T14:13:51Z",
-      "createdAt": "2013-07-10T07:00:14Z",
-      "stargazerCount": 27,
-      "languages": {
-        "totalSize": 1368846,
-        "edges": [
-          {
-            "size": 19784,
-            "node": {
-              "name": "HTML"
-            }
-          },
-          {
-            "size": 1347912,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 993,
-            "node": {
-              "name": "Batchfile"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "commons-lang": {
-    "repository": {
-      "name": "commons-lang",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/commons-lang",
-      "descriptionHTML": "<div>Apache Commons Lang</div>",
-      "updatedAt": "2024-04-01T02:18:37Z",
-      "createdAt": "2009-05-21T01:24:46Z",
-      "stargazerCount": 2650,
-      "languages": {
-        "totalSize": 7197010,
-        "edges": [
-          {
-            "size": 7039219,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 157,
-            "node": {
-              "name": "Shell"
-            }
-          },
-          {
-            "size": 157634,
-            "node": {
-              "name": "HTML"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "commons-math": {
-    "repository": {
-      "name": "commons-math",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/commons-math",
-      "descriptionHTML": "<div>Apache Commons Math</div>",
-      "updatedAt": "2024-03-31T14:15:17Z",
-      "createdAt": "2014-10-08T07:00:06Z",
-      "stargazerCount": 550,
-      "languages": {
-        "totalSize": 10328478,
-        "edges": [
-          {
-            "size": 5012,
-            "node": {
-              "name": "HTML"
-            }
-          },
-          {
-            "size": 2107,
-            "node": {
-              "name": "Shell"
-            }
-          },
-          {
-            "size": 3412,
+            "size": 49,
             "node": {
               "name": "CSS"
             }
@@ -719,144 +35,72 @@
       }
     }
   },
-  "mockito": {
+  "elasticsearch": {
     "repository": {
-      "name": "mockito",
+      "name": "elasticsearch",
       "owner": {
-        "login": "mockito"
+        "login": "elastic"
       },
-      "url": "https://github.com/mockito/mockito",
-      "descriptionHTML": "<div>Most popular Mocking framework for unit tests written in Java</div>",
-      "updatedAt": "2024-04-01T06:53:26Z",
-      "createdAt": "2012-10-13T20:27:12Z",
-      "stargazerCount": 14527,
+      "url": "https://github.com/elastic/elasticsearch",
+      "descriptionHTML": "<div>Free and Open, Distributed, RESTful Search Engine</div>",
+      "updatedAt": "2024-05-05T10:29:32Z",
+      "createdAt": "2010-02-08T13:20:56Z",
+      "stargazerCount": 67725,
       "languages": {
-        "totalSize": 3473358,
+        "totalSize": 162237415,
         "edges": [
           {
-            "size": 3432209,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 7593,
-            "node": {
-              "name": "XSLT"
-            }
-          },
-          {
-            "size": 30931,
-            "node": {
-              "name": "Kotlin"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "joda-time": {
-    "repository": {
-      "name": "joda-time",
-      "owner": {
-        "login": "JodaOrg"
-      },
-      "url": "https://github.com/JodaOrg/joda-time",
-      "descriptionHTML": "<div>Joda-Time is the widely used replacement for the Java date and time classes prior to Java SE 8.</div>",
-      "updatedAt": "2024-03-31T14:12:06Z",
-      "createdAt": "2011-05-16T16:49:57Z",
-      "stargazerCount": 4970,
-      "languages": {
-        "totalSize": 5937826,
-        "edges": [
-          {
-            "size": 5919402,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 16833,
-            "node": {
-              "name": "HTML"
-            }
-          },
-          {
-            "size": 1591,
-            "node": {
-              "name": "CSS"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "checkstyle": {
-    "repository": {
-      "name": "checkstyle",
-      "owner": {
-        "login": "checkstyle"
-      },
-      "url": "https://github.com/checkstyle/checkstyle",
-      "descriptionHTML": "<div>Checkstyle is a development tool to help programmers write Java code that adheres to a coding standard. By default it supports the Google Java Style Guide and Sun Code Conventions, but is highly configurable. It can be invoked with an ANT task and a command line program.</div>",
-      "updatedAt": "2024-04-02T02:36:50Z",
-      "createdAt": "2013-08-31T02:05:05Z",
-      "stargazerCount": 8104,
-      "languages": {
-        "totalSize": 19396261,
-        "edges": [
-          {
-            "size": 120785,
+            "size": 82559,
             "node": {
               "name": "Shell"
             }
           },
           {
-            "size": 19052709,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 10796,
-            "node": {
-              "name": "CSS"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "seata": {
-    "repository": {
-      "name": "incubator-seata",
-      "owner": {
-        "login": "apache"
-      },
-      "url": "https://github.com/apache/incubator-seata",
-      "descriptionHTML": "<div>\ud83d\udd25 Seata is an easy-to-use, high-performance, open source distributed transaction solution.</div>",
-      "updatedAt": "2024-04-01T17:22:04Z",
-      "createdAt": "2018-12-28T08:37:22Z",
-      "stargazerCount": 24879,
-      "languages": {
-        "totalSize": 12503635,
-        "edges": [
-          {
-            "size": 12120055,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 51514,
-            "node": {
-              "name": "Shell"
-            }
-          },
-          {
-            "size": 4781,
+            "size": 21607,
             "node": {
               "name": "Python"
+            }
+          },
+          {
+            "size": 161474516,
+            "node": {
+              "name": "Java"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "mybatis-3": {
+    "repository": {
+      "name": "mybatis-3",
+      "owner": {
+        "login": "mybatis"
+      },
+      "url": "https://github.com/mybatis/mybatis-3",
+      "descriptionHTML": "<div>MyBatis SQL mapper framework for Java</div>",
+      "updatedAt": "2024-05-05T08:53:15Z",
+      "createdAt": "2013-02-14T19:03:32Z",
+      "stargazerCount": 19427,
+      "languages": {
+        "totalSize": 3444617,
+        "edges": [
+          {
+            "size": 3424873,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 8382,
+            "node": {
+              "name": "CSS"
+            }
+          },
+          {
+            "size": 5677,
+            "node": {
+              "name": "PLpgSQL"
             }
           }
         ]
@@ -871,14 +115,14 @@
       },
       "url": "https://github.com/iBotPeaches/Apktool",
       "descriptionHTML": "<div>A tool for reverse engineering Android apk files</div>",
-      "updatedAt": "2024-04-01T18:43:02Z",
+      "updatedAt": "2024-05-05T06:49:34Z",
       "createdAt": "2012-03-19T17:46:53Z",
-      "stargazerCount": 18678,
+      "stargazerCount": 18949,
       "languages": {
-        "totalSize": 735489,
+        "totalSize": 735405,
         "edges": [
           {
-            "size": 725805,
+            "size": 725721,
             "node": {
               "name": "Java"
             }
@@ -907,20 +151,20 @@
       },
       "url": "https://github.com/OpenAPITools/openapi-generator",
       "descriptionHTML": "<div>OpenAPI Generator allows generation of API client libraries (SDK generation), server stubs, documentation and configuration automatically given an OpenAPI Spec (v2, v3)</div>",
-      "updatedAt": "2024-04-02T01:05:38Z",
+      "updatedAt": "2024-05-05T08:57:41Z",
       "createdAt": "2018-05-12T09:57:56Z",
-      "stargazerCount": 19588,
+      "stargazerCount": 19933,
       "languages": {
-        "totalSize": 9455718,
+        "totalSize": 9596036,
         "edges": [
           {
-            "size": 106404,
+            "size": 106458,
             "node": {
               "name": "Shell"
             }
           },
           {
-            "size": 8731845,
+            "size": 8870234,
             "node": {
               "name": "Java"
             }
@@ -935,6 +179,240 @@
       }
     }
   },
+  "spring-boot": {
+    "repository": {
+      "name": "spring-boot",
+      "owner": {
+        "login": "spring-projects"
+      },
+      "url": "https://github.com/spring-projects/spring-boot",
+      "descriptionHTML": "<div>Spring Boot</div>",
+      "updatedAt": "2024-05-05T09:32:20Z",
+      "createdAt": "2012-10-19T15:02:57Z",
+      "stargazerCount": 72899,
+      "languages": {
+        "totalSize": 25948437,
+        "edges": [
+          {
+            "size": 25329218,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 2882,
+            "node": {
+              "name": "Smarty"
+            }
+          },
+          {
+            "size": 58440,
+            "node": {
+              "name": "HTML"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "spring-framework": {
+    "repository": {
+      "name": "spring-framework",
+      "owner": {
+        "login": "spring-projects"
+      },
+      "url": "https://github.com/spring-projects/spring-framework",
+      "descriptionHTML": "<div>Spring Framework</div>",
+      "updatedAt": "2024-05-05T09:57:17Z",
+      "createdAt": "2010-12-08T04:04:45Z",
+      "stargazerCount": 55187,
+      "languages": {
+        "totalSize": 48212401,
+        "edges": [
+          {
+            "size": 6902,
+            "node": {
+              "name": "Groovy"
+            }
+          },
+          {
+            "size": 47254771,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 1140,
+            "node": {
+              "name": "HTML"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "guava": {
+    "repository": {
+      "name": "guava",
+      "owner": {
+        "login": "google"
+      },
+      "url": "https://github.com/google/guava",
+      "descriptionHTML": "<div>Google core libraries for Java</div>",
+      "updatedAt": "2024-05-05T08:22:33Z",
+      "createdAt": "2014-05-29T16:23:17Z",
+      "stargazerCount": 49427,
+      "languages": {
+        "totalSize": 26570460,
+        "edges": [
+          {
+            "size": 26555348,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 11478,
+            "node": {
+              "name": "CSS"
+            }
+          },
+          {
+            "size": 2605,
+            "node": {
+              "name": "Shell"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "ExoPlayer": {
+    "repository": {
+      "name": "ExoPlayer",
+      "owner": {
+        "login": "google"
+      },
+      "url": "https://github.com/google/ExoPlayer",
+      "descriptionHTML": "<div>An extensible media player for Android</div>",
+      "updatedAt": "2024-05-04T12:46:18Z",
+      "createdAt": "2014-06-13T21:19:18Z",
+      "stargazerCount": 21487,
+      "languages": {
+        "totalSize": 18462654,
+        "edges": [
+          {
+            "size": 18260429,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 11496,
+            "node": {
+              "name": "Makefile"
+            }
+          },
+          {
+            "size": 25635,
+            "node": {
+              "name": "Shell"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "auto": {
+    "repository": {
+      "name": "auto",
+      "owner": {
+        "login": "google"
+      },
+      "url": "https://github.com/google/auto",
+      "descriptionHTML": "<div>A collection of source code generators for Java.</div>",
+      "updatedAt": "2024-05-03T19:00:02Z",
+      "createdAt": "2013-05-22T21:41:56Z",
+      "stargazerCount": 10374,
+      "languages": {
+        "totalSize": 2169034,
+        "edges": [
+          {
+            "size": 2166431,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 928,
+            "node": {
+              "name": "Shell"
+            }
+          },
+          {
+            "size": 1675,
+            "node": {
+              "name": "Kotlin"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "gson": {
+    "repository": {
+      "name": "gson",
+      "owner": {
+        "login": "google"
+      },
+      "url": "https://github.com/google/gson",
+      "descriptionHTML": "<div>A Java serialization/deserialization library to convert Java Objects into JSON and back</div>",
+      "updatedAt": "2024-05-04T13:56:20Z",
+      "createdAt": "2015-03-19T18:21:20Z",
+      "stargazerCount": 22972,
+      "languages": {
+        "totalSize": 1812209,
+        "edges": [
+          {
+            "size": 1812209,
+            "node": {
+              "name": "Java"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "COLA": {
+    "repository": {
+      "name": "COLA",
+      "owner": {
+        "login": "alibaba"
+      },
+      "url": "https://github.com/alibaba/COLA",
+      "descriptionHTML": "<div>\ud83e\udd64 COLA: Clean Object-oriented &amp; Layered Architecture</div>",
+      "updatedAt": "2024-05-05T08:27:07Z",
+      "createdAt": "2018-02-06T13:46:27Z",
+      "stargazerCount": 11261,
+      "languages": {
+        "totalSize": 436474,
+        "edges": [
+          {
+            "size": 427797,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 8677,
+            "node": {
+              "name": "Shell"
+            }
+          }
+        ]
+      }
+    }
+  },
   "nacos": {
     "repository": {
       "name": "nacos",
@@ -943,14 +421,14 @@
       },
       "url": "https://github.com/alibaba/nacos",
       "descriptionHTML": "<div>an easy-to-use dynamic service discovery, configuration and service management platform for building cloud native applications.</div>",
-      "updatedAt": "2024-04-02T03:08:34Z",
+      "updatedAt": "2024-05-05T08:32:17Z",
       "createdAt": "2018-06-15T06:49:27Z",
-      "stargazerCount": 28882,
+      "stargazerCount": 29083,
       "languages": {
-        "totalSize": 11264697,
+        "totalSize": 11295315,
         "edges": [
           {
-            "size": 11146570,
+            "size": 11176499,
             "node": {
               "name": "Java"
             }
@@ -979,9 +457,9 @@
       },
       "url": "https://github.com/alibaba/fastjson",
       "descriptionHTML": "<div>FASTJSON 2.0.x has been released, faster and more secure, recommend you upgrade.</div>",
-      "updatedAt": "2024-04-01T03:31:01Z",
+      "updatedAt": "2024-05-04T17:46:27Z",
       "createdAt": "2011-11-03T06:58:52Z",
-      "stargazerCount": 25611,
+      "stargazerCount": 25636,
       "languages": {
         "totalSize": 7498627,
         "edges": [
@@ -1007,70 +485,34 @@
       }
     }
   },
-  "assertj": {
+  "Sentinel": {
     "repository": {
-      "name": "assertj",
+      "name": "Sentinel",
       "owner": {
-        "login": "assertj"
+        "login": "alibaba"
       },
-      "url": "https://github.com/assertj/assertj",
-      "descriptionHTML": "<div>AssertJ is a library providing easy to use rich typed assertions </div>",
-      "updatedAt": "2024-03-31T14:13:31Z",
-      "createdAt": "2013-03-14T16:18:49Z",
-      "stargazerCount": 2529,
+      "url": "https://github.com/alibaba/Sentinel",
+      "descriptionHTML": "<div>A powerful flow control component enabling reliability, resilience and monitoring for microservices. (\u9762\u5411\u4e91\u539f\u751f\u5fae\u670d\u52a1\u7684\u9ad8\u53ef\u7528\u6d41\u63a7\u9632\u62a4\u7ec4\u4ef6)</div>",
+      "updatedAt": "2024-05-05T10:47:06Z",
+      "createdAt": "2018-04-04T06:37:33Z",
+      "stargazerCount": 21975,
       "languages": {
-        "totalSize": 18805154,
+        "totalSize": 4320995,
         "edges": [
           {
-            "size": 18751310,
+            "size": 3899143,
             "node": {
               "name": "Java"
             }
           },
           {
-            "size": 39277,
+            "size": 218906,
             "node": {
-              "name": "Shell"
+              "name": "JavaScript"
             }
           },
           {
-            "size": 3774,
-            "node": {
-              "name": "Groovy"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "retrofit": {
-    "repository": {
-      "name": "retrofit",
-      "owner": {
-        "login": "square"
-      },
-      "url": "https://github.com/square/retrofit",
-      "descriptionHTML": "<div>A type-safe HTTP client for Android and the JVM</div>",
-      "updatedAt": "2024-04-02T03:27:37Z",
-      "createdAt": "2010-09-06T21:39:43Z",
-      "stargazerCount": 42558,
-      "languages": {
-        "totalSize": 3385852,
-        "edges": [
-          {
-            "size": 1207631,
-            "node": {
-              "name": "Java"
-            }
-          },
-          {
-            "size": 81931,
-            "node": {
-              "name": "CSS"
-            }
-          },
-          {
-            "size": 2045104,
+            "size": 155194,
             "node": {
               "name": "HTML"
             }
@@ -1079,30 +521,252 @@
       }
     }
   },
-  "sslcontext-kickstart": {
+  "kafka": {
     "repository": {
-      "name": "sslcontext-kickstart",
+      "name": "kafka",
       "owner": {
-        "login": "Hakky54"
+        "login": "apache"
       },
-      "url": "https://github.com/Hakky54/sslcontext-kickstart",
-      "descriptionHTML": "<div>\ud83d\udd10 A lightweight high level library for configuring a http client or server based on SSLContext or other properties such as TrustManager, KeyManager or Trusted Certificates to communicate over SSL TLS for one way authentication or two way authentication provided by the SSLFactory. Support for Java, Scala and Kotlin based clients with examples. Available client examples are: Apache HttpClient, OkHttp, Spring RestTemplate, Spring WebFlux WebClient Jetty and Netty, the old and the new JDK HttpClient, the old and the new Jersey Client, Google HttpClient, Unirest, Retrofit, Feign, Methanol, Vertx, Scala client Finagle, Featherbed, Dispatch Reboot, AsyncHttpClient, Sttp, Akka, Requests Scala, Http4s Blaze, Kotlin client Fuel, http4k Kohttp and Ktor. Also gRPC, WebSocket and ElasticSearch examples are included</div>",
-      "updatedAt": "2024-03-31T14:23:20Z",
-      "createdAt": "2019-12-29T19:45:10Z",
-      "stargazerCount": 462,
+      "url": "https://github.com/apache/kafka",
+      "descriptionHTML": "<div>Mirror of Apache Kafka</div>",
+      "updatedAt": "2024-05-05T09:45:09Z",
+      "createdAt": "2011-08-15T18:06:16Z",
+      "stargazerCount": 27415,
       "languages": {
-        "totalSize": 1240974,
+        "totalSize": 58355286,
         "edges": [
           {
-            "size": 1240876,
+            "size": 121499,
+            "node": {
+              "name": "Shell"
+            }
+          },
+          {
+            "size": 46153639,
             "node": {
               "name": "Java"
             }
           },
           {
-            "size": 98,
+            "size": 10711305,
+            "node": {
+              "name": "Scala"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pulsar": {
+    "repository": {
+      "name": "pulsar",
+      "owner": {
+        "login": "apache"
+      },
+      "url": "https://github.com/apache/pulsar",
+      "descriptionHTML": "<div>Apache Pulsar - distributed pub-sub messaging system</div>",
+      "updatedAt": "2024-05-04T10:35:34Z",
+      "createdAt": "2016-06-28T07:00:03Z",
+      "stargazerCount": 13763,
+      "languages": {
+        "totalSize": 36430633,
+        "edges": [
+          {
+            "size": 35815968,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 172436,
             "node": {
               "name": "Shell"
+            }
+          },
+          {
+            "size": 258223,
+            "node": {
+              "name": "Python"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "dubbo": {
+    "repository": {
+      "name": "dubbo",
+      "owner": {
+        "login": "apache"
+      },
+      "url": "https://github.com/apache/dubbo",
+      "descriptionHTML": "<div>The java implementation of Apache Dubbo. An RPC and microservice framework.</div>",
+      "updatedAt": "2024-05-05T07:53:29Z",
+      "createdAt": "2012-06-19T07:56:02Z",
+      "stargazerCount": 40052,
+      "languages": {
+        "totalSize": 16011512,
+        "edges": [
+          {
+            "size": 15923966,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 15510,
+            "node": {
+              "name": "Shell"
+            }
+          },
+          {
+            "size": 1959,
+            "node": {
+              "name": "Batchfile"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "rocketmq": {
+    "repository": {
+      "name": "rocketmq",
+      "owner": {
+        "login": "apache"
+      },
+      "url": "https://github.com/apache/rocketmq",
+      "descriptionHTML": "<div>Apache RocketMQ is a cloud native messaging and streaming platform, making it simple to build event-driven applications.</div>",
+      "updatedAt": "2024-05-05T07:15:38Z",
+      "createdAt": "2016-11-30T08:00:08Z",
+      "stargazerCount": 20580,
+      "languages": {
+        "totalSize": 13328711,
+        "edges": [
+          {
+            "size": 60723,
+            "node": {
+              "name": "Shell"
+            }
+          },
+          {
+            "size": 13161830,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 22715,
+            "node": {
+              "name": "Batchfile"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "shardingsphere": {
+    "repository": {
+      "name": "shardingsphere",
+      "owner": {
+        "login": "apache"
+      },
+      "url": "https://github.com/apache/shardingsphere",
+      "descriptionHTML": "<div>Distributed SQL transaction &amp; query engine for data sharding, scaling, encryption, and more - on any database.</div>",
+      "updatedAt": "2024-05-05T07:48:06Z",
+      "createdAt": "2016-01-18T12:49:26Z",
+      "stargazerCount": 19456,
+      "languages": {
+        "totalSize": 24691939,
+        "edges": [
+          {
+            "size": 23475890,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 15690,
+            "node": {
+              "name": "Shell"
+            }
+          },
+          {
+            "size": 3214,
+            "node": {
+              "name": "Batchfile"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "commons-lang": {
+    "repository": {
+      "name": "commons-lang",
+      "owner": {
+        "login": "apache"
+      },
+      "url": "https://github.com/apache/commons-lang",
+      "descriptionHTML": "<div>Apache Commons Lang</div>",
+      "updatedAt": "2024-05-04T20:40:46Z",
+      "createdAt": "2009-05-21T01:24:46Z",
+      "stargazerCount": 2662,
+      "languages": {
+        "totalSize": 7394395,
+        "edges": [
+          {
+            "size": 7236604,
+            "node": {
+              "name": "Java"
+            }
+          },
+          {
+            "size": 157,
+            "node": {
+              "name": "Shell"
+            }
+          },
+          {
+            "size": 157634,
+            "node": {
+              "name": "HTML"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "commons-math": {
+    "repository": {
+      "name": "commons-math",
+      "owner": {
+        "login": "apache"
+      },
+      "url": "https://github.com/apache/commons-math",
+      "descriptionHTML": "<div>Apache Commons Math</div>",
+      "updatedAt": "2024-05-05T07:25:25Z",
+      "createdAt": "2014-10-08T07:00:06Z",
+      "stargazerCount": 552,
+      "languages": {
+        "totalSize": 10328478,
+        "edges": [
+          {
+            "size": 5012,
+            "node": {
+              "name": "HTML"
+            }
+          },
+          {
+            "size": 2107,
+            "node": {
+              "name": "Shell"
+            }
+          },
+          {
+            "size": 3412,
+            "node": {
+              "name": "CSS"
             }
           }
         ]

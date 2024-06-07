@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NamingGrpcRedoService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">nacos-client 2.2.1-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">com.alibaba.nacos.client.naming.remote.gprc.redo</a> &gt; <span class="el_source">NamingGrpcRedoService.java</span></div><h1>NamingGrpcRedoService.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.alibaba.nacos.client.naming.remote.gprc.redo;
+
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
+import com.alibaba.nacos.api.naming.utils.NamingUtils;
+import com.alibaba.nacos.client.naming.remote.gprc.NamingGrpcClientProxy;
+import com.alibaba.nacos.client.naming.remote.gprc.redo.data.BatchInstanceRedoData;
+import com.alibaba.nacos.client.naming.remote.gprc.redo.data.InstanceRedoData;
+import com.alibaba.nacos.client.naming.remote.gprc.redo.data.SubscriberRedoData;
+import com.alibaba.nacos.client.utils.LogUtils;
+import com.alibaba.nacos.common.executor.NameThreadFactory;
+import com.alibaba.nacos.common.remote.client.ConnectionEventListener;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Naming client gprc redo service.
+ *
+ * &lt;p&gt;When connection reconnect to server, redo the register and subscribe.
+ *
+ * @author xiweng.yy
+ */
+public class NamingGrpcRedoService implements ConnectionEventListener {
+    
+    private static final String REDO_THREAD_NAME = &quot;com.alibaba.nacos.client.naming.grpc.redo&quot;;
+    
+    private static final int REDO_THREAD = 1;
+    
+    /**
+     * TODO get redo delay from config.
+     */
+    private static final long DEFAULT_REDO_DELAY = 3000L;
+    
+<span class="fc" id="L57">    private final ConcurrentMap&lt;String, InstanceRedoData&gt; registeredInstances = new ConcurrentHashMap&lt;&gt;();</span>
+    
+<span class="fc" id="L59">    private final ConcurrentMap&lt;String, SubscriberRedoData&gt; subscribes = new ConcurrentHashMap&lt;&gt;();</span>
+    
+    private final ScheduledExecutorService redoExecutor;
+    
+<span class="fc" id="L63">    private volatile boolean connected = false;</span>
+    
+<span class="fc" id="L65">    public NamingGrpcRedoService(NamingGrpcClientProxy clientProxy) {</span>
+<span class="fc" id="L66">        this.redoExecutor = new ScheduledThreadPoolExecutor(REDO_THREAD, new NameThreadFactory(REDO_THREAD_NAME));</span>
+<span class="fc" id="L67">        this.redoExecutor.scheduleWithFixedDelay(new RedoScheduledTask(clientProxy, this), DEFAULT_REDO_DELAY,</span>
+                DEFAULT_REDO_DELAY, TimeUnit.MILLISECONDS);
+<span class="fc" id="L69">    }</span>
+    
+    public boolean isConnected() {
+<span class="nc" id="L72">        return connected;</span>
+    }
+    
+    @Override
+    public void onConnected() {
+<span class="nc" id="L77">        connected = true;</span>
+<span class="nc" id="L78">        LogUtils.NAMING_LOGGER.info(&quot;Grpc connection connect&quot;);</span>
+<span class="nc" id="L79">    }</span>
+    
+    @Override
+    public void onDisConnect() {
+<span class="nc" id="L83">        connected = false;</span>
+<span class="nc" id="L84">        LogUtils.NAMING_LOGGER.warn(&quot;Grpc connection disconnect, mark to redo&quot;);</span>
+<span class="nc" id="L85">        synchronized (registeredInstances) {</span>
+<span class="nc" id="L86">            registeredInstances.values().forEach(instanceRedoData -&gt; instanceRedoData.setRegistered(false));</span>
+<span class="nc" id="L87">        }</span>
+<span class="nc" id="L88">        synchronized (subscribes) {</span>
+<span class="nc" id="L89">            subscribes.values().forEach(subscriberRedoData -&gt; subscriberRedoData.setRegistered(false));</span>
+<span class="nc" id="L90">        }</span>
+<span class="nc" id="L91">        LogUtils.NAMING_LOGGER.warn(&quot;mark to redo completed&quot;);</span>
+<span class="nc" id="L92">    }</span>
+    
+    /**
+     * Cache registered instance for redo.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     * @param instance    registered instance
+     */
+    public void cacheInstanceForRedo(String serviceName, String groupName, Instance instance) {
+<span class="nc" id="L102">        String key = NamingUtils.getGroupedName(serviceName, groupName);</span>
+<span class="nc" id="L103">        InstanceRedoData redoData = InstanceRedoData.build(serviceName, groupName, instance);</span>
+<span class="nc" id="L104">        synchronized (registeredInstances) {</span>
+<span class="nc" id="L105">            registeredInstances.put(key, redoData);</span>
+<span class="nc" id="L106">        }</span>
+<span class="nc" id="L107">    }</span>
+    
+    /**
+     * Cache registered instance for redo.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     * @param instances    batch registered instance
+     */
+    public void cacheInstanceForRedo(String serviceName, String groupName, List&lt;Instance&gt; instances) {
+<span class="nc" id="L117">        String key = NamingUtils.getGroupedName(serviceName, groupName);</span>
+<span class="nc" id="L118">        BatchInstanceRedoData redoData = BatchInstanceRedoData.build(serviceName, groupName, instances);</span>
+<span class="nc" id="L119">        synchronized (registeredInstances) {</span>
+<span class="nc" id="L120">            registeredInstances.put(key, redoData);</span>
+<span class="nc" id="L121">        }</span>
+<span class="nc" id="L122">    }</span>
+    
+    /**
+     * Instance register successfully, mark registered status as {@code true}.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     */
+    public void instanceRegistered(String serviceName, String groupName) {
+<span class="nc" id="L131">        String key = NamingUtils.getGroupedName(serviceName, groupName);</span>
+<span class="nc" id="L132">        synchronized (registeredInstances) {</span>
+<span class="nc" id="L133">            InstanceRedoData redoData = registeredInstances.get(key);</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">            if (null != redoData) {</span>
+<span class="nc" id="L135">                redoData.registered();</span>
+            }
+<span class="nc" id="L137">        }</span>
+<span class="nc" id="L138">    }</span>
+    
+    /**
+     * Instance deregister, mark unregistering status as {@code true}.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     */
+    public void instanceDeregister(String serviceName, String groupName) {
+<span class="nc" id="L147">        String key = NamingUtils.getGroupedName(serviceName, groupName);</span>
+<span class="nc" id="L148">        synchronized (registeredInstances) {</span>
+<span class="nc" id="L149">            InstanceRedoData redoData = registeredInstances.get(key);</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">            if (null != redoData) {</span>
+<span class="nc" id="L151">                redoData.setUnregistering(true);</span>
+<span class="nc" id="L152">                redoData.setExpectedRegistered(false);</span>
+            }
+<span class="nc" id="L154">        }</span>
+<span class="nc" id="L155">    }</span>
+    
+    /**
+     * Instance deregister finished, mark unregistered status.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     */
+    public void instanceDeregistered(String serviceName, String groupName) {
+<span class="nc" id="L164">        String key = NamingUtils.getGroupedName(serviceName, groupName);</span>
+<span class="nc" id="L165">        synchronized (registeredInstances) {</span>
+<span class="nc" id="L166">            InstanceRedoData redoData = registeredInstances.get(key);</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">            if (null != redoData) {</span>
+<span class="nc" id="L168">                redoData.unregistered();</span>
+            }
+<span class="nc" id="L170">        }</span>
+<span class="nc" id="L171">    }</span>
+    
+    /**
+     * Remove registered instance for redo.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     */
+    public void removeInstanceForRedo(String serviceName, String groupName) {
+<span class="nc" id="L180">        String key = NamingUtils.getGroupedName(serviceName, groupName);</span>
+<span class="nc" id="L181">        synchronized (registeredInstances) {</span>
+<span class="nc" id="L182">            InstanceRedoData redoData = registeredInstances.get(key);</span>
+<span class="nc bnc" id="L183" title="All 4 branches missed.">            if (null != redoData &amp;&amp; !redoData.isExpectedRegistered()) {</span>
+<span class="nc" id="L184">                registeredInstances.remove(key);</span>
+            }
+<span class="nc" id="L186">        }</span>
+<span class="nc" id="L187">    }</span>
+    
+    /**
+     * Find all instance redo data which need do redo.
+     *
+     * @return set of {@code InstanceRedoData} need to do redo.
+     */
+    public Set&lt;InstanceRedoData&gt; findInstanceRedoData() {
+<span class="nc" id="L195">        Set&lt;InstanceRedoData&gt; result = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L196">        synchronized (registeredInstances) {</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">            for (InstanceRedoData each : registeredInstances.values()) {</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">                if (each.isNeedRedo()) {</span>
+<span class="nc" id="L199">                    result.add(each);</span>
+                }
+<span class="nc" id="L201">            }</span>
+<span class="nc" id="L202">        }</span>
+<span class="nc" id="L203">        return result;</span>
+    }
+    
+    /**
+     * Cache subscriber for redo.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     * @param cluster     cluster
+     */
+    public void cacheSubscriberForRedo(String serviceName, String groupName, String cluster) {
+<span class="fc" id="L214">        String key = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), cluster);</span>
+<span class="fc" id="L215">        SubscriberRedoData redoData = SubscriberRedoData.build(serviceName, groupName, cluster);</span>
+<span class="fc" id="L216">        synchronized (subscribes) {</span>
+<span class="fc" id="L217">            subscribes.put(key, redoData);</span>
+<span class="fc" id="L218">        }</span>
+<span class="fc" id="L219">    }</span>
+    
+    /**
+     * Subscriber register successfully, mark registered status as {@code true}.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     * @param cluster     cluster
+     */
+    public void subscriberRegistered(String serviceName, String groupName, String cluster) {
+<span class="nc" id="L229">        String key = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), cluster);</span>
+<span class="nc" id="L230">        synchronized (subscribes) {</span>
+<span class="nc" id="L231">            SubscriberRedoData redoData = subscribes.get(key);</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">            if (null != redoData) {</span>
+<span class="nc" id="L233">                redoData.setRegistered(true);</span>
+            }
+<span class="nc" id="L235">        }</span>
+<span class="nc" id="L236">    }</span>
+    
+    /**
+     * Subscriber deregister, mark unregistering status as {@code true}.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     * @param cluster     cluster
+     */
+    public void subscriberDeregister(String serviceName, String groupName, String cluster) {
+<span class="nc" id="L246">        String key = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), cluster);</span>
+<span class="nc" id="L247">        synchronized (subscribes) {</span>
+<span class="nc" id="L248">            SubscriberRedoData redoData = subscribes.get(key);</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">            if (null != redoData) {</span>
+<span class="nc" id="L250">                redoData.setUnregistering(true);</span>
+<span class="nc" id="L251">                redoData.setExpectedRegistered(false);</span>
+            }
+<span class="nc" id="L253">        }</span>
+<span class="nc" id="L254">    }</span>
+    
+    /**
+     * Judge subscriber has registered to server.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     * @param cluster     cluster
+     * @return {@code true} if subscribed, otherwise {@code false}
+     */
+    public boolean isSubscriberRegistered(String serviceName, String groupName, String cluster) {
+<span class="nc" id="L265">        String key = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), cluster);</span>
+<span class="nc" id="L266">        synchronized (subscribes) {</span>
+<span class="nc" id="L267">            SubscriberRedoData redoData = subscribes.get(key);</span>
+<span class="nc bnc" id="L268" title="All 4 branches missed.">            return null != redoData &amp;&amp; redoData.isRegistered();</span>
+        }
+    }
+    
+    /**
+     * Remove subscriber for redo.
+     *
+     * @param serviceName service name
+     * @param groupName   group name
+     * @param cluster     cluster
+     */
+    public void removeSubscriberForRedo(String serviceName, String groupName, String cluster) {
+<span class="fc" id="L280">        String key = ServiceInfo.getKey(NamingUtils.getGroupedName(serviceName, groupName), cluster);</span>
+<span class="fc" id="L281">        synchronized (subscribes) {</span>
+<span class="fc" id="L282">            SubscriberRedoData redoData = subscribes.get(key);</span>
+<span class="pc bpc" id="L283" title="2 of 4 branches missed.">            if (null != redoData &amp;&amp; !redoData.isExpectedRegistered()) {</span>
+<span class="nc" id="L284">                subscribes.remove(key);</span>
+            }
+<span class="fc" id="L286">        }</span>
+<span class="fc" id="L287">    }</span>
+    
+    /**
+     * Find all subscriber redo data which need do redo.
+     *
+     * @return set of {@code SubscriberRedoData} need to do redo.
+     */
+    public Set&lt;SubscriberRedoData&gt; findSubscriberRedoData() {
+<span class="nc" id="L295">        Set&lt;SubscriberRedoData&gt; result = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L296">        synchronized (subscribes) {</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">            for (SubscriberRedoData each : subscribes.values()) {</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">                if (each.isNeedRedo()) {</span>
+<span class="nc" id="L299">                    result.add(each);</span>
+                }
+<span class="nc" id="L301">            }</span>
+<span class="nc" id="L302">        }</span>
+<span class="nc" id="L303">        return result;</span>
+    }
+    
+    /**
+     * get Cache service.
+     * @return cache service
+     */
+    public InstanceRedoData getRegisteredInstancesByKey(String combinedServiceName) {
+<span class="nc" id="L311">        return registeredInstances.get(combinedServiceName);</span>
+    }
+    
+    /**
+     * Shutdown redo service.
+     */
+    public void shutdown() {
+<span class="fc" id="L318">        LogUtils.NAMING_LOGGER.info(&quot;Shutdown grpc redo service executor &quot; + redoExecutor);</span>
+<span class="fc" id="L319">        registeredInstances.clear();</span>
+<span class="fc" id="L320">        subscribes.clear();</span>
+<span class="fc" id="L321">        redoExecutor.shutdownNow();</span>
+<span class="fc" id="L322">    }</span>
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

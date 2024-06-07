@@ -8,6 +8,7 @@ import subprocess
 import shlex
 import shutil
 import time
+from tqdm import tqdm
 from bs4 import BeautifulSoup
 from collections import defaultdict
 from dateutil import parser
@@ -18,6 +19,7 @@ from gql.transport.exceptions import TransportQueryError
 import argparse
 
 debug = True
+retry = 0
 
 '''
 Fetch 50 latest pull requests of repositories in new_repo
@@ -49,7 +51,7 @@ def find_first_pr_number(client, find_first_pr_query, param):
 def iterate_each(client, fetch_pr_query, param, pr_num_list):
     pr_list = []
 
-    for pr_num in pr_num_list:
+    for pr_num in tqdm(pr_num_list):
         param["number"] = pr_num
 
         try:
@@ -75,6 +77,8 @@ def iterate_repo(repos, client, fetch_pr_query, date, existing):
 
     i = 0
     error_count = 0
+    pr_list = None
+    pr_num_save = 0
 
     while i <= len(repos)-1:
         repo = repos[i]
@@ -86,7 +90,14 @@ def iterate_repo(repos, client, fetch_pr_query, date, existing):
             owner = param["owner"]
             param["startDate"] = date
             param["query"] = f"repo:{owner}/{name} is:pr created:<{date}"
-            pr_list = []
+            file_path = "collected/raw_data/" + param["owner"] + "_" + param["name"] + '.json'
+            if os.path.exists(file_path):
+                i += 1
+                pr_list = None
+                error_count = 0
+                pr_num_save = 0
+                continue
+            pr_list = [] if pr_list == None else pr_list
 
             last_pr = find_last_pr_number(client, find_last_pr_query, param)
             if existing:
@@ -102,27 +113,49 @@ def iterate_repo(repos, client, fetch_pr_query, date, existing):
                 pr_num_list = pr_num_list[last_pr - 3000 : last_pr]
             
             #print(last_pr)
-            pr_list = iterate_each(client, fetch_pr_query, param, pr_num_list)
+            # pr_list = iterate_each(client, fetch_pr_query, param, pr_num_list)
+
+
+            for pr_num in tqdm(pr_num_list):
+                if pr_num_save == 0 or pr_num_save <= pr_num:
+                    pr_num_save = pr_num
+                else:
+                    continue
+                param["number"] = pr_num
+
+                try:
+                    pr_result = gql_request(client, fetch_pr_query, param)
+                    if len(pr_result["repository"]["pullRequest"]["closingIssuesReferences"]['edges']) > 0:
+                        pr_list.append(pr_result)
+                    else:
+                        continue
+                except TransportQueryError as err:
+                    continue
         
-            file_path = "collected/raw_data/" + param["owner"] + "_" + param["name"] + '.json'
 
             with open(file_path, 'w') as o:
                 json.dump(pr_list, o, indent=2)
             
             #print(f"#{i} Done")
             i += 1
+            pr_list = None
             error_count = 0
+            pr_num_save = 0
         except Exception as e:
             #print(e)
-            time.sleep(60 * 5)
             error_count += 1
+            print(f"error_count={error_count}")
+            time.sleep(60 * 5)
             # if the number of error count exceeds 20, continue to next repo
             if error_count > 20:
                 i += 1
+                pr_list = None
+                error_count = 0
+                pr_num_save = 0
                 
 '''
 Filter out PRs that were created before cutoff point, which is
-June 2021
+2022.3.31
 '''
 def filter_old_PR (datapath, date):
 
@@ -146,8 +179,8 @@ def filter_old_PR (datapath, date):
             No closing issue reference
             Too many non-issue referencing pull requests, which is a problem
             '''
-            issues = pr_data['repository']['pullRequest']['closingIssuesReferences']['edges']
-            assert len(issues) > 0
+            # issues = pr_data['repository']['pullRequest']['closingIssuesReferences']['edges']
+            # assert len(issues) > 0
 
             '''
             Filter out by date
@@ -314,14 +347,25 @@ Filter out PRs without test diff
 
 def clone_repos (filtered_pr):
 
-    if not os.path.isdir("collected/raw_repos"):
+    if not os.path.exists("collected/raw_repos") or not os.path.isdir("collected/raw_repos"):
         os.makedirs("collected/raw_repos")
 
     for repo_name in filtered_pr:
         owner, name = repo_name.split("_")
         link = "https://github.com/" + owner + "/" + name
         name = os.getcwd() + '/collected/raw_repos/' + name
-        p = subprocess.Popen(['git', 'clone', link, name], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        p = subprocess.run(['git', 'clone', link, name], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        if b'fatal: unable to access ' in p.stdout or b'fatal: unable to access ' in p.stderr:
+            try_clone_until_success(link, name)
+
+def try_clone_until_success(link, name):
+    global retry
+    retry += 1
+    print(retry)
+    p = subprocess.run(['git', 'clone', link, name], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    if b'fatal: unable to access ' in p.stdout or b'fatal: unable to access ' in p.stderr:
+        try_clone_until_success(link, name)
+
 
 def filter_test_diff_PR (filtered_pr):
 
@@ -493,7 +537,7 @@ if __name__ == "__main__":
     parser_ = argparse.ArgumentParser(description="Bug Raw Data Gatherer")
     parser_.add_argument('-t', '--api_token')
     parser_.add_argument('-f', '--repository_file', type=str, default="example/example_metadata.json")
-    parser_.add_argument('-d', '--date', type=str, default="2021-07-01")
+    parser_.add_argument('-d', '--date', type=str, default="2023-01-31")
     parser_.add_argument('-e', '--existing', action='store_true')
     args = parser_.parse_args()
     
@@ -512,7 +556,8 @@ if __name__ == "__main__":
     url = 'https://api.github.com/graphql'
     headers = {'Authorization': 'Bearer %s' % api_token}
 
-    transport = RequestsHTTPTransport(url=url, headers=headers, use_json=True)
+    # transport = RequestsHTTPTransport(url=url, headers=headers, use_json=True)
+    transport = RequestsHTTPTransport(url=url, headers=headers, use_json=True, proxies={'https':'http://127.0.0.1:7890', 'http': 'http://127.0.0.1:7890'})
     client = Client(transport=transport, fetch_schema_from_transport=True)
 
     fetch_pr_query = gql(fetch_pr_query_raw)
@@ -540,8 +585,8 @@ if __name__ == "__main__":
 
     filtered_data = filter_old_PR ("collected/raw_data", args.date)
     filtered_data = filter_no_test_PR (filtered_data)
-    filtered_data = filter_multiple_PR (filtered_data)
-    filtered_data = filter_language_PR (filtered_data)
+    # filtered_data = filter_multiple_PR (filtered_data)
+    # filtered_data = filter_language_PR (filtered_data)
     filtered_data = filter_main_branch_PR (filtered_data)
     clone_repos(filtered_data)
     new_cleaned_data = filter_test_diff_PR (filtered_data)

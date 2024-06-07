@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Bookies.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pulsar Broker</a> &gt; <a href="index.source.html" class="el_package">org.apache.pulsar.broker.admin.v2</a> &gt; <span class="el_source">Bookies.java</span></div><h1>Bookies.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.pulsar.broker.admin.v2;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.bookkeeper.client.BookKeeper;
+import org.apache.bookkeeper.discover.RegistrationClient;
+import org.apache.bookkeeper.meta.MetadataClientDriver;
+import org.apache.bookkeeper.net.BookieId;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.pulsar.broker.admin.AdminResource;
+import org.apache.pulsar.broker.web.RestException;
+import org.apache.pulsar.common.policies.data.BookieInfo;
+import org.apache.pulsar.common.policies.data.BookiesClusterInfo;
+import org.apache.pulsar.common.policies.data.BookiesRackConfiguration;
+import org.apache.pulsar.common.policies.data.RawBookieInfo;
+
+@Path(&quot;/bookies&quot;)
+@Api(value = &quot;/bookies&quot;, description = &quot;Configure bookies rack placement&quot;, tags = &quot;bookies&quot;)
+@Produces(MediaType.APPLICATION_JSON)
+<span class="nc" id="L57">@Slf4j</span>
+<span class="nc" id="L58">public class Bookies extends AdminResource {</span>
+    private static final String PATH_SEPARATOR = &quot;/&quot;;
+
+    @GET
+    @Path(&quot;/racks-info&quot;)
+    @ApiOperation(value = &quot;Gets the rack placement information for all the bookies in the cluster&quot;,
+            response = BookiesRackConfiguration.class)
+    @ApiResponses(value = {@ApiResponse(code = 403, message = &quot;Don't have admin permission&quot;)})
+    public void getBookiesRackInfo(@Suspended final AsyncResponse asyncResponse) {
+<span class="nc" id="L67">        validateSuperUserAccess();</span>
+
+<span class="nc" id="L69">        getPulsarResources().getBookieResources().get()</span>
+<span class="nc" id="L70">                .thenAccept(b -&gt; {</span>
+<span class="nc" id="L71">                    asyncResponse.resume(b.orElseGet(() -&gt; new BookiesRackConfiguration()));</span>
+<span class="nc" id="L72">                }).exceptionally(ex -&gt; {</span>
+<span class="nc" id="L73">            asyncResponse.resume(ex);</span>
+<span class="nc" id="L74">            return null;</span>
+        });
+<span class="nc" id="L76">    }</span>
+
+    @GET
+    @Path(&quot;/all&quot;)
+    @ApiOperation(value = &quot;Gets raw information for all the bookies in the cluster&quot;,
+            response = BookiesClusterInfo.class)
+    @ApiResponses(value = {@ApiResponse(code = 403, message = &quot;Don't have admin permission&quot;)})
+    public BookiesClusterInfo getAllBookies() throws Exception {
+<span class="nc" id="L84">        validateSuperUserAccess();</span>
+
+<span class="nc" id="L86">        BookKeeper bookKeeper = bookKeeper();</span>
+<span class="nc" id="L87">        MetadataClientDriver metadataClientDriver = bookKeeper.getMetadataClientDriver();</span>
+<span class="nc" id="L88">        RegistrationClient registrationClient = metadataClientDriver.getRegistrationClient();</span>
+
+<span class="nc" id="L90">        Set&lt;BookieId&gt; allBookies = registrationClient.getAllBookies().get().getValue();</span>
+<span class="nc" id="L91">        List&lt;RawBookieInfo&gt; result = new ArrayList&lt;&gt;(allBookies.size());</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        for (BookieId bookieId : allBookies) {</span>
+<span class="nc" id="L93">            RawBookieInfo bookieInfo = new RawBookieInfo(bookieId.toString());</span>
+<span class="nc" id="L94">            result.add(bookieInfo);</span>
+<span class="nc" id="L95">        }</span>
+<span class="nc" id="L96">        return BookiesClusterInfo.builder().bookies(result).build();</span>
+    }
+
+    @GET
+    @Path(&quot;/racks-info/{bookie}&quot;)
+    @ApiOperation(value = &quot;Gets the rack placement information for a specific bookie in the cluster&quot;,
+            response = BookieInfo.class)
+    @ApiResponses(value = {@ApiResponse(code = 403, message = &quot;Don't have admin permission&quot;)})
+    public void getBookieRackInfo(@Suspended final AsyncResponse asyncResponse,
+                                  @PathParam(&quot;bookie&quot;) String bookieAddress) throws Exception {
+<span class="nc" id="L106">        validateSuperUserAccess();</span>
+
+<span class="nc" id="L108">        getPulsarResources().getBookieResources().get()</span>
+<span class="nc" id="L109">                .thenAccept(b -&gt; {</span>
+<span class="nc" id="L110">                    Optional&lt;BookieInfo&gt; bi = b.orElseGet(() -&gt; new BookiesRackConfiguration())</span>
+<span class="nc" id="L111">                            .getBookie(bookieAddress);</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">                    if (bi.isPresent()) {</span>
+<span class="nc" id="L113">                        asyncResponse.resume(bi.get());</span>
+                    } else {
+<span class="nc" id="L115">                        asyncResponse.resume(new RestException(Status.NOT_FOUND,</span>
+                                &quot;Bookie rack placement configuration not found: &quot; + bookieAddress));
+                    }
+<span class="nc" id="L118">                }).exceptionally(ex -&gt; {</span>
+<span class="nc" id="L119">            asyncResponse.resume(ex);</span>
+<span class="nc" id="L120">            return null;</span>
+        });
+<span class="nc" id="L122">    }</span>
+
+    @DELETE
+    @Path(&quot;/racks-info/{bookie}&quot;)
+    @ApiOperation(value = &quot;Removed the rack placement information for a specific bookie in the cluster&quot;)
+    @ApiResponses(value = {@ApiResponse(code = 403, message = &quot;Don't have admin permission&quot;)})
+    public void deleteBookieRackInfo(@Suspended final AsyncResponse asyncResponse,
+                                     @PathParam(&quot;bookie&quot;) String bookieAddress) throws Exception {
+<span class="nc" id="L130">        validateSuperUserAccess();</span>
+
+<span class="nc" id="L132">        getPulsarResources().getBookieResources()</span>
+<span class="nc" id="L133">                .update(optionalBookiesRackConfiguration -&gt; {</span>
+<span class="nc" id="L134">                    BookiesRackConfiguration brc = optionalBookiesRackConfiguration</span>
+<span class="nc" id="L135">                            .orElseGet(() -&gt; new BookiesRackConfiguration());</span>
+
+<span class="nc bnc" id="L137" title="All 2 branches missed.">                    if (!brc.removeBookie(bookieAddress)) {</span>
+<span class="nc" id="L138">                        asyncResponse.resume(new RestException(Status.NOT_FOUND,</span>
+                                &quot;Bookie rack placement configuration not found: &quot; + bookieAddress));
+                    }
+
+<span class="nc" id="L142">                    return brc;</span>
+<span class="nc" id="L143">                }).thenAccept(__ -&gt; {</span>
+<span class="nc" id="L144">            log.info(&quot;Removed {} from rack mapping info&quot;, bookieAddress);</span>
+<span class="nc" id="L145">            asyncResponse.resume(Response.noContent().build());</span>
+<span class="nc" id="L146">        }).exceptionally(ex -&gt; {</span>
+<span class="nc" id="L147">            asyncResponse.resume(ex);</span>
+<span class="nc" id="L148">            return null;</span>
+        });
+<span class="nc" id="L150">    }</span>
+
+    @POST
+    @Path(&quot;/racks-info/{bookie}&quot;)
+    @ApiOperation(value = &quot;Updates the rack placement information for a specific bookie in the cluster (note.&quot;
+            + &quot; bookie address format:`address:port`)&quot;)
+    @ApiResponses(value = {@ApiResponse(code = 403, message = &quot;Don't have admin permission&quot;)})
+    public void updateBookieRackInfo(@Suspended final AsyncResponse asyncResponse,
+                                     @PathParam(&quot;bookie&quot;) String bookieAddress,
+                                     @QueryParam(&quot;group&quot;) String group,
+            BookieInfo bookieInfo) throws Exception {
+<span class="nc" id="L161">        validateSuperUserAccess();</span>
+
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (group == null) {</span>
+<span class="nc" id="L164">            throw new RestException(Status.PRECONDITION_FAILED, &quot;Bookie 'group' parameters is missing&quot;);</span>
+        }
+
+        // validate rack name
+<span class="nc" id="L168">        int separatorCnt = StringUtils.countMatches(</span>
+<span class="nc" id="L169">            StringUtils.strip(bookieInfo.getRack(), PATH_SEPARATOR), PATH_SEPARATOR);</span>
+<span class="nc" id="L170">        boolean isRackEnabled = pulsar().getConfiguration().isBookkeeperClientRackawarePolicyEnabled();</span>
+<span class="nc" id="L171">        boolean isRegionEnabled = pulsar().getConfiguration().isBookkeeperClientRegionawarePolicyEnabled();</span>
+<span class="nc bnc" id="L172" title="All 10 branches missed.">        if (isRackEnabled &amp;&amp; ((isRegionEnabled &amp;&amp; separatorCnt != 1) || (!isRegionEnabled &amp;&amp; separatorCnt != 0))) {</span>
+<span class="nc" id="L173">            asyncResponse.resume(new RestException(Status.PRECONDITION_FAILED, &quot;Bookie 'rack' parameter is invalid, &quot;</span>
+                + &quot;When `RackawareEnsemblePlacementPolicy` is enabled, the rack name is not allowed to contain &quot;
+                + &quot;slash (`/`) except for the beginning and end of the rack name string. &quot;
+                + &quot;When `RegionawareEnsemblePlacementPolicy` is enabled, the rack name can only contain &quot;
+                + &quot;one slash (`/`) except for the beginning and end of the rack name string.&quot;));
+<span class="nc" id="L178">            return;</span>
+        }
+
+<span class="nc" id="L181">        getPulsarResources().getBookieResources()</span>
+<span class="nc" id="L182">                .update(optionalBookiesRackConfiguration -&gt; {</span>
+<span class="nc" id="L183">                    BookiesRackConfiguration brc = optionalBookiesRackConfiguration</span>
+<span class="nc" id="L184">                            .orElseGet(() -&gt; new BookiesRackConfiguration());</span>
+
+<span class="nc" id="L186">                    brc.updateBookie(group, bookieAddress, bookieInfo);</span>
+
+<span class="nc" id="L188">                    return brc;</span>
+<span class="nc" id="L189">                }).thenAccept(__ -&gt; {</span>
+<span class="nc" id="L190">            log.info(&quot;Updated rack mapping info for {}&quot;, bookieAddress);</span>
+<span class="nc" id="L191">            asyncResponse.resume(Response.noContent().build());</span>
+<span class="nc" id="L192">        }).exceptionally(ex -&gt; {</span>
+<span class="nc" id="L193">            asyncResponse.resume(ex);</span>
+<span class="nc" id="L194">            return null;</span>
+        });
+<span class="nc" id="L196">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

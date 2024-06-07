@@ -1,0 +1,2634 @@
+[
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Auto-configure a JwtAuthenticationConverter",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38105",
+        "resourcePath": "/spring-projects/spring-boot/pull/38105",
+        "createdAt": "2023-10-30T00:33:10Z",
+        "number": 38105,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/security/oauth2/resource/OAuth2ResourceServerProperties.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/security/oauth2/resource/reactive/ReactiveOAuth2ResourceServerConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/security/oauth2/resource/reactive/ReactiveOAuth2ResourceServerJwkConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/security/oauth2/resource/servlet/OAuth2ResourceServerJwtConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/security/oauth2/resource/servlet/Oauth2ResourceServerConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/security/oauth2/resource/JwtConverterCustomizationsArgumentsProvider.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/security/oauth2/resource/reactive/ReactiveOAuth2ResourceServerAutoConfigurationTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/security/oauth2/resource/servlet/OAuth2ResourceServerAutoConfigurationTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5eD48v2gAoOTNlMzVjOWJjMGM5MjhkNDBkMmY3NzJlYjcwNGRiNjFkM2E0NzhjYw",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38105/commits/93e35c9bc0c928d40d2f772eb704db61d3a478cc"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 33689,
+                "url": "https://github.com/spring-projects/spring-boot/issues/33689",
+                "title": "Auto-configure a JwtAuthenticationConverter",
+                "bodyHTML": "<p dir=\"auto\">Hi,<br>\nI learn the below way to customize the authority prefix and claim name. Would like to suggest provide configuration properties to allow developer to easily customize the JwtAuthenticationConverter, so that developer does not have to write these boilerplate codes</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"@Bean\n    public JwtAuthenticationConverter jwtAuthenticationConverter() {\n        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();\n        grantedAuthoritiesConverter.setAuthorityPrefix(&quot;&quot;);\n        //grantedAuthoritiesConverter.setAuthoritiesClaimName(&quot;role&quot;);\n        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();\n        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);\n        return jwtAuthenticationConverter;\n    }\"><pre class=\"notranslate\"><span class=\"pl-c1\">@</span><span class=\"pl-c1\">Bean</span>\n    <span class=\"pl-k\">public</span> <span class=\"pl-smi\">JwtAuthenticationConverter</span> <span class=\"pl-s1\">jwtAuthenticationConverter</span>() {\n        <span class=\"pl-smi\">JwtGrantedAuthoritiesConverter</span> <span class=\"pl-s1\">grantedAuthoritiesConverter</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">JwtGrantedAuthoritiesConverter</span>();\n        <span class=\"pl-s1\">grantedAuthoritiesConverter</span>.<span class=\"pl-en\">setAuthorityPrefix</span>(<span class=\"pl-s\">\"\"</span>);\n        <span class=\"pl-c\">//grantedAuthoritiesConverter.setAuthoritiesClaimName(\"role\");</span>\n        <span class=\"pl-smi\">JwtAuthenticationConverter</span> <span class=\"pl-s1\">jwtAuthenticationConverter</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">JwtAuthenticationConverter</span>();\n        <span class=\"pl-s1\">jwtAuthenticationConverter</span>.<span class=\"pl-en\">setJwtGrantedAuthoritiesConverter</span>(<span class=\"pl-s1\">grantedAuthoritiesConverter</span>);\n        <span class=\"pl-k\">return</span> <span class=\"pl-s1\">jwtAuthenticationConverter</span>;\n    }</pre></div>",
+                "resourcePath": "/spring-projects/spring-boot/issues/33689",
+                "createdAt": "2023-01-04T17:39:53Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Reduce bean create at RabbitAnnotationDrivenConfiguration",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38187",
+        "resourcePath": "/spring-projects/spring-boot/pull/38187",
+        "createdAt": "2023-11-03T00:50:19Z",
+        "number": 38187,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/amqp/RabbitAnnotationDrivenConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/amqp/RabbitAutoConfigurationTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5efMkC2gAoNzIzNmZiMGUxYTdhMjdiZmJiODZiYjdlYmZlMmU5OGRlYzBmODA4YQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38187/commits/7236fb0e1a7a27bfbb86bb7ebfe2e98dec0f808a"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38067,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38067",
+                "title": "Minimize the number of beans created by RabbitAnnotationDrivenConfiguration",
+                "bodyHTML": "<p dir=\"auto\">In <a href=\"https://github.com/spring-projects/spring-boot/blob/main/spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/amqp/RabbitAnnotationDrivenConfiguration.java\"><code class=\"notranslate\">RabbitAnnotationDrivenConfiguration</code></a>, some beans may be created but unused.</p>\n<p dir=\"auto\">When <code class=\"notranslate\">spring.rabbitmq.listener.type</code> is missing value or <code class=\"notranslate\">simple</code>, both <code class=\"notranslate\">directRabbitListenerContainerFactoryConfigurer</code> and <code class=\"notranslate\">simpleRabbitListenerContainerFactoryConfigurer</code> are created but <code class=\"notranslate\">directRabbitListenerContainerFactoryConfigurer</code> is unused.</p>\n<p dir=\"auto\">When <code class=\"notranslate\">spring.rabbitmq.listener.type</code> is <code class=\"notranslate\">direct</code>,  both <code class=\"notranslate\">directRabbitListenerContainerFactoryConfigurer</code> and <code class=\"notranslate\">simpleRabbitListenerContainerFactoryConfigurer</code> are created  but <code class=\"notranslate\">simpleRabbitListenerContainerFactoryConfigurer</code> is unused.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38067",
+                "createdAt": "2023-10-27T06:19:05Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add Testcontainers at development time integration test",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38192",
+        "resourcePath": "/spring-projects/spring-boot/pull/38192",
+        "createdAt": "2023-11-03T07:43:10Z",
+        "number": 38192,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-testcontainers/src/test/java/org/springframework/boot/testcontainers/lifecycle/TestcontainersLifecycleOrderIntegrationTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5egWUl2gAoZDQxZGNmMjRhOTVkM2RhODIzMGNiNTQ2NzZiZGI2ZjE1NzdmNWU4MA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38192/commits/d41dcf24a95d3da8230cb54676bdb6f1577f5e80"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38045,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38045",
+                "title": "Add Testcontainers at development time integration test",
+                "bodyHTML": "<p dir=\"auto\">Ideally we should have a test that catches issues like <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1956106406\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/37989\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/37989/hovercard\" href=\"https://github.com/spring-projects/spring-boot/issues/37989\">#37989</a></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38045",
+                "createdAt": "2023-10-25T18:54:08Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: task"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: pending-design-work"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Use unknown_service as default application name for OpenTelemetry",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38219",
+        "resourcePath": "/spring-projects/spring-boot/pull/38219",
+        "createdAt": "2023-11-06T05:37:16Z",
+        "number": 38219,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-actuator-autoconfigure/src/main/java/org/springframework/boot/actuate/autoconfigure/opentelemetry/OpenTelemetryAutoConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-actuator-autoconfigure/src/test/java/org/springframework/boot/actuate/autoconfigure/opentelemetry/OpenTelemetryAutoConfigurationTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5epSE42gAoZDNlMzBlNWYyZTI1MTUxZjVhZWQ0NDJiMDE1Yzc4YTVjNTVmNmE5Mw",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38219/commits/d3e30e5f2e25151f5aed442b015c78a5c55f6a93"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38218,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38218",
+                "title": "Opentelemetry service.name default should align with OpenTelemetry Semantic Convention",
+                "bodyHTML": "<p dir=\"auto\"></p><div class=\"Box Box--condensed my-2\">\n  <div class=\"Box-header f6\">\n    <p class=\"mb-0 text-bold\">\n      <a href=\"https://github.com/spring-projects/spring-boot/blob/4bc63b579ac90e52614be7ce214cf9d874c63b34/spring-boot-project/spring-boot-actuator-autoconfigure/src/main/java/org/springframework/boot/actuate/autoconfigure/opentelemetry/OpenTelemetryAutoConfiguration.java#L54\">spring-boot/spring-boot-project/spring-boot-actuator-autoconfigure/src/main/java/org/springframework/boot/actuate/autoconfigure/opentelemetry/OpenTelemetryAutoConfiguration.java</a>\n    </p>\n    <p class=\"mb-0 color-fg-muted\">\n         Line 54\n      in\n      <a data-pjax=\"true\" class=\"commit-tease-sha Link--inTextBlock\" href=\"/spring-projects/spring-boot/commit/4bc63b579ac90e52614be7ce214cf9d874c63b34\">4bc63b5</a>\n    </p>\n  </div>\n  <div itemprop=\"text\" class=\"Box-body p-0 blob-wrapper blob-wrapper-embedded data\">\n    <table class=\"highlight tab-size mb-0 js-file-line-container\" data-tab-size=\"8\" data-paste-markdown-skip=\"\">\n\n        <tbody><tr class=\"border-0\">\n          <td id=\"L54\" class=\"blob-num border-0 px-3 py-0 color-bg-default\" data-line-number=\"54\"></td>\n          <td id=\"LC54\" class=\"blob-code border-0 px-3 py-0 color-bg-default blob-code-inner js-file-line\"> <span class=\"pl-k\">private</span> <span class=\"pl-k\">static</span> <span class=\"pl-k\">final</span> <span class=\"pl-smi\">String</span> <span class=\"pl-c1\">DEFAULT_APPLICATION_NAME</span> = <span class=\"pl-s\">\"application\"</span>; </td>\n        </tr>\n    </tbody></table>\n  </div>\n</div>\n<p></p>\n<p dir=\"auto\">Spring's Opentelemetry auto configuration seem to use <code class=\"notranslate\">application</code> as a fall back value when the property <code class=\"notranslate\">spring.application.name</code> is not set. As per <a href=\"https://opentelemetry.io/docs/specs/semconv/resource/#service\" rel=\"nofollow\">Opentelemetry semantic convention</a>, the default value when the app name is not available should be <code class=\"notranslate\">unknown_service</code>.</p>\n<p dir=\"auto\">Note: Micrometer also defaults to the value <code class=\"notranslate\">unknown_service</code>. But when used with spring's auto configuration the resource is set to a different value.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38218",
+                "createdAt": "2023-11-06T05:28:46Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Remove deprecated support for FailureAnalyzer setter injection",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38263",
+        "resourcePath": "/spring-projects/spring-boot/pull/38263",
+        "createdAt": "2023-11-08T02:44:58Z",
+        "number": 38263,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/resources/META-INF/spring.factories"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-docs/src/docs/asciidoc/howto/application.adoc"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/test/java/org/springframework/boot/diagnostics/FailureAnalyzersTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5e39Hc2gAoNzdhZTU4ZThjZWZiNTdhYTk4NWFiNDgxMTdjYTE0YjU0ZjZmMjFhNg",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38263/commits/77ae58e8cefb57aa985ab48117ca14b54f6f21a6"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38238,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38238",
+                "title": "Remove deprecated support for FailureAnalyzer setter injection",
+                "bodyHTML": "<p dir=\"auto\">See <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1137935919\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/29811\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/29811/hovercard\" href=\"https://github.com/spring-projects/spring-boot/issues/29811\">#29811</a></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38238",
+                "createdAt": "2023-11-06T21:51:20Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Remove deprecated support for FailureAnalyzer setter injection",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38322",
+        "resourcePath": "/spring-projects/spring-boot/pull/38322",
+        "createdAt": "2023-11-10T18:25:53Z",
+        "number": 38322,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/resources/META-INF/spring.factories"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-docs/src/docs/asciidoc/howto/application.adoc"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/diagnostics/FailureAnalyzers.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/test/java/org/springframework/boot/diagnostics/FailureAnalyzersTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5fKzzs2gAoMDFkZTEyMTA0Njg5YmUxN2ZhM2ZjMjczM2NlNzNkNzNmMjYxNGU5NQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38322/commits/01de12104689be17fa3fc2733ce73d73f2614e95"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38238,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38238",
+                "title": "Remove deprecated support for FailureAnalyzer setter injection",
+                "bodyHTML": "<p dir=\"auto\">See <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1137935919\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/29811\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/29811/hovercard\" href=\"https://github.com/spring-projects/spring-boot/issues/29811\">#29811</a></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38238",
+                "createdAt": "2023-11-06T21:51:20Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "PropertiesMigrationListener wrongly reports property as deprecated",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38377",
+        "resourcePath": "/spring-projects/spring-boot/pull/38377",
+        "createdAt": "2023-11-16T17:30:28Z",
+        "number": 38377,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-properties-migrator/src/main/java/org/springframework/boot/context/properties/migrator/PropertiesMigrationReporter.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-properties-migrator/src/test/java/org/springframework/boot/context/properties/migrator/PropertiesMigrationReporterTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-properties-migrator/src/test/resources/config/config-warnings-dash-replacement.properties"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-properties-migrator/src/test/resources/metadata/sample-metadata.json"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/context/properties/source/PropertyMappers.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot/src/test/java/org/springframework/boot/context/properties/source/PropertyMapperTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5fqLkI2gAoOGI2YTMxMDg4N2MzMWUyYjdlMjRkZWFiNzhjNjQ3OWQ3YzVkMzUzYg",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38377/commits/8b6a310887c31e2b7e24deab78c6479d7c5d353b"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 35774,
+                "url": "https://github.com/spring-projects/spring-boot/issues/35774",
+                "title": "PropertiesMigrationListener wrongly reports property as deprecated",
+                "bodyHTML": "<p dir=\"auto\">With the following configuration:</p>\n<div class=\"highlight highlight-source-yaml notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"spring:\n  kafka:\n    producer:\n      client-id: some-id\n      ssl:\n        key-password: secret\n        key-store-location: classpath:keystore.jks # line 18\n        key-store-password: secret\n        trust-store-location: classpath:truststore.jks\n        trust-store-password: secret\"><pre class=\"notranslate\"><span class=\"pl-ent\">spring</span>:\n  <span class=\"pl-ent\">kafka</span>:\n    <span class=\"pl-ent\">producer</span>:\n      <span class=\"pl-ent\">client-id</span>: <span class=\"pl-s\">some-id</span>\n      <span class=\"pl-ent\">ssl</span>:\n        <span class=\"pl-ent\">key-password</span>: <span class=\"pl-s\">secret</span>\n        <span class=\"pl-ent\">key-store-location</span>: <span class=\"pl-s\">classpath:keystore.jks </span><span class=\"pl-c\"><span class=\"pl-c\">#</span> line 18</span>\n        <span class=\"pl-ent\">key-store-password</span>: <span class=\"pl-s\">secret</span>\n        <span class=\"pl-ent\">trust-store-location</span>: <span class=\"pl-s\">classpath:truststore.jks</span>\n        <span class=\"pl-ent\">trust-store-password</span>: <span class=\"pl-s\">secret</span></pre></div>\n<p dir=\"auto\">I get the following message:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"[WARN] org.springframework.boot.context.properties.migrator.PropertiesMigrationListener - \nThe use of configuration keys that have been renamed was found in the environment:\n\nProperty source 'migrate-Config resource 'class path resource [application-integration.yml]' via location 'optional:classpath:/'':\n\tKey: spring.kafka.producer.ssl.keystore-location\n\t\tLine: 18\n\t\tReplacement: spring.kafka.producer.ssl.key-store-location\n\tKey: spring.kafka.producer.ssl.keystore-password\n\t\tLine: 19\n\t\tReplacement: spring.kafka.producer.ssl.key-store-password\n\tKey: spring.kafka.producer.ssl.truststore-location\n\t\tLine: 20\n\t\tReplacement: spring.kafka.producer.ssl.trust-store-location\n\tKey: spring.kafka.producer.ssl.truststore-password\n\t\tLine: 21\n\t\tReplacement: spring.kafka.producer.ssl.trust-store-password\n\nProperty source 'Config resource 'class path resource [application-integration.yml]' via location 'optional:classpath:/'':\n\tKey: spring.kafka.producer.ssl.keystore-location\n\t\tLine: 18\n\t\tReplacement: spring.kafka.producer.ssl.key-store-location\n\tKey: spring.kafka.producer.ssl.keystore-password\n\t\tLine: 19\n\t\tReplacement: spring.kafka.producer.ssl.key-store-password\n\tKey: spring.kafka.producer.ssl.truststore-location\n\t\tLine: 20\n\t\tReplacement: spring.kafka.producer.ssl.trust-store-location\n\tKey: spring.kafka.producer.ssl.truststore-password\n\t\tLine: 21\n\t\tReplacement: spring.kafka.producer.ssl.trust-store-password\n\n\nEach configuration key has been temporarily mapped to its replacement for your convenience. To silence this warning, please update your configuration to use the new keys.\"><pre class=\"notranslate\"><code class=\"notranslate\">[WARN] org.springframework.boot.context.properties.migrator.PropertiesMigrationListener - \nThe use of configuration keys that have been renamed was found in the environment:\n\nProperty source 'migrate-Config resource 'class path resource [application-integration.yml]' via location 'optional:classpath:/'':\n\tKey: spring.kafka.producer.ssl.keystore-location\n\t\tLine: 18\n\t\tReplacement: spring.kafka.producer.ssl.key-store-location\n\tKey: spring.kafka.producer.ssl.keystore-password\n\t\tLine: 19\n\t\tReplacement: spring.kafka.producer.ssl.key-store-password\n\tKey: spring.kafka.producer.ssl.truststore-location\n\t\tLine: 20\n\t\tReplacement: spring.kafka.producer.ssl.trust-store-location\n\tKey: spring.kafka.producer.ssl.truststore-password\n\t\tLine: 21\n\t\tReplacement: spring.kafka.producer.ssl.trust-store-password\n\nProperty source 'Config resource 'class path resource [application-integration.yml]' via location 'optional:classpath:/'':\n\tKey: spring.kafka.producer.ssl.keystore-location\n\t\tLine: 18\n\t\tReplacement: spring.kafka.producer.ssl.key-store-location\n\tKey: spring.kafka.producer.ssl.keystore-password\n\t\tLine: 19\n\t\tReplacement: spring.kafka.producer.ssl.key-store-password\n\tKey: spring.kafka.producer.ssl.truststore-location\n\t\tLine: 20\n\t\tReplacement: spring.kafka.producer.ssl.trust-store-location\n\tKey: spring.kafka.producer.ssl.truststore-password\n\t\tLine: 21\n\t\tReplacement: spring.kafka.producer.ssl.trust-store-password\n\n\nEach configuration key has been temporarily mapped to its replacement for your convenience. To silence this warning, please update your configuration to use the new keys.\n</code></pre></div>\n<p dir=\"auto\">But I already changed them to the new one. It's just a warning, but it seems to be incorrect. Also interesting it shows it twice with different property source names.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/35774",
+                "createdAt": "2023-06-07T11:14:41Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: bug"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: pending-design-work"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Make spring.config.activate.on-cloud-platform=none match when the current cloud platform is null",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38510",
+        "resourcePath": "/spring-projects/spring-boot/pull/38510",
+        "createdAt": "2023-11-23T02:55:49Z",
+        "number": 38510,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/context/config/ConfigDataProperties.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/test/java/org/springframework/boot/context/config/ConfigDataPropertiesTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5gL-d12gAoNDhiMDVkMmE1NWIyN2MzNmM2NjEzMzQwNzdmNmEzZDIyOTc3YWVhNA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38510/commits/48b05d2a55b27c36c661334077f6a3d22977aea4"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38506,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38506",
+                "title": "spring.config.activate.on-cloud-platform should consider NONE to be semantically equivalent to null",
+                "bodyHTML": "<p dir=\"auto\">Apologies if this has been reported before, couldn't find any StackOverflow posts or GitHub issues.</p>\n<p dir=\"auto\">When attempting to use <code class=\"notranslate\">spring.config.activate.on-cloud-platform</code>, there is no mechanism available to simply state \"If not running on a cloud platform\" without forcibly setting the <code class=\"notranslate\">NONE</code> value via <code class=\"notranslate\">spring.main.cloud-platform</code> through some other mechanism.</p>\n<p dir=\"auto\"></p><div class=\"Box Box--condensed my-2\">\n  <div class=\"Box-header f6\">\n    <p class=\"mb-0 text-bold\">\n      <a href=\"https://github.com/spring-projects/spring-boot/blob/152acf8a59ac952340ab653c61b5dca9649dacf7/spring-boot-project/spring-boot/src/main/java/org/springframework/boot/context/config/ConfigDataProperties.java#L128\">spring-boot/spring-boot-project/spring-boot/src/main/java/org/springframework/boot/context/config/ConfigDataProperties.java</a>\n    </p>\n    <p class=\"mb-0 color-fg-muted\">\n         Line 128\n      in\n      <a data-pjax=\"true\" class=\"commit-tease-sha Link--inTextBlock\" href=\"/spring-projects/spring-boot/commit/152acf8a59ac952340ab653c61b5dca9649dacf7\">152acf8</a>\n    </p>\n  </div>\n  <div itemprop=\"text\" class=\"Box-body p-0 blob-wrapper blob-wrapper-embedded data\">\n    <table class=\"highlight tab-size mb-0 js-file-line-container\" data-tab-size=\"8\" data-paste-markdown-skip=\"\">\n\n        <tbody><tr class=\"border-0\">\n          <td id=\"L128\" class=\"blob-num border-0 px-3 py-0 color-bg-default\" data-line-number=\"128\"></td>\n          <td id=\"LC128\" class=\"blob-code border-0 px-3 py-0 color-bg-default blob-code-inner js-file-line\"> <span class=\"pl-k\">return</span> <span class=\"pl-smi\">this</span>.<span class=\"pl-s1\">onCloudPlatform</span> == <span class=\"pl-c1\">null</span> || <span class=\"pl-smi\">this</span>.<span class=\"pl-s1\">onCloudPlatform</span> == <span class=\"pl-s1\">cloudPlatform</span>; </td>\n        </tr>\n    </tbody></table>\n  </div>\n</div>\n<p></p>\n<p dir=\"auto\">This is undesirable for libraries providing configuration files with default values (e.g. through <a href=\"https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config.files.multi-document\" rel=\"nofollow\">multi-documents</a>) for scenarios when the consumers is running on a cloud platform and for when they aren't, as it forces one of the following scenarios:</p>\n<ul dir=\"auto\">\n<li>Force consumers to specify <code class=\"notranslate\">spring.main.cloud-platform: NONE</code> when running locally (ex: through their application-{local-env-name}.yml)</li>\n<li>Abandon <code class=\"notranslate\">spring.config.activate.on-cloud-platform</code> and multi-document config files, and conditionally load the properties through custom beans and manual CloudPlatform checks</li>\n<li>Abandon <code class=\"notranslate\">spring.config.activate.on-cloud-platform</code> and use a different, likely more unreliable, property condition, such as <code class=\"notranslate\">spring.config.activate.on-profile: 'DEV | LOCAL | NO-PLATFORM'</code></li>\n</ul>\n<p dir=\"auto\">Proposed change:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"\t\tprivate boolean isActive(CloudPlatform cloudPlatform) {\n\t\t\treturn this.onCloudPlatform == null \n                                       || (this.onCloudPlatform == NONE &amp;&amp; cloudPlatform == null) \n                                       || this.onCloudPlatform == cloudPlatform);\n\t\t}\"><pre class=\"notranslate\">\t\t<span class=\"pl-k\">private</span> <span class=\"pl-smi\">boolean</span> <span class=\"pl-s1\">isActive</span>(<span class=\"pl-smi\">CloudPlatform</span> <span class=\"pl-s1\">cloudPlatform</span>) {\n\t\t\t<span class=\"pl-k\">return</span> <span class=\"pl-smi\">this</span>.<span class=\"pl-s1\">onCloudPlatform</span> == <span class=\"pl-c1\">null</span> \n                                       || (<span class=\"pl-smi\">this</span>.<span class=\"pl-s1\">onCloudPlatform</span> == <span class=\"pl-c1\">NONE</span> &amp;&amp; <span class=\"pl-s1\">cloudPlatform</span> == <span class=\"pl-c1\">null</span>) \n                                       || <span class=\"pl-smi\">this</span>.<span class=\"pl-s1\">onCloudPlatform</span> == <span class=\"pl-s1\">cloudPlatform</span>);\n\t\t}</pre></div>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38506",
+                "createdAt": "2023-11-22T19:09:17Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Upgrade to Spring Security 6.2.1",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38818",
+        "resourcePath": "/spring-projects/spring-boot/pull/38818",
+        "createdAt": "2023-12-14T19:09:10Z",
+        "number": 38818,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-dependencies/build.gradle"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5iCPXr2gAoNDA4YTJmM2FjZWVjY2YyMzA4ZWI0YzFmOTBmNmI5YzA0MTNjYzdlZQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38818/commits/408a2f3aceeccf2308eb4c1f90f6b9c0413cc7ee"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38700,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38700",
+                "title": "Upgrade to Spring Security 6.2.1",
+                "bodyHTML": "",
+                "resourcePath": "/spring-projects/spring-boot/issues/38700",
+                "createdAt": "2023-12-06T20:21:29Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: dependency-upgrade"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Pulsar authentication param properties cause IllegalStateException with Pulsar Client 3.1.0 ",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38839",
+        "resourcePath": "/spring-projects/spring-boot/pull/38839",
+        "createdAt": "2023-12-16T05:48:34Z",
+        "number": 38839,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/pulsar/PulsarPropertiesMapper.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/pulsar/PulsarPropertiesMapperTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5iKIhZ2gAoY2Y0OWRmZDdlNTlhNjlmODZkYzEwNmY0ZmM5ZTQxY2QwYmNkNjlhYg",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38839/commits/cf49dfd7e59a69f86dc106f4fc9e41cd0bcd69ab"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 500,
+                "url": "https://github.com/spring-projects/spring-pulsar/issues/500",
+                "title": "OAuth2 authentication init fails with ClassCastException",
+                "bodyHTML": "<p dir=\"auto\">I am using Spring Pulsar with Spring Boot 3.2.0-M3 with the Pulsar Client 3.1.0.</p>\n<p dir=\"auto\">I am configuring the OAuth2 (with JWT) like this (as the <a href=\"https://docs.spring.io/spring-pulsar/reference/reference/pulsar.html#client-authentication\" rel=\"nofollow\">docs says here</a>):</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"spring:\n    pulsar:\n        client:\n            authentication:\n                plugin-class-name: org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2\n                param:\n                    issuerUrl: https://idp.mycompany.com\n                    privateKey: ...\"><pre class=\"notranslate\"><code class=\"notranslate\">spring:\n    pulsar:\n        client:\n            authentication:\n                plugin-class-name: org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2\n                param:\n                    issuerUrl: https://idp.mycompany.com\n                    privateKey: ...\n</code></pre></div>\n<p dir=\"auto\">I get the following error at application startup:</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"Caused by: java.lang.IllegalStateException: Unable to configure Pulsar authentication\n...\nCaused by: org.apache.pulsar.client.api.PulsarClientException$UnsupportedAuthenticationException: java.lang.ClassCastException: class org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2 cannot be cast to class org.apache.pulsar.client.api.Authentication (org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2 and org.apache.pulsar.client.api.Authentication are in unnamed module of loader org.springframework.boot.loader.LaunchedURLClassLoader @2b71fc7e)\n\tat org.apache.pulsar.client.impl.AuthenticationUtil.create(AuthenticationUtil.java:118) ~[pulsar-client-3.1.0.jar!/:3.1.0]\n\tat org.apache.pulsar.client.impl.PulsarClientImplementationBindingImpl.createAuthentication(PulsarClientImplementationBindingImpl.java:133) ~[pulsar-client-3.1.0.jar!/:3.1.0]\n\tat org.apache.pulsar.client.api.AuthenticationFactory.create(AuthenticationFactory.java:108) ~[pulsar-client-api-3.1.0.jar!/:3.1.0]\n\t... 85 common frames omitted\nCaused by: java.lang.ClassCastException: class org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2 cannot be cast to class org.apache.pulsar.client.api.Authentication (org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2 and org.apache.pulsar.client.api.Authentication are in unnamed module of loader org.springframework.boot.loader.LaunchedURLClassLoader @2b71fc7e)\n\tat org.apache.pulsar.client.impl.AuthenticationUtil.create(AuthenticationUtil.java:111) ~[pulsar-client-3.1.0.jar!/:3.1.0]\n\t... 87 common frames omitted\"><pre class=\"notranslate\"><code class=\"notranslate\">Caused by: java.lang.IllegalStateException: Unable to configure Pulsar authentication\n...\nCaused by: org.apache.pulsar.client.api.PulsarClientException$UnsupportedAuthenticationException: java.lang.ClassCastException: class org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2 cannot be cast to class org.apache.pulsar.client.api.Authentication (org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2 and org.apache.pulsar.client.api.Authentication are in unnamed module of loader org.springframework.boot.loader.LaunchedURLClassLoader @2b71fc7e)\n\tat org.apache.pulsar.client.impl.AuthenticationUtil.create(AuthenticationUtil.java:118) ~[pulsar-client-3.1.0.jar!/:3.1.0]\n\tat org.apache.pulsar.client.impl.PulsarClientImplementationBindingImpl.createAuthentication(PulsarClientImplementationBindingImpl.java:133) ~[pulsar-client-3.1.0.jar!/:3.1.0]\n\tat org.apache.pulsar.client.api.AuthenticationFactory.create(AuthenticationFactory.java:108) ~[pulsar-client-api-3.1.0.jar!/:3.1.0]\n\t... 85 common frames omitted\nCaused by: java.lang.ClassCastException: class org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2 cannot be cast to class org.apache.pulsar.client.api.Authentication (org.apache.pulsar.client.impl.auth.oauth2.AuthenticationFactoryOAuth2 and org.apache.pulsar.client.api.Authentication are in unnamed module of loader org.springframework.boot.loader.LaunchedURLClassLoader @2b71fc7e)\n\tat org.apache.pulsar.client.impl.AuthenticationUtil.create(AuthenticationUtil.java:111) ~[pulsar-client-3.1.0.jar!/:3.1.0]\n\t... 87 common frames omitted\n</code></pre></div>\n<p dir=\"auto\">Looks like the code assumes that the factory can be cast to the Authentication class which doesn't look like the class design at all.</p>",
+                "resourcePath": "/spring-projects/spring-pulsar/issues/500",
+                "createdAt": "2023-11-22T08:56:30Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: documentation"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "type: bug"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Consistently log default context paths for embedded servers",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38842",
+        "resourcePath": "/spring-projects/spring-boot/pull/38842",
+        "createdAt": "2023-12-16T17:37:56Z",
+        "number": 38842,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/web/embedded/tomcat/TomcatWebServer.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5iK71I2gAoODI0NDU0MGE1ZmQ5OGUxNmFkMzQzNjJhMmFkNTU4ODVmNjA1MjkxNA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38842/commits/8244540a5fd98e16ad34362a2ad55885f6052914"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 36149,
+                "url": "https://github.com/spring-projects/spring-boot/issues/36149",
+                "title": "Make WebServers' started log messages more consistent",
+                "bodyHTML": "<p dir=\"auto\">Working on <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1778882713\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/36103\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/spring-projects/spring-boot/pull/36103/hovercard\" href=\"https://github.com/spring-projects/spring-boot/pull/36103\">#36103</a> showed that there are some inconsistencies in how we log the Servlet WebServer's context path:</p>\n<ul dir=\"auto\">\n<li>Jetty logs <code class=\"notranslate\">'/'</code> by default</li>\n<li>Tomcat logs <code class=\"notranslate\">''</code> by default</li>\n<li>Undertow logs nothing by default</li>\n</ul>\n<p dir=\"auto\">There are also some similar inconsistencies on the reactive side where there is no (configurable) context path:</p>\n<ul dir=\"auto\">\n<li>Jetty logs <code class=\"notranslate\">'/'</code></li>\n<li>Tomcat logs <code class=\"notranslate\">''</code></li>\n<li>Undertow logs nothing</li>\n<li>Netty logs nothing</li>\n</ul>\n<p dir=\"auto\">We should try to make things as consistent as possible, removing as many of the optional regex groups as possible from the tests added in <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1778882713\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/36103\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/spring-projects/spring-boot/pull/36103/hovercard\" href=\"https://github.com/spring-projects/spring-boot/pull/36103\">#36103</a>.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/36149",
+                "createdAt": "2023-06-30T19:13:52Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Allow NestedConfigurationProperty on getters",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38844",
+        "resourcePath": "/spring-projects/spring-boot/pull/38844",
+        "createdAt": "2023-12-17T00:05:28Z",
+        "number": 38844,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-configuration-processor/src/main/java/org/springframework/boot/configurationprocessor/PropertyDescriptor.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-configuration-processor/src/test/java/org/springframework/boot/configurationprocessor/ConfigurationMetadataAnnotationProcessorTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-configuration-processor/src/test/java/org/springframework/boot/configurationsample/NestedConfigurationProperty.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-configuration-processor/src/test/java/org/springframework/boot/configurationsample/specific/DeprecatedSimplePojo.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-configuration-processor/src/test/java/org/springframework/boot/configurationsample/specific/InnerClassProperties.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/context/properties/NestedConfigurationProperty.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5iLVpG2gAoMDJiZDdlNTI0ZTBmYjVkYmE2ZWQwZDdiMjc3Mzc0YzdhMGY5ODAyZQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38844/commits/02bd7e524e0fb5dba6ed0d7b277374c7a0f9802e"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 9109,
+                "url": "https://github.com/spring-projects/spring-boot/issues/9109",
+                "title": "Support @NestedConfigurationProperty at targets other than field",
+                "bodyHTML": "<p dir=\"auto\"><code class=\"notranslate\">@NestedConfigurationProperty</code> can't be set in the getter. If a nested property is deprecated, the field is usually removed (to remap to the new namespace). There should be a way to specify that annotation at getter level</p>\n<p dir=\"auto\">If a nested property is deprecated all its keys should be flagged as deprecated automatically as well.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/9109",
+                "createdAt": "2017-05-05T06:53:34Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "theme: config-data"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "logging.include-application-name has no effect when using log4j2",
+        "url": "https://github.com/spring-projects/spring-boot/pull/38847",
+        "resourcePath": "/spring-projects/spring-boot/pull/38847",
+        "createdAt": "2023-12-18T02:53:09Z",
+        "number": 38847,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/resources/org/springframework/boot/logging/log4j2/log4j2-file.xml"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/resources/org/springframework/boot/logging/log4j2/log4j2.xml"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/test/java/org/springframework/boot/logging/log4j2/Log4J2LoggingSystemTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5iNWzw2gAoZmY5OThjNTUxOGNkYTdiMDNhYmM2OGMyNGViZWQ1NTRhYzU0ZmFlMA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/38847/commits/ff998c5518cda7b03abc68c24ebed554ac54fae0"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38618,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38618",
+                "title": "logging.include-application-name has no effect when using log4j2",
+                "bodyHTML": "<p dir=\"auto\">As the title says, when creating a fresh Spring Boot 3.2.0 project the console logs generated by Logback look like this by default</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"2023-12-01T08:57:37.478+01:00  INFO 22208 --- [           main] com.example.demo.DemoApplicationTests    : No active profile set, falling back to 1 default profile: &quot;default&quot;\n2023-12-01T08:57:38.181+01:00  INFO 22208 --- [           main] com.example.demo.DemoApplicationTests    : Started DemoApplicationTests in 0.832 seconds (process running for 1.308)\"><pre class=\"notranslate\"><code class=\"notranslate\">2023-12-01T08:57:37.478+01:00  INFO 22208 --- [           main] com.example.demo.DemoApplicationTests    : No active profile set, falling back to 1 default profile: \"default\"\n2023-12-01T08:57:38.181+01:00  INFO 22208 --- [           main] com.example.demo.DemoApplicationTests    : Started DemoApplicationTests in 0.832 seconds (process running for 1.308)\n</code></pre></div>\n<p dir=\"auto\">After switching from Logback to Log4j2 the console logs look like this</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"2023-12-01T09:02:33.314+01:00  INFO 14764 --- ${sys:LOGGED_APPLICATION_NAME}[           main] c.e.d.DemoApplicationTests               : No active profile set, falling back to 1 default profile: &quot;default&quot;\n2023-12-01T09:02:33.938+01:00  INFO 14764 --- ${sys:LOGGED_APPLICATION_NAME}[           main] c.e.d.DemoApplicationTests               : Started DemoApplicationTests in 0.814 seconds (process running for 1.415)\"><pre class=\"notranslate\"><code class=\"notranslate\">2023-12-01T09:02:33.314+01:00  INFO 14764 --- ${sys:LOGGED_APPLICATION_NAME}[           main] c.e.d.DemoApplicationTests               : No active profile set, falling back to 1 default profile: \"default\"\n2023-12-01T09:02:33.938+01:00  INFO 14764 --- ${sys:LOGGED_APPLICATION_NAME}[           main] c.e.d.DemoApplicationTests               : Started DemoApplicationTests in 0.814 seconds (process running for 1.415)\n</code></pre></div>\n<p dir=\"auto\">Setting the new <code class=\"notranslate\">logging.include-application-name</code> property to <code class=\"notranslate\">false</code> does not make the <code class=\"notranslate\">${sys:LOGGED_APPLICATION_NAME}</code> disappear from the logged console output.</p>\n<p dir=\"auto\">Here is a small reproducer: <a href=\"https://github.com/spring-projects/spring-boot/files/13522648/demo-reproducer.zip\">demo-reproducer.zip</a> that can be run with <code class=\"notranslate\">mvn spring-boot:run</code></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38618",
+                "createdAt": "2023-12-01T08:14:29Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Configuring server.jetty.max-connections has no effect",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39052",
+        "resourcePath": "/spring-projects/spring-boot/pull/39052",
+        "createdAt": "2024-01-07T13:42:27Z",
+        "number": 39052,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/web/embedded/jetty/JettyServletWebServerFactory.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/test/java/org/springframework/boot/web/embedded/jetty/JettyServletWebServerFactoryTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5jZ9xm2gAoNmU3YTk2NTQxYzkzYWQxZjAyNDRjNzFkNGFhNmFmMzUyMDE1MTYzNw",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39052/commits/6e7a96541c93ad1f0244c71d4aa6af3520151637"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39050,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39050",
+                "title": "Jetty ConnectionLimit feature is not working",
+                "bodyHTML": "<p dir=\"auto\">Affects: 3.2.1</p>\n<p dir=\"auto\">Jetty ConnectionLimit feature is introduced via</p>\n<p dir=\"auto\"><code class=\"notranslate\">server.jetty.max-connections</code> in <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1758228585\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/35899\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/35899/hovercard\" href=\"https://github.com/spring-projects/spring-boot/issues/35899\">#35899</a></p>\n<p dir=\"auto\">However, this ConnectionLimit is not working properly due to problem that introduced in this issue <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1194949488\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/30565\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/30565/hovercard\" href=\"https://github.com/spring-projects/spring-boot/issues/30565\">#30565</a></p>\n<p dir=\"auto\">If Spring Boot decided to give first-class support for this, I think we need to find a proper solution.</p>\n<p dir=\"auto\">As a shortcut from <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1194949488\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/30565\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/30565/hovercard\" href=\"https://github.com/spring-projects/spring-boot/issues/30565\">#30565</a>, instead of supported prop, this works like a charm.</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"@Bean\npublic JettyServerCustomizer connectorsConnectionLimit() {\n    return server -&gt; server.addBean(new ConnectionLimit(1, server.getConnectors()));\n}\"><pre class=\"notranslate\"><code class=\"notranslate\">@Bean\npublic JettyServerCustomizer connectorsConnectionLimit() {\n    return server -&gt; server.addBean(new ConnectionLimit(1, server.getConnectors()));\n}\n</code></pre></div>\n<p dir=\"auto\">Thanks</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39050",
+                "createdAt": "2024-01-07T10:48:49Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Autoconfiguration for Kafka Cluster ID",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39124",
+        "resourcePath": "/spring-projects/spring-boot/pull/39124",
+        "createdAt": "2024-01-15T02:16:34Z",
+        "number": 39124,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/kafka/KafkaAutoConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/kafka/KafkaProperties.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/kafka/KafkaAutoConfigurationTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5kCyPw2gAoNDg1MGJjMDBjNzcyNTUxMmYxMGY1ODBiN2QxYTI2NzBkMmM2NzE5MA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39124/commits/4850bc00c7725512f10f580b7d1a2670d2c67190"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38825,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38825",
+                "title": "Auto configuration for Kafka Cluster ID via application.properties ",
+                "bodyHTML": "\n<p dir=\"auto\">Starting with version 3.1, the <code class=\"notranslate\">KafkaAdmin</code> has this new API <code class=\"notranslate\">setClusterId</code> which should be used to prevent attempting to fetch the cluster id from the broker, perhaps if the user does not have admin permissions.</p>\n<p dir=\"auto\">Can we please have application property as <code class=\"notranslate\">spring.kafka.consumer.cluster-id</code> and <code class=\"notranslate\">spring.kafka.producer.cluster-id </code> to facilitate auto configuration of cluster id when user has ready only access or don't have admin access.</p>\n<p dir=\"auto\">It is important to note that cluster id is needed to enabled Micrometer Observability without which it is not working.</p>\n<p dir=\"auto\">Following is the Method with Java Docs of <code class=\"notranslate\">setClusterId</code> method of <code class=\"notranslate\">KafkaAdmin</code> class present in Spring Kafka with<code class=\"notranslate\"> version 3.1</code>, the has this new API:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"/**\n * Set the cluster id. Use this to prevent attempting to fetch the cluster id\n * from the broker, perhaps if the user does not have admin permissions.\n * @param clusterId the clusterId to set\n * @since 3.1\n */\npublic void setClusterId(String clusterId) {\"><pre class=\"notranslate\"><span class=\"pl-c\">/**</span>\n<span class=\"pl-c\"> * Set the cluster id. Use this to prevent attempting to fetch the cluster id</span>\n<span class=\"pl-c\"> * from the broker, perhaps if the user does not have admin permissions.</span>\n<span class=\"pl-c\"> * @param clusterId the clusterId to set</span>\n<span class=\"pl-c\"> * @since 3.1</span>\n<span class=\"pl-c\"> */</span>\n<span class=\"pl-k\">public</span> <span class=\"pl-smi\">void</span> <span class=\"pl-s1\">setClusterId</span>(<span class=\"pl-smi\">String</span> <span class=\"pl-s1\">clusterId</span>) {</pre></div>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38825",
+                "createdAt": "2023-12-15T09:57:05Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: pending-design-work"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Use the term \"tags\" in documentation consistently",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39125",
+        "resourcePath": "/spring-projects/spring-boot/pull/39125",
+        "createdAt": "2024-01-15T02:17:12Z",
+        "number": 39125,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-docs/src/docs/asciidoc/actuator/observability.adoc"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5kCyWf2gAoZWQyN2I3NDQwOTViNzIyZjI1YjU5YTVkZDgzY2NmMGNiYmE1NDc5ZQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39125/commits/ed27b744095b722f25b59a5dd83ccf0cbba5479e"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38761,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38761",
+                "title": "Use the term \"tags\" in documentation consistently",
+                "bodyHTML": "<p dir=\"auto\">In our documentation, sometimes we use \"key-values\" and sometimes we use \"tags\". The key value introduction in Micrometer had technical reasons, we should stick in our documentation with one term, and IMHO, that should be \"tags\".</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38761",
+                "createdAt": "2023-12-13T10:03:21Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "SslBundle implementations do not provide useful toString() results",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39137",
+        "resourcePath": "/spring-projects/spring-boot/pull/39137",
+        "createdAt": "2024-01-15T16:31:01Z",
+        "number": 39137,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/ssl/PropertiesSslBundle.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/web/server/WebServerSslBundle.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5kG9iq2gAoOTdmYzNlZGU1MzZlZmNkNjlmOGRhNzBkMWY2NjFiZTA5NGMzZWMxOA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39137/commits/97fc3ede536efcd69f8da70d1f661be094c3ec18"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39057,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39057",
+                "title": "Provide information about the source of the trust material in SslBundle's toString()",
+                "bodyHTML": "<p dir=\"auto\">Hi,</p>\n<p dir=\"auto\">we are using different bundles and the one who does configure them and the one who does operate the app in question are not always the same person.<br>\nWe're logging the used bundle, however we only get this as toString():</p>\n<p dir=\"auto\"><code class=\"notranslate\">[org.springframework.boot.autoconfigure.ssl.PropertiesSslBundle@166e52ca]</code></p>\n<p dir=\"auto\">Tomcat e.g. does print something like this for the connector config:</p>\n<p dir=\"auto\"><code class=\"notranslate\"> Connector [https-openssl-nio-8443], TLS virtual host [_default_], certificate type [UNDEFINED] configured from keystore [/home/app/.keystore] using alias [tomcat] with trust store [null]</code></p>\n<p dir=\"auto\">It would be nice if a better toString could be done which prints all important configured props of the bundle (without sensitive stuff like passwords etc.), but ciphers, options, aliases, key / trust store path etc. would be nice to have on the configured bundle.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39057",
+                "createdAt": "2024-01-08T14:31:22Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: pending-design-work"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Reactor `PemPrivateKeyParser` to use `DerElement`",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39161",
+        "resourcePath": "/spring-projects/spring-boot/pull/39161",
+        "createdAt": "2024-01-17T02:59:19Z",
+        "number": 39161,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/ssl/pem/PemPrivateKeyParser.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5kRBp22gAoZjMwYTVkZjE0NzcxZjI1OTI2OWVkM2MyYjJiN2Q4MWQ0M2Q0ZTk3YQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39161/commits/f30a5df14771f259269ed3c2b2b7d81d43d4e97a"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 37426,
+                "url": "https://github.com/spring-projects/spring-boot/issues/37426",
+                "title": "Refactor PemPrivateKeyParser to use DerElement",
+                "bodyHTML": "<p dir=\"auto\">The <code class=\"notranslate\">PemPrivateKeyParser</code> uses a brute-force approach to find a suitable algorithm to parse a PEM-encoded key. This could be improved by using the <code class=\"notranslate\">DerElement</code> class to read the ASN.1 and find out what type of key this is. This works for all PKCS#8 keys.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/37426",
+                "createdAt": "2023-09-15T13:22:47Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Refactor PemPrivateKeyParser to use DerElement",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39162",
+        "resourcePath": "/spring-projects/spring-boot/pull/39162",
+        "createdAt": "2024-01-17T07:59:39Z",
+        "number": 39162,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/ssl/pem/PemPrivateKeyParser.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5kSISR2gAoNWZiNDI4Y2EzNjhhYWFmNjIxNmIxMTM2YmEyNTc4MTY5NzMzNDkzNQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39162/commits/5fb428ca368aaaf6216b1136ba25781697334935"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 37426,
+                "url": "https://github.com/spring-projects/spring-boot/issues/37426",
+                "title": "Refactor PemPrivateKeyParser to use DerElement",
+                "bodyHTML": "<p dir=\"auto\">The <code class=\"notranslate\">PemPrivateKeyParser</code> uses a brute-force approach to find a suitable algorithm to parse a PEM-encoded key. This could be improved by using the <code class=\"notranslate\">DerElement</code> class to read the ASN.1 and find out what type of key this is. This works for all PKCS#8 keys.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/37426",
+                "createdAt": "2023-09-15T13:22:47Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Fixes Issue #28841 Adding more info about scanned packages for NoSuchBeanDefinitionException",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39248",
+        "resourcePath": "/spring-projects/spring-boot/pull/39248",
+        "createdAt": "2024-01-19T13:12:35Z",
+        "number": 39248,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/diagnostics/analyzer/NoSuchBeanDefinitionFailureAnalyzer.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5kjAb82gAoMDNhMGU4MjVmZTY2ZTY4MDE1NDQzMzYxYjliZTBhZWZmMTE2Y2M1NQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39248/commits/03a0e825fe66e68015443361b9be0aeff116cc55"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 28841,
+                "url": "https://github.com/spring-projects/spring-boot/issues/28841",
+                "title": "Include information about the scanned packages in failure analysis for NoSuchBeanDefinitionException",
+                "bodyHTML": "<p dir=\"auto\">One possible cause of <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1065243388\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/28832\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/28832/hovercard\" href=\"https://github.com/spring-projects/spring-boot/issues/28832\">#28832</a> is that the packages containing the components haven't been scanned. If it's possible to do so, I think it would be useful to include information about the scanned packages in the failure analysis for a <code class=\"notranslate\">NoSuchBeanDefinitionException</code>.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/28841",
+                "createdAt": "2021-11-29T10:37:10Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Use meta-annotations on @AutoConfigureWebMvc to compose it with @AutoConfigureJson",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39253",
+        "resourcePath": "/spring-projects/spring-boot/pull/39253",
+        "createdAt": "2024-01-20T14:28:30Z",
+        "number": 39253,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-test-autoconfigure/src/main/java/org/springframework/boot/test/autoconfigure/json/AutoConfigureJsonTesters.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-test-autoconfigure/src/main/java/org/springframework/boot/test/autoconfigure/json/JsonTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-test-autoconfigure/src/main/java/org/springframework/boot/test/autoconfigure/web/client/AutoConfigureWebClient.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-test-autoconfigure/src/main/java/org/springframework/boot/test/autoconfigure/web/servlet/AutoConfigureWebMvc.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-test-autoconfigure/src/main/resources/META-INF/spring/org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters.imports"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-test-autoconfigure/src/main/resources/META-INF/spring/org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient.imports"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-test-autoconfigure/src/main/resources/META-INF/spring/org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc.imports"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5koGiy2gAoZmFlN2FlN2QxYjBiMzM5MzQ4NmFiYjc2OTY4MWU4MWJjZDMwZGM0OA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39253/commits/fae7ae7d1b0b3393486abb769681e81bcd30dc48"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38869,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38869",
+                "title": "Use meta-annotations on @AutoConfigureWebMvc to compose it with @AutoConfigureJson",
+                "bodyHTML": "<p dir=\"auto\">Currently <code class=\"notranslate\">@AutoConfigureWebMvc</code> imports JSON auto-configuration directly. If we use <code class=\"notranslate\">@AutoConfigureJson</code> then any user customizations to <code class=\"notranslate\">org.springframework.boot.test.autoconfigure.json.AutoConfigureJson.imports</code> would be automatically picked up. We should review if the current arrangement is intentional and if we should switch.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38869",
+                "createdAt": "2023-12-19T19:16:23Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Include the environment's default profiles in the env endpoint's response",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39257",
+        "resourcePath": "/spring-projects/spring-boot/pull/39257",
+        "createdAt": "2024-01-21T14:34:37Z",
+        "number": 39257,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-actuator-autoconfigure/src/test/java/org/springframework/boot/actuate/autoconfigure/endpoint/web/documentation/EnvironmentEndpointDocumentationTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-actuator/src/main/java/org/springframework/boot/actuate/env/EnvironmentEndpoint.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-actuator/src/test/java/org/springframework/boot/actuate/env/EnvironmentEndpointWebExtensionTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5kp0pl2gAoNmE1YWE0MjRjYjJhYjRjN2RkMzU2MmU4NjcxYWQ3ZTU2NmZmMDBhYQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39257/commits/6a5aa424cb2ab4c7dd3562e8671ad7e566ff00aa"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39245,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39245",
+                "title": "Include the environment's default profiles in the env endpoint's response",
+                "bodyHTML": "<p dir=\"auto\">See <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1993464478\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/38356\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/spring-projects/spring-boot/pull/38356/hovercard?comment_id=1897238640&amp;comment_type=issue_comment\" href=\"https://github.com/spring-projects/spring-boot/pull/38356#issuecomment-1897238640\">#38356 (comment)</a> and subsequent comments.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39245",
+                "createdAt": "2024-01-19T07:51:41Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Unify 'observation-enabled' property defaults",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39276",
+        "resourcePath": "/spring-projects/spring-boot/pull/39276",
+        "createdAt": "2024-01-23T10:05:11Z",
+        "number": 39276,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/pulsar/PulsarProperties.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/pulsar/PulsarAutoConfigurationTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/pulsar/PulsarPropertiesMapperTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/pulsar/PulsarPropertiesTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5k0RkQ2gAoM2JkZmQwMGJiYmFjNjkxNDk3MWQ5ODY4YTU5MmQyNGJjODI5NTQzOQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39276/commits/3bdfd00bbbac6914971d9868a592d24bc8295439"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 38737,
+                "url": "https://github.com/spring-projects/spring-boot/issues/38737",
+                "title": "Unify 'observation-enabled' property defaults if possible",
+                "bodyHTML": "<p dir=\"auto\">See <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1812096407\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/36451\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/36451/hovercard\" href=\"https://github.com/spring-projects/spring-boot/issues/36451\">#36451</a> and <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"2023739889\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/38644\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/38644/hovercard\" href=\"https://github.com/spring-projects/spring-boot/issues/38644\">#38644</a> for examples.</p>\n<p dir=\"auto\">Currently some technologies have an <code class=\"notranslate\">observation-enabled</code> property which can be used to enable/disable observations. We should try to align the default value of this property for all of them.</p>\n<p dir=\"auto\">There may be performance reasons why we currently don't enable all observations by default.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/38737",
+                "createdAt": "2023-12-11T16:37:45Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Log Trust Material source",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39283",
+        "resourcePath": "/spring-projects/spring-boot/pull/39283",
+        "createdAt": "2024-01-24T09:54:12Z",
+        "number": 39283,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/ssl/SslPropertiesBundleRegistrar.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5k7nxx2gAoYjI2NzYyMWY5YzFiM2YxNWI5N2I1ZmYxNWQ0MmY3M2NlN2FkMTU4ZA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39283/commits/b267621f9c1b3f15b97b5ff15d42f73ce7ad158d"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39057,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39057",
+                "title": "Provide information about the source of the trust material in SslBundle's toString()",
+                "bodyHTML": "<p dir=\"auto\">Hi,</p>\n<p dir=\"auto\">we are using different bundles and the one who does configure them and the one who does operate the app in question are not always the same person.<br>\nWe're logging the used bundle, however we only get this as toString():</p>\n<p dir=\"auto\"><code class=\"notranslate\">[org.springframework.boot.autoconfigure.ssl.PropertiesSslBundle@166e52ca]</code></p>\n<p dir=\"auto\">Tomcat e.g. does print something like this for the connector config:</p>\n<p dir=\"auto\"><code class=\"notranslate\"> Connector [https-openssl-nio-8443], TLS virtual host [_default_], certificate type [UNDEFINED] configured from keystore [/home/app/.keystore] using alias [tomcat] with trust store [null]</code></p>\n<p dir=\"auto\">It would be nice if a better toString could be done which prints all important configured props of the bundle (without sensitive stuff like passwords etc.), but ciphers, options, aliases, key / trust store path etc. would be nice to have on the configured bundle.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39057",
+                "createdAt": "2024-01-08T14:31:22Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: pending-design-work"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Fixed NestedJarFile constructor javadoc",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39285",
+        "resourcePath": "/spring-projects/spring-boot/pull/39285",
+        "createdAt": "2024-01-24T10:40:16Z",
+        "number": 39285,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-loader/src/main/java/org/springframework/boot/loader/jar/NestedJarFile.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5k79Me2gAoN2VmYTQ4ZDNkYWQ4YzgxMmRkNDkzMzNhNjBlNzJkMzcwZGVmNzMyNg",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39285/commits/7efa48d3dad8c812dd49333a60e72d370def7326"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39252,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39252",
+                "title": "NestedJarFile constructor javadoc is incorrect",
+                "bodyHTML": "<p dir=\"auto\">See <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1925000955\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/37668\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/37668/hovercard?comment_id=1900640077&amp;comment_type=issue_comment\" href=\"https://github.com/spring-projects/spring-boot/issues/37668#issuecomment-1900640077\">#37668 (comment)</a></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39252",
+                "createdAt": "2024-01-19T19:24:03Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Provide MvcRequestMatcher.Builder that correctly configures the servlet path",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39313",
+        "resourcePath": "/spring-projects/spring-boot/pull/39313",
+        "createdAt": "2024-01-26T05:17:44Z",
+        "number": 39313,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/security/servlet/SecurityRequestMatcherAutoConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/security/servlet/SecurityRequestMatcherAutoConfigurationTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5lIK9M2gAoZWNjYzlkOWI0Njg1MDEwNmE4OWFiZDkxM2U3NTg0OTU5YWQ2Y2UyMA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39313/commits/eccc9d9b46850106a89abd913e7584959ad6ce20"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 37917,
+                "url": "https://github.com/spring-projects/spring-boot/issues/37917",
+                "title": "Provide MvcRequestMatcher.Builder that correctly configures the servlet path",
+                "bodyHTML": "<p dir=\"auto\">If there is only one dispatcher servlet in the servlet context, then it would be nice to have a simpler way to construct <code class=\"notranslate\">MvcRequestMatcher</code> instances.</p>\n<p dir=\"auto\">As it is, an application that is constructing an <code class=\"notranslate\">MvcRequestMatcher</code> must do:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"@Bean \nSecurityFilterChain appSecurity(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {\n    MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);\n    http\n        .securityMatchers((security) -&gt; security.requestMatchers(mvc.pattern(&quot;/controller/**&quot;)))\n        /// ...\"><pre class=\"notranslate\"><span class=\"pl-c1\">@</span><span class=\"pl-c1\">Bean</span> \n<span class=\"pl-smi\">SecurityFilterChain</span> <span class=\"pl-s1\">appSecurity</span>(<span class=\"pl-smi\">HttpSecurity</span> <span class=\"pl-s1\">http</span>, <span class=\"pl-smi\">HandlerMappingIntrospector</span> <span class=\"pl-s1\">introspector</span>) <span class=\"pl-k\">throws</span> <span class=\"pl-s1\">Exception</span> {\n    <span class=\"pl-smi\">MvcRequestMatcher</span>.<span class=\"pl-smi\">Builder</span> <span class=\"pl-s1\">mvc</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">MvcRequestMatcher</span>.<span class=\"pl-smi\">Builder</span>(<span class=\"pl-s1\">introspector</span>);\n    <span class=\"pl-s1\">http</span>\n        .<span class=\"pl-en\">securityMatchers</span>((<span class=\"pl-s1\">security</span>) -&gt; <span class=\"pl-s1\">security</span>.<span class=\"pl-en\">requestMatchers</span>(<span class=\"pl-s1\">mvc</span>.<span class=\"pl-en\">pattern</span>(<span class=\"pl-s\">\"/controller/**\"</span>)))\n        <span class=\"pl-c\">/// ...</span></pre></div>\n<p dir=\"auto\">If they have configured <code class=\"notranslate\">spring.mvc.servlet.path</code>, then they additionally need to provide that to the matcher as well like so:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"@Bean \nSecurityFilterChain appSecurity(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {\n    MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector).servletPath(&quot;/mvc&quot;);\n    http\n        .securityMatchers((security) -&gt; security.requestMatchers(mvc.pattern(&quot;/controller/**&quot;)))\n        /// ...\"><pre class=\"notranslate\"><span class=\"pl-c1\">@</span><span class=\"pl-c1\">Bean</span> \n<span class=\"pl-smi\">SecurityFilterChain</span> <span class=\"pl-s1\">appSecurity</span>(<span class=\"pl-smi\">HttpSecurity</span> <span class=\"pl-s1\">http</span>, <span class=\"pl-smi\">HandlerMappingIntrospector</span> <span class=\"pl-s1\">introspector</span>) <span class=\"pl-k\">throws</span> <span class=\"pl-s1\">Exception</span> {\n    <span class=\"pl-smi\">MvcRequestMatcher</span>.<span class=\"pl-smi\">Builder</span> <span class=\"pl-s1\">mvc</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">MvcRequestMatcher</span>.<span class=\"pl-smi\">Builder</span>(<span class=\"pl-s1\">introspector</span>).<span class=\"pl-en\">servletPath</span>(<span class=\"pl-s\">\"/mvc\"</span>);\n    <span class=\"pl-s1\">http</span>\n        .<span class=\"pl-en\">securityMatchers</span>((<span class=\"pl-s1\">security</span>) -&gt; <span class=\"pl-s1\">security</span>.<span class=\"pl-en\">requestMatchers</span>(<span class=\"pl-s1\">mvc</span>.<span class=\"pl-en\">pattern</span>(<span class=\"pl-s\">\"/controller/**\"</span>)))\n        <span class=\"pl-c\">/// ...</span></pre></div>\n<p dir=\"auto\">These two values, the <code class=\"notranslate\">HandlerMappingIntrospector</code> and the servlet path configuration, Spring Boot already knows. Given that, it would be nice if a Boot application could instead do:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"@Bean \nSecurityFilterChain appSecurity(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {\n    http\n        .securityMatchers((security) -&gt; security.requestMatchers(mvc.pattern(&quot;/controller/**&quot;)))\n        /// ...\"><pre class=\"notranslate\"><span class=\"pl-c1\">@</span><span class=\"pl-c1\">Bean</span> \n<span class=\"pl-smi\">SecurityFilterChain</span> <span class=\"pl-s1\">appSecurity</span>(<span class=\"pl-smi\">HttpSecurity</span> <span class=\"pl-s1\">http</span>, <span class=\"pl-smi\">MvcRequestMatcher</span>.<span class=\"pl-smi\">Builder</span> <span class=\"pl-s1\">mvc</span>) <span class=\"pl-k\">throws</span> <span class=\"pl-s1\">Exception</span> {\n    <span class=\"pl-s1\">http</span>\n        .<span class=\"pl-en\">securityMatchers</span>((<span class=\"pl-s1\">security</span>) -&gt; <span class=\"pl-s1\">security</span>.<span class=\"pl-en\">requestMatchers</span>(<span class=\"pl-s1\">mvc</span>.<span class=\"pl-en\">pattern</span>(<span class=\"pl-s\">\"/controller/**\"</span>)))\n        <span class=\"pl-c\">/// ...</span></pre></div>\n<p dir=\"auto\">I think it best to publish this bean in the event that there is only one <code class=\"notranslate\">DispatcherServlet</code> servlet mapping.</p>\n<p dir=\"auto\">The logic would be something like this (pseudocode follows):</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"@Conditional(ExactlyOneDispatcherServlet.class)\n@Bean \nMvcRequestMatcher.Builder mvcRequestMatcherBuilder(HandlerMappingIntrospector introspector, WebMvcProperties properties) {\n    String servletPath = properties.getServlet().getPath();\n    MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector)\n    return (&quot;/&quot;.equals(servletPath)) ? mvc : mvc.servletPath(servletPath);\n}\"><pre class=\"notranslate\"><span class=\"pl-c1\">@</span><span class=\"pl-c1\">Conditional</span>(<span class=\"pl-smi\">ExactlyOneDispatcherServlet</span>.<span class=\"pl-k\">class</span>)\n<span class=\"pl-c1\">@</span><span class=\"pl-c1\">Bean</span> \n<span class=\"pl-smi\">MvcRequestMatcher</span>.<span class=\"pl-smi\">Builder</span> <span class=\"pl-s1\">mvcRequestMatcherBuilder</span>(<span class=\"pl-smi\">HandlerMappingIntrospector</span> <span class=\"pl-s1\">introspector</span>, <span class=\"pl-smi\">WebMvcProperties</span> <span class=\"pl-s1\">properties</span>) {\n    <span class=\"pl-smi\">String</span> <span class=\"pl-s1\">servletPath</span> = <span class=\"pl-s1\">properties</span>.<span class=\"pl-en\">getServlet</span>().<span class=\"pl-en\">getPath</span>();\n    <span class=\"pl-smi\">MvcRequestMatcher</span>.<span class=\"pl-smi\">Builder</span> <span class=\"pl-s1\">mvc</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">MvcRequestMatcher</span>.<span class=\"pl-smi\">Builder</span>(<span class=\"pl-s1\">introspector</span>)\n    <span class=\"pl-k\">return</span> (<span class=\"pl-s\">\"/\"</span>.<span class=\"pl-en\">equals</span>(<span class=\"pl-s1\">servletPath</span>)) ? <span class=\"pl-s1\">mvc</span> : <span class=\"pl-s1\">mvc</span>.<span class=\"pl-en\">servletPath</span>(<span class=\"pl-s1\">servletPath</span>);\n}</pre></div>\n<p dir=\"auto\">where <code class=\"notranslate\">ExactlyOneDispatcherServlet</code> checks the servlet configuration for multiple servlet mappings tied to servlets of type <code class=\"notranslate\">DispatcherServlet</code>.</p>\n<p dir=\"auto\">In Spring Security 6.2, the need for an <code class=\"notranslate\">MvcRequestMatcher</code> when using <code class=\"notranslate\">authorizeHttpRequests</code> <a href=\"https://github.com/spring-projects/spring-security/issues/13568#issuecomment-1759913041\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-security/issues/13568/hovercard\">is greatly reduced</a>. That said, it will still be needed for the foreseeable future when activating the default servlet or when using the <code class=\"notranslate\">securityMatchers</code>, <code class=\"notranslate\">csrf#ignoringRequestMatchers</code>, and <code class=\"notranslate\">requiresSecure</code> DSLs.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/37917",
+                "createdAt": "2023-10-17T21:34:54Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: pending-design-work"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Upgrade to Commons Compress 1.25.0",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39318",
+        "resourcePath": "/spring-projects/spring-boot/pull/39318",
+        "createdAt": "2024-01-26T17:39:59Z",
+        "number": 39318,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-parent/build.gradle"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5lLiT52gAoNzcyNTBjMjU4ZjM2NDE4NjJjOGIwMzYzMzkxNDIwY2ZlMDRjMzlmMw",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39318/commits/77250c258f3641862c8b0363391420cfe04c39f3"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39148,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39148",
+                "title": "Upgrade to Commons Compress 1.25.0",
+                "bodyHTML": "",
+                "resourcePath": "/spring-projects/spring-boot/issues/39148",
+                "createdAt": "2024-01-16T16:07:42Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: declined"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "type: task"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Jetty GracefulShutdown writes to System.out",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39360",
+        "resourcePath": "/spring-projects/spring-boot/pull/39360",
+        "createdAt": "2024-01-31T13:50:31Z",
+        "number": 39360,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/web/embedded/jetty/GracefulShutdown.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5lkrW-2gAoMWRkNzVhOWI0YWJmNmI2Yjc4NWEyMTQ0ZTZmNzQ2NjMxYTEyZGQ0ZQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39360/commits/1dd75a9b4abf6b6b785a2144e6f746631a12dd4e"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39359,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39359",
+                "title": "Usage of System.out in Jetty GracefulShutdown",
+                "bodyHTML": "<p dir=\"auto\">When using graceful shutdown with Jetty, current requests are written with system.out instead of logger. Was it intentional? Here is the code piece:</p>\n<p dir=\"auto\">org.springframework.boot.web.embedded.jetty.GracefulShutdown#awaitShutdown</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"\tprivate void awaitShutdown(GracefulShutdownCallback callback) {\n\t\twhile (this.shuttingDown &amp;&amp; this.activeRequests.get() &gt; 0) {\n\t\t\tsleep(100);\n\t\t}\n\t\tSystem.out.println(this.activeRequests.get());\n\t\tthis.shuttingDown = false;\n\t\tlong activeRequests = this.activeRequests.get();\n\t\tif (activeRequests == 0) {\n\t\t\tlogger.info(&quot;Graceful shutdown complete&quot;);\n\t\t\tcallback.shutdownComplete(GracefulShutdownResult.IDLE);\n\t\t}\n\t\telse {\n\t\t\tlogger.info(LogMessage.format(&quot;Graceful shutdown aborted with %d request(s) still active&quot;, activeRequests));\n\t\t\tcallback.shutdownComplete(GracefulShutdownResult.REQUESTS_ACTIVE);\n\t\t}\n\t}\"><pre class=\"notranslate\">\t<span class=\"pl-k\">private</span> <span class=\"pl-smi\">void</span> <span class=\"pl-s1\">awaitShutdown</span>(<span class=\"pl-smi\">GracefulShutdownCallback</span> <span class=\"pl-s1\">callback</span>) {\n\t\t<span class=\"pl-k\">while</span> (<span class=\"pl-smi\">this</span>.<span class=\"pl-s1\">shuttingDown</span> &amp;&amp; <span class=\"pl-smi\">this</span>.<span class=\"pl-s1\">activeRequests</span>.<span class=\"pl-en\">get</span>() &gt; <span class=\"pl-c1\">0</span>) {\n\t\t\t<span class=\"pl-en\">sleep</span>(<span class=\"pl-c1\">100</span>);\n\t\t}\n\t\t<span class=\"pl-smi\">System</span>.<span class=\"pl-s1\">out</span>.<span class=\"pl-en\">println</span>(<span class=\"pl-smi\">this</span>.<span class=\"pl-s1\">activeRequests</span>.<span class=\"pl-en\">get</span>());\n\t\t<span class=\"pl-smi\">this</span>.<span class=\"pl-s1\">shuttingDown</span> = <span class=\"pl-c1\">false</span>;\n\t\t<span class=\"pl-smi\">long</span> <span class=\"pl-s1\">activeRequests</span> = <span class=\"pl-smi\">this</span>.<span class=\"pl-s1\">activeRequests</span>.<span class=\"pl-en\">get</span>();\n\t\t<span class=\"pl-k\">if</span> (<span class=\"pl-s1\">activeRequests</span> == <span class=\"pl-c1\">0</span>) {\n\t\t\t<span class=\"pl-s1\">logger</span>.<span class=\"pl-en\">info</span>(<span class=\"pl-s\">\"Graceful shutdown complete\"</span>);\n\t\t\t<span class=\"pl-s1\">callback</span>.<span class=\"pl-en\">shutdownComplete</span>(<span class=\"pl-smi\">GracefulShutdownResult</span>.<span class=\"pl-c1\">IDLE</span>);\n\t\t}\n\t\t<span class=\"pl-k\">else</span> {\n\t\t\t<span class=\"pl-s1\">logger</span>.<span class=\"pl-en\">info</span>(<span class=\"pl-smi\">LogMessage</span>.<span class=\"pl-en\">format</span>(<span class=\"pl-s\">\"Graceful shutdown aborted with %d request(s) still active\"</span>, <span class=\"pl-s1\">activeRequests</span>));\n\t\t\t<span class=\"pl-s1\">callback</span>.<span class=\"pl-en\">shutdownComplete</span>(<span class=\"pl-smi\">GracefulShutdownResult</span>.<span class=\"pl-c1\">REQUESTS_ACTIVE</span>);\n\t\t}\n\t}</pre></div>\n<p dir=\"auto\">Looks like logger is already used in this method. I can fix it if ok.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39359",
+                "createdAt": "2024-01-31T12:59:21Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Add OAuth2-Client ConnectionDetails and Keycloak Docker-Compose support",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39391",
+        "resourcePath": "/spring-projects/spring-boot/pull/39391",
+        "createdAt": "2024-02-03T15:48:55Z",
+        "number": 39391,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/security/oauth2/client/reactive/ReactiveOAuth2ClientAutoConfigurationTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/security/oauth2/client/servlet/OAuth2ClientRegistrationRepositoryConfigurationTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-docker-compose/src/main/java/org/springframework/boot/docker/compose/service/connection/DockerComposeConnectionSource.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot-docker-compose/src/main/java/org/springframework/boot/docker/compose/service/connection/oauth2/client/KeycloakDockerComposeConnectionDetailsFactory.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot-docker-compose/src/main/java/org/springframework/boot/docker/compose/service/connection/oauth2/client/package-info.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-docker-compose/src/main/resources/META-INF/spring.factories"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot-docker-compose/src/test/java/org/springframework/boot/docker/compose/service/connection/oauth2/client/KeycloakDockerComposeConnectionDetailsFactoryTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "RENAMED",
+                "path": "spring-boot-project/spring-boot-docker-compose/src/test/java/org/springframework/boot/docker/compose/service/connection/redis/KeycloakDockerComposeConnectionDetailsFactoryIntegrationTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "ADDED",
+                "path": "spring-boot-project/spring-boot-docker-compose/src/test/resources/org/springframework/boot/docker/compose/service/connection/oauth2/client/keycloak-compose.yaml"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-test-support/src/main/java/org/springframework/boot/testsupport/testcontainers/DockerImageNames.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5l6y2f2gAoMmExMzEyMmNiNDc2MmRjNDVlMTIwMDM0N2VlZDdjZDc4YjNhMTA5ZA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39391/commits/2a13122cb4762dc45e1200347eed7cd78b3a109d"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 36777,
+                "url": "https://github.com/spring-projects/spring-boot/issues/36777",
+                "title": "ConnectionDetails for external providers in Spring Security modules",
+                "bodyHTML": "\n<p dir=\"auto\">Part of my dev workflow involves using Testcontainers with Keycloak for integration testing against a local, preconfigured IdP/authorization server. It would be awesome if I could use the very same configuration with a running instance through spring-boot-testcontainers, but from what I can tell this isn't currently possible unless the respective configurators implement or expose a <code class=\"notranslate\">ConnectionDetails</code> in some way. (I assume I could achieve something like it if I replace the Spring Security autoconfigurations with my own, but I'd prefer to stick with conventions as much as possible.)</p>\n<p dir=\"auto\">The use cases that come to mind are:</p>\n<ul dir=\"auto\">\n<li>OAuth2 client provider(s) - URLs defined under <code class=\"notranslate\">spring.security.oauth2.client.provider</code></li>\n<li>SAML asserting party - Metadata URI defined under <code class=\"notranslate\">spring.security.saml2.relyingparty.registration.&lt;id&gt;.assertingparty</code></li>\n<li>Probably a few other properties/modules I'm missing</li>\n</ul>\n<p dir=\"auto\">Does this seem like a sensible use case for the <code class=\"notranslate\">ConnectionDetail</code> abstraction? I've noticed the current implementations seem concerned with strictly persistent connections, so perhaps this does not fit the intent. But, since the provider auto-configurations can lead to startup failure when the server is unreachable, the connections at least have some sort of persistent essence.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/36777",
+                "createdAt": "2023-08-07T21:45:10Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: waiting-for-triage"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: waiting-for-internal-feedback"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Webflux actuator endpoints respond with 500 when a parameter is missing",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39397",
+        "resourcePath": "/spring-projects/spring-boot/pull/39397",
+        "createdAt": "2024-02-05T03:17:21Z",
+        "number": 39397,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-actuator/src/main/java/org/springframework/boot/actuate/endpoint/web/reactive/AbstractWebFluxEndpointHandlerMapping.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5l-NyL2gAoOGUwNTQzMTRiMGM4OGM0MjQ5MDAwMTA5MGVhMjNmODBlNGIyMWU2Ng",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39397/commits/8e054314b0c88c42490001090ea23f80e4b21e66"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39236,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39236",
+                "title": "Webflux actuator endpoints respond with 500 when a parameter is missing",
+                "bodyHTML": "<p dir=\"auto\">Take this endpoint:</p>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"@Endpoint(id = &quot;test&quot;)\n@Component\npublic class TestEndpoint {\n    @ReadOperation\n    public Mono&lt;String&gt; sessionsForUsername(String username) {\n        return Mono.just(&quot;test&quot;);\n    }\n}\"><pre class=\"notranslate\"><span class=\"pl-c1\">@</span><span class=\"pl-c1\">Endpoint</span>(<span class=\"pl-s1\">id</span> = <span class=\"pl-s\">\"test\"</span>)\n<span class=\"pl-c1\">@</span><span class=\"pl-c1\">Component</span>\n<span class=\"pl-k\">public</span> <span class=\"pl-k\">class</span> <span class=\"pl-smi\">TestEndpoint</span> {\n    <span class=\"pl-c1\">@</span><span class=\"pl-c1\">ReadOperation</span>\n    <span class=\"pl-k\">public</span> <span class=\"pl-smi\">Mono</span>&lt;<span class=\"pl-smi\">String</span>&gt; <span class=\"pl-en\">sessionsForUsername</span>(<span class=\"pl-smi\">String</span> <span class=\"pl-s1\">username</span>) {\n        <span class=\"pl-k\">return</span> <span class=\"pl-smi\">Mono</span>.<span class=\"pl-en\">just</span>(<span class=\"pl-s\">\"test\"</span>);\n    }\n}</pre></div>\n<p dir=\"auto\">When I execute <code class=\"notranslate\">curl http://localhost:8080/actuator/test</code>, I get</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"HTTP/1.1 500 Internal Server Error\nContent-Type: application/json\nContent-Length: 139\n\n{\n    &quot;timestamp&quot;: &quot;2024-01-18T10:44:27.123+00:00&quot;,\n    &quot;path&quot;: &quot;/actuator/test&quot;,\n    &quot;status&quot;: 500,\n    &quot;error&quot;: &quot;Internal Server Error&quot;,\n    &quot;requestId&quot;: &quot;3076ac2f-2&quot;\n}\"><pre class=\"notranslate\"><code class=\"notranslate\">HTTP/1.1 500 Internal Server Error\nContent-Type: application/json\nContent-Length: 139\n\n{\n    \"timestamp\": \"2024-01-18T10:44:27.123+00:00\",\n    \"path\": \"/actuator/test\",\n    \"status\": 500,\n    \"error\": \"Internal Server Error\",\n    \"requestId\": \"3076ac2f-2\"\n}\n</code></pre></div>\n<p dir=\"auto\">When I remove the <code class=\"notranslate\">Mono</code>, or I use WebMVC, i get a 400 Bad Request, like i would have expected it.</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"HTTP/1.1 400 \nContent-Type: application/json\nTransfer-Encoding: chunked\nDate: Thu, 18 Jan 2024 10:45:36 GMT\nConnection: close\n\n{\n    &quot;timestamp&quot;: &quot;2024-01-18T10:45:36.289+00:00&quot;,\n    &quot;status&quot;: 400,\n    &quot;error&quot;: &quot;Bad Request&quot;,\n    &quot;path&quot;: &quot;/actuator/test&quot;\n}\"><pre class=\"notranslate\"><code class=\"notranslate\">HTTP/1.1 400 \nContent-Type: application/json\nTransfer-Encoding: chunked\nDate: Thu, 18 Jan 2024 10:45:36 GMT\nConnection: close\n\n{\n    \"timestamp\": \"2024-01-18T10:45:36.289+00:00\",\n    \"status\": 400,\n    \"error\": \"Bad Request\",\n    \"path\": \"/actuator/test\"\n}\n</code></pre></div>\n<p dir=\"auto\">Reproducer: <a href=\"https://github.com/spring-projects/spring-boot/files/13976998/repro.zip\">repro.zip</a></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39236",
+                "createdAt": "2024-01-18T10:48:04Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: bug"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Awaitility link in Test Scoped Dependencies is incorrect",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39415",
+        "resourcePath": "/spring-projects/spring-boot/pull/39415",
+        "createdAt": "2024-02-06T10:32:42Z",
+        "number": 39415,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-docs/src/docs/asciidoc/features/testing.adoc"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5mICEf2gAoYTcyZDAwMWVkM2Y4M2Q4ODA5ZTMyNDljYTQ0MjNmMTFkODQzODc3Mw",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39415/commits/a72d001ed3f83d8809e3249ca4423f11d8438773"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39410,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39410",
+                "title": "Spring Boot Reference Documentation 7.9.1 section  Awaitility link is incorrect",
+                "bodyHTML": "<p dir=\"auto\">Section 7.9.1 use a incorrect link  <a href=\"https://https//github.com/awaitility/awaitility\" rel=\"nofollow\">Awaitility</a></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39410",
+                "createdAt": "2024-02-06T02:20:01Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "ResolveMainClassName calls getProject() at execution time, making it incompatible with Gradle's configuration cache",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39644",
+        "resourcePath": "/spring-projects/spring-boot/pull/39644",
+        "createdAt": "2024-02-21T08:41:00Z",
+        "number": 39644,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-tools/spring-boot-gradle-plugin/src/main/java/org/springframework/boot/gradle/plugin/ResolveMainClassName.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5nfUI32gAoYjJjZTExNTIxMjA0MjRiOTg0MGY2MTU5MjY0YzM1NGQwMGE4MGY1Nw",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39644/commits/b2ce1152120424b9840f6159264c354d00a80f57"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39635,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39635",
+                "title": "Spring boot plugin issue using gradle cache",
+                "bodyHTML": "<p dir=\"auto\"><a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"2105185505\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-boot/issues/39326\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-boot/issues/39326/hovercard\" href=\"https://github.com/spring-projects/spring-boot/issues/39326\">#39326</a><br>\nRunning Spring boot plugin with gradle 8.5 generate :</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"Configuration cache problems found in this build.\n2 problems were found storing the configuration cache, 1 of which seems unique.\n\nTask :bootJar of type org.springframework.boot.gradle.tasks.bundling.BootJar: execution of task ':bootJar' caused invocation of 'Task.project' in other task at execution time which is unsupported.\nSee https://docs.gradle.org/8.5/userguide/configuration_cache.html#config_cache:requirements:use_project_during_execution\nExecution of task ':bootJar' caused invocation of 'Task.project' by task ':resolveMainClassName' at execution time which is unsupported.\"><pre class=\"notranslate\"><code class=\"notranslate\">Configuration cache problems found in this build.\n2 problems were found storing the configuration cache, 1 of which seems unique.\n\nTask :bootJar of type org.springframework.boot.gradle.tasks.bundling.BootJar: execution of task ':bootJar' caused invocation of 'Task.project' in other task at execution time which is unsupported.\nSee https://docs.gradle.org/8.5/userguide/configuration_cache.html#config_cache:requirements:use_project_during_execution\nExecution of task ':bootJar' caused invocation of 'Task.project' by task ':resolveMainClassName' at execution time which is unsupported.\n</code></pre></div>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"org.gradle.api.InvalidUserCodeException: Execution of task ':bootJar' caused invocation of 'Task.project' by task ':resolveMainClassName' at execution time which is unsupported.\n\tat org.gradle.configurationcache.problems.DefaultProblemFactory$problem$1.exception(DefaultProblemFactory.kt:52)\n\tat org.gradle.configurationcache.initialization.DefaultConfigurationCacheProblemsListener.onTaskExecutionAccessProblem(ConfigurationCacheProblemsListener.kt:116)\n\tat org.gradle.configurationcache.initialization.DefaultConfigurationCacheProblemsListener.onProjectAccess(ConfigurationCacheProblemsListener.kt:62)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n\tat org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)\n\tat org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)\n\tat org.gradle.internal.event.DefaultListenerManager$ListenerDetails.dispatch(DefaultListenerManager.java:472)\n\tat org.gradle.internal.event.DefaultListenerManager$ListenerDetails.dispatch(DefaultListenerManager.java:454)\n\tat org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:83)\n\tat org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:69)\n\tat org.gradle.internal.event.DefaultListenerManager$EventBroadcast$ListenerDispatch.dispatch(DefaultListenerManager.java:443)\n\tat org.gradle.internal.event.DefaultListenerManager$EventBroadcast$ListenerDispatch.dispatch(DefaultListenerManager.java:431)\n\tat org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:43)\n\tat org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:66)\n\tat org.gradle.internal.event.DefaultListenerManager$EventBroadcast$ListenerDispatch.dispatch(DefaultListenerManager.java:443)\n\tat org.gradle.internal.event.DefaultListenerManager$EventBroadcast.dispatch(DefaultListenerManager.java:232)\n\tat org.gradle.internal.event.DefaultListenerManager$EventBroadcast.dispatch(DefaultListenerManager.java:203)\n\tat org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:94)\n\tat jdk.proxy1/jdk.proxy1.$Proxy80.onProjectAccess(Unknown Source)\n\tat org.gradle.configurationcache.AbstractTaskProjectAccessChecker.notifyProjectAccess(TaskExecutionAccessCheckers.kt:33)\n\tat org.gradle.api.internal.AbstractTask.getProject(AbstractTask.java:238)\n\tat org.gradle.api.DefaultTask.getProject(DefaultTask.java:59)\n\tat org.springframework.boot.gradle.plugin.ResolveMainClassName.lambda$readMainClassName$0(ResolveMainClassName.java:156)\n\tat java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)\n\tat java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)\n\tat java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1845)\n\tat java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)\n\tat java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)\n\tat java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)\n\tat java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)\n\tat java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:682)\n\tat org.springframework.boot.gradle.plugin.ResolveMainClassName.readMainClassName(ResolveMainClassName.java:158)\n\tat org.springframework.boot.gradle.plugin.JavaPluginAction.lambda$configureBootJarTask$9(JavaPluginAction.java:182)\n\tat org.gradle.api.internal.provider.FlatMapProvider.doMapValue(FlatMapProvider.java:55)\n\tat org.gradle.api.internal.provider.FlatMapProvider.calculateOwnValue(FlatMapProvider.java:50)\n\tat org.gradle.api.internal.provider.AbstractMinimalProvider.calculateValue(AbstractMinimalProvider.java:108)\n\tat org.gradle.api.internal.provider.TransformBackedProvider.calculateOwnValue(TransformBackedProvider.java:82)\n\tat org.gradle.api.internal.provider.AbstractMinimalProvider.calculateValue(AbstractMinimalProvider.java:108)\n\tat org.gradle.api.internal.provider.AbstractMinimalProvider.withFinalValue(AbstractMinimalProvider.java:164)\n\tat org.gradle.api.internal.provider.DefaultProperty.finalValue(DefaultProperty.java:133)\n\tat org.gradle.api.internal.provider.DefaultProperty.finalValue(DefaultProperty.java:26)\n\tat org.gradle.api.internal.provider.AbstractProperty.finalizeNow(AbstractProperty.java:245)\n\tat org.gradle.api.internal.provider.AbstractProperty.beforeRead(AbstractProperty.java:239)\n\tat org.gradle.api.internal.provider.AbstractProperty.calculateOwnValue(AbstractProperty.java:135)\n\tat org.gradle.api.internal.provider.AbstractMinimalProvider.getOrNull(AbstractMinimalProvider.java:98)\n\tat org.gradle.api.internal.provider.ProviderResolutionStrategy$1.resolve(ProviderResolutionStrategy.java:27)\n\tat org.gradle.util.internal.DeferredUtil.unpack(DeferredUtil.java:59)\n\tat org.gradle.util.internal.DeferredUtil.unpackOrNull(DeferredUtil.java:49)\"><pre class=\"notranslate\"><code class=\"notranslate\">org.gradle.api.InvalidUserCodeException: Execution of task ':bootJar' caused invocation of 'Task.project' by task ':resolveMainClassName' at execution time which is unsupported.\n\tat org.gradle.configurationcache.problems.DefaultProblemFactory$problem$1.exception(DefaultProblemFactory.kt:52)\n\tat org.gradle.configurationcache.initialization.DefaultConfigurationCacheProblemsListener.onTaskExecutionAccessProblem(ConfigurationCacheProblemsListener.kt:116)\n\tat org.gradle.configurationcache.initialization.DefaultConfigurationCacheProblemsListener.onProjectAccess(ConfigurationCacheProblemsListener.kt:62)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n\tat org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)\n\tat org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)\n\tat org.gradle.internal.event.DefaultListenerManager$ListenerDetails.dispatch(DefaultListenerManager.java:472)\n\tat org.gradle.internal.event.DefaultListenerManager$ListenerDetails.dispatch(DefaultListenerManager.java:454)\n\tat org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:83)\n\tat org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:69)\n\tat org.gradle.internal.event.DefaultListenerManager$EventBroadcast$ListenerDispatch.dispatch(DefaultListenerManager.java:443)\n\tat org.gradle.internal.event.DefaultListenerManager$EventBroadcast$ListenerDispatch.dispatch(DefaultListenerManager.java:431)\n\tat org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:43)\n\tat org.gradle.internal.event.AbstractBroadcastDispatch.dispatch(AbstractBroadcastDispatch.java:66)\n\tat org.gradle.internal.event.DefaultListenerManager$EventBroadcast$ListenerDispatch.dispatch(DefaultListenerManager.java:443)\n\tat org.gradle.internal.event.DefaultListenerManager$EventBroadcast.dispatch(DefaultListenerManager.java:232)\n\tat org.gradle.internal.event.DefaultListenerManager$EventBroadcast.dispatch(DefaultListenerManager.java:203)\n\tat org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:94)\n\tat jdk.proxy1/jdk.proxy1.$Proxy80.onProjectAccess(Unknown Source)\n\tat org.gradle.configurationcache.AbstractTaskProjectAccessChecker.notifyProjectAccess(TaskExecutionAccessCheckers.kt:33)\n\tat org.gradle.api.internal.AbstractTask.getProject(AbstractTask.java:238)\n\tat org.gradle.api.DefaultTask.getProject(DefaultTask.java:59)\n\tat org.springframework.boot.gradle.plugin.ResolveMainClassName.lambda$readMainClassName$0(ResolveMainClassName.java:156)\n\tat java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)\n\tat java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)\n\tat java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1845)\n\tat java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)\n\tat java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)\n\tat java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)\n\tat java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)\n\tat java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:682)\n\tat org.springframework.boot.gradle.plugin.ResolveMainClassName.readMainClassName(ResolveMainClassName.java:158)\n\tat org.springframework.boot.gradle.plugin.JavaPluginAction.lambda$configureBootJarTask$9(JavaPluginAction.java:182)\n\tat org.gradle.api.internal.provider.FlatMapProvider.doMapValue(FlatMapProvider.java:55)\n\tat org.gradle.api.internal.provider.FlatMapProvider.calculateOwnValue(FlatMapProvider.java:50)\n\tat org.gradle.api.internal.provider.AbstractMinimalProvider.calculateValue(AbstractMinimalProvider.java:108)\n\tat org.gradle.api.internal.provider.TransformBackedProvider.calculateOwnValue(TransformBackedProvider.java:82)\n\tat org.gradle.api.internal.provider.AbstractMinimalProvider.calculateValue(AbstractMinimalProvider.java:108)\n\tat org.gradle.api.internal.provider.AbstractMinimalProvider.withFinalValue(AbstractMinimalProvider.java:164)\n\tat org.gradle.api.internal.provider.DefaultProperty.finalValue(DefaultProperty.java:133)\n\tat org.gradle.api.internal.provider.DefaultProperty.finalValue(DefaultProperty.java:26)\n\tat org.gradle.api.internal.provider.AbstractProperty.finalizeNow(AbstractProperty.java:245)\n\tat org.gradle.api.internal.provider.AbstractProperty.beforeRead(AbstractProperty.java:239)\n\tat org.gradle.api.internal.provider.AbstractProperty.calculateOwnValue(AbstractProperty.java:135)\n\tat org.gradle.api.internal.provider.AbstractMinimalProvider.getOrNull(AbstractMinimalProvider.java:98)\n\tat org.gradle.api.internal.provider.ProviderResolutionStrategy$1.resolve(ProviderResolutionStrategy.java:27)\n\tat org.gradle.util.internal.DeferredUtil.unpack(DeferredUtil.java:59)\n\tat org.gradle.util.internal.DeferredUtil.unpackOrNull(DeferredUtil.java:49)\n</code></pre></div>\n<p dir=\"auto\">The issue is here :</p>\n<p dir=\"auto\"><a href=\"https://github.com/spring-projects/spring-boot/blob/main/spring-boot-project/spring-boot-tools/spring-boot-gradle-plugin/src/main/java/org/springframework/boot/gradle/plugin/ResolveMainClassName.java#L152-L161\">https://github.com/spring-projects/spring-boot/blob/main/spring-boot-project/spring-boot-tools/spring-boot-gradle-plugin/src/main/java/org/springframework/boot/gradle/plugin/ResolveMainClassName.java#L152-L161</a></p>\n<p dir=\"auto\">We cannot call getProject().getProjectDir().toPath()  at execution time</p>\n<p dir=\"auto\">My understanding is that needs to be moved at the constructor level, here :<br>\n<a href=\"https://github.com/spring-projects/spring-boot/blob/main/spring-boot-project/spring-boot-tools/spring-boot-gradle-plugin/src/main/java/org/springframework/boot/gradle/plugin/ResolveMainClassName.java#L67\">https://github.com/spring-projects/spring-boot/blob/main/spring-boot-project/spring-boot-tools/spring-boot-gradle-plugin/src/main/java/org/springframework/boot/gradle/plugin/ResolveMainClassName.java#L67</a></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39635",
+                "createdAt": "2024-02-20T12:35:01Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Fix typo in Custom HTTP Exchange Recording section",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39777",
+        "resourcePath": "/spring-projects/spring-boot/pull/39777",
+        "createdAt": "2024-02-28T04:42:06Z",
+        "number": 39777,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-docs/src/docs/asciidoc/actuator/http-exchanges.adoc"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5oICY02gAoNjA2NWZjN2IyNjk0ZjcwZjE3NGM2MmYwNjlkYjRmMmJjNmFkZjhmYQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39777/commits/6065fc7b2694f70f174c62f069db4f2bc6adf8fa"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39768,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39768",
+                "title": "Typo in Spring Boot Docs Section 10.1 Custom HTTP Exchange Recording",
+                "bodyHTML": "<p dir=\"auto\">There's a typo in <a href=\"https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.http-exchanges.custom\" rel=\"nofollow\">https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.http-exchanges.custom</a></p>\n<p dir=\"auto\">\"To disable recoding entirely\"</p>\n<p dir=\"auto\">\"recoding\" vs recording.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39768",
+                "createdAt": "2024-02-27T18:45:26Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: documentation"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Support virtual threads for Jackson pool.",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39800",
+        "resourcePath": "/spring-projects/spring-boot/pull/39800",
+        "createdAt": "2024-02-29T13:44:51Z",
+        "number": 39800,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/http/JacksonHttpMessageConvertersConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/jackson/JacksonAutoConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/http/HttpMessageConvertersAutoConfigurationTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/jackson/JacksonAutoConfigurationTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5oS_oC2gAoMDhmYTg5ZWJjMDUzMDU0ZjdhM2NjZGQzZDQzODI5ZTBiOTNiMzAyOA",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39800/commits/08fa89ebc053054f7a3ccdd3d43829e0b93b3028"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39783,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39783",
+                "title": "Configure a suitable Jackson object pool when virtual threads are enabled",
+                "bodyHTML": "<p dir=\"auto\">The default pool uses <code class=\"notranslate\">ThreadLocal</code>s, which aren't a great fit when using virtual threads.</p>\n<p dir=\"auto\">See <a href=\"https://twitter.com/jkuipers/status/1762505881000808516\" rel=\"nofollow\">https://twitter.com/jkuipers/status/1762505881000808516</a></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39783",
+                "createdAt": "2024-02-28T11:48:30Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: declined"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Configure JpaBaseConfiguration with custom ManagedClassNameFilter",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39813",
+        "resourcePath": "/spring-projects/spring-boot/pull/39813",
+        "createdAt": "2024-03-01T07:21:59Z",
+        "number": 39813,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/orm/jpa/JpaBaseConfiguration.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/orm/jpa/AbstractJpaAutoConfigurationTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5oYDs92gAoMGMxOTc2ZDdiMTkxMDA5MzRlMjllNmEzNTIwYmU5MTEzMGFmZTBmMw",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39813/commits/0c1976d7b19100934e29e6a3520be91130afe0f3"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 29193,
+                "url": "https://github.com/spring-projects/spring-boot/issues/29193",
+                "title": "Configure the auto-configured LocalContainerEntityManagerFactoryBean with any ManagedClassNameFilter beans",
+                "bodyHTML": "<p dir=\"auto\">Hi,</p>\n<p dir=\"auto\">I would like to request for <code class=\"notranslate\">@EntityScan</code> to be able to provide the ability to scan for specific entities class, rather than based on package.  E.g <code class=\"notranslate\">@EntityScan(classes={\"com.aa.ClassA\", \"com.aa.ClassB\"))</code> will only scan for these 2 classes and other classes in the same package will NOT be scan.<br>\nSearching internet shows many people asking for such capabilities and end up  having to write some codes to circumvent this.<br>\nAdding such capabilities made life easy for developers</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/29193",
+                "createdAt": "2021-12-31T06:58:34Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "server.error.include-binding-errors does not recognize MethodValidationResult exceptions",
+        "url": "https://github.com/spring-projects/spring-boot/pull/39865",
+        "resourcePath": "/spring-projects/spring-boot/pull/39865",
+        "createdAt": "2024-03-11T03:56:02Z",
+        "number": 39865,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/web/reactive/error/DefaultErrorAttributes.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/main/java/org/springframework/boot/web/servlet/error/DefaultErrorAttributes.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/test/java/org/springframework/boot/web/reactive/error/DefaultErrorAttributesTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot/src/test/java/org/springframework/boot/web/servlet/error/DefaultErrorAttributesTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5pMTJ82gAoYzZmNTljMGViZTNjNTljNGYxZDQ3Njc3NzhiNzA5ZTJkNDI5MTI3Ng",
+                "url": "https://github.com/spring-projects/spring-boot/pull/39865/commits/c6f59c0ebe3c59c4f1d4767778b709e2d4291276"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 39858,
+                "url": "https://github.com/spring-projects/spring-boot/issues/39858",
+                "title": "server.error.include-binding-errors does not recognize MethodValidationResult exceptions",
+                "bodyHTML": "<p dir=\"auto\"><code class=\"notranslate\">DefaultErrorAttributes</code> recognizes <code class=\"notranslate\">BindingResult</code> exceptions such as <code class=\"notranslate\">MethodArgumentNotValidException</code>, and adds an \"errors\" field to the response. This is further controlled with the property <code class=\"notranslate\">server.error.include-binding-errors</code>.</p>\n<p dir=\"auto\">As of Spring Framework 6.1, <a href=\"https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-validation.html\" rel=\"nofollow\">built-in method validation</a> can raise <code class=\"notranslate\">HandlerMethodValidationException</code> instead when there are method parameter constraints. Beyond web endpoints, any Spring component with a validation proxy can raise <code class=\"notranslate\">MethodValidationException</code>. Both implement <code class=\"notranslate\">MethodValidationResult</code>.</p>\n<p dir=\"auto\"><code class=\"notranslate\">BindingResult</code> includes errors for a single method parameter (command object), while <code class=\"notranslate\">MethodValidationResult</code> includes errors for all validated method parameters, either <code class=\"notranslate\">ParameterValidationResult</code> (for constraints directly on method parameter) or <code class=\"notranslate\">ParameterErrors</code> (constraints on properties of command object). The latter is the equivalent of a <code class=\"notranslate\">BindingResult</code> for the method parameter when method validation is used.</p>\n<p dir=\"auto\"><code class=\"notranslate\">DefaultErrorAttributes</code> should support exceptions of type <code class=\"notranslate\">MethodValidationResult</code> in addition to <code class=\"notranslate\">BindingResult</code>. I think <code class=\"notranslate\">server.error.include-binding-errors</code> could be extended to cover errors for all parameters, but it should at least properly handle and include any <code class=\"notranslate\">ParameterErrors</code>, or otherwise there is no \"errors\" field at all as reported in <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"2175416591\" data-permission-text=\"Title is private\" data-url=\"https://github.com/spring-projects/spring-framework/issues/32396\" data-hovercard-type=\"issue\" data-hovercard-url=\"/spring-projects/spring-framework/issues/32396/hovercard\" href=\"https://github.com/spring-projects/spring-framework/issues/32396\">spring-projects/spring-framework#32396</a>.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/39858",
+                "createdAt": "2024-03-08T12:17:17Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: bug"
+                      }
+                    },
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Correct document about spring.jpa.generate-ddl and add tests",
+        "url": "https://github.com/spring-projects/spring-boot/pull/40185",
+        "resourcePath": "/spring-projects/spring-boot/pull/40185",
+        "createdAt": "2024-04-07T09:56:15Z",
+        "number": 40185,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaAutoConfigurationTests.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-docs/src/docs/antora/modules/reference/pages/data/sql.adoc"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5r7gCQ2gAoYzNiNmU4N2ViMTY4MWY5ZGI0ODRlZmU5NzUxMmE4YTBhOGRhMzRkYw",
+                "url": "https://github.com/spring-projects/spring-boot/pull/40185/commits/c3b6e87eb1681f9db484efe97512a8a0a8da34dc"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 40177,
+                "url": "https://github.com/spring-projects/spring-boot/issues/40177",
+                "title": "Simplify JPA DDL properties and auto-configuration",
+                "bodyHTML": "<p dir=\"auto\">In Spring Boot 2, having the<code class=\"notranslate\">spring.jpa.generate-ddl</code> property set to <code class=\"notranslate\">true</code> did not perform any updates as long as the corresponding hibernate properties (<code class=\"notranslate\">hibernate.hbm2ddl.auto</code>) were not explicitly set. When updating to Spring Boot 3, the same does not apply; the schema update does take place and the Hibernate sql statement is printed to the logs (<code class=\"notranslate\">show-sql=true</code>). Here's a git repo where the issue can be demonstrated. Steps to duplicate are in the README.</p>\n<p dir=\"auto\">Hibernate Java Docs also indicate that if no value is provided, the default for <code class=\"notranslate\">hibernate.hbm2ddl.auto</code> is <code class=\"notranslate\">none</code></p>\n<p dir=\"auto\"><a href=\"https://github.com/nateha1984/ubiquitous-spork\">https://github.com/nateha1984/ubiquitous-spork</a></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/40177",
+                "createdAt": "2024-04-05T21:00:37Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "type: enhancement"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Encode JSON string in Pulsar auth params",
+        "url": "https://github.com/spring-projects/spring-boot/pull/40493",
+        "resourcePath": "/spring-projects/spring-boot/pull/40493",
+        "createdAt": "2024-04-23T23:16:04Z",
+        "number": 40493,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/pulsar/PulsarPropertiesMapper.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-autoconfigure/src/test/java/org/springframework/boot/autoconfigure/pulsar/PulsarPropertiesMapperTests.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5tiDNU2gAoZGYxODQ1YzRiYWExZDY3MDdjNmUwNjU3Y2Q3YzlkNDYyNDVmNTcwZg",
+                "url": "https://github.com/spring-projects/spring-boot/pull/40493/commits/df1845c4baa1d6707c6e0657cd7c9d46245f570f"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 40492,
+                "url": "https://github.com/spring-projects/spring-boot/issues/40492",
+                "title": "PulsarPropertiesMapper.getAuthenticationParamsJson ",
+                "bodyHTML": "<p dir=\"auto\"><a class=\"user-mention notranslate\" data-hovercard-type=\"user\" data-hovercard-url=\"/users/onobc/hovercard\" data-octo-click=\"hovercard-link-click\" data-octo-dimensions=\"link_type:self\" href=\"https://github.com/onobc\">@onobc</a><br>\n<a href=\"https://github.com/spring-projects/spring-boot/blob/6e37567a9d9932fdecd8ace18bb28a570e0827a9/spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/pulsar/PulsarPropertiesMapper.java#L135\">PulsarPropertiesMapper.getAuthenticationParamsJson</a>  does not return a proper Json encoded in String<br>\nafter this change <a class=\"commit-link\" data-hovercard-type=\"commit\" data-hovercard-url=\"https://github.com/spring-projects/spring-boot/commit/41ed4d6cf4c5e316f236c99ce59cf7ddfa48ee89/hovercard\" href=\"https://github.com/spring-projects/spring-boot/commit/41ed4d6cf4c5e316f236c99ce59cf7ddfa48ee89\"><tt>41ed4d6</tt></a> because values are not properly encoded.</p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/40492",
+                "createdAt": "2024-04-23T12:43:51Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: superseded"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Code inclusion in Jersey documentation is broken",
+        "url": "https://github.com/spring-projects/spring-boot/pull/40629",
+        "resourcePath": "/spring-projects/spring-boot/pull/40629",
+        "createdAt": "2024-05-07T06:35:32Z",
+        "number": 40629,
+        "mergeCommit": null,
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "spring-boot-project/spring-boot-docs/src/docs/antora/modules/how-to/pages/jersey.adoc"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAGAU1s5ut41x2gAoMTE5YmE2YjQ0N2RiZDE1ZGE0NGIyODNkODFhOTYzYjMyZTRlNGU5OQ",
+                "url": "https://github.com/spring-projects/spring-boot/pull/40629/commits/119ba6b447dbd15da44b283d81a963b32e4e4e99"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 40628,
+                "url": "https://github.com/spring-projects/spring-boot/issues/40628",
+                "title": "Typo: \"include-code\" is written as \"includ-code\" to link the source code of JerseyConfig in jersey.adoc",
+                "bodyHTML": "<p dir=\"auto\">There is typo: <code class=\"notranslate\">includ-code</code>. It must be <code class=\"notranslate\">include-code</code> to link the source code properly</p>\n<p dir=\"auto\"></p><div class=\"Box Box--condensed my-2\">\n  <div class=\"Box-header f6\">\n    <p class=\"mb-0 text-bold\">\n      <a href=\"https://github.com/spring-projects/spring-boot/blob/e954afdc2e8b1956d10671bf5d125f39f1bebb50/spring-boot-project/spring-boot-docs/src/docs/antora/modules/how-to/pages/jersey.adoc?plain=1#L26\">spring-boot/spring-boot-project/spring-boot-docs/src/docs/antora/modules/how-to/pages/jersey.adoc</a>\n    </p>\n    <p class=\"mb-0 color-fg-muted\">\n         Line 26\n      in\n      <a data-pjax=\"true\" class=\"commit-tease-sha Link--inTextBlock\" href=\"/spring-projects/spring-boot/commit/e954afdc2e8b1956d10671bf5d125f39f1bebb50\">e954afd</a>\n    </p>\n  </div>\n  <div itemprop=\"text\" class=\"Box-body p-0 blob-wrapper blob-wrapper-embedded data\">\n    <table class=\"highlight tab-size mb-0 js-file-line-container\" data-tab-size=\"8\" data-paste-markdown-skip=\"\">\n\n        <tbody><tr class=\"border-0\">\n          <td id=\"L26\" class=\"blob-num border-0 px-3 py-0 color-bg-default\" data-line-number=\"26\"></td>\n          <td id=\"LC26\" class=\"blob-code border-0 px-3 py-0 color-bg-default blob-code-inner js-file-line\"> includ-code::alongsideanotherwebframework/JerseyConfig[] </td>\n        </tr>\n    </tbody></table>\n  </div>\n</div>\n<p></p>",
+                "resourcePath": "/spring-projects/spring-boot/issues/40628",
+                "createdAt": "2024-05-07T06:23:18Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "status: duplicate"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+]

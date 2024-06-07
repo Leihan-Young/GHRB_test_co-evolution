@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PopInflightMessageCounter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-broker 5.1.3-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.broker.processor</a> &gt; <span class="el_source">PopInflightMessageCounter.java</span></div><h1>PopInflightMessageCounter.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.rocketmq.broker.processor;
+
+import org.apache.rocketmq.broker.BrokerController;
+import org.apache.rocketmq.common.Pair;
+import org.apache.rocketmq.common.constant.LoggerName;
+import org.apache.rocketmq.logging.org.slf4j.Logger;
+import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+import org.apache.rocketmq.store.pop.PopCheckPoint;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+public class PopInflightMessageCounter {
+<span class="fc" id="L32">    private static final Logger log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);</span>
+
+    private static final String TOPIC_GROUP_SEPARATOR = &quot;@&quot;;
+<span class="fc" id="L35">    private final Map&lt;String /* topic@group */, Map&lt;Integer /* queueId */, AtomicLong&gt;&gt; topicInFlightMessageNum =</span>
+        new ConcurrentHashMap&lt;&gt;(512);
+    private final BrokerController brokerController;
+
+<span class="fc" id="L39">    public PopInflightMessageCounter(BrokerController brokerController) {</span>
+<span class="fc" id="L40">        this.brokerController = brokerController;</span>
+<span class="fc" id="L41">    }</span>
+
+    public void incrementInFlightMessageNum(String topic, String group, int queueId, int num) {
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if (num &lt;= 0) {</span>
+<span class="nc" id="L45">            return;</span>
+        }
+<span class="fc" id="L47">        topicInFlightMessageNum.compute(buildKey(topic, group), (key, queueNum) -&gt; {</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">            if (queueNum == null) {</span>
+<span class="fc" id="L49">                queueNum = new ConcurrentHashMap&lt;&gt;(8);</span>
+            }
+<span class="fc" id="L51">            queueNum.compute(queueId, (queueIdKey, counter) -&gt; {</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">                if (counter == null) {</span>
+<span class="fc" id="L53">                    return new AtomicLong(num);</span>
+                }
+<span class="nc bnc" id="L55" title="All 2 branches missed.">                if (counter.addAndGet(num) &lt;= 0) {</span>
+<span class="nc" id="L56">                    return null;</span>
+                }
+<span class="nc" id="L58">                return counter;</span>
+            });
+<span class="fc" id="L60">            return queueNum;</span>
+        });
+<span class="fc" id="L62">    }</span>
+
+    public void decrementInFlightMessageNum(String topic, String group, long popTime, int qId, int delta) {
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (popTime &lt; this.brokerController.getShouldStartTime()) {</span>
+<span class="fc" id="L66">            return;</span>
+        }
+<span class="fc" id="L68">        decrementInFlightMessageNum(topic, group, qId, delta);</span>
+<span class="fc" id="L69">    }</span>
+
+    public void decrementInFlightMessageNum(PopCheckPoint checkPoint) {
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (checkPoint.getPopTime() &lt; this.brokerController.getShouldStartTime()) {</span>
+<span class="nc" id="L73">            return;</span>
+        }
+<span class="fc" id="L75">        decrementInFlightMessageNum(checkPoint.getTopic(), checkPoint.getCId(), checkPoint.getQueueId(), 1);</span>
+<span class="fc" id="L76">    }</span>
+
+    private void decrementInFlightMessageNum(String topic, String group, int queueId, int delta) {
+<span class="fc" id="L79">        topicInFlightMessageNum.computeIfPresent(buildKey(topic, group), (key, queueNum) -&gt; {</span>
+<span class="fc" id="L80">            queueNum.computeIfPresent(queueId, (queueIdKey, counter) -&gt; {</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">                if (counter.addAndGet(-delta) &lt;= 0) {</span>
+<span class="fc" id="L82">                    return null;</span>
+                }
+<span class="fc" id="L84">                return counter;</span>
+            });
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            if (queueNum.isEmpty()) {</span>
+<span class="fc" id="L87">                return null;</span>
+            }
+<span class="fc" id="L89">            return queueNum;</span>
+        });
+<span class="fc" id="L91">    }</span>
+
+    public void clearInFlightMessageNumByGroupName(String group) {
+<span class="nc" id="L94">        Set&lt;String&gt; topicGroupKey = this.topicInFlightMessageNum.keySet();</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        for (String key : topicGroupKey) {</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            if (key.contains(group)) {</span>
+<span class="nc" id="L97">                Pair&lt;String, String&gt; topicAndGroup = splitKey(key);</span>
+<span class="nc bnc" id="L98" title="All 4 branches missed.">                if (topicAndGroup != null &amp;&amp; topicAndGroup.getObject2().equals(group)) {</span>
+<span class="nc" id="L99">                    this.topicInFlightMessageNum.remove(key);</span>
+<span class="nc" id="L100">                    log.info(&quot;PopInflightMessageCounter#clearInFlightMessageNumByGroupName: clean by group, topic={}, group={}&quot;,</span>
+<span class="nc" id="L101">                        topicAndGroup.getObject1(), topicAndGroup.getObject2());</span>
+                }
+            }
+<span class="nc" id="L104">        }</span>
+<span class="nc" id="L105">    }</span>
+
+    public void clearInFlightMessageNumByTopicName(String topic) {
+<span class="nc" id="L108">        Set&lt;String&gt; topicGroupKey = this.topicInFlightMessageNum.keySet();</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        for (String key : topicGroupKey) {</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">            if (key.contains(topic)) {</span>
+<span class="nc" id="L111">                Pair&lt;String, String&gt; topicAndGroup = splitKey(key);</span>
+<span class="nc bnc" id="L112" title="All 4 branches missed.">                if (topicAndGroup != null &amp;&amp; topicAndGroup.getObject1().equals(topic)) {</span>
+<span class="nc" id="L113">                    this.topicInFlightMessageNum.remove(key);</span>
+<span class="nc" id="L114">                    log.info(&quot;PopInflightMessageCounter#clearInFlightMessageNumByTopicName: clean by topic, topic={}, group={}&quot;,</span>
+<span class="nc" id="L115">                        topicAndGroup.getObject1(), topicAndGroup.getObject2());</span>
+                }
+            }
+<span class="nc" id="L118">        }</span>
+<span class="nc" id="L119">    }</span>
+
+    public void clearInFlightMessageNum(String topic, String group, int queueId) {
+<span class="nc" id="L122">        topicInFlightMessageNum.computeIfPresent(buildKey(topic, group), (key, queueNum) -&gt; {</span>
+<span class="nc" id="L123">            queueNum.computeIfPresent(queueId, (queueIdKey, counter) -&gt; null);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            if (queueNum.isEmpty()) {</span>
+<span class="nc" id="L125">                return null;</span>
+            }
+<span class="nc" id="L127">            return queueNum;</span>
+        });
+<span class="nc" id="L129">    }</span>
+
+    public long getGroupPopInFlightMessageNum(String topic, String group, int queueId) {
+<span class="fc" id="L132">        Map&lt;Integer /* queueId */, AtomicLong&gt; queueCounter = topicInFlightMessageNum.get(buildKey(topic, group));</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        if (queueCounter == null) {</span>
+<span class="fc" id="L134">            return 0;</span>
+        }
+<span class="fc" id="L136">        AtomicLong counter = queueCounter.get(queueId);</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        if (counter == null) {</span>
+<span class="nc" id="L138">            return 0;</span>
+        }
+<span class="fc" id="L140">        return Math.max(0, counter.get());</span>
+    }
+
+    private static Pair&lt;String /* topic */, String /* group */&gt; splitKey(String key) {
+<span class="nc" id="L144">        String[] strings = key.split(TOPIC_GROUP_SEPARATOR);</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (strings.length != 2) {</span>
+<span class="nc" id="L146">            return null;</span>
+        }
+<span class="nc" id="L148">        return new Pair&lt;&gt;(strings[0], strings[1]);</span>
+    }
+
+    private static String buildKey(String topic, String group) {
+<span class="fc" id="L152">        return topic + TOPIC_GROUP_SEPARATOR + group;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

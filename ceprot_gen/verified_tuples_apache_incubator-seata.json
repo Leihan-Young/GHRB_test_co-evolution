@@ -2487,7 +2487,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testParse() { assertEquals(\"0\", DurationUtil.parse(\"d\"));\n assertEquals(\"0\", DurationUtil.parse(\"h\"));\n assertEquals(\"0\", DurationUtil.parse(\"m\"));\n assertEquals(\"s\"));\n assertEquals(\"ms\"));\n\n        Assertions.assertEquals(\"0\", DurationUtil.parse(\"8\").getSeconds());\n        Assertions.assertEquals(0L, DurationUtil.parse(\"8s\").getSeconds());\n        Assertions.assertEquals(480L, DurationUtil.parse(\"8m\").getSeconds());\n        Assertions.assertEquals(28800L, DurationUtil.parse(\"8h\")."
+    "CEPROT_gen_test_tgt": "@Test\n    public void testParse() {n        Assertions.assertNull(DurationUtil.parse(\"d\"));\n        Assertions.assertNull(DurationUtil.parse(\"h\"));\n        Assertions.assertNull(DurationUtil.parse(\"m\"));\n        Assertions.assertNull(DurationUtil.parse(\"s\"));\n        Assertions.assertNull(DurationUtil.parse(\"ms\"));\n\n        Assertions.assertEquals(-1L, DurationUtil.parse(\"\").getSeconds());\n        Assertions.assertEquals(0L, DurationUtil.parse(\"8\").getSeconds());\n        Assertions.assertEquals(0L, Duration"
   },
   "2": {
     "commit_src": "9d5ff402d3b25f7e360cb6ebae40148d23dfdf72",
@@ -4977,7 +4977,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testParseThrowException() { assertThat(Duration.class, is(Duration.class))->DurationUtil.parse(\"a\")); assertThat(Duration.class, is(Duration.class))->DurationUtil.parse(\"as\")); assertThat(Duration.class, is(Duration.class))->DurationUtil.parse(\"a\"); assertThat(Duration.class, is(Duration.class))->DurationUtil.parse(\"as\"); assertThat(Duration.class, is(Duration.class)) -> DurationUtil.parse(\"as\")); assertThat(Duration.class, is(Duration.class)); }\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testParseThrowException() {n        Assertions.assertThrows(UnsupportedOperationException.class,\n                () -> DurationUtil.parse(\"a\"));\n\n        Assertions.assertThrows(UnsupportedOperationException.class,\n                () -> DurationUtil.parse(\"as\"));\n\n    }\n    @Test\n    public void testParseThrowException() {n        Assertions.assertThrows(UnsupportedOperationException.class,\n                () -> DurationUtil.parse(\"a\"));\n\n        Assertions.assertThrows(UnsupportedOperationException.class,\n                () -> DurationUtil.parse(\"as\"));\n\n    }\n"
   },
   "3": {
     "commit_src": "f1be649562e8cf5edf9b5bf911a528187f7e439a",
@@ -7068,7 +7068,7 @@
         "delete"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void test_handleRetryRollbacking() throws TransactionException, InterruptedException { \n\n        String xid = core.begin(applicationId, txServiceGroup, txName, 10);\n        Long branchId = core.branchRegister(BranchType.AT, \"abcd\", clientId, xid, applicationData, lockKeys_2);\n\n        Assertions.assertNotNull(branchId);\n\n        Thread.sleep(100);\n defaultCoordinator.timeoutCheck();\n        defaultCoordinator.handleRetryRollbacking();\n\n        GlobalSession globalSession = SessionHolder.findGlobalSession(xid);\n        Assertions.assertNull(globalSession);\n\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void test_handleRetryRollbacking() throws TransactionException, InterruptedException {\n\n        String xid = core.begin(applicationId, txServiceGroup, txName, 10);\n        Long branchId = core.branchRegister(BranchType.AT, \"abcd\", clientId, xid, applicationData, lockKeys_2);\n\n        Assertions.assertNotNull(branchId);\n\n        Thread.sleep(100);\n defaultCoordinator.timeoutCheck();\n        defaultCoordinator.handleRetryRollbacking();\n\n        GlobalSession globalSession = SessionHolder.findGlobalSession(xid);\n        Assertions.assertNull(globalSession);\n"
   },
   "4": {
     "commit_src": "bbbbec7d74148fbe87ac7556293e100d35e81c9d",
@@ -7082,7 +7082,7 @@
     "test_tgt": [
       ".io.seata.integration.tx.api.interceptor.parser.GlobalTransactionalInterceptorParserTest#parserInterfaceToProxy"
     ],
-    "test_src_code": "",
+    "test_src_code": "    @Test\n    void parserInterfaceToProxy() throws Exception {\n\n        //given\n        BusinessImpl business = new BusinessImpl();\n\n        GlobalTransactionalInterceptorParser globalTransactionalInterceptorParser = new GlobalTransactionalInterceptorParser();\n\n        //when\n        ProxyInvocationHandler proxyInvocationHandler = globalTransactionalInterceptorParser.parserInterfaceToProxy(business);\n\n        //then\n        Assertions.assertNotNull(proxyInvocationHandler);\n\n\n    }\n",
     "focal_path": "integration-tx-api/src/main/java/io/seata/integration/tx/api/interceptor/parser/GlobalTransactionalInterceptorParser.java#parserInterfaceToProxy",
     "focal_src": "    /**\n     * @param target\n     * @return\n     * @throws Exception\n     * @see GlobalTransactional // TM annotation\n     * <p>\n     * GlobalLock:\n     * @see GlobalLock // GlobalLock annotation\n     */\n    @Override\n    public ProxyInvocationHandler parserInterfaceToProxy(Object target) throws Exception {\n        Class<?> serviceInterface = DefaultTargetClassParser.get().findTargetClass(target);\n        Class<?>[] interfacesIfJdk = DefaultTargetClassParser.get().findInterfaces(target);\n\n        if (existsAnnotation(serviceInterface) || existsAnnotation(interfacesIfJdk)) {\n            ProxyInvocationHandler proxyInvocationHandler = new GlobalTransactionalInterceptorHandler(FailureHandlerHolder.getFailureHandler(), methodsToProxy);\n            ConfigurationCache.addConfigListener(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION, (ConfigurationChangeListener) proxyInvocationHandler);\n            return proxyInvocationHandler;\n        }\n\n        return null;\n    }\n",
     "focal_tgt": "    /**\n     * @param target\n     * @return\n     * @throws Exception\n     * @see GlobalTransactional // TM annotation\n     * <p>\n     * GlobalLock:\n     * @see GlobalLock // GlobalLock annotation\n     */\n    @Override\n    public ProxyInvocationHandler parserInterfaceToProxy(Object target, String objectName) throws Exception {\n        Class<?> serviceInterface = DefaultTargetClassParser.get().findTargetClass(target);\n        Class<?>[] interfacesIfJdk = DefaultTargetClassParser.get().findInterfaces(target);\n\n        if (existsAnnotation(serviceInterface) || existsAnnotation(interfacesIfJdk)) {\n            ProxyInvocationHandler proxyInvocationHandler = new GlobalTransactionalInterceptorHandler(FailureHandlerHolder.getFailureHandler(), methodsToProxy);\n            ConfigurationCache.addConfigListener(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION, (ConfigurationChangeListener) proxyInvocationHandler);\n            return proxyInvocationHandler;\n        }\n\n        return null;\n    }\n",
@@ -8094,6 +8094,6 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Override\n    public ProxyInvocationHandler parserInterfaceToProxy(Object target, String objectName)throws Exception { ProxyInvocationHandler proxyInvocationHandler = new GlobalTransactionalInterceptorHandler(FailureHandlerHolder.getFailureHandler(), methodsToProxy); Assert.assertNotNull(proxyInvocationHandler); }\n    }\n    "
+    "CEPROT_gen_test_tgt": "@Test\n    void parserInterfaceToProxy()throws Exception { \n\n        //given\n        BusinessImpl business = new BusinessImpl();\n\n        GlobalTransactionalInterceptorParser globalTransactionalInterceptorParser = new GlobalTransactionalInterceptorParser();\n\n        //when\n        ProxyInvocationHandler proxyInvocationHandler = globalTransactionalInterceptorParser.parserInterfaceToProxy(business, null);\n\n        //then\n        Assertions.assertNotNull(proxyInvocationHandler);\n\n\n    }\n\n    }\n"
   }
 }

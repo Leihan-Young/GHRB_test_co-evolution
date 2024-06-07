@@ -1,0 +1,657 @@
+{
+  "1": {
+    "cov_test_src_focal_src": {
+      "pulsar-functions/utils/src/main/java/org/apache/pulsar/functions/utils/FunctionCommon.java#downloadFromHttpUrl": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "32"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-functions/utils/src/main/java/org/apache/pulsar/functions/utils/FunctionCommon.java#downloadFromHttpUrl": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "65"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "12"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "2": {
+    "cov_test_src_focal_src": {
+      "pulsar-functions/instance/src/main/java/org/apache/pulsar/functions/source/TopicSchema.java#TopicSchema": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-functions/instance/src/main/java/org/apache/pulsar/functions/source/TopicSchema.java#TopicSchema": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "17"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "3": {
+    "cov_test_src_focal_src": {
+      "pulsar-functions/runtime/src/main/java/org/apache/pulsar/functions/runtime/RuntimeUtils.java#getGoInstanceCmd": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "375"
+        },
+        "BRANCH": {
+          "missed": "31",
+          "covered": "35"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "91"
+        },
+        "COMPLEXITY": {
+          "missed": "31",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-functions/runtime/src/main/java/org/apache/pulsar/functions/runtime/RuntimeUtils.java#getGoInstanceCmd": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "390"
+        },
+        "BRANCH": {
+          "missed": "34",
+          "covered": "38"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "95"
+        },
+        "COMPLEXITY": {
+          "missed": "34",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "4": {
+    "cov_test_src_focal_src": {
+      "pulsar-functions/runtime/src/main/java/org/apache/pulsar/functions/runtime/RuntimeUtils.java#getGoInstanceCmd": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "341"
+        },
+        "BRANCH": {
+          "missed": "27",
+          "covered": "31"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "79"
+        },
+        "COMPLEXITY": {
+          "missed": "27",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-functions/runtime/src/main/java/org/apache/pulsar/functions/runtime/RuntimeUtils.java#getGoInstanceCmd": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "375"
+        },
+        "BRANCH": {
+          "missed": "31",
+          "covered": "35"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "91"
+        },
+        "COMPLEXITY": {
+          "missed": "31",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "5": {
+    "cov_test_src_focal_src": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/v2/Bookies.java#getBookieRackInfo": {
+        "INSTRUCTION": {
+          "missed": "15",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      },
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/v2/Bookies.java#deleteBookieRackInfo": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "6",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/v2/Bookies.java#getBookieRackInfo": {
+        "INSTRUCTION": {
+          "missed": "15",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      },
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/v2/Bookies.java#deleteBookieRackInfo": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "6",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/v2/Bookies.java#getBookieRackInfo": {
+        "INSTRUCTION": {
+          "missed": "15",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      },
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/v2/Bookies.java#deleteBookieRackInfo": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "6",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    }
+  },
+  "6": {
+    "cov_test_src_focal_src": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/compaction/CompactedTopicUtils.java#asyncReadCompactedEntries": {
+        "INSTRUCTION": {
+          "missed": "4",
+          "covered": "44"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "12"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/compaction/CompactedTopicUtils.java#asyncReadCompactedEntries": {
+        "INSTRUCTION": {
+          "missed": "4",
+          "covered": "45"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "12"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "7": {
+    "cov_test_src_focal_src": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSinkConfig.java#load": {
+        "INSTRUCTION": {
+          "missed": "16",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSinkConfig.java#load": {
+        "INSTRUCTION": {
+          "missed": "16",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "8": {
+    "cov_test_src_focal_src": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSinkConfig.java#load": {
+        "INSTRUCTION": {
+          "missed": "16",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSinkConfig.java#load": {
+        "INSTRUCTION": {
+          "missed": "16",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "9": {
+    "cov_test_src_focal_src": null,
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSinkConfig.java#load": {
+        "INSTRUCTION": {
+          "missed": "16",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "10": {
+    "cov_test_src_focal_src": null,
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSinkConfig.java#load": {
+        "INSTRUCTION": {
+          "missed": "16",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "11": {
+    "cov_test_src_focal_src": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSinkConfig.java#load": {
+        "INSTRUCTION": {
+          "missed": "16",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSinkConfig.java#load": {
+        "INSTRUCTION": {
+          "missed": "16",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": null
+  },
+  "12": {
+    "cov_test_src_focal_src": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSink.java#open": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "49"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSink.java#open": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "50"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSink.java#open": null
+    }
+  },
+  "13": {
+    "cov_test_src_focal_src": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/service/ConsistentHashingStickyKeyConsumerSelector.java#addConsumer": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "39"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "7"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_tgt_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/service/ConsistentHashingStickyKeyConsumerSelector.java#addConsumer": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "33"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_src_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/service/ConsistentHashingStickyKeyConsumerSelector.java#addConsumer": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "33"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  }
+}

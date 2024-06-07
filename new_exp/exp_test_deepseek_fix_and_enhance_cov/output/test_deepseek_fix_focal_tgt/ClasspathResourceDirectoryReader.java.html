@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClasspathResourceDirectoryReader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">shardingsphere-infra-util</a> &gt; <a href="index.source.html" class="el_package">org.apache.shardingsphere.infra.util.directory</a> &gt; <span class="el_source">ClasspathResourceDirectoryReader.java</span></div><h1>ClasspathResourceDirectoryReader.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.shardingsphere.infra.util.directory;
+
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.stream.Stream;
+
+/**
+ * Classpath resource directory reader.
+ */
+@RequiredArgsConstructor
+public class ClasspathResourceDirectoryReader {
+    
+<span class="fc" id="L51">    private static final Collection&lt;String&gt; JAR_URL_PROTOCOLS = new HashSet&lt;&gt;(Arrays.asList(&quot;jar&quot;, &quot;war&quot;, &quot;zip&quot;, &quot;wsjar&quot;, &quot;vfszip&quot;));</span>
+    
+    /**
+     * Judge whether a resource is a directory or not.
+     *
+     * @param name resource name
+     * @return true if the resource is a directory; false if the resource does not exist, is not a directory, or it cannot be determined if the resource is a directory or not.
+     */
+    public static boolean isDirectory(final String name) {
+<span class="nc" id="L60">        return isDirectory(Thread.currentThread().getContextClassLoader(), name);</span>
+    }
+    
+    /**
+     * Judge whether a resource is a directory or not.
+     *
+     * @param classLoader class loader
+     * @param name resource name
+     * @return true if the resource is a directory; false if the resource does not exist, is not a directory, or it cannot be determined if the resource is a directory or not.
+     */
+<span class="nc" id="L70">    @SneakyThrows(URISyntaxException.class)</span>
+    public static boolean isDirectory(final ClassLoader classLoader, final String name) {
+<span class="nc" id="L72">        URL resourceUrl = classLoader.getResource(name);</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (null == resourceUrl) {</span>
+<span class="nc" id="L74">            return false;</span>
+        }
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (JAR_URL_PROTOCOLS.contains(resourceUrl.getProtocol())) {</span>
+<span class="nc" id="L77">            JarFile jarFile = getJarFile(resourceUrl);</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            if (null == jarFile) {</span>
+<span class="nc" id="L79">                return false;</span>
+            }
+<span class="nc" id="L81">            return jarFile.getJarEntry(name).isDirectory();</span>
+        } else {
+<span class="nc" id="L83">            return Files.isDirectory(Paths.get(resourceUrl.toURI()));</span>
+        }
+    }
+    
+    /**
+     * Return a lazily populated Stream that contains the names of resources in the provided directory. The Stream is recursive, meaning it includes resources from all subdirectories as well.
+     * &lt;p&gt;When the {@code directory} parameter is a file, the method can still work.&lt;/p&gt;
+     *
+     * @param directory directory
+     * @return resource iterator.
+     * @apiNote This method must be used within a try-with-resources statement or similar
+     *         control structure to ensure that the stream's open resources are closed
+     *         promptly after the stream's operations have completed.
+     */
+    public static Stream&lt;String&gt; read(final String directory) {
+<span class="nc" id="L98">        return read(Thread.currentThread().getContextClassLoader(), directory);</span>
+    }
+    
+    /**
+     * Return a lazily populated Stream that contains the names of resources in the provided directory. The Stream is recursive, meaning it includes resources from all subdirectories as well.
+     * &lt;p&gt;When the {@code directory} parameter is a file, the method can still work.&lt;/p&gt;
+     *
+     * @param classLoader class loader
+     * @param directory directory
+     * @return resource iterator.
+     * @apiNote This method must be used within a try-with-resources statement or similar
+     *         control structure to ensure that the stream's open resources are closed
+     *         promptly after the stream's operations have completed.
+     */
+<span class="nc" id="L112">    @SneakyThrows(IOException.class)</span>
+    public static Stream&lt;String&gt; read(final ClassLoader classLoader, final String directory) {
+<span class="fc" id="L114">        Enumeration&lt;URL&gt; directoryUrlEnumeration = classLoader.getResources(directory);</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        if (null == directoryUrlEnumeration) {</span>
+<span class="nc" id="L116">            return Stream.empty();</span>
+        }
+<span class="fc" id="L118">        return Collections.list(directoryUrlEnumeration).stream().flatMap(directoryUrl -&gt; {</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">            if (JAR_URL_PROTOCOLS.contains(directoryUrl.getProtocol())) {</span>
+<span class="nc" id="L120">                return readDirectoryInJar(directory, directoryUrl);</span>
+            } else {
+<span class="fc" id="L122">                return readDirectoryInFileSystem(directory, directoryUrl);</span>
+            }
+        });
+    }
+    
+    private static Stream&lt;String&gt; readDirectoryInJar(final String directory, final URL directoryUrl) {
+<span class="nc" id="L128">        JarFile jar = getJarFile(directoryUrl);</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (null == jar) {</span>
+<span class="nc" id="L130">            return Stream.empty();</span>
+        }
+<span class="nc bnc" id="L132" title="All 4 branches missed.">        return jar.stream().filter(each -&gt; each.getName().startsWith(directory) &amp;&amp; !each.isDirectory()).map(JarEntry::getName);</span>
+    }
+    
+<span class="nc" id="L135">    @SneakyThrows(IOException.class)</span>
+    private static JarFile getJarFile(final URL url) {
+<span class="nc" id="L137">        URL jarUrl = url;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (&quot;zip&quot;.equals(url.getProtocol())) {</span>
+<span class="nc" id="L139">            jarUrl = new URL(url.toExternalForm().replace(&quot;zip:/&quot;, &quot;jar:file:/&quot;));</span>
+        }
+<span class="nc" id="L141">        URLConnection urlConnection = jarUrl.openConnection();</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (!(urlConnection instanceof JarURLConnection)) {</span>
+<span class="nc" id="L143">            return null;</span>
+        }
+<span class="nc" id="L145">        return ((JarURLConnection) urlConnection).getJarFile();</span>
+    }
+    
+    /**
+     * Under the GraalVM Native Image, `com.oracle.svm.core.jdk.resources.NativeImageResourceFileSystem` does not autoload.
+     * This is mainly to align the behavior of `jdk.nio.zipfs.ZipFileSystem`,
+     * so ShardingSphere need to manually open and close the FileSystem corresponding to the `resource:/` scheme.
+     * For more background reference &lt;a href=&quot;https://github.com/oracle/graal/issues/7682&quot;&gt;oracle/graal#7682&lt;/a&gt;.
+     * Under the context of third-party dependencies such as Spring Framework OSS,
+     * `com.oracle.svm.core.jdk.resources.NativeImageResourceFileSystem` will be automatically created during the life cycle of the context,
+     * so additional determination is required.
+     *
+     * @param directory directory
+     * @param directoryUrl directory url
+     * @return stream of resource name
+     */
+<span class="nc" id="L161">    @SneakyThrows({IOException.class, URISyntaxException.class})</span>
+    private static Stream&lt;String&gt; readDirectoryInFileSystem(final String directory, final URL directoryUrl) {
+        try {
+<span class="fc" id="L164">            return loadFromDirectory(directory, directoryUrl);</span>
+<span class="nc" id="L165">        } catch (final FileSystemNotFoundException ignore) {</span>
+<span class="nc" id="L166">            FileSystem fileSystem = FileSystems.newFileSystem(directoryUrl.toURI(), Collections.emptyMap());</span>
+<span class="nc" id="L167">            return loadFromDirectory(directory, directoryUrl).onClose(() -&gt; {</span>
+                try {
+<span class="nc" id="L169">                    fileSystem.close();</span>
+<span class="nc" id="L170">                } catch (final IOException ex) {</span>
+<span class="nc" id="L171">                    throw new RuntimeException(ex);</span>
+<span class="nc" id="L172">                }</span>
+<span class="nc" id="L173">            });</span>
+        }
+    }
+    
+    private static Stream&lt;String&gt; loadFromDirectory(final String directory, final URL directoryUrl) throws URISyntaxException, IOException {
+<span class="fc" id="L178">        Path directoryPath = Paths.get(directoryUrl.toURI());</span>
+        // noinspection resource
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        Stream&lt;Path&gt; walkStream = Files.find(directoryPath, Integer.MAX_VALUE, (path, basicFileAttributes) -&gt; !basicFileAttributes.isDirectory(), FileVisitOption.FOLLOW_LINKS);</span>
+<span class="fc" id="L181">        return walkStream.map(path -&gt; directory + File.separator + path.subpath(directoryPath.getNameCount(), path.getNameCount()));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

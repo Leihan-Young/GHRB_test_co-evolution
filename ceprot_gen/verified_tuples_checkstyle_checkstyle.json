@@ -2154,7 +2154,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testMakeCheckFromName() { final String name = \"com.puppycrawl.tools.checkstyle.checks.naming.ConstantName\";\n        try {\n            factory.createModule(name);\n            assertWithMessage(\"Exception is expected\").fail();\n        }\n        catch (CheckstyleException ex) {\n            final Violation exceptionMessage = new Violation(1,\n                    Definitions.CHECKSTYLE_BUNDLE, UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE,\n                    new String[] {name, null}, null, factory.getClass(), null);\n            assertWithMessage(\"Invalid exception message\")\n               .that(ex.getMessage())\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testMakeCheckFromName() {\n        final String name = \"com.puppycrawl.tools.checkstyle.checks.naming.ConstantName\";\n        try {\n            factory.createModule(name);\n            assertWithMessage(\"Exception is expected\").fail();\n        }\n        catch (CheckstyleException ex) {\n            final Violation exceptionMessage = new Violation(1,\n                    Definitions.CHECKSTYLE_BUNDLE, UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE,\n                    new String[] {name, null}, null, factory.getClass(), null);\n            assertWithMessage(\"Invalid exception message"
   },
   "2": {
     "commit_src": "65655da48ab358df81d37532cca208969a0bbded",
@@ -4311,7 +4311,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testCreateModuleWithNonExistName() { final String[] names = {\"NonExistClassOne\", \"NonExistClassTwo\", };\n        for (String name : names) {\n try {\n                factory.createModule(name);\n                assertWithMessage(\"Exception is expected\").fail();\n            }\n            catch (CheckstyleException ex) {\n                final Violation exceptionMessage = new Violation(1,\n                    Definitions.CHECKSTYLE_BUNDLE, UNABLE_TO_INSTANTIATE_EXCEPTION_MESSAGE,\n                    new String[] {name, attemptedNames}, null, factory.getClass(), null);\n                assertWithMessage(\"Invalid exception message\")\n                   .that(ex.getMessage())\n"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testCreateModuleWithNonExistName() {\n        final String[] names = {\"NonExistClassOne\", \"NonExistClassTwo\", };\n        for (String name : names) {\n            try {\n                factory.createModule(name);\n                assertWithMessage(\"Exception is expected\").fail();\n            }\n            catch (CheckstyleException ex) {\n                final String attemptedNames = BASE_PACKAGE + PACKAGE_SEPARATOR + name\n                    + STRING_SEPARATOR + name + CHECK_SUFFIX + STRING_SEPARATOR\n                    + BASE_PACKAGE + PACKAGE_SEPARATOR + name + CHECK_SUFFIX;\n                final Violation exceptionMessage = new V"
   },
   "3": {
     "commit_src": "65655da48ab358df81d37532cca208969a0bbded",
@@ -5453,7 +5453,7 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testCreateObjectFromFullModuleNamesWithAmbiguousException() { final String barPackage = BASE_PACKAGE + \".packageobjectfactory.bar\";\n        final String fooPackage = BASE_PACKAGE + \".packageobjectfactory.foo\";\n        final PackageObjectFactory objectFactory = new PackageObjectFactory(\n                new LinkedHashSet<>(Arrays.asList(barPackage, fooPackage)), classLoader);\n        final String name = \"FooCheck\";\n try { final String optionalNames = barPackage + PACKAGE_SEPARATOR + name\n                    + STRING_SEPARATOR + fooPackage + PACKAGE_SEPARATOR + name;\n            assertWithMessage(\"Exception is expected\").fail();\n        }\n        catch (CheckstyleException ex) {"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testCreateObjectFromFullModuleNamesWithAmbiguousException() { final String barPackage = BASE_PACKAGE + \".packageobjectfactory.bar\";\n        final String fooPackage = BASE_PACKAGE + \".packageobjectfactory.foo\";\n        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();\n        final PackageObjectFactory objectFactory = new PackageObjectFactory(\n                new LinkedHashSet<>(Arrays.asList(barPackage, fooPackage)), classLoader);\n        final String name = \"FooCheck\";\n        try {\n            objectFactory.createModule(name);\n            assertWithMessage(\"Exception is expected\").fail();\n"
   },
   "4": {
     "commit_src": "65655da48ab358df81d37532cca208969a0bbded",
@@ -6595,6 +6595,6 @@
         "equal"
       ]
     ],
-    "CEPROT_gen_test_tgt": "@Test\n    public void testCreateObjectFromFullModuleNamesWithCantInstantiateException() { final String package1 = BASE_PACKAGE + \".wrong1\";\n final String package2 = BASE_PACKAGE + \".wrong2\";\n        final PackageObjectFactory objectFactory = new PackageObjectFactory(\n                new LinkedHashSet<>(Arrays.asList(package1, package2)), classLoader);\n        final String name = \"FooCheck\";\n        final String checkName = name + CHECK_SUFFIX;\n try {\n            objectFactory.createModule(name);\n            assertWithMessage(\"Exception is expected\").fail();\n        }\n        catch (CheckstyleException ex) { final String attemptedNames = package1 + PACKAGE_SEPARATOR + name + STRING_SEPARATOR"
+    "CEPROT_gen_test_tgt": "@Test\n    public void testCreateObjectFromFullModuleNamesWithCantInstantiateException() { final String package1 = BASE_PACKAGE + \".wrong1\";\n        final String package2 = BASE_PACKAGE + \".wrong2\";\n        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();\n        final PackageObjectFactory objectFactory = new PackageObjectFactory(\n                new LinkedHashSet<>(Arrays.asList(package1, package2)), classLoader);\n        final String name = \"FooCheck\";\n        final String checkName = name + CHECK_SUFFIX;\n        try {\n            objectFactory.createModule(name);\n            assertWithMessage(\"FooCheck"
   }
 }

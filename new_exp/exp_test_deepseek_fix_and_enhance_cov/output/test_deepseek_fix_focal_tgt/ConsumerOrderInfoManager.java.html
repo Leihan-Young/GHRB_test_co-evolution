@@ -1,0 +1,645 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConsumerOrderInfoManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-broker 5.1.1-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.broker.offset</a> &gt; <span class="el_source">ConsumerOrderInfoManager.java</span></div><h1>ConsumerOrderInfoManager.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.rocketmq.broker.offset;
+
+import com.alibaba.fastjson.annotation.JSONField;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import org.apache.rocketmq.broker.BrokerController;
+import org.apache.rocketmq.broker.BrokerPathConfigHelper;
+import org.apache.rocketmq.common.ConfigManager;
+import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.common.constant.LoggerName;
+import org.apache.rocketmq.logging.org.slf4j.Logger;
+import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
+import org.apache.rocketmq.remoting.protocol.header.ExtraInfoUtil;
+
+public class ConsumerOrderInfoManager extends ConfigManager {
+
+<span class="fc" id="L42">    private static final Logger log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);</span>
+    private static final String TOPIC_GROUP_SEPARATOR = &quot;@&quot;;
+    private static final long CLEAN_SPAN_FROM_LAST = 24 * 3600 * 1000;
+
+<span class="pc" id="L46">    private ConcurrentHashMap&lt;String/* topic@group*/, ConcurrentHashMap&lt;Integer/*queueId*/, OrderInfo&gt;&gt; table =</span>
+        new ConcurrentHashMap&lt;&gt;(128);
+
+    private transient ConsumerOrderInfoLockManager consumerOrderInfoLockManager;
+    private transient BrokerController brokerController;
+
+<span class="fc" id="L52">    public ConsumerOrderInfoManager() {</span>
+<span class="fc" id="L53">    }</span>
+
+<span class="nc" id="L55">    public ConsumerOrderInfoManager(BrokerController brokerController) {</span>
+<span class="nc" id="L56">        this.brokerController = brokerController;</span>
+<span class="nc" id="L57">        this.consumerOrderInfoLockManager = new ConsumerOrderInfoLockManager(brokerController);</span>
+<span class="nc" id="L58">    }</span>
+
+    public ConcurrentHashMap&lt;String, ConcurrentHashMap&lt;Integer, OrderInfo&gt;&gt; getTable() {
+<span class="fc" id="L61">        return table;</span>
+    }
+
+    public void setTable(ConcurrentHashMap&lt;String, ConcurrentHashMap&lt;Integer, OrderInfo&gt;&gt; table) {
+<span class="fc" id="L65">        this.table = table;</span>
+<span class="fc" id="L66">    }</span>
+
+    protected static String buildKey(String topic, String group) {
+<span class="fc" id="L69">        return topic + TOPIC_GROUP_SEPARATOR + group;</span>
+    }
+
+    protected static String[] decodeKey(String key) {
+<span class="nc" id="L73">        return key.split(TOPIC_GROUP_SEPARATOR);</span>
+    }
+
+    private void updateLockFreeTimestamp(String topic, String group, int queueId, OrderInfo orderInfo) {
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (consumerOrderInfoLockManager != null) {</span>
+<span class="nc" id="L78">            consumerOrderInfoLockManager.updateLockFreeTimestamp(topic, group, queueId, orderInfo);</span>
+        }
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * update the message list received
+     *
+     * @param isRetry is retry topic or not
+     * @param topic topic
+     * @param group group
+     * @param queueId queue id of message
+     * @param popTime the time of pop message
+     * @param invisibleTime invisible time
+     * @param msgQueueOffsetList the queue offsets of messages
+     * @param orderInfoBuilder will append order info to this builder
+     */
+    public void update(String attemptId, boolean isRetry, String topic, String group, int queueId, long popTime, long invisibleTime,
+        List&lt;Long&gt; msgQueueOffsetList, StringBuilder orderInfoBuilder) {
+<span class="fc" id="L96">        String key = buildKey(topic, group);</span>
+<span class="fc" id="L97">        ConcurrentHashMap&lt;Integer/*queueId*/, OrderInfo&gt; qs = table.get(key);</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (qs == null) {</span>
+<span class="fc" id="L99">            qs = new ConcurrentHashMap&lt;&gt;(16);</span>
+<span class="fc" id="L100">            ConcurrentHashMap&lt;Integer/*queueId*/, OrderInfo&gt; old = table.putIfAbsent(key, qs);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">            if (old != null) {</span>
+<span class="nc" id="L102">                qs = old;</span>
+            }
+        }
+
+<span class="fc" id="L106">        OrderInfo orderInfo = qs.get(queueId);</span>
+
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        if (orderInfo != null) {</span>
+<span class="nc" id="L109">            OrderInfo newOrderInfo = new OrderInfo(attemptId, popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);</span>
+<span class="nc" id="L110">            newOrderInfo.mergeOffsetConsumedCount(orderInfo.attemptId, orderInfo.offsetList, orderInfo.offsetConsumedCount);</span>
+
+<span class="nc" id="L112">            orderInfo = newOrderInfo;</span>
+<span class="nc" id="L113">        } else {</span>
+<span class="fc" id="L114">            orderInfo = new OrderInfo(attemptId, popTime, invisibleTime, msgQueueOffsetList, System.currentTimeMillis(), 0);</span>
+        }
+<span class="fc" id="L116">        qs.put(queueId, orderInfo);</span>
+
+<span class="fc" id="L118">        Map&lt;Long, Integer&gt; offsetConsumedCount = orderInfo.offsetConsumedCount;</span>
+<span class="fc" id="L119">        int minConsumedTimes = Integer.MAX_VALUE;</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        if (offsetConsumedCount != null) {</span>
+<span class="nc" id="L121">            Set&lt;Long&gt; offsetSet = offsetConsumedCount.keySet();</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">            for (Long offset : offsetSet) {</span>
+<span class="nc" id="L123">                Integer consumedTimes = offsetConsumedCount.getOrDefault(offset, 0);</span>
+<span class="nc" id="L124">                ExtraInfoUtil.buildQueueOffsetOrderCountInfo(orderInfoBuilder, isRetry, queueId, offset, consumedTimes);</span>
+<span class="nc" id="L125">                minConsumedTimes = Math.min(minConsumedTimes, consumedTimes);</span>
+<span class="nc" id="L126">            }</span>
+
+<span class="nc bnc" id="L128" title="All 2 branches missed.">            if (offsetConsumedCount.size() != orderInfo.offsetList.size()) {</span>
+                // offsetConsumedCount only save messages which consumed count is greater than 0
+                // if size not equal, means there are some new messages
+<span class="nc" id="L131">                minConsumedTimes = 0;</span>
+            }
+<span class="nc" id="L133">        } else {</span>
+<span class="fc" id="L134">            minConsumedTimes = 0;</span>
+        }
+
+        // for compatibility
+        // the old pop sdk use queueId to get consumedTimes from orderCountInfo
+<span class="fc" id="L139">        ExtraInfoUtil.buildQueueIdOrderCountInfo(orderInfoBuilder, isRetry, queueId, minConsumedTimes);</span>
+<span class="fc" id="L140">        updateLockFreeTimestamp(topic, group, queueId, orderInfo);</span>
+<span class="fc" id="L141">    }</span>
+
+    public boolean checkBlock(String attemptId, String topic, String group, int queueId, long invisibleTime) {
+<span class="fc" id="L144">        String key = buildKey(topic, group);</span>
+<span class="fc" id="L145">        ConcurrentHashMap&lt;Integer/*queueId*/, OrderInfo&gt; qs = table.get(key);</span>
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">        if (qs == null) {</span>
+<span class="nc" id="L147">            qs = new ConcurrentHashMap&lt;&gt;(16);</span>
+<span class="nc" id="L148">            ConcurrentHashMap&lt;Integer/*queueId*/, OrderInfo&gt; old = table.putIfAbsent(key, qs);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">            if (old != null) {</span>
+<span class="nc" id="L150">                qs = old;</span>
+            }
+        }
+
+<span class="fc" id="L154">        OrderInfo orderInfo = qs.get(queueId);</span>
+
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        if (orderInfo == null) {</span>
+<span class="nc" id="L157">            return false;</span>
+        }
+<span class="fc" id="L159">        return orderInfo.needBlock(attemptId, invisibleTime);</span>
+    }
+
+    public void clearBlock(String topic, String group, int queueId) {
+<span class="nc" id="L163">        table.computeIfPresent(buildKey(topic, group), (key, val) -&gt; {</span>
+<span class="nc" id="L164">            val.remove(queueId);</span>
+<span class="nc" id="L165">            return val;</span>
+        });
+<span class="nc" id="L167">    }</span>
+
+    /**
+     * mark message is consumed finished. return the consumer offset
+     *
+     * @param topic topic
+     * @param group group
+     * @param queueId queue id of message
+     * @param queueOffset queue offset of message
+     * @return -1 : illegal, -2 : no need commit, &gt;= 0 : commit
+     */
+    public long commitAndNext(String topic, String group, int queueId, long queueOffset, long popTime) {
+<span class="nc" id="L179">        String key = buildKey(topic, group);</span>
+<span class="nc" id="L180">        ConcurrentHashMap&lt;Integer/*queueId*/, OrderInfo&gt; qs = table.get(key);</span>
+
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if (qs == null) {</span>
+<span class="nc" id="L183">            return queueOffset + 1;</span>
+        }
+<span class="nc" id="L185">        OrderInfo orderInfo = qs.get(queueId);</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        if (orderInfo == null) {</span>
+<span class="nc" id="L187">            log.warn(&quot;OrderInfo is null, {}, {}, {}&quot;, key, queueOffset, orderInfo);</span>
+<span class="nc" id="L188">            return queueOffset + 1;</span>
+        }
+
+<span class="nc" id="L191">        List&lt;Long&gt; o = orderInfo.offsetList;</span>
+<span class="nc bnc" id="L192" title="All 4 branches missed.">        if (o == null || o.isEmpty()) {</span>
+<span class="nc" id="L193">            log.warn(&quot;OrderInfo is empty, {}, {}, {}&quot;, key, queueOffset, orderInfo);</span>
+<span class="nc" id="L194">            return -1;</span>
+        }
+
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (popTime != orderInfo.popTime) {</span>
+<span class="nc" id="L198">            log.warn(&quot;popTime is not equal to orderInfo saved. key: {}, offset: {}, orderInfo: {}, popTime: {}&quot;, key, queueOffset, orderInfo, popTime);</span>
+<span class="nc" id="L199">            return -2;</span>
+        }
+
+<span class="nc" id="L202">        Long first = o.get(0);</span>
+<span class="nc" id="L203">        int i = 0, size = o.size();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        for (; i &lt; size; i++) {</span>
+            long temp;
+<span class="nc bnc" id="L206" title="All 2 branches missed.">            if (i == 0) {</span>
+<span class="nc" id="L207">                temp = first;</span>
+            } else {
+<span class="nc" id="L209">                temp = first + o.get(i);</span>
+            }
+<span class="nc bnc" id="L211" title="All 2 branches missed.">            if (queueOffset == temp) {</span>
+<span class="nc" id="L212">                break;</span>
+            }
+        }
+        // not found
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        if (i &gt;= size) {</span>
+<span class="nc" id="L217">            log.warn(&quot;OrderInfo not found commit offset, {}, {}, {}&quot;, key, queueOffset, orderInfo);</span>
+<span class="nc" id="L218">            return -1;</span>
+        }
+        //set bit
+<span class="nc" id="L221">        orderInfo.setCommitOffsetBit(orderInfo.commitOffsetBit | (1L &lt;&lt; i));</span>
+<span class="nc" id="L222">        long nextOffset = orderInfo.getNextOffset();</span>
+
+<span class="nc" id="L224">        updateLockFreeTimestamp(topic, group, queueId, orderInfo);</span>
+<span class="nc" id="L225">        return nextOffset;</span>
+    }
+
+    /**
+     * update next visible time of this message
+     *
+     * @param topic topic
+     * @param group group
+     * @param queueId queue id of message
+     * @param queueOffset queue offset of message
+     * @param nextVisibleTime nex visible time
+     */
+    public void updateNextVisibleTime(String topic, String group, int queueId, long queueOffset, long popTime, long nextVisibleTime) {
+<span class="nc" id="L238">        String key = buildKey(topic, group);</span>
+<span class="nc" id="L239">        ConcurrentHashMap&lt;Integer/*queueId*/, OrderInfo&gt; qs = table.get(key);</span>
+
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (qs == null) {</span>
+<span class="nc" id="L242">            log.warn(&quot;orderInfo of queueId is null. key: {}, queueOffset: {}, queueId: {}&quot;, key, queueOffset, queueId);</span>
+<span class="nc" id="L243">            return;</span>
+        }
+<span class="nc" id="L245">        OrderInfo orderInfo = qs.get(queueId);</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">        if (orderInfo == null) {</span>
+<span class="nc" id="L247">            log.warn(&quot;orderInfo is null, key: {}, queueOffset: {}, queueId: {}&quot;, key, queueOffset, queueId);</span>
+<span class="nc" id="L248">            return;</span>
+        }
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        if (popTime != orderInfo.popTime) {</span>
+<span class="nc" id="L251">            log.warn(&quot;popTime is not equal to orderInfo saved. key: {}, queueOffset: {}, orderInfo: {}, popTime: {}&quot;, key, queueOffset, orderInfo, popTime);</span>
+<span class="nc" id="L252">            return;</span>
+        }
+
+<span class="nc" id="L255">        orderInfo.updateOffsetNextVisibleTime(queueOffset, nextVisibleTime);</span>
+<span class="nc" id="L256">        updateLockFreeTimestamp(topic, group, queueId, orderInfo);</span>
+<span class="nc" id="L257">    }</span>
+
+    protected void autoClean() {
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">        if (brokerController == null) {</span>
+<span class="fc" id="L261">            return;</span>
+        }
+<span class="nc" id="L263">        Iterator&lt;Map.Entry&lt;String/* topic@group*/, ConcurrentHashMap&lt;Integer/*queueId*/, OrderInfo&gt;&gt;&gt; iterator =</span>
+<span class="nc" id="L264">            this.table.entrySet().iterator();</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">        while (iterator.hasNext()) {</span>
+<span class="nc" id="L266">            Map.Entry&lt;String/* topic@group*/, ConcurrentHashMap&lt;Integer/*queueId*/, OrderInfo&gt;&gt; entry =</span>
+<span class="nc" id="L267">                iterator.next();</span>
+<span class="nc" id="L268">            String topicAtGroup = entry.getKey();</span>
+<span class="nc" id="L269">            ConcurrentHashMap&lt;Integer/*queueId*/, OrderInfo&gt; qs = entry.getValue();</span>
+<span class="nc" id="L270">            String[] arrays = decodeKey(topicAtGroup);</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">            if (arrays.length != 2) {</span>
+<span class="nc" id="L272">                continue;</span>
+            }
+<span class="nc" id="L274">            String topic = arrays[0];</span>
+<span class="nc" id="L275">            String group = arrays[1];</span>
+
+<span class="nc" id="L277">            TopicConfig topicConfig = this.brokerController.getTopicConfigManager().selectTopicConfig(topic);</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">            if (topicConfig == null) {</span>
+<span class="nc" id="L279">                iterator.remove();</span>
+<span class="nc" id="L280">                log.info(&quot;Topic not exist, Clean order info, {}:{}&quot;, topicAtGroup, qs);</span>
+<span class="nc" id="L281">                continue;</span>
+            }
+
+<span class="nc bnc" id="L284" title="All 2 branches missed.">            if (this.brokerController.getSubscriptionGroupManager().getSubscriptionGroupTable().get(group) == null) {</span>
+<span class="nc" id="L285">                iterator.remove();</span>
+<span class="nc" id="L286">                log.info(&quot;Group not exist, Clean order info, {}:{}&quot;, topicAtGroup, qs);</span>
+<span class="nc" id="L287">                continue;</span>
+            }
+
+<span class="nc bnc" id="L290" title="All 2 branches missed.">            if (qs.isEmpty()) {</span>
+<span class="nc" id="L291">                iterator.remove();</span>
+<span class="nc" id="L292">                log.info(&quot;Order table is empty, Clean order info, {}:{}&quot;, topicAtGroup, qs);</span>
+<span class="nc" id="L293">                continue;</span>
+            }
+
+<span class="nc" id="L296">            Iterator&lt;Map.Entry&lt;Integer/*queueId*/, OrderInfo&gt;&gt; qsIterator = qs.entrySet().iterator();</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">            while (qsIterator.hasNext()) {</span>
+<span class="nc" id="L298">                Map.Entry&lt;Integer/*queueId*/, OrderInfo&gt; qsEntry = qsIterator.next();</span>
+
+<span class="nc bnc" id="L300" title="All 2 branches missed.">                if (qsEntry.getKey() &gt;= topicConfig.getReadQueueNums()) {</span>
+<span class="nc" id="L301">                    qsIterator.remove();</span>
+<span class="nc" id="L302">                    log.info(&quot;Queue not exist, Clean order info, {}:{}, {}&quot;, topicAtGroup, entry.getValue(), topicConfig);</span>
+<span class="nc" id="L303">                    continue;</span>
+                }
+
+<span class="nc bnc" id="L306" title="All 2 branches missed.">                if (System.currentTimeMillis() - qsEntry.getValue().getLastConsumeTimestamp() &gt; CLEAN_SPAN_FROM_LAST) {</span>
+<span class="nc" id="L307">                    qsIterator.remove();</span>
+<span class="nc" id="L308">                    log.info(&quot;Not consume long time, Clean order info, {}:{}, {}&quot;, topicAtGroup, entry.getValue(), topicConfig);</span>
+                }
+<span class="nc" id="L310">            }</span>
+<span class="nc" id="L311">        }</span>
+<span class="nc" id="L312">    }</span>
+
+    @Override
+    public String encode() {
+<span class="fc" id="L316">        return this.encode(false);</span>
+    }
+
+    @Override
+    public String configFilePath() {
+<span class="nc bnc" id="L321" title="All 2 branches missed.">        if (brokerController != null) {</span>
+<span class="nc" id="L322">            return BrokerPathConfigHelper.getConsumerOrderInfoPath(this.brokerController.getMessageStoreConfig().getStorePathRootDir());</span>
+        } else {
+<span class="nc" id="L324">            return BrokerPathConfigHelper.getConsumerOrderInfoPath(&quot;~&quot;);</span>
+        }
+    }
+
+    @Override
+    public void decode(String jsonString) {
+<span class="pc bpc" id="L330" title="1 of 2 branches missed.">        if (jsonString != null) {</span>
+<span class="fc" id="L331">            ConsumerOrderInfoManager obj = RemotingSerializable.fromJson(jsonString, ConsumerOrderInfoManager.class);</span>
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">            if (obj != null) {</span>
+<span class="fc" id="L333">                this.table = obj.table;</span>
+<span class="pc bpc" id="L334" title="1 of 2 branches missed.">                if (this.consumerOrderInfoLockManager != null) {</span>
+<span class="nc" id="L335">                    this.consumerOrderInfoLockManager.recover(this.table);</span>
+                }
+            }
+        }
+<span class="fc" id="L339">    }</span>
+
+    @Override
+    public String encode(boolean prettyFormat) {
+<span class="fc" id="L343">        this.autoClean();</span>
+<span class="fc" id="L344">        return RemotingSerializable.toJson(this, prettyFormat);</span>
+    }
+
+    public void shutdown() {
+<span class="nc bnc" id="L348" title="All 2 branches missed.">        if (this.consumerOrderInfoLockManager != null) {</span>
+<span class="nc" id="L349">            this.consumerOrderInfoLockManager.shutdown();</span>
+        }
+<span class="nc" id="L351">    }</span>
+
+    @VisibleForTesting
+    protected ConsumerOrderInfoLockManager getConsumerOrderInfoLockManager() {
+<span class="nc" id="L355">        return consumerOrderInfoLockManager;</span>
+    }
+
+    public static class OrderInfo {
+        private long popTime;
+        /**
+         * the invisibleTime when pop message
+         */
+        @JSONField(name = &quot;i&quot;)
+        private Long invisibleTime;
+        /**
+         * offset
+         * offsetList[0] is the queue offset of message
+         * offsetList[i] (i &gt; 0) is the distance between current message and offsetList[0]
+         */
+        @JSONField(name = &quot;o&quot;)
+        private List&lt;Long&gt; offsetList;
+        /**
+         * next visible timestamp for message
+         * key: message queue offset
+         */
+        @JSONField(name = &quot;ot&quot;)
+        private Map&lt;Long, Long&gt; offsetNextVisibleTime;
+        /**
+         * message consumed count for offset
+         * key: message queue offset
+         */
+        @JSONField(name = &quot;oc&quot;)
+        private Map&lt;Long, Integer&gt; offsetConsumedCount;
+        /**
+         * last consume timestamp
+         */
+        @JSONField(name = &quot;l&quot;)
+        private long lastConsumeTimestamp;
+        /**
+         * commit offset bit
+         */
+        @JSONField(name = &quot;cm&quot;)
+        private long commitOffsetBit;
+        @JSONField(name = &quot;a&quot;)
+        private String attemptId;
+
+<span class="fc" id="L397">        public OrderInfo() {</span>
+<span class="fc" id="L398">        }</span>
+
+        public OrderInfo(String attemptId, long popTime, long invisibleTime, List&lt;Long&gt; queueOffsetList, long lastConsumeTimestamp,
+<span class="fc" id="L401">            long commitOffsetBit) {</span>
+<span class="fc" id="L402">            this.popTime = popTime;</span>
+<span class="fc" id="L403">            this.invisibleTime = invisibleTime;</span>
+<span class="fc" id="L404">            this.offsetList = buildOffsetList(queueOffsetList);</span>
+<span class="fc" id="L405">            this.lastConsumeTimestamp = lastConsumeTimestamp;</span>
+<span class="fc" id="L406">            this.commitOffsetBit = commitOffsetBit;</span>
+<span class="fc" id="L407">            this.attemptId = attemptId;</span>
+<span class="fc" id="L408">        }</span>
+
+        public List&lt;Long&gt; getOffsetList() {
+<span class="fc" id="L411">            return offsetList;</span>
+        }
+
+        public void setOffsetList(List&lt;Long&gt; offsetList) {
+<span class="fc" id="L415">            this.offsetList = offsetList;</span>
+<span class="fc" id="L416">        }</span>
+
+        public long getLastConsumeTimestamp() {
+<span class="fc" id="L419">            return lastConsumeTimestamp;</span>
+        }
+
+        public void setLastConsumeTimestamp(long lastConsumeTimestamp) {
+<span class="fc" id="L423">            this.lastConsumeTimestamp = lastConsumeTimestamp;</span>
+<span class="fc" id="L424">        }</span>
+
+        public long getCommitOffsetBit() {
+<span class="fc" id="L427">            return commitOffsetBit;</span>
+        }
+
+        public void setCommitOffsetBit(long commitOffsetBit) {
+<span class="fc" id="L431">            this.commitOffsetBit = commitOffsetBit;</span>
+<span class="fc" id="L432">        }</span>
+
+        public long getPopTime() {
+<span class="fc" id="L435">            return popTime;</span>
+        }
+
+        public void setPopTime(long popTime) {
+<span class="fc" id="L439">            this.popTime = popTime;</span>
+<span class="fc" id="L440">        }</span>
+
+        public Long getInvisibleTime() {
+<span class="fc" id="L443">            return invisibleTime;</span>
+        }
+
+        public void setInvisibleTime(Long invisibleTime) {
+<span class="fc" id="L447">            this.invisibleTime = invisibleTime;</span>
+<span class="fc" id="L448">        }</span>
+
+        public Map&lt;Long, Long&gt; getOffsetNextVisibleTime() {
+<span class="fc" id="L451">            return offsetNextVisibleTime;</span>
+        }
+
+        public void setOffsetNextVisibleTime(Map&lt;Long, Long&gt; offsetNextVisibleTime) {
+<span class="fc" id="L455">            this.offsetNextVisibleTime = offsetNextVisibleTime;</span>
+<span class="fc" id="L456">        }</span>
+
+        public Map&lt;Long, Integer&gt; getOffsetConsumedCount() {
+<span class="fc" id="L459">            return offsetConsumedCount;</span>
+        }
+
+        public void setOffsetConsumedCount(Map&lt;Long, Integer&gt; offsetConsumedCount) {
+<span class="fc" id="L463">            this.offsetConsumedCount = offsetConsumedCount;</span>
+<span class="fc" id="L464">        }</span>
+
+        public String getAttemptId() {
+<span class="fc" id="L467">            return attemptId;</span>
+        }
+
+        public void setAttemptId(String attemptId) {
+<span class="fc" id="L471">            this.attemptId = attemptId;</span>
+<span class="fc" id="L472">        }</span>
+
+        public static List&lt;Long&gt; buildOffsetList(List&lt;Long&gt; queueOffsetList) {
+<span class="fc" id="L475">            List&lt;Long&gt; simple = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L476" title="1 of 2 branches missed.">            if (queueOffsetList.size() == 1) {</span>
+<span class="nc" id="L477">                simple.addAll(queueOffsetList);</span>
+<span class="nc" id="L478">                return simple;</span>
+            }
+<span class="fc" id="L480">            Long first = queueOffsetList.get(0);</span>
+<span class="fc" id="L481">            simple.add(first);</span>
+<span class="fc bfc" id="L482" title="All 2 branches covered.">            for (int i = 1; i &lt; queueOffsetList.size(); i++) {</span>
+<span class="fc" id="L483">                simple.add(queueOffsetList.get(i) - first);</span>
+            }
+<span class="fc" id="L485">            return simple;</span>
+        }
+
+        @JSONField(serialize = false, deserialize = false)
+        public boolean needBlock(String attemptId, long currentInvisibleTime) {
+<span class="pc bpc" id="L490" title="2 of 4 branches missed.">            if (offsetList == null || offsetList.isEmpty()) {</span>
+<span class="nc" id="L491">                return false;</span>
+            }
+<span class="pc bpc" id="L493" title="2 of 4 branches missed.">            if (this.attemptId != null &amp;&amp; this.attemptId.equals(attemptId)) {</span>
+<span class="fc" id="L494">                return false;</span>
+            }
+<span class="nc" id="L496">            int num = offsetList.size();</span>
+<span class="nc" id="L497">            int i = 0;</span>
+<span class="nc bnc" id="L498" title="All 4 branches missed.">            if (this.invisibleTime == null || this.invisibleTime &lt;= 0) {</span>
+<span class="nc" id="L499">                this.invisibleTime = currentInvisibleTime;</span>
+            }
+<span class="nc" id="L501">            long currentTime = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L502" title="All 2 branches missed.">            for (; i &lt; num; i++) {</span>
+<span class="nc bnc" id="L503" title="All 2 branches missed.">                if (isNotAck(i)) {</span>
+<span class="nc" id="L504">                    long nextVisibleTime = popTime + invisibleTime;</span>
+<span class="nc bnc" id="L505" title="All 2 branches missed.">                    if (offsetNextVisibleTime != null) {</span>
+<span class="nc" id="L506">                        Long time = offsetNextVisibleTime.get(this.getQueueOffset(i));</span>
+<span class="nc bnc" id="L507" title="All 2 branches missed.">                        if (time != null) {</span>
+<span class="nc" id="L508">                            nextVisibleTime = time;</span>
+                        }
+                    }
+<span class="nc bnc" id="L511" title="All 2 branches missed.">                    if (currentTime &lt; nextVisibleTime) {</span>
+<span class="nc" id="L512">                        return true;</span>
+                    }
+                }
+            }
+<span class="nc" id="L516">            return false;</span>
+        }
+
+        @JSONField(serialize = false, deserialize = false)
+        public Long getLockFreeTimestamp() {
+<span class="nc bnc" id="L521" title="All 4 branches missed.">            if (offsetList == null || offsetList.isEmpty()) {</span>
+<span class="nc" id="L522">                return null;</span>
+            }
+<span class="nc" id="L524">            int num = offsetList.size();</span>
+<span class="nc" id="L525">            int i = 0;</span>
+<span class="nc" id="L526">            long currentTime = System.currentTimeMillis();</span>
+<span class="nc bnc" id="L527" title="All 2 branches missed.">            for (; i &lt; num; i++) {</span>
+<span class="nc bnc" id="L528" title="All 2 branches missed.">                if (isNotAck(i)) {</span>
+<span class="nc bnc" id="L529" title="All 4 branches missed.">                    if (invisibleTime == null || invisibleTime &lt;= 0) {</span>
+<span class="nc" id="L530">                        return null;</span>
+                    }
+<span class="nc" id="L532">                    long nextVisibleTime = popTime + invisibleTime;</span>
+<span class="nc bnc" id="L533" title="All 2 branches missed.">                    if (offsetNextVisibleTime != null) {</span>
+<span class="nc" id="L534">                        Long time = offsetNextVisibleTime.get(this.getQueueOffset(i));</span>
+<span class="nc bnc" id="L535" title="All 2 branches missed.">                        if (time != null) {</span>
+<span class="nc" id="L536">                            nextVisibleTime = time;</span>
+                        }
+                    }
+<span class="nc bnc" id="L539" title="All 2 branches missed.">                    if (currentTime &lt; nextVisibleTime) {</span>
+<span class="nc" id="L540">                        return nextVisibleTime;</span>
+                    }
+                }
+            }
+<span class="nc" id="L544">            return currentTime;</span>
+        }
+
+        @JSONField(serialize = false, deserialize = false)
+        public void updateOffsetNextVisibleTime(long queueOffset, long nextVisibleTime) {
+<span class="nc bnc" id="L549" title="All 2 branches missed.">            if (this.offsetNextVisibleTime == null) {</span>
+<span class="nc" id="L550">                this.offsetNextVisibleTime = new HashMap&lt;&gt;();</span>
+            }
+<span class="nc" id="L552">            this.offsetNextVisibleTime.put(queueOffset, nextVisibleTime);</span>
+<span class="nc" id="L553">        }</span>
+
+        @JSONField(serialize = false, deserialize = false)
+        public long getNextOffset() {
+<span class="nc bnc" id="L557" title="All 4 branches missed.">            if (offsetList == null || offsetList.isEmpty()) {</span>
+<span class="nc" id="L558">                return -2;</span>
+            }
+<span class="nc" id="L560">            int num = offsetList.size();</span>
+<span class="nc" id="L561">            int i = 0;</span>
+<span class="nc bnc" id="L562" title="All 2 branches missed.">            for (; i &lt; num; i++) {</span>
+<span class="nc bnc" id="L563" title="All 2 branches missed.">                if (isNotAck(i)) {</span>
+<span class="nc" id="L564">                    break;</span>
+                }
+            }
+<span class="nc bnc" id="L567" title="All 2 branches missed.">            if (i == num) {</span>
+                // all ack
+<span class="nc" id="L569">                return getQueueOffset(num - 1) + 1;</span>
+            }
+<span class="nc" id="L571">            return getQueueOffset(i);</span>
+        }
+
+        /**
+         * convert the offset at the index of offsetList to queue offset
+         *
+         * @param offsetIndex the index of offsetList
+         * @return queue offset of message
+         */
+        @JSONField(serialize = false, deserialize = false)
+        public long getQueueOffset(int offsetIndex) {
+<span class="nc" id="L582">            return getQueueOffset(this.offsetList, offsetIndex);</span>
+        }
+
+        protected static long getQueueOffset(List&lt;Long&gt; offsetList, int offsetIndex) {
+<span class="nc bnc" id="L586" title="All 2 branches missed.">            if (offsetIndex == 0) {</span>
+<span class="nc" id="L587">                return offsetList.get(0);</span>
+            }
+<span class="nc" id="L589">            return offsetList.get(0) + offsetList.get(offsetIndex);</span>
+        }
+
+        @JSONField(serialize = false, deserialize = false)
+        public boolean isNotAck(int offsetIndex) {
+<span class="nc bnc" id="L594" title="All 2 branches missed.">            return (commitOffsetBit &amp; (1L &lt;&lt; offsetIndex)) == 0;</span>
+        }
+
+        /**
+         * calculate message consumed count of each message, and put nonzero value into offsetConsumedCount
+         *
+         * @param prevOffsetConsumedCount the offset list of message
+         */
+        @JSONField(serialize = false, deserialize = false)
+        public void mergeOffsetConsumedCount(String preAttemptId, List&lt;Long&gt; preOffsetList, Map&lt;Long, Integer&gt; prevOffsetConsumedCount) {
+<span class="nc" id="L604">            Map&lt;Long, Integer&gt; offsetConsumedCount = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L605" title="All 2 branches missed.">            if (prevOffsetConsumedCount == null) {</span>
+<span class="nc" id="L606">                prevOffsetConsumedCount = new HashMap&lt;&gt;();</span>
+            }
+<span class="nc bnc" id="L608" title="All 4 branches missed.">            if (preAttemptId != null &amp;&amp; preAttemptId.equals(this.attemptId)) {</span>
+<span class="nc" id="L609">                this.offsetConsumedCount = prevOffsetConsumedCount;</span>
+<span class="nc" id="L610">                return;</span>
+            }
+<span class="nc" id="L612">            Set&lt;Long&gt; preQueueOffsetSet = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L613" title="All 2 branches missed.">            for (int i = 0; i &lt; preOffsetList.size(); i++) {</span>
+<span class="nc" id="L614">                preQueueOffsetSet.add(getQueueOffset(preOffsetList, i));</span>
+            }
+<span class="nc bnc" id="L616" title="All 2 branches missed.">            for (int i = 0; i &lt; offsetList.size(); i++) {</span>
+<span class="nc" id="L617">                long queueOffset = this.getQueueOffset(i);</span>
+<span class="nc bnc" id="L618" title="All 2 branches missed.">                if (preQueueOffsetSet.contains(queueOffset)) {</span>
+<span class="nc" id="L619">                    int count = 1;</span>
+<span class="nc" id="L620">                    Integer preCount = prevOffsetConsumedCount.get(queueOffset);</span>
+<span class="nc bnc" id="L621" title="All 2 branches missed.">                    if (preCount != null) {</span>
+<span class="nc" id="L622">                        count = preCount + 1;</span>
+                    }
+<span class="nc" id="L624">                    offsetConsumedCount.put(queueOffset, count);</span>
+                }
+            }
+<span class="nc" id="L627">            this.offsetConsumedCount = offsetConsumedCount;</span>
+<span class="nc" id="L628">        }</span>
+
+        @Override
+        public String toString() {
+<span class="nc" id="L632">            return MoreObjects.toStringHelper(this)</span>
+<span class="nc" id="L633">                .add(&quot;popTime&quot;, popTime)</span>
+<span class="nc" id="L634">                .add(&quot;invisibleTime&quot;, invisibleTime)</span>
+<span class="nc" id="L635">                .add(&quot;offsetList&quot;, offsetList)</span>
+<span class="nc" id="L636">                .add(&quot;offsetNextVisibleTime&quot;, offsetNextVisibleTime)</span>
+<span class="nc" id="L637">                .add(&quot;offsetConsumedCount&quot;, offsetConsumedCount)</span>
+<span class="nc" id="L638">                .add(&quot;lastConsumeTimestamp&quot;, lastConsumeTimestamp)</span>
+<span class="nc" id="L639">                .add(&quot;commitOffsetBit&quot;, commitOffsetBit)</span>
+<span class="nc" id="L640">                .add(&quot;attemptId&quot;, attemptId)</span>
+<span class="nc" id="L641">                .toString();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

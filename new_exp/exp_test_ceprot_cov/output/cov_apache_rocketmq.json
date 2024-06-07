@@ -1,0 +1,322 @@
+{
+  "1": {
+    "cov_test_ceprot_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "2": {
+    "cov_test_ceprot_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "3": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "4": {
+    "cov_test_ceprot_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "5": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "6": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "7": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "8": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "9": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "10": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "11": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "12": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "13": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "14": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "15": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "16": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "17": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "18": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "19": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "20": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "21": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "22": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "23": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "24": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "25": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "26": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "27": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "28": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "29": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "30": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "31": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "32": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "33": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "34": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "35": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "36": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "37": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "38": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "39": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "40": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "41": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "42": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "43": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "44": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "45": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "46": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "47": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "48": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "49": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "50": {
+    "cov_test_ceprot_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/utils/ConcurrentHashMapUtils.java#computeIfAbsent": {
+        "INSTRUCTION": {
+          "missed": "9",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "9"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "51": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "52": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "53": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "54": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "55": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "56": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "57": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "58": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "59": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "60": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "61": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "62": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "63": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "64": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "65": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "66": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "67": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "68": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "69": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "70": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "71": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "72": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "73": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "74": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "75": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "76": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "77": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "78": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "79": {
+    "cov_test_ceprot_focal_tgt": null
+  },
+  "80": {
+    "cov_test_ceprot_focal_tgt": null
+  }
+}

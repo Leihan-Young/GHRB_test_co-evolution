@@ -1,0 +1,2692 @@
+<?xml version="1.0" ?>
+<!DOCTYPE report
+  PUBLIC '-//JACOCO//DTD Report 1.1//EN'
+  'report.dtd'>
+<report name="nacos-datasource-plugin 2.3.0-SNAPSHOT">
+  <sessioninfo id="e27a2b3504c1-69694057" start="1717391054255" dump="1717391054643"/>
+  <package name="com/alibaba/nacos/plugin/datasource">
+    <class name="com/alibaba/nacos/plugin/datasource/MapperManager" sourcefilename="MapperManager.java">
+      <method name="&lt;init&gt;" desc="()V" line="51">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="instance" desc="(Z)Lcom/alibaba/nacos/plugin/datasource/MapperManager;" line="60">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="loadInitial" desc="()V" line="68">
+        <counter type="INSTRUCTION" missed="48" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="8" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="join" desc="(Lcom/alibaba/nacos/plugin/datasource/mapper/Mapper;)V" line="82">
+        <counter type="INSTRUCTION" missed="30" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="7" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findMapper" desc="(Ljava/lang/String;Ljava/lang/String;)Lcom/alibaba/nacos/plugin/datasource/mapper/Mapper;" line="99">
+        <counter type="INSTRUCTION" missed="68" covered="0"/>
+        <counter type="BRANCH" missed="10" covered="0"/>
+        <counter type="LINE" missed="12" covered="0"/>
+        <counter type="COMPLEXITY" missed="6" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="lambda$loadInitial$0" desc="(Ljava/lang/String;)Ljava/util/Map;" line="70">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;clinit&gt;" desc="()V" line="43">
+        <counter type="INSTRUCTION" missed="12" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="173" covered="0"/>
+      <counter type="BRANCH" missed="14" covered="0"/>
+      <counter type="LINE" missed="35" covered="0"/>
+      <counter type="COMPLEXITY" missed="14" covered="0"/>
+      <counter type="METHOD" missed="7" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="MapperManager.java">
+      <line nr="43" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="61" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="69" mi="10" ci="0" mb="2" cb="0"/>
+      <line nr="70" mi="12" ci="0" mb="0" cb="0"/>
+      <line nr="71" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="73" mi="12" ci="0" mb="0" cb="0"/>
+      <line nr="74" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="75" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="82" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="83" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="85" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="86" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="87" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="88" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="99" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="100" mi="6" ci="0" mb="4" cb="0"/>
+      <line nr="101" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="103" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="104" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="105" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="108" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="109" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="110" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="113" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="114" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="116" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="173" covered="0"/>
+      <counter type="BRANCH" missed="14" covered="0"/>
+      <counter type="LINE" missed="35" covered="0"/>
+      <counter type="COMPLEXITY" missed="14" covered="0"/>
+      <counter type="METHOD" missed="7" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="173" covered="0"/>
+    <counter type="BRANCH" missed="14" covered="0"/>
+    <counter type="LINE" missed="35" covered="0"/>
+    <counter type="COMPLEXITY" missed="14" covered="0"/>
+    <counter type="METHOD" missed="7" covered="0"/>
+    <counter type="CLASS" missed="1" covered="0"/>
+  </package>
+  <package name="com/alibaba/nacos/plugin/datasource/mapper">
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/ConfigInfoMapper" sourcefilename="ConfigInfoMapper.java">
+      <method name="findConfigMaxId" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="49">
+        <counter type="INSTRUCTION" missed="6" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllDataIdAndGroup" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="61">
+        <counter type="INSTRUCTION" missed="6" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoByAppCountRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="73">
+        <counter type="INSTRUCTION" missed="26" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="configInfoLikeTenantCount" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="97">
+        <counter type="INSTRUCTION" missed="13" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findChangeConfig" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="166">
+        <counter type="INSTRUCTION" missed="22" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findChangeConfigCountRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="183">
+        <counter type="INSTRUCTION" missed="145" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="28" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfo4Export" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="259">
+        <counter type="INSTRUCTION" missed="123" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="27" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoBaseLikeCountRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="310">
+        <counter type="INSTRUCTION" missed="93" covered="0"/>
+        <counter type="BRANCH" missed="6" covered="0"/>
+        <counter type="LINE" missed="16" covered="0"/>
+        <counter type="COMPLEXITY" missed="4" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfo4PageCountRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="353">
+        <counter type="INSTRUCTION" missed="101" covered="0"/>
+        <counter type="BRANCH" missed="8" covered="0"/>
+        <counter type="LINE" missed="23" covered="0"/>
+        <counter type="COMPLEXITY" missed="5" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoLike4PageCountRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="412">
+        <counter type="INSTRUCTION" missed="101" covered="0"/>
+        <counter type="BRANCH" missed="8" covered="0"/>
+        <counter type="LINE" missed="23" covered="0"/>
+        <counter type="COMPLEXITY" missed="5" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfosByIds" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="473">
+        <counter type="INSTRUCTION" missed="53" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="11" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="removeConfigInfoByIdsAtomic" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="497">
+        <counter type="INSTRUCTION" missed="53" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="11" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="updateConfigInfoAtomicCas" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="523">
+        <counter type="INSTRUCTION" missed="102" covered="0"/>
+        <counter type="LINE" missed="18" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getTableName" desc="()Ljava/lang/String;" line="553">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="846" covered="0"/>
+      <counter type="BRANCH" missed="54" covered="0"/>
+      <counter type="LINE" missed="170" covered="0"/>
+      <counter type="COMPLEXITY" missed="41" covered="0"/>
+      <counter type="METHOD" missed="14" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/ConfigInfoBetaMapper" sourcefilename="ConfigInfoBetaMapper.java">
+      <method name="updateConfigInfo4BetaCas" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="45">
+        <counter type="INSTRUCTION" missed="78" covered="0"/>
+        <counter type="LINE" missed="14" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getTableName" desc="()Ljava/lang/String;" line="83">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="80" covered="0"/>
+      <counter type="LINE" missed="15" covered="0"/>
+      <counter type="COMPLEXITY" missed="2" covered="0"/>
+      <counter type="METHOD" missed="2" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/ConfigInfoAggrMapper" sourcefilename="ConfigInfoAggrMapper.java">
+      <method name="batchRemoveAggr" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="45">
+        <counter type="INSTRUCTION" missed="81" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="16" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="aggrConfigInfoCount" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="80">
+        <counter type="INSTRUCTION" missed="93" covered="0"/>
+        <counter type="BRANCH" missed="6" covered="0"/>
+        <counter type="LINE" missed="17" covered="0"/>
+        <counter type="COMPLEXITY" missed="4" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoAggrIsOrdered" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="117">
+        <counter type="INSTRUCTION" missed="39" covered="0"/>
+        <counter type="LINE" missed="6" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllAggrGroupByDistinct" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="148">
+        <counter type="INSTRUCTION" missed="8" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getTableName" desc="()Ljava/lang/String;" line="158">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="223" covered="0"/>
+      <counter type="BRANCH" missed="10" covered="0"/>
+      <counter type="LINE" missed="42" covered="0"/>
+      <counter type="COMPLEXITY" missed="10" covered="0"/>
+      <counter type="METHOD" missed="5" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/Mapper" sourcefilename="Mapper.java"/>
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/GroupCapacityMapper" sourcefilename="GroupCapacityMapper.java">
+      <method name="insertIntoSelect" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="46">
+        <counter type="INSTRUCTION" missed="54" covered="0"/>
+        <counter type="LINE" missed="10" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="insertIntoSelectByWhere" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="74">
+        <counter type="INSTRUCTION" missed="69" covered="0"/>
+        <counter type="LINE" missed="12" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="incrementUsageByWhereQuotaEqualZero" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="105">
+        <counter type="INSTRUCTION" missed="26" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="incrementUsageByWhereQuotaNotEqualZero" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="125">
+        <counter type="INSTRUCTION" missed="20" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="incrementUsageByWhere" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="142">
+        <counter type="INSTRUCTION" missed="20" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="decrementUsageByWhere" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="159">
+        <counter type="INSTRUCTION" missed="20" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="updateUsage" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="175">
+        <counter type="INSTRUCTION" missed="20" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="updateUsageByWhere" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="194">
+        <counter type="INSTRUCTION" missed="35" covered="0"/>
+        <counter type="LINE" missed="5" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getTableName" desc="()Ljava/lang/String;" line="218">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="266" covered="0"/>
+      <counter type="LINE" missed="44" covered="0"/>
+      <counter type="COMPLEXITY" missed="9" covered="0"/>
+      <counter type="METHOD" missed="9" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/AbstractMapper" sourcefilename="AbstractMapper.java">
+      <method name="&lt;init&gt;" desc="()V" line="27">
+        <counter type="INSTRUCTION" missed="0" covered="3"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="select" desc="(Ljava/util/List;Ljava/util/List;)Ljava/lang/String;" line="31">
+        <counter type="INSTRUCTION" missed="95" covered="0"/>
+        <counter type="BRANCH" missed="10" covered="0"/>
+        <counter type="LINE" missed="19" covered="0"/>
+        <counter type="COMPLEXITY" missed="6" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="insert" desc="(Ljava/util/List;)Ljava/lang/String;" line="62">
+        <counter type="INSTRUCTION" missed="86" covered="0"/>
+        <counter type="BRANCH" missed="8" covered="0"/>
+        <counter type="LINE" missed="19" covered="0"/>
+        <counter type="COMPLEXITY" missed="5" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="update" desc="(Ljava/util/List;Ljava/util/List;)Ljava/lang/String;" line="91">
+        <counter type="INSTRUCTION" missed="90" covered="0"/>
+        <counter type="BRANCH" missed="10" covered="0"/>
+        <counter type="LINE" missed="16" covered="0"/>
+        <counter type="COMPLEXITY" missed="6" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="delete" desc="(Ljava/util/List;)Ljava/lang/String;" line="120">
+        <counter type="INSTRUCTION" missed="53" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="8" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="count" desc="(Ljava/util/List;)Ljava/lang/String;" line="135">
+        <counter type="INSTRUCTION" missed="68" covered="0"/>
+        <counter type="BRANCH" missed="8" covered="0"/>
+        <counter type="LINE" missed="14" covered="0"/>
+        <counter type="COMPLEXITY" missed="5" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getPrimaryKeyGeneratedKeys" desc="()[Ljava/lang/String;" line="158">
+        <counter type="INSTRUCTION" missed="7" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="399" covered="3"/>
+      <counter type="BRANCH" missed="40" covered="0"/>
+      <counter type="LINE" missed="77" covered="1"/>
+      <counter type="COMPLEXITY" missed="26" covered="1"/>
+      <counter type="METHOD" missed="6" covered="1"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/ConfigInfoTagMapper" sourcefilename="ConfigInfoTagMapper.java">
+      <method name="updateConfigInfo4TagCas" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="43">
+        <counter type="INSTRUCTION" missed="98" covered="0"/>
+        <counter type="LINE" missed="14" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getTableName" desc="()Ljava/lang/String;" line="81">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="100" covered="0"/>
+      <counter type="LINE" missed="15" covered="0"/>
+      <counter type="COMPLEXITY" missed="2" covered="0"/>
+      <counter type="METHOD" missed="2" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/TenantCapacityMapper" sourcefilename="TenantCapacityMapper.java">
+      <method name="incrementUsageWithDefaultQuotaLimit" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="46">
+        <counter type="INSTRUCTION" missed="26" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="incrementUsageWithQuotaLimit" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="64">
+        <counter type="INSTRUCTION" missed="20" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="incrementUsage" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="80">
+        <counter type="INSTRUCTION" missed="20" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="decrementUsage" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="94">
+        <counter type="INSTRUCTION" missed="20" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="correctUsage" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="110">
+        <counter type="INSTRUCTION" missed="26" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="insertTenantCapacity" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="138">
+        <counter type="INSTRUCTION" missed="58" covered="0"/>
+        <counter type="LINE" missed="10" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getTableName" desc="()Ljava/lang/String;" line="160">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="172" covered="0"/>
+      <counter type="LINE" missed="28" covered="0"/>
+      <counter type="COMPLEXITY" missed="7" covered="0"/>
+      <counter type="METHOD" missed="7" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/HistoryConfigInfoMapper" sourcefilename="HistoryConfigInfoMapper.java">
+      <method name="findConfigHistoryCountByTime" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="54">
+        <counter type="INSTRUCTION" missed="9" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findDeletedConfig" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="68">
+        <counter type="INSTRUCTION" missed="20" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigHistoryFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="86">
+        <counter type="INSTRUCTION" missed="26" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="detailPreviousConfigHistory" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="115">
+        <counter type="INSTRUCTION" missed="9" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getTableName" desc="()Ljava/lang/String;" line="127">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="66" covered="0"/>
+      <counter type="LINE" missed="12" covered="0"/>
+      <counter type="COMPLEXITY" missed="5" covered="0"/>
+      <counter type="METHOD" missed="5" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/ConfigTagsRelationMapper" sourcefilename="ConfigTagsRelationMapper.java">
+      <method name="findConfigInfo4PageCountRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="46">
+        <counter type="INSTRUCTION" missed="124" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="28" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoLike4PageCountRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="105">
+        <counter type="INSTRUCTION" missed="139" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="31" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getTableName" desc="()Ljava/lang/String;" line="164">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="265" covered="0"/>
+      <counter type="BRANCH" missed="24" covered="0"/>
+      <counter type="LINE" missed="60" covered="0"/>
+      <counter type="COMPLEXITY" missed="15" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/mapper/TenantInfoMapper" sourcefilename="TenantInfoMapper.java">
+      <method name="getTableName" desc="()Ljava/lang/String;" line="35">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="2" covered="0"/>
+      <counter type="LINE" missed="1" covered="0"/>
+      <counter type="COMPLEXITY" missed="1" covered="0"/>
+      <counter type="METHOD" missed="1" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="Mapper.java"/>
+    <sourcefile name="HistoryConfigInfoMapper.java">
+      <line nr="54" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="55" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="71" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="86" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="90" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="91" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="115" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="118" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="127" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="66" covered="0"/>
+      <counter type="LINE" missed="12" covered="0"/>
+      <counter type="COMPLEXITY" missed="5" covered="0"/>
+      <counter type="METHOD" missed="5" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigTagsRelationMapper.java">
+      <line nr="46" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="50" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="59" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="63" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="64" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="66" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="67" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="70" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="71" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="74" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="75" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="76" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="77" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="79" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="82" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="105" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="106" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="107" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="108" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="109" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="110" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="112" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="113" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="114" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="116" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="117" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="118" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="119" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="120" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="122" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="123" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="124" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="126" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="127" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="128" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="130" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="131" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="132" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="135" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="136" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="137" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="138" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="140" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="141" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="143" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="144" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="164" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="265" covered="0"/>
+      <counter type="BRANCH" missed="24" covered="0"/>
+      <counter type="LINE" missed="60" covered="0"/>
+      <counter type="COMPLEXITY" missed="15" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoBetaMapper.java">
+      <line nr="45" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="50" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="55" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="59" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="61" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="63" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="83" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="80" covered="0"/>
+      <counter type="LINE" missed="15" covered="0"/>
+      <counter type="COMPLEXITY" missed="2" covered="0"/>
+      <counter type="METHOD" missed="2" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="GroupCapacityMapper.java">
+      <line nr="46" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="50" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="55" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="74" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="77" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="78" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="79" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="82" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="83" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="84" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="85" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="87" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="105" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="107" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="108" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="109" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="125" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="127" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="128" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="142" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="143" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="144" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="159" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="161" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="162" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="175" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="177" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="178" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="194" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="196" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="197" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="198" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="199" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="218" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="266" covered="0"/>
+      <counter type="LINE" missed="44" covered="0"/>
+      <counter type="COMPLEXITY" missed="9" covered="0"/>
+      <counter type="METHOD" missed="9" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="TenantCapacityMapper.java">
+      <line nr="46" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="50" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="64" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="67" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="82" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="94" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="96" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="97" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="110" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="113" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="114" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="115" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="138" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="139" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="140" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="141" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="142" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="143" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="144" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="145" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="146" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="148" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="160" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="172" covered="0"/>
+      <counter type="LINE" missed="28" covered="0"/>
+      <counter type="COMPLEXITY" missed="7" covered="0"/>
+      <counter type="METHOD" missed="7" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="TenantInfoMapper.java">
+      <line nr="35" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="2" covered="0"/>
+      <counter type="LINE" missed="1" covered="0"/>
+      <counter type="COMPLEXITY" missed="1" covered="0"/>
+      <counter type="METHOD" missed="1" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoAggrMapper.java">
+      <line nr="45" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="46" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="50" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="55" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="57" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="58" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="61" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="64" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="82" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="83" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="84" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="86" mi="16" ci="0" mb="0" cb="0"/>
+      <line nr="88" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="90" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="91" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="93" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="95" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="96" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="97" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="99" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="100" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="102" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="104" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="117" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="118" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="119" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="121" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="123" mi="16" ci="0" mb="0" cb="0"/>
+      <line nr="125" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="148" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="149" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="158" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="223" covered="0"/>
+      <counter type="BRANCH" missed="10" covered="0"/>
+      <counter type="LINE" missed="42" covered="0"/>
+      <counter type="COMPLEXITY" missed="10" covered="0"/>
+      <counter type="METHOD" missed="5" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="AbstractMapper.java">
+      <line nr="27" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="31" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="32" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="33" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="34" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="35" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="36" mi="6" ci="0" mb="2" cb="0"/>
+      <line nr="37" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="39" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="42" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="43" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="46" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="47" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="50" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="52" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="6" ci="0" mb="2" cb="0"/>
+      <line nr="54" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="57" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="63" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="64" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="65" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="67" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="69" mi="7" ci="0" mb="2" cb="0"/>
+      <line nr="70" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="71" mi="6" ci="0" mb="2" cb="0"/>
+      <line nr="72" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="75" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="77" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="78" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="79" mi="7" ci="0" mb="2" cb="0"/>
+      <line nr="80" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="6" ci="0" mb="2" cb="0"/>
+      <line nr="82" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="85" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="86" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="91" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="92" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="93" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="94" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="96" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="97" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="98" mi="6" ci="0" mb="2" cb="0"/>
+      <line nr="99" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="103" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="104" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="107" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="109" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="110" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="111" mi="6" ci="0" mb="2" cb="0"/>
+      <line nr="112" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="115" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="120" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="121" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="122" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="123" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="124" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="125" mi="6" ci="0" mb="2" cb="0"/>
+      <line nr="126" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="130" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="135" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="136" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="137" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="138" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="139" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="140" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="142" mi="6" ci="0" mb="4" cb="0"/>
+      <line nr="143" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="146" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="147" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="148" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="149" mi="6" ci="0" mb="2" cb="0"/>
+      <line nr="150" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="153" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="158" mi="7" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="399" covered="3"/>
+      <counter type="BRANCH" missed="40" covered="0"/>
+      <counter type="LINE" missed="77" covered="1"/>
+      <counter type="COMPLEXITY" missed="26" covered="1"/>
+      <counter type="METHOD" missed="6" covered="1"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoTagMapper.java">
+      <line nr="43" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="46" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="50" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="55" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="50" ci="0" mb="0" cb="0"/>
+      <line nr="59" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="100" covered="0"/>
+      <counter type="LINE" missed="15" covered="0"/>
+      <counter type="COMPLEXITY" missed="2" covered="0"/>
+      <counter type="METHOD" missed="2" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoMapper.java">
+      <line nr="49" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="61" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="73" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="74" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="75" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="76" mi="16" ci="0" mb="0" cb="0"/>
+      <line nr="97" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="98" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="99" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="166" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="169" mi="18" ci="0" mb="0" cb="0"/>
+      <line nr="170" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="183" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="184" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="185" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="186" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="188" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="189" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="191" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="192" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="193" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="195" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="196" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="197" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="199" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="200" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="201" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="204" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="205" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="206" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="209" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="210" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="211" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="213" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="214" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="215" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="217" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="218" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="219" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="221" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="259" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="261" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="263" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="265" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="266" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="267" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="268" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="269" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="270" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="272" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="273" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="275" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="277" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="278" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="280" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="281" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="282" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="284" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="285" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="286" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="288" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="289" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="290" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="292" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="293" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="294" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="297" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="310" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="311" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="312" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="314" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="315" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="316" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="318" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="319" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="320" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="322" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="323" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="324" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="326" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="327" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="328" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="330" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="353" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="354" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="355" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="356" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="357" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="358" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="360" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="361" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="362" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="363" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="364" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="365" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="366" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="368" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="369" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="370" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="372" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="373" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="374" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="376" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="377" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="378" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="380" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="412" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="413" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="414" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="415" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="416" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="418" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="420" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="421" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="422" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="423" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="424" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="425" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="426" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="428" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="429" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="430" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="432" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="433" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="434" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="436" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="437" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="438" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="440" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="473" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="474" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="476" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="477" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="479" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="480" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="481" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="483" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="484" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="486" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="487" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="497" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="498" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="499" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="500" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="502" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="503" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="504" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="506" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="507" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="509" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="510" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="523" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="525" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="526" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="527" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="528" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="529" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="530" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="531" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="532" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="533" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="534" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="535" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="537" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="538" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="539" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="540" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="541" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="544" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="553" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="846" covered="0"/>
+      <counter type="BRANCH" missed="54" covered="0"/>
+      <counter type="LINE" missed="170" covered="0"/>
+      <counter type="COMPLEXITY" missed="41" covered="0"/>
+      <counter type="METHOD" missed="14" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="2419" covered="3"/>
+    <counter type="BRANCH" missed="128" covered="0"/>
+    <counter type="LINE" missed="464" covered="1"/>
+    <counter type="COMPLEXITY" missed="118" covered="1"/>
+    <counter type="METHOD" missed="54" covered="1"/>
+    <counter type="CLASS" missed="9" covered="1"/>
+  </package>
+  <package name="com/alibaba/nacos/plugin/datasource/constants">
+    <class name="com/alibaba/nacos/plugin/datasource/constants/TableConstant" sourcefilename="TableConstant.java">
+      <method name="&lt;init&gt;" desc="()V" line="25">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="3" covered="0"/>
+      <counter type="LINE" missed="1" covered="0"/>
+      <counter type="COMPLEXITY" missed="1" covered="0"/>
+      <counter type="METHOD" missed="1" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/constants/FieldConstant" sourcefilename="FieldConstant.java">
+      <method name="&lt;init&gt;" desc="()V" line="25">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="3" covered="0"/>
+      <counter type="LINE" missed="1" covered="0"/>
+      <counter type="COMPLEXITY" missed="1" covered="0"/>
+      <counter type="METHOD" missed="1" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/constants/DataSourceConstant" sourcefilename="DataSourceConstant.java">
+      <method name="&lt;init&gt;" desc="()V" line="25">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="3" covered="0"/>
+      <counter type="LINE" missed="1" covered="0"/>
+      <counter type="COMPLEXITY" missed="1" covered="0"/>
+      <counter type="METHOD" missed="1" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="DataSourceConstant.java">
+      <line nr="25" mi="3" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="3" covered="0"/>
+      <counter type="LINE" missed="1" covered="0"/>
+      <counter type="COMPLEXITY" missed="1" covered="0"/>
+      <counter type="METHOD" missed="1" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="FieldConstant.java">
+      <line nr="25" mi="3" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="3" covered="0"/>
+      <counter type="LINE" missed="1" covered="0"/>
+      <counter type="COMPLEXITY" missed="1" covered="0"/>
+      <counter type="METHOD" missed="1" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="TableConstant.java">
+      <line nr="25" mi="3" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="3" covered="0"/>
+      <counter type="LINE" missed="1" covered="0"/>
+      <counter type="COMPLEXITY" missed="1" covered="0"/>
+      <counter type="METHOD" missed="1" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="9" covered="0"/>
+    <counter type="LINE" missed="3" covered="0"/>
+    <counter type="COMPLEXITY" missed="3" covered="0"/>
+    <counter type="METHOD" missed="3" covered="0"/>
+    <counter type="CLASS" missed="3" covered="0"/>
+  </package>
+  <package name="com/alibaba/nacos/plugin/datasource/impl/derby">
+    <class name="com/alibaba/nacos/plugin/datasource/impl/derby/TenantInfoMapperByDerby" sourcefilename="TenantInfoMapperByDerby.java">
+      <method name="&lt;init&gt;" desc="()V" line="29">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="33">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="5" covered="0"/>
+      <counter type="LINE" missed="2" covered="0"/>
+      <counter type="COMPLEXITY" missed="2" covered="0"/>
+      <counter type="METHOD" missed="2" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/derby/GroupCapacityMapperByDerby" sourcefilename="GroupCapacityMapperByDerby.java">
+      <method name="&lt;init&gt;" desc="()V" line="32">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="36">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="selectGroupInfoBySize" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="41">
+        <counter type="INSTRUCTION" missed="22" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="27" covered="0"/>
+      <counter type="LINE" missed="5" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/derby/ConfigInfoBetaMapperByDerby" sourcefilename="ConfigInfoBetaMapperByDerby.java">
+      <method name="&lt;init&gt;" desc="()V" line="34">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfoBetaForDumpAllFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="38">
+        <counter type="INSTRUCTION" missed="41" covered="0"/>
+        <counter type="LINE" missed="7" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="54">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="46" covered="0"/>
+      <counter type="LINE" missed="9" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/derby/ConfigInfoTagMapperByDerby" sourcefilename="ConfigInfoTagMapperByDerby.java">
+      <method name="&lt;init&gt;" desc="()V" line="33">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfoTagForDumpAllFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="37">
+        <counter type="INSTRUCTION" missed="23" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="46">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="28" covered="0"/>
+      <counter type="LINE" missed="6" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/derby/ConfigInfoMapperByDerby" sourcefilename="ConfigInfoMapperByDerby.java">
+      <method name="&lt;init&gt;" desc="()V" line="40">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoByAppFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="44">
+        <counter type="INSTRUCTION" missed="43" covered="0"/>
+        <counter type="LINE" missed="6" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getTenantIdList" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="58">
+        <counter type="INSTRUCTION" missed="25" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getGroupIdList" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="67">
+        <counter type="INSTRUCTION" missed="25" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigKey" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="76">
+        <counter type="INSTRUCTION" missed="31" covered="0"/>
+        <counter type="LINE" missed="5" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfoBaseFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="87">
+        <counter type="INSTRUCTION" missed="21" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfoFragment" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="96">
+        <counter type="INSTRUCTION" missed="29" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findChangeConfigFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="105">
+        <counter type="INSTRUCTION" missed="157" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="29" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="listGroupKeyMd5ByPageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="153">
+        <counter type="INSTRUCTION" missed="21" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoBaseLikeFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="160">
+        <counter type="INSTRUCTION" missed="105" covered="0"/>
+        <counter type="BRANCH" missed="6" covered="0"/>
+        <counter type="LINE" missed="17" covered="0"/>
+        <counter type="COMPLEXITY" missed="4" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfo4PageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="186">
+        <counter type="INSTRUCTION" missed="113" covered="0"/>
+        <counter type="BRANCH" missed="8" covered="0"/>
+        <counter type="LINE" missed="24" covered="0"/>
+        <counter type="COMPLEXITY" missed="5" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoBaseByGroupFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="222">
+        <counter type="INSTRUCTION" missed="35" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoLike4PageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="232">
+        <counter type="INSTRUCTION" missed="115" covered="0"/>
+        <counter type="BRANCH" missed="8" covered="0"/>
+        <counter type="LINE" missed="25" covered="0"/>
+        <counter type="COMPLEXITY" missed="5" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfoFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="268">
+        <counter type="INSTRUCTION" missed="26" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="277">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="751" covered="0"/>
+      <counter type="BRANCH" missed="34" covered="0"/>
+      <counter type="LINE" missed="133" covered="0"/>
+      <counter type="COMPLEXITY" missed="32" covered="0"/>
+      <counter type="METHOD" missed="15" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/derby/HistoryConfigInfoMapperByDerby" sourcefilename="HistoryConfigInfoMapperByDerby.java">
+      <method name="&lt;init&gt;" desc="()V" line="33">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="removeConfigHistory" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="37">
+        <counter type="INSTRUCTION" missed="22" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="pageFindConfigHistoryFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="45">
+        <counter type="INSTRUCTION" missed="43" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="55">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="70" covered="0"/>
+      <counter type="LINE" missed="9" covered="0"/>
+      <counter type="COMPLEXITY" missed="4" covered="0"/>
+      <counter type="METHOD" missed="4" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/derby/ConfigInfoAggrMapperByDerby" sourcefilename="ConfigInfoAggrMapperByDerby.java">
+      <method name="&lt;init&gt;" desc="()V" line="34">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoAggrByPageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="38">
+        <counter type="INSTRUCTION" missed="60" covered="0"/>
+        <counter type="LINE" missed="8" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="54">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="65" covered="0"/>
+      <counter type="LINE" missed="10" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/derby/TenantCapacityMapperByDerby" sourcefilename="TenantCapacityMapperByDerby.java">
+      <method name="&lt;init&gt;" desc="()V" line="33">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="37">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getCapacityList4CorrectUsage" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="42">
+        <counter type="INSTRUCTION" missed="22" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="27" covered="0"/>
+      <counter type="LINE" missed="5" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/derby/ConfigInfoTagsRelationMapperByDerby" sourcefilename="ConfigInfoTagsRelationMapperByDerby.java">
+      <method name="&lt;init&gt;" desc="()V" line="36">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfo4PageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="40">
+        <counter type="INSTRUCTION" missed="153" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="32" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoLike4PageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="88">
+        <counter type="INSTRUCTION" missed="153" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="32" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="137">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="311" covered="0"/>
+      <counter type="BRANCH" missed="24" covered="0"/>
+      <counter type="LINE" missed="66" covered="0"/>
+      <counter type="COMPLEXITY" missed="16" covered="0"/>
+      <counter type="METHOD" missed="4" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="ConfigInfoAggrMapperByDerby.java">
+      <line nr="34" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="38" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="39" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="40" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="41" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="42" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="15" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="16" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="65" covered="0"/>
+      <counter type="LINE" missed="10" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="HistoryConfigInfoMapperByDerby.java">
+      <line nr="33" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="37" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="39" mi="18" ci="0" mb="0" cb="0"/>
+      <line nr="40" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="18" ci="0" mb="0" cb="0"/>
+      <line nr="50" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="55" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="70" covered="0"/>
+      <counter type="LINE" missed="9" covered="0"/>
+      <counter type="COMPLEXITY" missed="4" covered="0"/>
+      <counter type="METHOD" missed="4" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoTagsRelationMapperByDerby.java">
+      <line nr="36" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="40" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="41" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="42" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="43" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="57" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="61" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="64" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="65" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="66" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="69" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="70" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="73" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="74" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="75" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="77" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="78" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="21" ci="0" mb="0" cb="0"/>
+      <line nr="83" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="88" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="90" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="91" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="92" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="93" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="95" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="96" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="97" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="101" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="102" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="104" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="105" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="106" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="108" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="109" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="110" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="112" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="113" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="114" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="116" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="117" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="118" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="121" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="122" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="123" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="124" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="126" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="127" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="129" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="130" mi="21" ci="0" mb="0" cb="0"/>
+      <line nr="132" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="137" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="311" covered="0"/>
+      <counter type="BRANCH" missed="24" covered="0"/>
+      <counter type="LINE" missed="66" covered="0"/>
+      <counter type="COMPLEXITY" missed="16" covered="0"/>
+      <counter type="METHOD" missed="4" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="GroupCapacityMapperByDerby.java">
+      <line nr="32" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="36" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="41" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="42" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="43" mi="10" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="27" covered="0"/>
+      <counter type="LINE" missed="5" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoBetaMapperByDerby.java">
+      <line nr="34" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="38" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="39" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="41" mi="15" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="46" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="46" covered="0"/>
+      <counter type="LINE" missed="9" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="TenantInfoMapperByDerby.java">
+      <line nr="29" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="33" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="5" covered="0"/>
+      <counter type="LINE" missed="2" covered="0"/>
+      <counter type="COMPLEXITY" missed="2" covered="0"/>
+      <counter type="METHOD" missed="2" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoMapperByDerby.java">
+      <line nr="40" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="50" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="16" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="59" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="61" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="67" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="69" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="70" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="76" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="77" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="78" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="87" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="90" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="96" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="98" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="99" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="100" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="105" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="106" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="107" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="108" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="110" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="111" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="113" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="115" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="117" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="119" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="120" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="121" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="123" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="124" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="125" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="128" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="129" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="130" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="133" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="134" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="135" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="137" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="138" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="139" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="141" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="142" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="143" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="145" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="146" mi="12" ci="0" mb="0" cb="0"/>
+      <line nr="153" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="154" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="155" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="160" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="161" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="162" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="164" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="165" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="166" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="167" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="168" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="169" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="171" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="172" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="173" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="175" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="176" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="177" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="179" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="180" mi="12" ci="0" mb="0" cb="0"/>
+      <line nr="186" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="187" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="188" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="189" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="190" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="192" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="194" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="195" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="196" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="197" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="198" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="199" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="200" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="202" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="203" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="204" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="207" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="208" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="209" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="211" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="212" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="213" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="215" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="216" mi="12" ci="0" mb="0" cb="0"/>
+      <line nr="222" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="224" mi="16" ci="0" mb="0" cb="0"/>
+      <line nr="225" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="226" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="232" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="233" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="234" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="235" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="236" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="238" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="240" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="241" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="242" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="243" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="244" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="245" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="246" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="248" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="249" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="250" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="252" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="253" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="254" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="256" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="257" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="258" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="260" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="261" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="263" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="268" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="271" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="272" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="277" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="751" covered="0"/>
+      <counter type="BRANCH" missed="34" covered="0"/>
+      <counter type="LINE" missed="133" covered="0"/>
+      <counter type="COMPLEXITY" missed="32" covered="0"/>
+      <counter type="METHOD" missed="15" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="TenantCapacityMapperByDerby.java">
+      <line nr="33" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="37" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="42" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="43" mi="18" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="27" covered="0"/>
+      <counter type="LINE" missed="5" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoTagMapperByDerby.java">
+      <line nr="33" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="37" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="38" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="39" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="41" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="46" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="28" covered="0"/>
+      <counter type="LINE" missed="6" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="1330" covered="0"/>
+    <counter type="BRANCH" missed="58" covered="0"/>
+    <counter type="LINE" missed="245" covered="0"/>
+    <counter type="COMPLEXITY" missed="69" covered="0"/>
+    <counter type="METHOD" missed="40" covered="0"/>
+    <counter type="CLASS" missed="9" covered="0"/>
+  </package>
+  <package name="com/alibaba/nacos/plugin/datasource/proxy">
+    <class name="com/alibaba/nacos/plugin/datasource/proxy/MapperProxy" sourcefilename="MapperProxy.java">
+      <method name="&lt;init&gt;" desc="()V" line="37">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="createProxy" desc="(Lcom/alibaba/nacos/plugin/datasource/mapper/Mapper;)Ljava/lang/Object;" line="48">
+        <counter type="INSTRUCTION" missed="11" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="createSingleProxy" desc="(Lcom/alibaba/nacos/plugin/datasource/mapper/Mapper;)Ljava/lang/Object;" line="56">
+        <counter type="INSTRUCTION" missed="41" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="10" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="invoke" desc="(Ljava/lang/Object;Ljava/lang/reflect/Method;[Ljava/lang/Object;)Ljava/lang/Object;" line="78">
+        <counter type="INSTRUCTION" missed="41" covered="0"/>
+        <counter type="LINE" missed="6" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;clinit&gt;" desc="()V" line="39">
+        <counter type="INSTRUCTION" missed="14" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="110" covered="0"/>
+      <counter type="BRANCH" missed="4" covered="0"/>
+      <counter type="LINE" missed="22" covered="0"/>
+      <counter type="COMPLEXITY" missed="7" covered="0"/>
+      <counter type="METHOD" missed="5" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="MapperProxy.java">
+      <line nr="37" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="39" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="43" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="57" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="59" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="61" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="65" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="69" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="70" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="78" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="82" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="84" mi="22" ci="0" mb="0" cb="0"/>
+      <line nr="85" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="110" covered="0"/>
+      <counter type="BRANCH" missed="4" covered="0"/>
+      <counter type="LINE" missed="22" covered="0"/>
+      <counter type="COMPLEXITY" missed="7" covered="0"/>
+      <counter type="METHOD" missed="5" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="110" covered="0"/>
+    <counter type="BRANCH" missed="4" covered="0"/>
+    <counter type="LINE" missed="22" covered="0"/>
+    <counter type="COMPLEXITY" missed="7" covered="0"/>
+    <counter type="METHOD" missed="5" covered="0"/>
+    <counter type="CLASS" missed="1" covered="0"/>
+  </package>
+  <package name="com/alibaba/nacos/plugin/datasource/model">
+    <class name="com/alibaba/nacos/plugin/datasource/model/MapperResult" sourcefilename="MapperResult.java">
+      <method name="&lt;init&gt;" desc="()V" line="29">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;init&gt;" desc="(Ljava/lang/String;Ljava/util/List;)V" line="31">
+        <counter type="INSTRUCTION" missed="0" covered="9"/>
+        <counter type="LINE" missed="0" covered="4"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="getSql" desc="()Ljava/lang/String;" line="41">
+        <counter type="INSTRUCTION" missed="0" covered="3"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="setSql" desc="(Ljava/lang/String;)V" line="45">
+        <counter type="INSTRUCTION" missed="4" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getParamList" desc="()Ljava/util/List;" line="49">
+        <counter type="INSTRUCTION" missed="0" covered="3"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="setParamList" desc="(Ljava/util/List;)V" line="53">
+        <counter type="INSTRUCTION" missed="4" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="equals" desc="(Ljava/lang/Object;)Z" line="58">
+        <counter type="INSTRUCTION" missed="4" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="hashCode" desc="()I" line="63">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="toString" desc="()Ljava/lang/String;" line="68">
+        <counter type="INSTRUCTION" missed="19" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="37" covered="15"/>
+      <counter type="LINE" missed="8" covered="6"/>
+      <counter type="COMPLEXITY" missed="6" covered="3"/>
+      <counter type="METHOD" missed="6" covered="3"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/model/MapperContext" sourcefilename="MapperContext.java">
+      <method name="&lt;init&gt;" desc="()V" line="38">
+        <counter type="INSTRUCTION" missed="0" covered="13"/>
+        <counter type="LINE" missed="0" covered="4"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="&lt;init&gt;" desc="(II)V" line="43">
+        <counter type="INSTRUCTION" missed="19" covered="0"/>
+        <counter type="LINE" missed="6" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getWhereParameter" desc="(Ljava/lang/String;)Ljava/lang/Object;" line="57">
+        <counter type="INSTRUCTION" missed="0" covered="5"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="putWhereParameter" desc="(Ljava/lang/String;Ljava/lang/Object;)V" line="67">
+        <counter type="INSTRUCTION" missed="0" covered="7"/>
+        <counter type="LINE" missed="0" covered="2"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="getUpdateParameter" desc="(Ljava/lang/String;)Ljava/lang/Object;" line="77">
+        <counter type="INSTRUCTION" missed="5" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="putUpdateParameter" desc="(Ljava/lang/String;Ljava/lang/Object;)V" line="87">
+        <counter type="INSTRUCTION" missed="7" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="equals" desc="(Ljava/lang/Object;)Z" line="92">
+        <counter type="INSTRUCTION" missed="4" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="hashCode" desc="()I" line="97">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="toString" desc="()Ljava/lang/String;" line="102">
+        <counter type="INSTRUCTION" missed="12" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getStartRow" desc="()I" line="106">
+        <counter type="INSTRUCTION" missed="0" covered="3"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="setStartRow" desc="(I)V" line="110">
+        <counter type="INSTRUCTION" missed="0" covered="4"/>
+        <counter type="LINE" missed="0" covered="2"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="getPageSize" desc="()I" line="114">
+        <counter type="INSTRUCTION" missed="0" covered="3"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="setPageSize" desc="(I)V" line="118">
+        <counter type="INSTRUCTION" missed="0" covered="4"/>
+        <counter type="LINE" missed="0" covered="2"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <counter type="INSTRUCTION" missed="50" covered="39"/>
+      <counter type="LINE" missed="12" covered="13"/>
+      <counter type="COMPLEXITY" missed="6" covered="7"/>
+      <counter type="METHOD" missed="6" covered="7"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <sourcefile name="MapperContext.java">
+      <line nr="38" mi="0" ci="2" mb="0" cb="0"/>
+      <line nr="39" mi="0" ci="5" mb="0" cb="0"/>
+      <line nr="40" mi="0" ci="5" mb="0" cb="0"/>
+      <line nr="41" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="43" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="46" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="57" mi="0" ci="5" mb="0" cb="0"/>
+      <line nr="67" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="68" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="77" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="87" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="88" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="92" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="97" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="102" mi="12" ci="0" mb="0" cb="0"/>
+      <line nr="106" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="110" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="111" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="114" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="118" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="119" mi="0" ci="1" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="50" covered="39"/>
+      <counter type="LINE" missed="12" covered="13"/>
+      <counter type="COMPLEXITY" missed="6" covered="7"/>
+      <counter type="METHOD" missed="6" covered="7"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </sourcefile>
+    <sourcefile name="MapperResult.java">
+      <line nr="29" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="31" mi="0" ci="2" mb="0" cb="0"/>
+      <line nr="32" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="33" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="34" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="41" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="45" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="46" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="53" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="63" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="19" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="37" covered="15"/>
+      <counter type="LINE" missed="8" covered="6"/>
+      <counter type="COMPLEXITY" missed="6" covered="3"/>
+      <counter type="METHOD" missed="6" covered="3"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="87" covered="54"/>
+    <counter type="LINE" missed="20" covered="19"/>
+    <counter type="COMPLEXITY" missed="12" covered="10"/>
+    <counter type="METHOD" missed="12" covered="10"/>
+    <counter type="CLASS" missed="0" covered="2"/>
+  </package>
+  <package name="com/alibaba/nacos/plugin/datasource/impl/mysql">
+    <class name="com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoTagMapperByMySql" sourcefilename="ConfigInfoTagMapperByMySql.java">
+      <method name="&lt;init&gt;" desc="()V" line="33">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfoTagForDumpAllFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="37">
+        <counter type="INSTRUCTION" missed="23" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="45">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="28" covered="0"/>
+      <counter type="LINE" missed="6" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigTagsRelationMapperByMySql" sourcefilename="ConfigTagsRelationMapperByMySql.java">
+      <method name="&lt;init&gt;" desc="()V" line="36">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfo4PageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="40">
+        <counter type="INSTRUCTION" missed="149" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="31" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoLike4PageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="87">
+        <counter type="INSTRUCTION" missed="149" covered="0"/>
+        <counter type="BRANCH" missed="12" covered="0"/>
+        <counter type="LINE" missed="31" covered="0"/>
+        <counter type="COMPLEXITY" missed="7" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="134">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="303" covered="0"/>
+      <counter type="BRANCH" missed="24" covered="0"/>
+      <counter type="LINE" missed="64" covered="0"/>
+      <counter type="COMPLEXITY" missed="16" covered="0"/>
+      <counter type="METHOD" missed="4" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoAggrMapperByMySql" sourcefilename="ConfigInfoAggrMapperByMySql.java">
+      <method name="&lt;init&gt;" desc="()V" line="34">
+        <counter type="INSTRUCTION" missed="0" covered="3"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="findConfigInfoAggrByPageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="38">
+        <counter type="INSTRUCTION" missed="0" covered="58"/>
+        <counter type="LINE" missed="0" covered="8"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="53">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="2" covered="61"/>
+      <counter type="LINE" missed="1" covered="9"/>
+      <counter type="COMPLEXITY" missed="1" covered="2"/>
+      <counter type="METHOD" missed="1" covered="2"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/mysql/TenantInfoMapperByMySql" sourcefilename="TenantInfoMapperByMySql.java">
+      <method name="&lt;init&gt;" desc="()V" line="29">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="33">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="5" covered="0"/>
+      <counter type="LINE" missed="2" covered="0"/>
+      <counter type="COMPLEXITY" missed="2" covered="0"/>
+      <counter type="METHOD" missed="2" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoMapperByMySql" sourcefilename="ConfigInfoMapperByMySql.java">
+      <method name="&lt;init&gt;" desc="()V" line="40">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoByAppFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="54">
+        <counter type="INSTRUCTION" missed="41" covered="0"/>
+        <counter type="LINE" missed="6" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getTenantIdList" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="64">
+        <counter type="INSTRUCTION" missed="25" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getGroupIdList" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="71">
+        <counter type="INSTRUCTION" missed="25" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigKey" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="78">
+        <counter type="INSTRUCTION" missed="31" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfoBaseFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="86">
+        <counter type="INSTRUCTION" missed="18" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfoFragment" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="98">
+        <counter type="INSTRUCTION" missed="29" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findChangeConfigFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="106">
+        <counter type="INSTRUCTION" missed="167" covered="0"/>
+        <counter type="BRANCH" missed="14" covered="0"/>
+        <counter type="LINE" missed="31" covered="0"/>
+        <counter type="COMPLEXITY" missed="8" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="listGroupKeyMd5ByPageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="151">
+        <counter type="INSTRUCTION" missed="23" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoBaseLikeFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="159">
+        <counter type="INSTRUCTION" missed="103" covered="0"/>
+        <counter type="BRANCH" missed="6" covered="0"/>
+        <counter type="LINE" missed="16" covered="0"/>
+        <counter type="COMPLEXITY" missed="4" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfo4PageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="186">
+        <counter type="INSTRUCTION" missed="111" covered="0"/>
+        <counter type="BRANCH" missed="8" covered="0"/>
+        <counter type="LINE" missed="23" covered="0"/>
+        <counter type="COMPLEXITY" missed="5" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoBaseByGroupFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="220">
+        <counter type="INSTRUCTION" missed="35" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findConfigInfoLike4PageFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="228">
+        <counter type="INSTRUCTION" missed="111" covered="0"/>
+        <counter type="BRANCH" missed="8" covered="0"/>
+        <counter type="LINE" missed="23" covered="0"/>
+        <counter type="COMPLEXITY" missed="5" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfoFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="264">
+        <counter type="INSTRUCTION" missed="28" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="274">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="752" covered="0"/>
+      <counter type="BRANCH" missed="36" covered="0"/>
+      <counter type="LINE" missed="131" covered="0"/>
+      <counter type="COMPLEXITY" missed="33" covered="0"/>
+      <counter type="METHOD" missed="15" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/mysql/TenantCapacityMapperByMySql" sourcefilename="TenantCapacityMapperByMySql.java">
+      <method name="&lt;init&gt;" desc="()V" line="33">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="37">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getCapacityList4CorrectUsage" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="42">
+        <counter type="INSTRUCTION" missed="22" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="27" covered="0"/>
+      <counter type="LINE" missed="5" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/mysql/GroupCapacityMapperByMysql" sourcefilename="GroupCapacityMapperByMysql.java">
+      <method name="&lt;init&gt;" desc="()V" line="32">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="36">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="selectGroupInfoBySize" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="41">
+        <counter type="INSTRUCTION" missed="22" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="27" covered="0"/>
+      <counter type="LINE" missed="4" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/mysql/HistoryConfigInfoMapperByMySql" sourcefilename="HistoryConfigInfoMapperByMySql.java">
+      <method name="&lt;init&gt;" desc="()V" line="33">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="removeConfigHistory" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="37">
+        <counter type="INSTRUCTION" missed="22" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="pageFindConfigHistoryFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="44">
+        <counter type="INSTRUCTION" missed="41" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="54">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="68" covered="0"/>
+      <counter type="LINE" missed="9" covered="0"/>
+      <counter type="COMPLEXITY" missed="4" covered="0"/>
+      <counter type="METHOD" missed="4" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <class name="com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoBetaMapperByMySql" sourcefilename="ConfigInfoBetaMapperByMySql.java">
+      <method name="&lt;init&gt;" desc="()V" line="34">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findAllConfigInfoBetaForDumpAllFetchRows" desc="(Lcom/alibaba/nacos/plugin/datasource/model/MapperContext;)Lcom/alibaba/nacos/plugin/datasource/model/MapperResult;" line="38">
+        <counter type="INSTRUCTION" missed="41" covered="0"/>
+        <counter type="LINE" missed="7" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getDataSource" desc="()Ljava/lang/String;" line="52">
+        <counter type="INSTRUCTION" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="46" covered="0"/>
+      <counter type="LINE" missed="9" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="TenantCapacityMapperByMySql.java">
+      <line nr="33" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="37" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="42" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="43" mi="18" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="27" covered="0"/>
+      <counter type="LINE" missed="5" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="TenantInfoMapperByMySql.java">
+      <line nr="29" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="33" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="5" covered="0"/>
+      <counter type="LINE" missed="2" covered="0"/>
+      <counter type="COMPLEXITY" missed="2" covered="0"/>
+      <counter type="METHOD" missed="2" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoBetaMapperByMySql.java">
+      <line nr="34" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="38" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="39" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="40" mi="15" ci="0" mb="0" cb="0"/>
+      <line nr="43" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="46" covered="0"/>
+      <counter type="LINE" missed="9" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoTagMapperByMySql.java">
+      <line nr="33" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="37" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="38" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="39" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="40" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="28" covered="0"/>
+      <counter type="LINE" missed="6" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigTagsRelationMapperByMySql.java">
+      <line nr="36" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="40" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="41" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="42" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="43" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="57" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="61" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="64" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="65" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="66" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="69" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="70" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="73" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="74" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="75" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="77" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="78" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="23" ci="0" mb="0" cb="0"/>
+      <line nr="87" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="88" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="90" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="91" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="92" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="94" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="96" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="97" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="100" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="101" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="102" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="103" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="104" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="106" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="107" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="108" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="110" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="111" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="112" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="114" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="115" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="116" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="119" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="120" mi="8" ci="0" mb="2" cb="0"/>
+      <line nr="121" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="122" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="124" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="125" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="127" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="128" mi="23" ci="0" mb="0" cb="0"/>
+      <line nr="134" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="303" covered="0"/>
+      <counter type="BRANCH" missed="24" covered="0"/>
+      <counter type="LINE" missed="64" covered="0"/>
+      <counter type="COMPLEXITY" missed="16" covered="0"/>
+      <counter type="METHOD" missed="4" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="GroupCapacityMapperByMysql.java">
+      <line nr="32" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="36" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="41" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="42" mi="20" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="27" covered="0"/>
+      <counter type="LINE" missed="4" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="HistoryConfigInfoMapperByMySql.java">
+      <line nr="33" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="37" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="38" mi="18" ci="0" mb="0" cb="0"/>
+      <line nr="39" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="18" ci="0" mb="0" cb="0"/>
+      <line nr="49" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="68" covered="0"/>
+      <counter type="LINE" missed="9" covered="0"/>
+      <counter type="COMPLEXITY" missed="4" covered="0"/>
+      <counter type="METHOD" missed="4" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoAggrMapperByMySql.java">
+      <line nr="34" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="38" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="39" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="40" mi="0" ci="5" mb="0" cb="0"/>
+      <line nr="41" mi="0" ci="5" mb="0" cb="0"/>
+      <line nr="42" mi="0" ci="5" mb="0" cb="0"/>
+      <line nr="44" mi="0" ci="13" mb="0" cb="0"/>
+      <line nr="47" mi="0" ci="16" mb="0" cb="0"/>
+      <line nr="48" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="53" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="2" covered="61"/>
+      <counter type="LINE" missed="1" covered="9"/>
+      <counter type="COMPLEXITY" missed="1" covered="2"/>
+      <counter type="METHOD" missed="1" covered="2"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </sourcefile>
+    <sourcefile name="ConfigInfoMapperByMySql.java">
+      <line nr="40" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="55" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="57" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="59" mi="16" ci="0" mb="0" cb="0"/>
+      <line nr="64" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="65" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="66" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="71" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="73" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="78" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="79" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="14" ci="0" mb="0" cb="0"/>
+      <line nr="86" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="87" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="89" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="92" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="98" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="99" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="100" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="101" mi="14" ci="0" mb="0" cb="0"/>
+      <line nr="106" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="107" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="108" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="109" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="110" mi="7" ci="0" mb="2" cb="0"/>
+      <line nr="111" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="112" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="114" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="116" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="117" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="118" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="119" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="120" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="122" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="123" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="124" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="127" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="128" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="129" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="132" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="133" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="134" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="136" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="137" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="138" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="140" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="141" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="142" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="144" mi="14" ci="0" mb="0" cb="0"/>
+      <line nr="145" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="146" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="151" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="152" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="153" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="154" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="159" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="160" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="161" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="163" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="164" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="166" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="168" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="169" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="170" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="172" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="173" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="174" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="176" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="177" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="178" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="180" mi="23" ci="0" mb="0" cb="0"/>
+      <line nr="186" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="187" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="188" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="189" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="190" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="192" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="194" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="195" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="196" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="197" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="198" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="199" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="200" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="202" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="203" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="204" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="206" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="207" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="208" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="210" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="211" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="212" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="214" mi="23" ci="0" mb="0" cb="0"/>
+      <line nr="220" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="221" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="222" mi="18" ci="0" mb="0" cb="0"/>
+      <line nr="223" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="228" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="229" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="230" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="231" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="232" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="234" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="236" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="237" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="238" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="239" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="241" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="242" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="243" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="246" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="247" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="248" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="250" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="251" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="252" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="254" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="255" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="256" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="258" mi="23" ci="0" mb="0" cb="0"/>
+      <line nr="264" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="267" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="268" mi="13" ci="0" mb="0" cb="0"/>
+      <line nr="269" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="274" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="752" covered="0"/>
+      <counter type="BRANCH" missed="36" covered="0"/>
+      <counter type="LINE" missed="131" covered="0"/>
+      <counter type="COMPLEXITY" missed="33" covered="0"/>
+      <counter type="METHOD" missed="15" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="1258" covered="61"/>
+    <counter type="BRANCH" missed="60" covered="0"/>
+    <counter type="LINE" missed="231" covered="9"/>
+    <counter type="COMPLEXITY" missed="68" covered="2"/>
+    <counter type="METHOD" missed="38" covered="2"/>
+    <counter type="CLASS" missed="8" covered="1"/>
+  </package>
+  <counter type="INSTRUCTION" missed="5386" covered="118"/>
+  <counter type="BRANCH" missed="264" covered="0"/>
+  <counter type="LINE" missed="1020" covered="29"/>
+  <counter type="COMPLEXITY" missed="291" covered="13"/>
+  <counter type="METHOD" missed="159" covered="13"/>
+  <counter type="CLASS" missed="31" covered="4"/>
+</report>
