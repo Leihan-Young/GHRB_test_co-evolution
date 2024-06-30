@@ -59,16 +59,16 @@ def checkout(pid, tid, repo_path, commit):
         f.close()
 
 if __name__ == '__main__':
-    data_path = '/workspace/GHRB_test_co-evolution/verified'
-    repo_path = '/workspace/GHRB_test_co-evolution/collected/raw_repos'
-    target_path = '/workspace/GHRB_test_co-evolution/repo_mirrors'
-    cli_path = '/workspace/GHRB_test_co-evolution'
+    data_path = '/data/zhiquanyang/Co-evolution/Benchmark/verified'
+    repo_path = '/data/zhiquanyang/Co-evolution/Benchmark/collected/raw_repos'
+    target_path = '/data/zhiquanyang/Co-evolution/Benchmark/repo_mirrors'
+    cli_path = '/data/zhiquanyang/Co-evolution/Benchmark'
     files = [name for name in os.listdir(data_path)
                 if name.endswith('.json')]
     for idx, file in enumerate(files):
         print(file)
         pid = file.split('_')[-1].replace('.json', '')
-        source_path = f'/workspace/GHRB_test_co-evolution/collected/raw_repos/{pid}'
+        source_path = f'/data/zhiquanyang/Co-evolution/Benchmark/collected/raw_repos/{pid}'
         sample_dict = read_json(os.path.join(data_path, file))
         for key, value in tqdm(sample_dict.items()):
             test_id = value['test_id']

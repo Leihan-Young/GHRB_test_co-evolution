@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClusterMetadataService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-proxy 5.1.2-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.proxy.service.metadata</a> &gt; <span class="el_source">ClusterMetadataService.java</span></div><h1>ClusterMetadataService.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.rocketmq.proxy.service.metadata;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
+import java.util.Optional;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import org.apache.rocketmq.common.attribute.TopicMessageType;
+import org.apache.rocketmq.common.constant.LoggerName;
+import org.apache.rocketmq.common.thread.ThreadPoolMonitor;
+import org.apache.rocketmq.logging.org.slf4j.Logger;
+import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+import org.apache.rocketmq.proxy.common.AbstractCacheLoader;
+import org.apache.rocketmq.common.utils.AbstractStartAndShutdown;
+import org.apache.rocketmq.proxy.common.ProxyContext;
+import org.apache.rocketmq.proxy.config.ConfigurationManager;
+import org.apache.rocketmq.proxy.config.ProxyConfig;
+import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+import org.apache.rocketmq.proxy.service.route.TopicRouteHelper;
+import org.apache.rocketmq.proxy.service.route.TopicRouteService;
+import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+import org.apache.rocketmq.remoting.protocol.statictopic.TopicConfigAndQueueMapping;
+import org.apache.rocketmq.remoting.protocol.subscription.SubscriptionGroupConfig;
+
+public class ClusterMetadataService extends AbstractStartAndShutdown implements MetadataService {
+<span class="fc" id="L43">    protected static final Logger log = LoggerFactory.getLogger(LoggerName.PROXY_LOGGER_NAME);</span>
+    private static final long DEFAULT_TIMEOUT = 3000;
+
+    private final TopicRouteService topicRouteService;
+    private final MQClientAPIFactory mqClientAPIFactory;
+
+    protected final ThreadPoolExecutor cacheRefreshExecutor;
+
+    protected final LoadingCache&lt;String, TopicConfigAndQueueMapping&gt; topicConfigCache;
+<span class="fc" id="L52">    protected final static TopicConfigAndQueueMapping EMPTY_TOPIC_CONFIG = new TopicConfigAndQueueMapping();</span>
+
+    protected final LoadingCache&lt;String, SubscriptionGroupConfig&gt; subscriptionGroupConfigCache;
+<span class="fc" id="L55">    protected final static SubscriptionGroupConfig EMPTY_SUBSCRIPTION_GROUP_CONFIG = new SubscriptionGroupConfig();</span>
+
+<span class="fc" id="L57">    public ClusterMetadataService(TopicRouteService topicRouteService, MQClientAPIFactory mqClientAPIFactory) {</span>
+<span class="fc" id="L58">        this.topicRouteService = topicRouteService;</span>
+<span class="fc" id="L59">        this.mqClientAPIFactory = mqClientAPIFactory;</span>
+
+<span class="fc" id="L61">        ProxyConfig config = ConfigurationManager.getProxyConfig();</span>
+<span class="fc" id="L62">        this.cacheRefreshExecutor = ThreadPoolMonitor.createAndMonitor(</span>
+<span class="fc" id="L63">            config.getMetadataThreadPoolNums(),</span>
+<span class="fc" id="L64">            config.getMetadataThreadPoolNums(),</span>
+            1000 * 60,
+            TimeUnit.MILLISECONDS,
+            &quot;MetadataCacheRefresh&quot;,
+<span class="fc" id="L68">            config.getMetadataThreadPoolQueueCapacity()</span>
+        );
+<span class="fc" id="L70">        this.topicConfigCache = CacheBuilder.newBuilder()</span>
+<span class="fc" id="L71">            .maximumSize(config.getTopicConfigCacheMaxNum())</span>
+<span class="fc" id="L72">            .refreshAfterWrite(config.getTopicConfigCacheExpiredInSeconds(), TimeUnit.SECONDS)</span>
+<span class="fc" id="L73">            .build(new ClusterTopicConfigCacheLoader());</span>
+<span class="fc" id="L74">        this.subscriptionGroupConfigCache = CacheBuilder.newBuilder()</span>
+<span class="fc" id="L75">            .maximumSize(config.getSubscriptionGroupConfigCacheMaxNum())</span>
+<span class="fc" id="L76">            .refreshAfterWrite(config.getSubscriptionGroupConfigCacheExpiredInSeconds(), TimeUnit.SECONDS)</span>
+<span class="fc" id="L77">            .build(new ClusterSubscriptionGroupConfigCacheLoader());</span>
+
+<span class="fc" id="L79">        this.init();</span>
+<span class="fc" id="L80">    }</span>
+
+    protected void init() {
+<span class="fc" id="L83">        this.appendShutdown(this.cacheRefreshExecutor::shutdown);</span>
+<span class="fc" id="L84">    }</span>
+
+    @Override
+    public TopicMessageType getTopicMessageType(ProxyContext ctx, String topic) {
+        TopicConfigAndQueueMapping topicConfigAndQueueMapping;
+        try {
+<span class="fc" id="L90">            topicConfigAndQueueMapping = topicConfigCache.get(topic);</span>
+<span class="fc" id="L91">        } catch (Exception e) {</span>
+<span class="fc" id="L92">            return TopicMessageType.UNSPECIFIED;</span>
+<span class="fc" id="L93">        }</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (topicConfigAndQueueMapping.equals(EMPTY_TOPIC_CONFIG)) {</span>
+<span class="fc" id="L95">            return TopicMessageType.UNSPECIFIED;</span>
+        }
+<span class="fc" id="L97">        return topicConfigAndQueueMapping.getTopicMessageType();</span>
+    }
+
+    @Override
+    public SubscriptionGroupConfig getSubscriptionGroupConfig(ProxyContext ctx, String group) {
+        SubscriptionGroupConfig config;
+        try {
+<span class="nc" id="L104">            config = this.subscriptionGroupConfigCache.get(group);</span>
+<span class="nc" id="L105">        } catch (Exception e) {</span>
+<span class="nc" id="L106">            return null;</span>
+<span class="nc" id="L107">        }</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (config == EMPTY_SUBSCRIPTION_GROUP_CONFIG) {</span>
+<span class="nc" id="L109">            return null;</span>
+        }
+<span class="nc" id="L111">        return config;</span>
+    }
+
+    protected class ClusterSubscriptionGroupConfigCacheLoader extends AbstractCacheLoader&lt;String, SubscriptionGroupConfig&gt; {
+
+<span class="fc" id="L116">        public ClusterSubscriptionGroupConfigCacheLoader() {</span>
+<span class="fc" id="L117">            super(cacheRefreshExecutor);</span>
+<span class="fc" id="L118">        }</span>
+
+        @Override
+        protected SubscriptionGroupConfig getDirectly(String consumerGroup) throws Exception {
+<span class="nc" id="L122">            ProxyConfig config = ConfigurationManager.getProxyConfig();</span>
+<span class="nc" id="L123">            String clusterName = config.getRocketMQClusterName();</span>
+<span class="nc" id="L124">            Optional&lt;BrokerData&gt; brokerDataOptional = findOneBroker(clusterName);</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">            if (brokerDataOptional.isPresent()) {</span>
+<span class="nc" id="L126">                String brokerAddress = brokerDataOptional.get().selectBrokerAddr();</span>
+<span class="nc" id="L127">                return mqClientAPIFactory.getClient().getSubscriptionGroupConfig(brokerAddress, consumerGroup, DEFAULT_TIMEOUT);</span>
+            }
+<span class="nc" id="L129">            return EMPTY_SUBSCRIPTION_GROUP_CONFIG;</span>
+        }
+
+        @Override
+        protected void onErr(String consumerGroup, Exception e) {
+<span class="nc" id="L134">            log.error(&quot;load subscription config failed. consumerGroup:{}&quot;, consumerGroup, e);</span>
+<span class="nc" id="L135">        }</span>
+    }
+
+    protected class ClusterTopicConfigCacheLoader extends AbstractCacheLoader&lt;String, TopicConfigAndQueueMapping&gt; {
+
+<span class="fc" id="L140">        public ClusterTopicConfigCacheLoader() {</span>
+<span class="fc" id="L141">            super(cacheRefreshExecutor);</span>
+<span class="fc" id="L142">        }</span>
+
+        @Override
+        protected TopicConfigAndQueueMapping getDirectly(String topic) throws Exception {
+<span class="fc" id="L146">            Optional&lt;BrokerData&gt; brokerDataOptional = findOneBroker(topic);</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">            if (brokerDataOptional.isPresent()) {</span>
+<span class="fc" id="L148">                String brokerAddress = brokerDataOptional.get().selectBrokerAddr();</span>
+<span class="fc" id="L149">                return mqClientAPIFactory.getClient().getTopicConfig(brokerAddress, topic, DEFAULT_TIMEOUT);</span>
+            }
+<span class="fc" id="L151">            return EMPTY_TOPIC_CONFIG;</span>
+        }
+
+        @Override
+        protected void onErr(String key, Exception e) {
+<span class="nc" id="L156">            log.error(&quot;load topic config failed. topic:{}&quot;, key, e);</span>
+<span class="nc" id="L157">        }</span>
+    }
+
+    protected Optional&lt;BrokerData&gt; findOneBroker(String topic) throws Exception {
+        try {
+<span class="fc" id="L162">            return topicRouteService.getAllMessageQueueView(ProxyContext.createForInner(this.getClass()), topic).getTopicRouteData().getBrokerDatas().stream().findAny();</span>
+<span class="fc" id="L163">        } catch (Exception e) {</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">            if (TopicRouteHelper.isTopicNotExistError(e)) {</span>
+<span class="fc" id="L165">                return Optional.empty();</span>
+            }
+<span class="fc" id="L167">            throw e;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

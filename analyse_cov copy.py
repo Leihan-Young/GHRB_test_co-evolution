@@ -115,103 +115,37 @@ if __name__ == "__main__":
     data_row = 'cov_test_deepseek_enhance_focal_tgt'
     back_row = 'cov_test_deepseek_fix_focal_tgt'
 
-    # 编译不通过
+    # gt > deepseek cov
     line_cov_total = 0
     branch_cov_total = 0
     count = 0
     not_none = 0
+    less_list = []
     for proj, v in cov_overall.items():
         for test_id, cov_res in v.items():
-            cov = cov_res['cov_test_src_focal_tgt']
-            line_cov = cov['line_cov']
-            branch_cov = cov['branch_cov']
-            if not (line_cov is None or branch_cov is None):
+            cov = cov_res['cov_test_tgt_focal_tgt']
+            gt_line_cov = cov['line_cov']
+            gt_branch_cov = cov['branch_cov']
+            
+            ds_line_cov = cov_res[data_row]['line_cov']
+            ds_branch_cov = cov_res[data_row]['branch_cov']
+            if ds_line_cov == None:
+                ds_line_cov = cov_res[back_row]['line_cov']
+                ds_branch_cov = cov_res[back_row]['branch_cov']
+            if ds_line_cov == None:
+                ds_line_cov = 0
+            else:
+                not_none += 1
+            if ds_branch_cov == None:
+                ds_branch_cov = 0
+            if ds_line_cov == 0:
                 continue
-            line_cov = cov_res[data_row]['line_cov']
-            branch_cov = cov_res[data_row]['branch_cov']
-            if line_cov == None:
-                line_cov = cov_res[back_row]['line_cov']
-                branch_cov = cov_res[back_row]['branch_cov']
-            if line_cov == None:
-                line_cov = 0
-            else:
-                not_none += 1
-            if branch_cov == None:
-                branch_cov = 0
-            line_cov_total += line_cov
-            branch_cov_total += branch_cov
             count += 1
-    print(f"""
-Fail to compile:
-line_cov={line_cov_total/count}
-branch_cov={branch_cov_total/count}
-count={count}
-not_none={not_none}
-""")
-    
-    # 编译通过
-    line_cov_total = 0
-    branch_cov_total = 0
-    count = 0
-    not_none = 0
-    for proj, v in cov_overall.items():
-        for test_id, cov_res in v.items():
-            cov = cov_res['cov_test_src_focal_tgt']
-            line_cov = cov['line_cov']
-            branch_cov = cov['branch_cov']
-            if line_cov is None or branch_cov is None:
-                continue
-            line_cov = cov_res[data_row]['line_cov']
-            branch_cov = cov_res[data_row]['branch_cov']
-            if line_cov == None:
-                line_cov = cov_res[back_row]['line_cov']
-                branch_cov = cov_res[back_row]['branch_cov']
-            if line_cov == None:
-                line_cov = 0
-            else:
-                not_none += 1
-            if branch_cov == None:
-                branch_cov = 0
-            line_cov_total += line_cov
-            branch_cov_total += branch_cov
-            count += 1
-    print(f"""
-Succeed to compile:
-line_cov={line_cov_total/count}
-branch_cov={branch_cov_total/count}
-count={count}
-not_none={not_none}
-""")
-    # Overall
-    line_cov_total = 0
-    branch_cov_total = 0
-    count = 0
-    not_none = 0
-    for proj, v in cov_overall.items():
-        for test_id, cov_res in v.items():
-            cov = cov_res['cov_test_src_focal_tgt']
-            line_cov = cov['line_cov']
-            branch_cov = cov['branch_cov']
-            line_cov = cov_res[data_row]['line_cov']
-            branch_cov = cov_res[data_row]['branch_cov']
-            if line_cov == None:
-                line_cov = cov_res[back_row]['line_cov']
-                branch_cov = cov_res[back_row]['branch_cov']
-            if line_cov == None:
-                line_cov = 0
-            else:
-                not_none += 1
-            if branch_cov == None:
-                branch_cov = 0
-            line_cov_total += line_cov
-            branch_cov_total += branch_cov
-            count += 1
-    print(f"""
-Overall:
-line_cov={line_cov_total/count}
-branch_cov={branch_cov_total/count}
-count={count}
-not_none={not_none}
-""")
+            if gt_line_cov > ds_line_cov:
+                less_list.append(f"{proj}:{test_id}")
 
+    with open("less_list.json", 'w', encoding='utf-8') as f:
+        json.dump(less_list, f, indent=2)
+
+    print(not_none)
     print("Finish")

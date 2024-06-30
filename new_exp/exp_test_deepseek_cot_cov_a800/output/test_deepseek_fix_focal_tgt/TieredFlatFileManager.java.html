@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TieredFlatFileManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-tiered-store 5.1.4-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.tieredstore.file</a> &gt; <span class="el_source">TieredFlatFileManager.java</span></div><h1>TieredFlatFileManager.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.rocketmq.tieredstore.file;
+
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.Nullable;
+import org.apache.rocketmq.common.constant.LoggerName;
+import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.logging.org.slf4j.Logger;
+import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
+import org.apache.rocketmq.tieredstore.common.TieredStoreExecutor;
+import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
+import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
+
+public class TieredFlatFileManager {
+
+<span class="fc" id="L42">    private static final Logger BROKER_LOG = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);</span>
+<span class="fc" id="L43">    private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);</span>
+
+    private static volatile TieredFlatFileManager instance;
+    private static volatile TieredIndexFile indexFile;
+
+    private final TieredMetadataStore metadataStore;
+    private final TieredMessageStoreConfig storeConfig;
+    private final TieredFileAllocator tieredFileAllocator;
+    private final ConcurrentMap&lt;MessageQueue, CompositeQueueFlatFile&gt; flatFileConcurrentMap;
+
+    public TieredFlatFileManager(TieredMessageStoreConfig storeConfig)
+<span class="fc" id="L54">        throws ClassNotFoundException, NoSuchMethodException {</span>
+
+<span class="fc" id="L56">        this.storeConfig = storeConfig;</span>
+<span class="fc" id="L57">        this.metadataStore = TieredStoreUtil.getMetadataStore(storeConfig);</span>
+<span class="fc" id="L58">        this.tieredFileAllocator = new TieredFileAllocator(storeConfig);</span>
+<span class="fc" id="L59">        this.flatFileConcurrentMap = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L60">        this.doScheduleTask();</span>
+<span class="fc" id="L61">    }</span>
+
+    public static TieredFlatFileManager getInstance(TieredMessageStoreConfig storeConfig) {
+<span class="pc bpc" id="L64" title="1 of 4 branches missed.">        if (storeConfig == null || instance != null) {</span>
+<span class="fc" id="L65">            return instance;</span>
+        }
+<span class="fc" id="L67">        synchronized (TieredFlatFileManager.class) {</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">            if (instance == null) {</span>
+                try {
+<span class="fc" id="L70">                    instance = new TieredFlatFileManager(storeConfig);</span>
+<span class="nc" id="L71">                } catch (Exception e) {</span>
+<span class="nc" id="L72">                    logger.error(&quot;Construct FlatFileManager instance error&quot;, e);</span>
+<span class="fc" id="L73">                }</span>
+            }
+<span class="fc" id="L75">        }</span>
+<span class="fc" id="L76">        return instance;</span>
+    }
+
+    public static TieredIndexFile getIndexFile(TieredMessageStoreConfig storeConfig) {
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (storeConfig == null) {</span>
+<span class="nc" id="L81">            return indexFile;</span>
+        }
+
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (indexFile == null) {</span>
+<span class="fc" id="L85">            synchronized (TieredFlatFileManager.class) {</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">                if (indexFile == null) {</span>
+                    try {
+<span class="fc" id="L88">                        String filePath = TieredStoreUtil.toPath(new MessageQueue(</span>
+<span class="fc" id="L89">                            TieredStoreUtil.RMQ_SYS_TIERED_STORE_INDEX_TOPIC, storeConfig.getBrokerName(), 0));</span>
+<span class="fc" id="L90">                        indexFile = new TieredIndexFile(new TieredFileAllocator(storeConfig), filePath);</span>
+<span class="nc" id="L91">                    } catch (Exception e) {</span>
+<span class="nc" id="L92">                        logger.error(&quot;Construct FlatFileManager indexFile error&quot;, e);</span>
+<span class="fc" id="L93">                    }</span>
+                }
+<span class="fc" id="L95">            }</span>
+        }
+<span class="fc" id="L97">        return indexFile;</span>
+    }
+
+    public void doCommit() {
+<span class="nc" id="L101">        Random random = new Random();</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        for (CompositeQueueFlatFile flatFile : deepCopyFlatFileToList()) {</span>
+<span class="nc" id="L103">            int delay = random.nextInt(storeConfig.getMaxCommitJitter());</span>
+<span class="nc" id="L104">            TieredStoreExecutor.commitExecutor.schedule(() -&gt; {</span>
+                try {
+<span class="nc" id="L106">                    flatFile.commitCommitLog();</span>
+<span class="nc" id="L107">                } catch (Throwable e) {</span>
+<span class="nc" id="L108">                    MessageQueue mq = flatFile.getMessageQueue();</span>
+<span class="nc" id="L109">                    logger.error(&quot;Commit commitLog periodically failed: topic: {}, queue: {}&quot;,</span>
+<span class="nc" id="L110">                        mq.getTopic(), mq.getQueueId(), e);</span>
+<span class="nc" id="L111">                }</span>
+<span class="nc" id="L112">            }, delay, TimeUnit.MILLISECONDS);</span>
+<span class="nc" id="L113">            TieredStoreExecutor.commitExecutor.schedule(() -&gt; {</span>
+                try {
+<span class="nc" id="L115">                    flatFile.commitConsumeQueue();</span>
+<span class="nc" id="L116">                } catch (Throwable e) {</span>
+<span class="nc" id="L117">                    MessageQueue mq = flatFile.getMessageQueue();</span>
+<span class="nc" id="L118">                    logger.error(&quot;Commit consumeQueue periodically failed: topic: {}, queue: {}&quot;,</span>
+<span class="nc" id="L119">                        mq.getTopic(), mq.getQueueId(), e);</span>
+<span class="nc" id="L120">                }</span>
+<span class="nc" id="L121">            }, delay, TimeUnit.MILLISECONDS);</span>
+<span class="nc" id="L122">        }</span>
+<span class="nc" id="L123">        TieredStoreExecutor.commitExecutor.schedule(() -&gt; {</span>
+            try {
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                if (indexFile != null) {</span>
+<span class="nc" id="L126">                    indexFile.commit(true);</span>
+                }
+<span class="nc" id="L128">            } catch (Throwable e) {</span>
+<span class="nc" id="L129">                logger.error(&quot;Commit indexFile periodically failed&quot;, e);</span>
+<span class="nc" id="L130">            }</span>
+<span class="nc" id="L131">        }, 0, TimeUnit.MILLISECONDS);</span>
+<span class="nc" id="L132">    }</span>
+
+    public void doCleanExpiredFile() {
+<span class="nc" id="L135">        long expiredTimeStamp = System.currentTimeMillis() -</span>
+<span class="nc" id="L136">            TimeUnit.HOURS.toMillis(storeConfig.getTieredStoreFileReservedTime());</span>
+<span class="nc" id="L137">        Random random = new Random();</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        for (CompositeQueueFlatFile flatFile : deepCopyFlatFileToList()) {</span>
+<span class="nc" id="L139">            int delay = random.nextInt(storeConfig.getMaxCommitJitter());</span>
+<span class="nc" id="L140">            TieredStoreExecutor.cleanExpiredFileExecutor.schedule(() -&gt; {</span>
+<span class="nc" id="L141">                flatFile.getCompositeFlatFileLock().lock();</span>
+                try {
+<span class="nc" id="L143">                    flatFile.cleanExpiredFile(expiredTimeStamp);</span>
+<span class="nc" id="L144">                    flatFile.destroyExpiredFile();</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                    if (flatFile.getConsumeQueueBaseOffset() == -1) {</span>
+<span class="nc" id="L146">                        destroyCompositeFile(flatFile.getMessageQueue());</span>
+                    }
+                } finally {
+<span class="nc" id="L149">                    flatFile.getCompositeFlatFileLock().unlock();</span>
+                }
+<span class="nc" id="L151">            }, delay, TimeUnit.MILLISECONDS);</span>
+<span class="nc" id="L152">        }</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        if (indexFile != null) {</span>
+<span class="nc" id="L154">            indexFile.cleanExpiredFile(expiredTimeStamp);</span>
+<span class="nc" id="L155">            indexFile.destroyExpiredFile();</span>
+        }
+<span class="nc" id="L157">    }</span>
+
+    private void doScheduleTask() {
+<span class="fc" id="L160">        TieredStoreExecutor.commonScheduledExecutor.scheduleWithFixedDelay(() -&gt; {</span>
+            try {
+<span class="nc" id="L162">                doCommit();</span>
+<span class="nc" id="L163">            } catch (Throwable e) {</span>
+<span class="nc" id="L164">                logger.error(&quot;Commit flat file periodically failed: &quot;, e);</span>
+<span class="nc" id="L165">            }</span>
+<span class="nc" id="L166">        }, 60, 60, TimeUnit.SECONDS);</span>
+
+<span class="fc" id="L168">        TieredStoreExecutor.commonScheduledExecutor.scheduleWithFixedDelay(() -&gt; {</span>
+            try {
+<span class="nc" id="L170">                doCleanExpiredFile();</span>
+<span class="nc" id="L171">            } catch (Throwable e) {</span>
+<span class="nc" id="L172">                logger.error(&quot;Clean expired flat file failed: &quot;, e);</span>
+<span class="nc" id="L173">            }</span>
+<span class="nc" id="L174">        }, 30, 30, TimeUnit.SECONDS);</span>
+<span class="fc" id="L175">    }</span>
+
+    public boolean load() {
+<span class="fc" id="L178">        Stopwatch stopwatch = Stopwatch.createStarted();</span>
+        try {
+<span class="fc" id="L180">            flatFileConcurrentMap.clear();</span>
+<span class="fc" id="L181">            this.recoverSequenceNumber();</span>
+<span class="fc" id="L182">            this.recoverTieredFlatFile();</span>
+<span class="fc" id="L183">            logger.info(&quot;Message store recover end, total cost={}ms&quot;, stopwatch.elapsed(TimeUnit.MILLISECONDS));</span>
+<span class="nc" id="L184">        } catch (Exception e) {</span>
+<span class="nc" id="L185">            long costTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);</span>
+<span class="nc" id="L186">            logger.info(&quot;Message store recover error, total cost={}ms&quot;, costTime);</span>
+<span class="nc" id="L187">            BROKER_LOG.error(&quot;Message store recover error, total cost={}ms&quot;, costTime, e);</span>
+<span class="nc" id="L188">            return false;</span>
+<span class="fc" id="L189">        }</span>
+<span class="fc" id="L190">        return true;</span>
+    }
+
+    public void recoverSequenceNumber() {
+<span class="fc" id="L194">        AtomicLong topicSequenceNumber = new AtomicLong();</span>
+<span class="fc" id="L195">        metadataStore.iterateTopic(topicMetadata -&gt; {</span>
+<span class="pc bpc" id="L196" title="2 of 4 branches missed.">            if (topicMetadata != null &amp;&amp; topicMetadata.getTopicId() &gt; 0) {</span>
+<span class="nc" id="L197">                topicSequenceNumber.set(Math.max(topicSequenceNumber.get(), topicMetadata.getTopicId()));</span>
+            }
+<span class="fc" id="L199">        });</span>
+<span class="fc" id="L200">        metadataStore.setTopicSequenceNumber(topicSequenceNumber.incrementAndGet());</span>
+<span class="fc" id="L201">    }</span>
+
+    public void recoverTieredFlatFile() {
+<span class="fc" id="L204">        Semaphore semaphore = new Semaphore((int) (TieredStoreExecutor.QUEUE_CAPACITY * 0.75));</span>
+<span class="fc" id="L205">        List&lt;CompletableFuture&lt;Void&gt;&gt; futures = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L206">        metadataStore.iterateTopic(topicMetadata -&gt; {</span>
+            try {
+<span class="fc" id="L208">                semaphore.acquire();</span>
+<span class="fc" id="L209">                CompletableFuture&lt;Void&gt; future = CompletableFuture.runAsync(() -&gt; {</span>
+                    try {
+<span class="fc" id="L211">                        Stopwatch subWatch = Stopwatch.createStarted();</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">                        if (topicMetadata.getStatus() != 0) {</span>
+<span class="nc" id="L213">                            return;</span>
+                        }
+<span class="fc" id="L215">                        AtomicLong queueCount = new AtomicLong();</span>
+<span class="fc" id="L216">                        metadataStore.iterateQueue(topicMetadata.getTopic(), queueMetadata -&gt; {</span>
+<span class="fc" id="L217">                            this.getOrCreateFlatFileIfAbsent(new MessageQueue(topicMetadata.getTopic(),</span>
+<span class="fc" id="L218">                                storeConfig.getBrokerName(), queueMetadata.getQueue().getQueueId()));</span>
+<span class="fc" id="L219">                            queueCount.incrementAndGet();</span>
+<span class="fc" id="L220">                        });</span>
+<span class="fc" id="L221">                        logger.info(&quot;Recover TopicFlatFile, topic: {}, queueCount: {}, cost: {}ms&quot;,</span>
+<span class="fc" id="L222">                            topicMetadata.getTopic(), queueCount.get(), subWatch.elapsed(TimeUnit.MILLISECONDS));</span>
+<span class="nc" id="L223">                    } catch (Exception e) {</span>
+<span class="nc" id="L224">                        logger.error(&quot;Recover TopicFlatFile error, topic: {}&quot;, topicMetadata.getTopic(), e);</span>
+                    } finally {
+<span class="fc" id="L226">                        semaphore.release();</span>
+                    }
+<span class="fc" id="L228">                }, TieredStoreExecutor.commitExecutor);</span>
+<span class="fc" id="L229">                futures.add(future);</span>
+<span class="nc" id="L230">            } catch (Exception e) {</span>
+<span class="nc" id="L231">                throw new RuntimeException(e);</span>
+<span class="fc" id="L232">            }</span>
+<span class="fc" id="L233">        });</span>
+<span class="fc" id="L234">        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();</span>
+<span class="fc" id="L235">    }</span>
+
+    public void cleanup() {
+<span class="fc" id="L238">        flatFileConcurrentMap.clear();</span>
+<span class="fc" id="L239">        cleanStaticReference();</span>
+<span class="fc" id="L240">    }</span>
+
+    private static void cleanStaticReference() {
+<span class="fc" id="L243">        instance = null;</span>
+<span class="fc" id="L244">        indexFile = null;</span>
+<span class="fc" id="L245">    }</span>
+
+    @Nullable
+    public CompositeQueueFlatFile getOrCreateFlatFileIfAbsent(MessageQueue messageQueue) {
+<span class="fc" id="L249">        return flatFileConcurrentMap.computeIfAbsent(messageQueue, mq -&gt; {</span>
+            try {
+<span class="fc" id="L251">                logger.debug(&quot;Create new TopicFlatFile, topic: {}, queueId: {}&quot;,</span>
+<span class="fc" id="L252">                    messageQueue.getTopic(), messageQueue.getQueueId());</span>
+<span class="fc" id="L253">                return new CompositeQueueFlatFile(tieredFileAllocator, mq);</span>
+<span class="nc" id="L254">            } catch (Exception e) {</span>
+<span class="nc" id="L255">                logger.debug(&quot;Create new TopicFlatFile failed, topic: {}, queueId: {}&quot;,</span>
+<span class="nc" id="L256">                    messageQueue.getTopic(), messageQueue.getQueueId(), e);</span>
+            }
+<span class="nc" id="L258">            return null;</span>
+        });
+    }
+
+    public CompositeQueueFlatFile getFlatFile(MessageQueue messageQueue) {
+<span class="fc" id="L263">        return flatFileConcurrentMap.get(messageQueue);</span>
+    }
+
+    public ImmutableList&lt;CompositeQueueFlatFile&gt; deepCopyFlatFileToList() {
+<span class="fc" id="L267">        return ImmutableList.copyOf(flatFileConcurrentMap.values());</span>
+    }
+
+    public void shutdown() {
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        if (indexFile != null) {</span>
+<span class="nc" id="L272">            indexFile.commit(true);</span>
+        }
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        for (CompositeFlatFile flatFile : deepCopyFlatFileToList()) {</span>
+<span class="nc" id="L275">            flatFile.shutdown();</span>
+<span class="nc" id="L276">        }</span>
+<span class="nc" id="L277">    }</span>
+
+    public void destroy() {
+<span class="pc bpc" id="L280" title="1 of 2 branches missed.">        if (indexFile != null) {</span>
+<span class="fc" id="L281">            indexFile.destroy();</span>
+        }
+<span class="fc" id="L283">        ImmutableList&lt;CompositeQueueFlatFile&gt; flatFileList = deepCopyFlatFileToList();</span>
+<span class="fc" id="L284">        cleanup();</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">        for (CompositeFlatFile flatFile : flatFileList) {</span>
+<span class="fc" id="L286">            flatFile.destroy();</span>
+<span class="fc" id="L287">        }</span>
+<span class="fc" id="L288">    }</span>
+
+    public void destroyCompositeFile(MessageQueue mq) {
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        if (mq == null) {</span>
+<span class="nc" id="L292">            return;</span>
+        }
+
+        // delete memory reference
+<span class="nc" id="L296">        CompositeQueueFlatFile flatFile = flatFileConcurrentMap.remove(mq);</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">        if (flatFile != null) {</span>
+<span class="nc" id="L298">            MessageQueue messageQueue = flatFile.getMessageQueue();</span>
+<span class="nc" id="L299">            logger.info(&quot;TieredFlatFileManager#destroyCompositeFile: &quot; +</span>
+                    &quot;try to destroy composite flat file: topic: {}, queueId: {}&quot;,
+<span class="nc" id="L301">                messageQueue.getTopic(), messageQueue.getQueueId());</span>
+
+            // delete queue metadata
+<span class="nc" id="L304">            flatFile.destroy();</span>
+        }
+<span class="nc" id="L306">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

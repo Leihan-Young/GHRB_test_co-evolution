@@ -1,0 +1,557 @@
+<?xml version="1.0" ?>
+<!DOCTYPE report
+  PUBLIC '-//JACOCO//DTD Report 1.1//EN'
+  'report.dtd'>
+<report name="shardingsphere-proxy-bootstrap">
+  <sessioninfo id="node1-302c9725" start="1718928471117" dump="1718928474252"/>
+  <sessioninfo id="node1-91195ed3" start="1718928520914" dump="1718928524140"/>
+  <sessioninfo id="node1-a20db0b2" start="1719001833797" dump="1719001836970"/>
+  <sessioninfo id="node1-a4f0c6e1" start="1719001881555" dump="1719001884713"/>
+  <sessioninfo id="node1-da430b47" start="1719001929834" dump="1719001933001"/>
+  <sessioninfo id="node1-eb53ff03" start="1719001977560" dump="1719001980795"/>
+  <sessioninfo id="node1-6c3af91b" start="1719002025930" dump="1719002029062"/>
+  <sessioninfo id="node1-e0803019" start="1719002096043" dump="1719002099223"/>
+  <sessioninfo id="node1-b9fc9dc9" start="1719002144546" dump="1719002147737"/>
+  <sessioninfo id="node1-4541faab" start="1719002192503" dump="1719002195921"/>
+  <sessioninfo id="node1-f2468d32" start="1719002240799" dump="1719002243930"/>
+  <sessioninfo id="node1-e1a673d6" start="1719002326771" dump="1719002329980"/>
+  <sessioninfo id="node1-a4e973e" start="1719002375794" dump="1719002378929"/>
+  <sessioninfo id="node1-1539ac96" start="1719002424824" dump="1719002428203"/>
+  <sessioninfo id="node1-e47ff497" start="1719002473219" dump="1719002476394"/>
+  <sessioninfo id="node1-34706475" start="1719002521174" dump="1719002524389"/>
+  <sessioninfo id="node1-ae9d899b" start="1719002569430" dump="1719002572595"/>
+  <sessioninfo id="node1-cb77bffc" start="1719002617241" dump="1719002620439"/>
+  <sessioninfo id="node1-7dfee5e3" start="1719002665468" dump="1719002668669"/>
+  <sessioninfo id="node1-5f83f554" start="1719035441981" dump="1719035445190"/>
+  <sessioninfo id="node1-7e02a6" start="1719035492909" dump="1719035496050"/>
+  <sessioninfo id="node1-171d59e9" start="1719069651324" dump="1719069654540"/>
+  <sessioninfo id="node1-ea76e681" start="1719069699492" dump="1719069702690"/>
+  <sessioninfo id="node1-817547d7" start="1719069747219" dump="1719069750387"/>
+  <sessioninfo id="node1-9e72c961" start="1719069794804" dump="1719069798020"/>
+  <sessioninfo id="node1-c59c04a5" start="1719069842835" dump="1719069846055"/>
+  <sessioninfo id="node1-798d3da6" start="1719069891430" dump="1719069894584"/>
+  <sessioninfo id="node1-231813c0" start="1719069940952" dump="1719069944203"/>
+  <sessioninfo id="node1-730b7c18" start="1719069989512" dump="1719069992700"/>
+  <sessioninfo id="node1-4d918ef6" start="1719070037201" dump="1719070040429"/>
+  <sessioninfo id="node1-4b49cc0c" start="1719070086185" dump="1719070089450"/>
+  <sessioninfo id="node1-89384fc3" start="1719070135991" dump="1719070139224"/>
+  <sessioninfo id="node1-f0d08848" start="1719070184773" dump="1719070187926"/>
+  <sessioninfo id="node1-b93a80c0" start="1719070233137" dump="1719070236386"/>
+  <sessioninfo id="node1-69d12742" start="1719081925019" dump="1719081928229"/>
+  <sessioninfo id="node1-bee1ea43" start="1719081975492" dump="1719081978893"/>
+  <sessioninfo id="node1-7a5c9bb8" start="1719167417119" dump="1719167420410"/>
+  <sessioninfo id="node1-ad3a191f" start="1719167465375" dump="1719167468570"/>
+  <sessioninfo id="node1-b5c0ef96" start="1719167513924" dump="1719167517171"/>
+  <sessioninfo id="node1-c54bcc63" start="1719167562998" dump="1719167566278"/>
+  <sessioninfo id="node1-ad529953" start="1719167611022" dump="1719167614240"/>
+  <sessioninfo id="node1-8ab063de" start="1719167660190" dump="1719167663432"/>
+  <sessioninfo id="node1-559c140e" start="1719167708468" dump="1719167711605"/>
+  <sessioninfo id="node1-8e43b1f0" start="1719167756964" dump="1719167760221"/>
+  <sessioninfo id="node1-2188cbe2" start="1719167804817" dump="1719167807923"/>
+  <sessioninfo id="node1-49136c9b" start="1719167853621" dump="1719167856847"/>
+  <sessioninfo id="node1-497c4cc7" start="1719178631582" dump="1719178634828"/>
+  <package name="org/apache/shardingsphere/proxy/database">
+    <class name="org/apache/shardingsphere/proxy/database/DatabaseServerInfo" sourcefilename="DatabaseServerInfo.java">
+      <method name="&lt;init&gt;" desc="(Ljavax/sql/DataSource;)V" line="38">
+        <counter type="INSTRUCTION" missed="0" covered="24"/>
+        <counter type="LINE" missed="0" covered="9"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="toString" desc="()Ljava/lang/String;" line="50">
+        <counter type="INSTRUCTION" missed="0" covered="15"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <counter type="INSTRUCTION" missed="0" covered="39"/>
+      <counter type="LINE" missed="0" covered="10"/>
+      <counter type="COMPLEXITY" missed="0" covered="2"/>
+      <counter type="METHOD" missed="0" covered="2"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <sourcefile name="DatabaseServerInfo.java">
+      <line nr="38" mi="0" ci="2" mb="0" cb="0"/>
+      <line nr="39" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="40" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="41" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="42" mi="0" ci="4" mb="0" cb="0"/>
+      <line nr="43" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="44" mi="0" ci="5" mb="0" cb="0"/>
+      <line nr="45" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="46" mi="0" ci="1" mb="0" cb="0"/>
+      <line nr="50" mi="0" ci="15" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="0" covered="39"/>
+      <counter type="LINE" missed="0" covered="10"/>
+      <counter type="COMPLEXITY" missed="0" covered="2"/>
+      <counter type="METHOD" missed="0" covered="2"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="0" covered="39"/>
+    <counter type="LINE" missed="0" covered="10"/>
+    <counter type="COMPLEXITY" missed="0" covered="2"/>
+    <counter type="METHOD" missed="0" covered="2"/>
+    <counter type="CLASS" missed="0" covered="1"/>
+  </package>
+  <package name="org/apache/shardingsphere/proxy/exception">
+    <class name="org/apache/shardingsphere/proxy/exception/DatabaseServerLoadingServerException" sourcefilename="DatabaseServerLoadingServerException.java">
+      <method name="&lt;init&gt;" desc="(Ljava/sql/SQLException;)V" line="36">
+        <counter type="INSTRUCTION" missed="0" covered="7"/>
+        <counter type="LINE" missed="0" covered="2"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <counter type="INSTRUCTION" missed="0" covered="7"/>
+      <counter type="LINE" missed="0" covered="2"/>
+      <counter type="COMPLEXITY" missed="0" covered="1"/>
+      <counter type="METHOD" missed="0" covered="1"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <sourcefile name="DatabaseServerLoadingServerException.java">
+      <line nr="36" mi="0" ci="6" mb="0" cb="0"/>
+      <line nr="37" mi="0" ci="1" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="0" covered="7"/>
+      <counter type="LINE" missed="0" covered="2"/>
+      <counter type="COMPLEXITY" missed="0" covered="1"/>
+      <counter type="METHOD" missed="0" covered="1"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="0" covered="7"/>
+    <counter type="LINE" missed="0" covered="2"/>
+    <counter type="COMPLEXITY" missed="0" covered="1"/>
+    <counter type="METHOD" missed="0" covered="1"/>
+    <counter type="CLASS" missed="0" covered="1"/>
+  </package>
+  <package name="org/apache/shardingsphere/proxy/config">
+    <class name="org/apache/shardingsphere/proxy/config/LogbackConfiguration" sourcefilename="LogbackConfiguration.java">
+      <method name="&lt;init&gt;" desc="()V" line="29">
+        <counter type="INSTRUCTION" missed="3" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="configure" desc="(Lch/qos/logback/classic/LoggerContext;)V" line="43">
+        <counter type="INSTRUCTION" missed="18" covered="0"/>
+        <counter type="LINE" missed="6" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="createConsoleAppender" desc="(Lch/qos/logback/classic/LoggerContext;)Lch/qos/logback/core/ConsoleAppender;" line="51">
+        <counter type="INSTRUCTION" missed="21" covered="0"/>
+        <counter type="LINE" missed="7" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="createEncoder" desc="(Lch/qos/logback/classic/LoggerContext;)Lch/qos/logback/core/encoder/LayoutWrappingEncoder;" line="61">
+        <counter type="INSTRUCTION" missed="16" covered="0"/>
+        <counter type="LINE" missed="5" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="createConsolePatternLayout" desc="(Lch/qos/logback/classic/LoggerContext;)Lch/qos/logback/classic/PatternLayout;" line="69">
+        <counter type="INSTRUCTION" missed="14" covered="0"/>
+        <counter type="LINE" missed="5" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="initBasicLogger" desc="(Lch/qos/logback/classic/LoggerContext;)V" line="77">
+        <counter type="INSTRUCTION" missed="21" covered="0"/>
+        <counter type="LINE" missed="5" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="93" covered="0"/>
+      <counter type="LINE" missed="29" covered="0"/>
+      <counter type="COMPLEXITY" missed="6" covered="0"/>
+      <counter type="METHOD" missed="6" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="LogbackConfiguration.java">
+      <line nr="29" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="43" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="45" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="46" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="47" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="48" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="55" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="57" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="61" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="63" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="64" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="65" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="69" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="70" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="71" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="73" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="77" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="78" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="79" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="81" mi="1" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="93" covered="0"/>
+      <counter type="LINE" missed="29" covered="0"/>
+      <counter type="COMPLEXITY" missed="6" covered="0"/>
+      <counter type="METHOD" missed="6" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="93" covered="0"/>
+    <counter type="LINE" missed="29" covered="0"/>
+    <counter type="COMPLEXITY" missed="6" covered="0"/>
+    <counter type="METHOD" missed="6" covered="0"/>
+    <counter type="CLASS" missed="1" covered="0"/>
+  </package>
+  <package name="org/apache/shardingsphere/proxy/initializer">
+    <class name="org/apache/shardingsphere/proxy/initializer/BootstrapInitializer" sourcefilename="BootstrapInitializer.java">
+      <method name="init" desc="(Lorg/apache/shardingsphere/proxy/backend/config/YamlProxyConfiguration;IZ)V" line="56">
+        <counter type="INSTRUCTION" missed="36" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="7" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="createContextManager" desc="(Lorg/apache/shardingsphere/proxy/backend/config/ProxyConfiguration;Lorg/apache/shardingsphere/infra/config/mode/ModeConfiguration;IZ)Lorg/apache/shardingsphere/mode/manager/ContextManager;" line="65">
+        <counter type="INSTRUCTION" missed="36" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="createInstanceMetaData" desc="(I)Lorg/apache/shardingsphere/infra/instance/metadata/InstanceMetaData;" line="72">
+        <counter type="INSTRUCTION" missed="7" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="contextManagerInitializedCallback" desc="(Lorg/apache/shardingsphere/mode/manager/ContextManager;)V" line="76">
+        <counter type="INSTRUCTION" missed="26" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="7" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;clinit&gt;" desc="()V" line="44">
+        <counter type="INSTRUCTION" missed="4" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="109" covered="0"/>
+      <counter type="BRANCH" missed="6" covered="0"/>
+      <counter type="LINE" missed="20" covered="0"/>
+      <counter type="COMPLEXITY" missed="8" covered="0"/>
+      <counter type="METHOD" missed="5" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="BootstrapInitializer.java">
+      <line nr="44" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="15" ci="0" mb="2" cb="0"/>
+      <line nr="57" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="59" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="61" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="65" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="66" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="67" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="68" mi="13" ci="0" mb="2" cb="0"/>
+      <line nr="72" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="76" mi="11" ci="0" mb="2" cb="0"/>
+      <line nr="78" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="80" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="82" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="83" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="84" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="85" mi="1" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="109" covered="0"/>
+      <counter type="BRANCH" missed="6" covered="0"/>
+      <counter type="LINE" missed="20" covered="0"/>
+      <counter type="COMPLEXITY" missed="8" covered="0"/>
+      <counter type="METHOD" missed="5" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="109" covered="0"/>
+    <counter type="BRANCH" missed="6" covered="0"/>
+    <counter type="LINE" missed="20" covered="0"/>
+    <counter type="COMPLEXITY" missed="8" covered="0"/>
+    <counter type="METHOD" missed="5" covered="0"/>
+    <counter type="CLASS" missed="1" covered="0"/>
+  </package>
+  <package name="org/apache/shardingsphere/proxy">
+    <class name="org/apache/shardingsphere/proxy/Bootstrap" sourcefilename="Bootstrap.java">
+      <method name="main" desc="([Ljava/lang/String;)V" line="51">
+        <counter type="INSTRUCTION" missed="57" covered="0"/>
+        <counter type="LINE" missed="12" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="lambda$main$1" desc="(Ljava/util/List;Ljava/lang/Integer;)V" line="57">
+        <counter type="INSTRUCTION" missed="8" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="lambda$main$0" desc="(Lorg/apache/shardingsphere/proxy/backend/config/YamlProxyConfiguration;)Ljava/lang/Integer;" line="53">
+        <counter type="INSTRUCTION" missed="10" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="75" covered="0"/>
+      <counter type="LINE" missed="12" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="Bootstrap.java">
+      <line nr="51" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="18" ci="0" mb="0" cb="0"/>
+      <line nr="54" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="55" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="10" ci="0" mb="0" cb="0"/>
+      <line nr="57" mi="9" ci="0" mb="0" cb="0"/>
+      <line nr="58" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="59" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="61" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="1" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="75" covered="0"/>
+      <counter type="LINE" missed="12" covered="0"/>
+      <counter type="COMPLEXITY" missed="3" covered="0"/>
+      <counter type="METHOD" missed="3" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="75" covered="0"/>
+    <counter type="LINE" missed="12" covered="0"/>
+    <counter type="COMPLEXITY" missed="3" covered="0"/>
+    <counter type="METHOD" missed="3" covered="0"/>
+    <counter type="CLASS" missed="1" covered="0"/>
+  </package>
+  <package name="org/apache/shardingsphere/proxy/version">
+    <class name="org/apache/shardingsphere/proxy/version/ShardingSphereProxyVersion" sourcefilename="ShardingSphereProxyVersion.java">
+      <method name="setVersion" desc="(Lorg/apache/shardingsphere/mode/manager/ContextManager;)V" line="51">
+        <counter type="INSTRUCTION" missed="11" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getProxyVersion" desc="()Ljava/lang/String;" line="56">
+        <counter type="INSTRUCTION" missed="35" covered="0"/>
+        <counter type="BRANCH" missed="6" covered="0"/>
+        <counter type="LINE" missed="6" covered="0"/>
+        <counter type="COMPLEXITY" missed="4" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="setDatabaseVersion" desc="(Lorg/apache/shardingsphere/infra/metadata/database/ShardingSphereDatabase;)V" line="66">
+        <counter type="INSTRUCTION" missed="31" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="7" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="findDataSourceByProtocolType" desc="(Ljava/lang/String;Lorg/apache/shardingsphere/infra/metadata/database/resource/ResourceMetaData;Lorg/apache/shardingsphere/infra/database/core/type/DatabaseType;)Ljava/util/Optional;" line="76">
+        <counter type="INSTRUCTION" missed="18" covered="0"/>
+        <counter type="LINE" missed="3" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="lambda$findDataSourceByProtocolType$1" desc="(Ljava/lang/String;Lorg/apache/shardingsphere/infra/metadata/database/resource/ResourceMetaData;Ljava/lang/String;)Ljava/util/Optional;" line="78">
+        <counter type="INSTRUCTION" missed="11" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="lambda$findDataSourceByProtocolType$0" desc="(Lorg/apache/shardingsphere/infra/database/core/type/DatabaseType;Ljava/util/Map$Entry;)Z" line="77">
+        <counter type="INSTRUCTION" missed="7" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;clinit&gt;" desc="()V" line="42">
+        <counter type="INSTRUCTION" missed="4" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="117" covered="0"/>
+      <counter type="BRANCH" missed="8" covered="0"/>
+      <counter type="LINE" missed="21" covered="0"/>
+      <counter type="COMPLEXITY" missed="11" covered="0"/>
+      <counter type="METHOD" missed="7" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="ShardingSphereProxyVersion.java">
+      <line nr="42" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="51" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="53" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="57" mi="5" ci="0" mb="4" cb="0"/>
+      <line nr="58" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="13" ci="0" mb="2" cb="0"/>
+      <line nr="61" mi="11" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="66" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="67" mi="3" ci="0" mb="2" cb="0"/>
+      <line nr="68" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="70" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="71" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="73" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="76" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="77" mi="15" ci="0" mb="0" cb="0"/>
+      <line nr="78" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="79" mi="9" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="117" covered="0"/>
+      <counter type="BRANCH" missed="8" covered="0"/>
+      <counter type="LINE" missed="21" covered="0"/>
+      <counter type="COMPLEXITY" missed="11" covered="0"/>
+      <counter type="METHOD" missed="7" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="117" covered="0"/>
+    <counter type="BRANCH" missed="8" covered="0"/>
+    <counter type="LINE" missed="21" covered="0"/>
+    <counter type="COMPLEXITY" missed="11" covered="0"/>
+    <counter type="METHOD" missed="7" covered="0"/>
+    <counter type="CLASS" missed="1" covered="0"/>
+  </package>
+  <package name="org/apache/shardingsphere/proxy/arguments">
+    <class name="org/apache/shardingsphere/proxy/arguments/BootstrapArguments" sourcefilename="BootstrapArguments.java">
+      <method name="getPort" desc="()Ljava/util/Optional;" line="52">
+        <counter type="INSTRUCTION" missed="37" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="8" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getConfigurationPath" desc="()Ljava/lang/String;" line="72">
+        <counter type="INSTRUCTION" missed="14" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getAddresses" desc="()Ljava/util/List;" line="81">
+        <counter type="INSTRUCTION" missed="24" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getSocketPath" desc="()Ljava/util/Optional;" line="94">
+        <counter type="INSTRUCTION" missed="24" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="4" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="isForce" desc="()Z" line="107">
+        <counter type="INSTRUCTION" missed="16" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="parseForceParameter" desc="(Ljava/lang/String;)Z" line="111">
+        <counter type="INSTRUCTION" missed="6" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="paddingWithSlash" desc="(Ljava/lang/String;)Ljava/lang/String;" line="115">
+        <counter type="INSTRUCTION" missed="25" covered="0"/>
+        <counter type="BRANCH" missed="4" covered="0"/>
+        <counter type="LINE" missed="6" covered="0"/>
+        <counter type="COMPLEXITY" missed="3" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="isValidPath" desc="(Ljava/lang/String;)Z" line="127">
+        <counter type="INSTRUCTION" missed="21" covered="0"/>
+        <counter type="LINE" missed="5" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="lambda$getSocketPath$0" desc="(Ljava/lang/String;)Z" line="98">
+        <counter type="INSTRUCTION" missed="7" covered="0"/>
+        <counter type="BRANCH" missed="2" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="2" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="&lt;clinit&gt;" desc="()V" line="35">
+        <counter type="INSTRUCTION" missed="10" covered="0"/>
+        <counter type="LINE" missed="2" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <counter type="INSTRUCTION" missed="184" covered="0"/>
+      <counter type="BRANCH" missed="20" covered="0"/>
+      <counter type="LINE" missed="32" covered="0"/>
+      <counter type="COMPLEXITY" missed="20" covered="0"/>
+      <counter type="METHOD" missed="10" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </class>
+    <sourcefile name="BootstrapArguments.java">
+      <line nr="35" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="39" mi="7" ci="0" mb="0" cb="0"/>
+      <line nr="52" mi="5" ci="0" mb="2" cb="0"/>
+      <line nr="53" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="56" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="57" mi="2" ci="0" mb="2" cb="0"/>
+      <line nr="58" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="60" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="61" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="62" mi="15" ci="0" mb="0" cb="0"/>
+      <line nr="72" mi="14" ci="0" mb="2" cb="0"/>
+      <line nr="81" mi="5" ci="0" mb="2" cb="0"/>
+      <line nr="82" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="84" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="85" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="94" mi="5" ci="0" mb="2" cb="0"/>
+      <line nr="95" mi="2" ci="0" mb="0" cb="0"/>
+      <line nr="97" mi="8" ci="0" mb="0" cb="0"/>
+      <line nr="98" mi="16" ci="0" mb="2" cb="0"/>
+      <line nr="107" mi="16" ci="0" mb="4" cb="0"/>
+      <line nr="111" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="115" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="116" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="117" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="119" mi="4" ci="0" mb="2" cb="0"/>
+      <line nr="120" mi="4" ci="0" mb="0" cb="0"/>
+      <line nr="122" mi="3" ci="0" mb="0" cb="0"/>
+      <line nr="127" mi="5" ci="0" mb="0" cb="0"/>
+      <line nr="128" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="129" mi="12" ci="0" mb="0" cb="0"/>
+      <line nr="130" mi="1" ci="0" mb="0" cb="0"/>
+      <line nr="131" mi="2" ci="0" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="184" covered="0"/>
+      <counter type="BRANCH" missed="20" covered="0"/>
+      <counter type="LINE" missed="32" covered="0"/>
+      <counter type="COMPLEXITY" missed="20" covered="0"/>
+      <counter type="METHOD" missed="10" covered="0"/>
+      <counter type="CLASS" missed="1" covered="0"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="184" covered="0"/>
+    <counter type="BRANCH" missed="20" covered="0"/>
+    <counter type="LINE" missed="32" covered="0"/>
+    <counter type="COMPLEXITY" missed="20" covered="0"/>
+    <counter type="METHOD" missed="10" covered="0"/>
+    <counter type="CLASS" missed="1" covered="0"/>
+  </package>
+  <counter type="INSTRUCTION" missed="578" covered="46"/>
+  <counter type="BRANCH" missed="34" covered="0"/>
+  <counter type="LINE" missed="114" covered="12"/>
+  <counter type="COMPLEXITY" missed="48" covered="3"/>
+  <counter type="METHOD" missed="31" covered="3"/>
+  <counter type="CLASS" missed="5" covered="2"/>
+</report>

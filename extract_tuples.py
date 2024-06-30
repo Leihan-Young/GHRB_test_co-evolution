@@ -336,6 +336,7 @@ def extract_tuples_from_sample_info(sample_info, project_info):
                                                   sample_info['merge_commit'], f'{test_path}#{test_method_name}', 
                                                   related_test_tgt, sample_info['bug_id'])
         tuple['test_src_code'] = parse_test_src_code(project_info['repo_path'], sample_info['buggy_commit'], f'{test_path}#{test_method_name}')
+        tuple['test_tgt_code'] = parse_test_src_code(project_info['repo_path'], sample_info['merge_commit'], f'{test_path}#{test_method_name}')
         if focal_path_src == None or focal_path_tgt == None or focal_src == None or focal_tgt == None:
             continue
         tuple['focal_path_src'] = focal_path_src
@@ -431,8 +432,6 @@ if __name__ == "__main__":
                 output_name = file.replace("unverified_samples", "verified_tuples")
                 project_name = file.split('_')[-1].replace(".json", "")
                 if os.path.exists(f"verified/{output_name}"):
-                    continue
-                if project_name != 'gson':
                     continue
                 print(project_name)
                 try:

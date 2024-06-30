@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConsistentHashingStickyKeyConsumerSelector.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pulsar Broker</a> &gt; <a href="index.source.html" class="el_package">org.apache.pulsar.broker.service</a> &gt; <span class="el_source">ConsistentHashingStickyKeyConsumerSelector.java</span></div><h1>ConsistentHashingStickyKeyConsumerSelector.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.pulsar.broker.service;
+
+import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.apache.pulsar.client.api.Range;
+import org.apache.pulsar.common.util.Murmur3_32Hash;
+
+/**
+ * This is a consumer selector based fixed hash range.
+ *
+ * The implementation uses consistent hashing to evenly split, the
+ * number of keys assigned to each consumer.
+ */
+public class ConsistentHashingStickyKeyConsumerSelector implements StickyKeyConsumerSelector {
+    // use NUL character as field separator for hash key calculation
+    private static final String KEY_SEPARATOR = &quot;\0&quot;;
+<span class="fc" id="L44">    private final ReadWriteLock rwLock = new ReentrantReadWriteLock();</span>
+
+    // Consistent-Hash ring
+    private final NavigableMap&lt;Integer, List&lt;Consumer&gt;&gt; hashRing;
+
+    private final int numberOfPoints;
+
+<span class="fc" id="L51">    public ConsistentHashingStickyKeyConsumerSelector(int numberOfPoints) {</span>
+<span class="fc" id="L52">        this.hashRing = new TreeMap&lt;&gt;();</span>
+<span class="fc" id="L53">        this.numberOfPoints = numberOfPoints;</span>
+<span class="fc" id="L54">    }</span>
+
+    @Override
+    public CompletableFuture&lt;Void&gt; addConsumer(Consumer consumer) {
+<span class="fc" id="L58">        rwLock.writeLock().lock();</span>
+        try {
+            // Insert multiple points on the hash ring for every consumer
+            // The points are deterministically added based on the hash of the consumer name
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            for (int i = 0; i &lt; numberOfPoints; i++) {</span>
+<span class="fc" id="L63">                int hash = calculateHashForConsumerAndIndex(consumer, i);</span>
+<span class="fc" id="L64">                hashRing.compute(hash, (k, v) -&gt; {</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">                    if (v == null) {</span>
+<span class="fc" id="L66">                        return Lists.newArrayList(consumer);</span>
+                    } else {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">                        if (!v.contains(consumer)) {</span>
+<span class="nc" id="L69">                            v.add(consumer);</span>
+<span class="nc" id="L70">                            v.sort(Comparator.comparing(Consumer::consumerName, String::compareTo));</span>
+                        }
+<span class="nc" id="L72">                        return v;</span>
+                    }
+                });
+            }
+<span class="fc" id="L76">            return CompletableFuture.completedFuture(null);</span>
+        } finally {
+<span class="fc" id="L78">            rwLock.writeLock().unlock();</span>
+        }
+    }
+
+    private static int calculateHashForConsumerAndIndex(Consumer consumer, int index) {
+<span class="fc" id="L83">        String key = consumer.consumerName() + KEY_SEPARATOR + index;</span>
+<span class="fc" id="L84">        return Murmur3_32Hash.getInstance().makeHash(key.getBytes());</span>
+    }
+
+    @Override
+    public void removeConsumer(Consumer consumer) {
+<span class="nc" id="L89">        rwLock.writeLock().lock();</span>
+        try {
+            // Remove all the points that were added for this consumer
+<span class="nc bnc" id="L92" title="All 2 branches missed.">            for (int i = 0; i &lt; numberOfPoints; i++) {</span>
+<span class="nc" id="L93">                int hash = calculateHashForConsumerAndIndex(consumer, i);</span>
+<span class="nc" id="L94">                hashRing.compute(hash, (k, v) -&gt; {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                    if (v == null) {</span>
+<span class="nc" id="L96">                        return null;</span>
+                    } else {
+<span class="nc" id="L98">                        v.removeIf(c -&gt; c.equals(consumer));</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">                        if (v.isEmpty()) {</span>
+<span class="nc" id="L100">                            v = null;</span>
+                        }
+<span class="nc" id="L102">                        return v;</span>
+                    }
+                });
+            }
+        } finally {
+<span class="nc" id="L107">            rwLock.writeLock().unlock();</span>
+        }
+<span class="nc" id="L109">    }</span>
+
+    @Override
+    public Consumer select(int hash) {
+<span class="nc" id="L113">        rwLock.readLock().lock();</span>
+        try {
+<span class="nc bnc" id="L115" title="All 2 branches missed.">            if (hashRing.isEmpty()) {</span>
+<span class="nc" id="L116">                return null;</span>
+            }
+
+            List&lt;Consumer&gt; consumerList;
+<span class="nc" id="L120">            Map.Entry&lt;Integer, List&lt;Consumer&gt;&gt; ceilingEntry = hashRing.ceilingEntry(hash);</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            if (ceilingEntry != null) {</span>
+<span class="nc" id="L122">                consumerList =  ceilingEntry.getValue();</span>
+            } else {
+<span class="nc" id="L124">                consumerList = hashRing.firstEntry().getValue();</span>
+            }
+
+<span class="nc" id="L127">            return consumerList.get(hash % consumerList.size());</span>
+        } finally {
+<span class="nc" id="L129">            rwLock.readLock().unlock();</span>
+        }
+    }
+
+    @Override
+    public Map&lt;Consumer, List&lt;Range&gt;&gt; getConsumerKeyHashRanges() {
+<span class="fc" id="L135">        Map&lt;Consumer, List&lt;Range&gt;&gt; result = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L136">        rwLock.readLock().lock();</span>
+        try {
+<span class="fc" id="L138">            int start = 0;</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">            for (Map.Entry&lt;Integer, List&lt;Consumer&gt;&gt; entry: hashRing.entrySet()) {</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">                for (Consumer consumer: entry.getValue()) {</span>
+<span class="fc" id="L141">                    result.computeIfAbsent(consumer, key -&gt; new ArrayList&lt;&gt;())</span>
+<span class="fc" id="L142">                            .add(Range.of(start, entry.getKey()));</span>
+<span class="fc" id="L143">                }</span>
+<span class="fc" id="L144">                start = entry.getKey() + 1;</span>
+<span class="fc" id="L145">            }</span>
+        } finally {
+<span class="fc" id="L147">            rwLock.readLock().unlock();</span>
+        }
+<span class="fc" id="L149">        return result;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

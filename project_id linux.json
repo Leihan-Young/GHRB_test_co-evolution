@@ -36,8 +36,9 @@
     "repo_path": "/workspace/GHRB_test_co-evolution/collected/raw_repos/shardingsphere",
     "requirements": {
       "build": "maven",
-      "wrapper": true,
+      "wrapper": false,
       "jdk": "11",
+      "version": "3.8.6",
       "extra": {
         "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true"
       }
@@ -81,7 +82,7 @@
       "build": "maven",
       "wrapper": false,
       "jdk": "17",
-	  "version": "3.8.6",
+	    "version": "3.8.6",
       "extra": {
         "command": "-Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true -Dlicense.skip=true"
       }

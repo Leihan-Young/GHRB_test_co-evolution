@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<!DOCTYPE report
+  PUBLIC '-//JACOCO//DTD Report 1.1//EN'
+  'report.dtd'>
+<report name="shardingsphere-infra-database-mariadb">
+  <sessioninfo id="node1-77466dd7" start="1718921484117" dump="1718921484807"/>
+  <sessioninfo id="node1-a845b2f6" start="1718921527898" dump="1718921528524"/>
+  <sessioninfo id="node1-6bd3dc7e" start="1718921571324" dump="1718921571963"/>
+  <sessioninfo id="node1-1f8151a6" start="1718921613331" dump="1718921614011"/>
+  <sessioninfo id="node1-d9286003" start="1718929264455" dump="1718929265101"/>
+  <package name="org/apache/shardingsphere/infra/database/mariadb/type">
+    <class name="org/apache/shardingsphere/infra/database/mariadb/type/MariaDBDatabaseType" sourcefilename="MariaDBDatabaseType.java">
+      <method name="&lt;init&gt;" desc="()V" line="30">
+        <counter type="INSTRUCTION" missed="0" covered="3"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="getJdbcUrlPrefixes" desc="()Ljava/util/Collection;" line="34">
+        <counter type="INSTRUCTION" missed="0" covered="21"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <method name="getTrunkDatabaseType" desc="()Ljava/util/Optional;" line="39">
+        <counter type="INSTRUCTION" missed="6" covered="0"/>
+        <counter type="LINE" missed="1" covered="0"/>
+        <counter type="COMPLEXITY" missed="1" covered="0"/>
+        <counter type="METHOD" missed="1" covered="0"/>
+      </method>
+      <method name="getType" desc="()Ljava/lang/String;" line="44">
+        <counter type="INSTRUCTION" missed="0" covered="2"/>
+        <counter type="LINE" missed="0" covered="1"/>
+        <counter type="COMPLEXITY" missed="0" covered="1"/>
+        <counter type="METHOD" missed="0" covered="1"/>
+      </method>
+      <counter type="INSTRUCTION" missed="6" covered="26"/>
+      <counter type="LINE" missed="1" covered="3"/>
+      <counter type="COMPLEXITY" missed="1" covered="3"/>
+      <counter type="METHOD" missed="1" covered="3"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </class>
+    <sourcefile name="MariaDBDatabaseType.java">
+      <line nr="30" mi="0" ci="3" mb="0" cb="0"/>
+      <line nr="34" mi="0" ci="21" mb="0" cb="0"/>
+      <line nr="39" mi="6" ci="0" mb="0" cb="0"/>
+      <line nr="44" mi="0" ci="2" mb="0" cb="0"/>
+      <counter type="INSTRUCTION" missed="6" covered="26"/>
+      <counter type="LINE" missed="1" covered="3"/>
+      <counter type="COMPLEXITY" missed="1" covered="3"/>
+      <counter type="METHOD" missed="1" covered="3"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </sourcefile>
+    <counter type="INSTRUCTION" missed="6" covered="26"/>
+    <counter type="LINE" missed="1" covered="3"/>
+    <counter type="COMPLEXITY" missed="1" covered="3"/>
+    <counter type="METHOD" missed="1" covered="3"/>
+    <counter type="CLASS" missed="0" covered="1"/>
+  </package>
+  <counter type="INSTRUCTION" missed="6" covered="26"/>
+  <counter type="LINE" missed="1" covered="3"/>
+  <counter type="COMPLEXITY" missed="1" covered="3"/>
+  <counter type="METHOD" missed="1" covered="3"/>
+  <counter type="CLASS" missed="0" covered="1"/>
+</report>

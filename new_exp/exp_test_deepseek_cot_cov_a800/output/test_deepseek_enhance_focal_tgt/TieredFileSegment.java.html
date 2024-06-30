@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TieredFileSegment.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-tiered-store 5.1.4-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.tieredstore.provider</a> &gt; <span class="el_source">TieredFileSegment.java</span></div><h1>TieredFileSegment.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.rocketmq.tieredstore.provider;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
+import org.apache.rocketmq.logging.org.slf4j.Logger;
+import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+import org.apache.rocketmq.tieredstore.common.AppendResult;
+import org.apache.rocketmq.tieredstore.common.FileSegmentType;
+import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
+import org.apache.rocketmq.tieredstore.exception.TieredStoreErrorCode;
+import org.apache.rocketmq.tieredstore.exception.TieredStoreException;
+import org.apache.rocketmq.tieredstore.file.TieredCommitLog;
+import org.apache.rocketmq.tieredstore.file.TieredConsumeQueue;
+import org.apache.rocketmq.tieredstore.file.TieredIndexFile;
+import org.apache.rocketmq.tieredstore.provider.stream.FileSegmentInputStream;
+import org.apache.rocketmq.tieredstore.provider.stream.FileSegmentInputStreamFactory;
+import org.apache.rocketmq.tieredstore.util.MessageBufferUtil;
+import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
+
+public abstract class TieredFileSegment implements Comparable&lt;TieredFileSegment&gt;, TieredStoreProvider {
+
+<span class="fc" id="L42">    private static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);</span>
+
+    protected final String filePath;
+    protected final long baseOffset;
+    protected final FileSegmentType fileType;
+    protected final TieredMessageStoreConfig storeConfig;
+
+    private final long maxSize;
+<span class="fc" id="L50">    private final ReentrantLock bufferLock = new ReentrantLock();</span>
+<span class="fc" id="L51">    private final Semaphore commitLock = new Semaphore(1);</span>
+
+<span class="fc" id="L53">    private volatile boolean full = false;</span>
+<span class="fc" id="L54">    private volatile boolean closed = false;</span>
+
+<span class="fc" id="L56">    private volatile long minTimestamp = Long.MAX_VALUE;</span>
+<span class="fc" id="L57">    private volatile long maxTimestamp = Long.MAX_VALUE;</span>
+<span class="fc" id="L58">    private volatile long commitPosition = 0L;</span>
+<span class="fc" id="L59">    private volatile long appendPosition = 0L;</span>
+
+    // only used in commitLog
+<span class="fc" id="L62">    private volatile long dispatchCommitOffset = 0L;</span>
+
+    private ByteBuffer codaBuffer;
+<span class="fc" id="L65">    private List&lt;ByteBuffer&gt; bufferList = new ArrayList&lt;&gt;();</span>
+    private FileSegmentInputStream fileSegmentInputStream;
+<span class="fc" id="L67">    private CompletableFuture&lt;Boolean&gt; flightCommitRequest = CompletableFuture.completedFuture(false);</span>
+
+    public TieredFileSegment(TieredMessageStoreConfig storeConfig,
+<span class="fc" id="L70">        FileSegmentType fileType, String filePath, long baseOffset) {</span>
+
+<span class="fc" id="L72">        this.storeConfig = storeConfig;</span>
+<span class="fc" id="L73">        this.fileType = fileType;</span>
+<span class="fc" id="L74">        this.filePath = filePath;</span>
+<span class="fc" id="L75">        this.baseOffset = baseOffset;</span>
+<span class="fc" id="L76">        this.maxSize = getMaxSizeByFileType();</span>
+<span class="fc" id="L77">    }</span>
+
+    /**
+     * The max segment size of a file is determined by the file type
+     */
+    protected long getMaxSizeByFileType() {
+<span class="pc bpc" id="L83" title="3 of 4 branches missed.">        switch (fileType) {</span>
+            case COMMIT_LOG:
+<span class="fc" id="L85">                return storeConfig.getTieredStoreCommitLogMaxSize();</span>
+            case CONSUME_QUEUE:
+<span class="nc" id="L87">                return storeConfig.getTieredStoreConsumeQueueMaxSize();</span>
+            case INDEX:
+<span class="nc" id="L89">                return Long.MAX_VALUE;</span>
+            default:
+<span class="nc" id="L91">                throw new IllegalArgumentException(&quot;Unsupported file type: &quot; + fileType);</span>
+        }
+    }
+
+    @Override
+    public int compareTo(TieredFileSegment o) {
+<span class="nc" id="L97">        return Long.compare(this.baseOffset, o.baseOffset);</span>
+    }
+
+    public long getBaseOffset() {
+<span class="nc" id="L101">        return baseOffset;</span>
+    }
+
+    public long getCommitOffset() {
+<span class="nc" id="L105">        return baseOffset + commitPosition;</span>
+    }
+
+    public long getCommitPosition() {
+<span class="nc" id="L109">        return commitPosition;</span>
+    }
+
+    public long getDispatchCommitOffset() {
+<span class="nc" id="L113">        return dispatchCommitOffset;</span>
+    }
+
+    public long getMaxOffset() {
+<span class="fc" id="L117">        return baseOffset + appendPosition;</span>
+    }
+
+    public long getMaxSize() {
+<span class="nc" id="L121">        return maxSize;</span>
+    }
+
+    public long getMinTimestamp() {
+<span class="nc" id="L125">        return minTimestamp;</span>
+    }
+
+    public void setMinTimestamp(long minTimestamp) {
+<span class="nc" id="L129">        this.minTimestamp = minTimestamp;</span>
+<span class="nc" id="L130">    }</span>
+
+    public long getMaxTimestamp() {
+<span class="nc" id="L133">        return maxTimestamp;</span>
+    }
+
+    public void setMaxTimestamp(long maxTimestamp) {
+<span class="nc" id="L137">        this.maxTimestamp = maxTimestamp;</span>
+<span class="nc" id="L138">    }</span>
+
+    public boolean isFull() {
+<span class="nc" id="L141">        return full;</span>
+    }
+
+    public void setFull() {
+<span class="nc" id="L145">        setFull(true);</span>
+<span class="nc" id="L146">    }</span>
+
+    public void setFull(boolean appendCoda) {
+<span class="nc" id="L149">        bufferLock.lock();</span>
+        try {
+<span class="nc" id="L151">            full = true;</span>
+<span class="nc bnc" id="L152" title="All 4 branches missed.">            if (fileType == FileSegmentType.COMMIT_LOG &amp;&amp; appendCoda) {</span>
+<span class="nc" id="L153">                appendCoda();</span>
+            }
+        } finally {
+<span class="nc" id="L156">            bufferLock.unlock();</span>
+        }
+<span class="nc" id="L158">    }</span>
+
+    public boolean isClosed() {
+<span class="nc" id="L161">        return closed;</span>
+    }
+
+    public void close() {
+<span class="nc" id="L165">        closed = true;</span>
+<span class="nc" id="L166">    }</span>
+
+    public FileSegmentType getFileType() {
+<span class="nc" id="L169">        return fileType;</span>
+    }
+
+    public void initPosition(long pos) {
+<span class="nc" id="L173">        this.commitPosition = pos;</span>
+<span class="nc" id="L174">        this.appendPosition = pos;</span>
+<span class="nc" id="L175">    }</span>
+
+    private List&lt;ByteBuffer&gt; borrowBuffer() {
+<span class="fc" id="L178">        bufferLock.lock();</span>
+        try {
+<span class="fc" id="L180">            List&lt;ByteBuffer&gt; tmp = bufferList;</span>
+<span class="fc" id="L181">            bufferList = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L182">            return tmp;</span>
+        } finally {
+<span class="fc" id="L184">            bufferLock.unlock();</span>
+        }
+    }
+
+    @SuppressWarnings(&quot;NonAtomicOperationOnVolatileField&quot;)
+    public AppendResult append(ByteBuffer byteBuf, long timestamp) {
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">        if (closed) {</span>
+<span class="nc" id="L191">            return AppendResult.FILE_CLOSED;</span>
+        }
+
+<span class="fc" id="L194">        bufferLock.lock();</span>
+        try {
+<span class="pc bpc" id="L196" title="2 of 4 branches missed.">            if (full || codaBuffer != null) {</span>
+<span class="nc" id="L197">                return AppendResult.FILE_FULL;</span>
+            }
+
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">            if (fileType == FileSegmentType.INDEX) {</span>
+<span class="nc" id="L201">                minTimestamp = byteBuf.getLong(TieredIndexFile.INDEX_FILE_HEADER_BEGIN_TIME_STAMP_POSITION);</span>
+<span class="nc" id="L202">                maxTimestamp = byteBuf.getLong(TieredIndexFile.INDEX_FILE_HEADER_END_TIME_STAMP_POSITION);</span>
+<span class="nc" id="L203">                appendPosition += byteBuf.remaining();</span>
+                // IndexFile is large and not change after compaction, no need deep copy
+<span class="nc" id="L205">                bufferList.add(byteBuf);</span>
+<span class="nc" id="L206">                setFull();</span>
+<span class="nc" id="L207">                return AppendResult.SUCCESS;</span>
+            }
+
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">            if (appendPosition + byteBuf.remaining() &gt; maxSize) {</span>
+<span class="nc" id="L211">                setFull();</span>
+<span class="nc" id="L212">                return AppendResult.FILE_FULL;</span>
+            }
+
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">            if (bufferList.size() &gt; storeConfig.getTieredStoreGroupCommitCount()</span>
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">                || appendPosition - commitPosition &gt; storeConfig.getTieredStoreGroupCommitSize()) {</span>
+<span class="nc" id="L217">                commitAsync();</span>
+            }
+
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">            if (bufferList.size() &gt; storeConfig.getTieredStoreMaxGroupCommitCount()) {</span>
+<span class="nc" id="L221">                logger.debug(&quot;File segment append buffer full, file: {}, buffer size: {}, pending bytes: {}&quot;,</span>
+<span class="nc" id="L222">                    getPath(), bufferList.size(), appendPosition - commitPosition);</span>
+<span class="nc" id="L223">                return AppendResult.BUFFER_FULL;</span>
+            }
+
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">            if (timestamp != Long.MAX_VALUE) {</span>
+<span class="fc" id="L227">                maxTimestamp = timestamp;</span>
+<span class="fc bfc" id="L228" title="All 2 branches covered.">                if (minTimestamp == Long.MAX_VALUE) {</span>
+<span class="fc" id="L229">                    minTimestamp = timestamp;</span>
+                }
+            }
+
+<span class="fc" id="L233">            appendPosition += byteBuf.remaining();</span>
+
+            // deep copy buffer
+<span class="fc" id="L236">            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(byteBuf.remaining());</span>
+<span class="fc" id="L237">            byteBuffer.put(byteBuf);</span>
+<span class="fc" id="L238">            byteBuffer.flip();</span>
+<span class="fc" id="L239">            byteBuf.rewind();</span>
+
+<span class="fc" id="L241">            bufferList.add(byteBuffer);</span>
+<span class="fc" id="L242">            return AppendResult.SUCCESS;</span>
+        } finally {
+<span class="fc" id="L244">            bufferLock.unlock();</span>
+        }
+    }
+
+    public void setCommitPosition(long commitPosition) {
+<span class="nc" id="L249">        this.commitPosition = commitPosition;</span>
+<span class="nc" id="L250">    }</span>
+
+    public long getAppendPosition() {
+<span class="nc" id="L253">        return appendPosition;</span>
+    }
+
+    public void setAppendPosition(long appendPosition) {
+<span class="nc" id="L257">        this.appendPosition = appendPosition;</span>
+<span class="nc" id="L258">    }</span>
+
+    @SuppressWarnings(&quot;NonAtomicOperationOnVolatileField&quot;)
+    private void appendCoda() {
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        if (codaBuffer != null) {</span>
+<span class="nc" id="L263">            return;</span>
+        }
+<span class="nc" id="L265">        codaBuffer = ByteBuffer.allocate(TieredCommitLog.CODA_SIZE);</span>
+<span class="nc" id="L266">        codaBuffer.putInt(TieredCommitLog.CODA_SIZE);</span>
+<span class="nc" id="L267">        codaBuffer.putInt(TieredCommitLog.BLANK_MAGIC_CODE);</span>
+<span class="nc" id="L268">        codaBuffer.putLong(maxTimestamp);</span>
+<span class="nc" id="L269">        codaBuffer.flip();</span>
+<span class="nc" id="L270">        appendPosition += TieredCommitLog.CODA_SIZE;</span>
+<span class="nc" id="L271">    }</span>
+
+    public ByteBuffer read(long position, int length) {
+<span class="nc" id="L274">        return readAsync(position, length).join();</span>
+    }
+
+    public CompletableFuture&lt;ByteBuffer&gt; readAsync(long position, int length) {
+<span class="nc" id="L278">        CompletableFuture&lt;ByteBuffer&gt; future = new CompletableFuture&lt;&gt;();</span>
+<span class="nc bnc" id="L279" title="All 4 branches missed.">        if (position &lt; 0 || length &lt; 0) {</span>
+<span class="nc" id="L280">            future.completeExceptionally(</span>
+                new TieredStoreException(TieredStoreErrorCode.ILLEGAL_PARAM, &quot;position or length is negative&quot;));
+<span class="nc" id="L282">            return future;</span>
+        }
+<span class="nc bnc" id="L284" title="All 2 branches missed.">        if (length == 0) {</span>
+<span class="nc" id="L285">            future.completeExceptionally(</span>
+                new TieredStoreException(TieredStoreErrorCode.ILLEGAL_PARAM, &quot;length is zero&quot;));
+<span class="nc" id="L287">            return future;</span>
+        }
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        if (position &gt;= commitPosition) {</span>
+<span class="nc" id="L290">            future.completeExceptionally(</span>
+                new TieredStoreException(TieredStoreErrorCode.ILLEGAL_PARAM, &quot;position is illegal&quot;));
+<span class="nc" id="L292">            return future;</span>
+        }
+<span class="nc bnc" id="L294" title="All 2 branches missed.">        if (position + length &gt; commitPosition) {</span>
+<span class="nc" id="L295">            logger.warn(&quot;TieredFileSegment#readAsync request position + length is greater than commit position,&quot; +</span>
+                    &quot; correct length using commit position, file: {}, request position: {}, commit position:{}, change length from {} to {}&quot;,
+<span class="nc" id="L297">                getPath(), position, commitPosition, length, commitPosition - position);</span>
+<span class="nc" id="L298">            length = (int) (commitPosition - position);</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">            if (length == 0) {</span>
+<span class="nc" id="L300">                future.completeExceptionally(</span>
+                    new TieredStoreException(TieredStoreErrorCode.NO_NEW_DATA, &quot;request position is equal to commit position&quot;));
+<span class="nc" id="L302">                return future;</span>
+            }
+<span class="nc bnc" id="L304" title="All 4 branches missed.">            if (fileType == FileSegmentType.CONSUME_QUEUE &amp;&amp; length % TieredConsumeQueue.CONSUME_QUEUE_STORE_UNIT_SIZE != 0) {</span>
+<span class="nc" id="L305">                future.completeExceptionally(</span>
+                    new TieredStoreException(TieredStoreErrorCode.ILLEGAL_PARAM, &quot;position and length is illegal&quot;));
+<span class="nc" id="L307">                return future;</span>
+            }
+        }
+<span class="nc" id="L310">        return read0(position, length);</span>
+    }
+
+    public boolean needCommit() {
+<span class="fc bfc" id="L314" title="All 2 branches covered.">        return appendPosition &gt; commitPosition;</span>
+    }
+
+    public boolean commit() {
+<span class="pc bpc" id="L318" title="1 of 2 branches missed.">        if (closed) {</span>
+<span class="nc" id="L319">            return false;</span>
+        }
+        // result is false when we send real commit request
+        // use join for wait flight request done
+<span class="fc" id="L323">        Boolean result = commitAsync().join();</span>
+<span class="fc bfc" id="L324" title="All 2 branches covered.">        if (!result) {</span>
+<span class="fc" id="L325">            result = flightCommitRequest.join();</span>
+        }
+<span class="fc" id="L327">        return result;</span>
+    }
+
+    private void releaseCommitLock() {
+<span class="pc bpc" id="L331" title="1 of 2 branches missed.">        if (commitLock.availablePermits() == 0) {</span>
+<span class="fc" id="L332">            commitLock.release();</span>
+        } else {
+<span class="nc" id="L334">            logger.error(&quot;[Bug] FileSegmentCommitAsync, lock is already released: available permits: {}&quot;,</span>
+<span class="nc" id="L335">                commitLock.availablePermits());</span>
+        }
+<span class="fc" id="L337">    }</span>
+
+    private void updateDispatchCommitOffset(List&lt;ByteBuffer&gt; bufferList) {
+<span class="nc bnc" id="L340" title="All 4 branches missed.">        if (fileType == FileSegmentType.COMMIT_LOG &amp;&amp; bufferList.size() &gt; 0) {</span>
+<span class="nc" id="L341">            dispatchCommitOffset =</span>
+<span class="nc" id="L342">                MessageBufferUtil.getQueueOffset(bufferList.get(bufferList.size() - 1));</span>
+        }
+<span class="nc" id="L344">    }</span>
+
+    /**
+     * @return false: commit, true: no commit operation
+     */
+    @SuppressWarnings(&quot;NonAtomicOperationOnVolatileField&quot;)
+    public CompletableFuture&lt;Boolean&gt; commitAsync() {
+<span class="pc bpc" id="L351" title="1 of 2 branches missed.">        if (closed) {</span>
+<span class="nc" id="L352">            return CompletableFuture.completedFuture(false);</span>
+        }
+
+<span class="fc bfc" id="L355" title="All 2 branches covered.">        if (!needCommit()) {</span>
+<span class="fc" id="L356">            return CompletableFuture.completedFuture(true);</span>
+        }
+
+<span class="pc bpc" id="L359" title="1 of 2 branches missed.">        if (commitLock.drainPermits() &lt;= 0) {</span>
+<span class="nc" id="L360">            return CompletableFuture.completedFuture(false);</span>
+        }
+
+        try {
+<span class="pc bpc" id="L364" title="1 of 2 branches missed.">            if (fileSegmentInputStream != null) {</span>
+<span class="nc" id="L365">                long fileSize = this.getSize();</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">                if (fileSize == -1L) {</span>
+<span class="nc" id="L367">                    logger.error(&quot;Get commit position error before commit, Commit: %d, Expect: %d, Current Max: %d, FileName: %s&quot;,</span>
+<span class="nc" id="L368">                        commitPosition, commitPosition + fileSegmentInputStream.getContentLength(), appendPosition, getPath());</span>
+<span class="nc" id="L369">                    releaseCommitLock();</span>
+<span class="nc" id="L370">                    return CompletableFuture.completedFuture(false);</span>
+                } else {
+<span class="nc bnc" id="L372" title="All 2 branches missed.">                    if (correctPosition(fileSize, null)) {</span>
+<span class="nc" id="L373">                        updateDispatchCommitOffset(fileSegmentInputStream.getBufferList());</span>
+<span class="nc" id="L374">                        fileSegmentInputStream = null;</span>
+                    }
+                }
+            }
+
+            int bufferSize;
+<span class="pc bpc" id="L380" title="1 of 2 branches missed.">            if (fileSegmentInputStream != null) {</span>
+<span class="nc" id="L381">                bufferSize = fileSegmentInputStream.available();</span>
+            } else {
+<span class="fc" id="L383">                List&lt;ByteBuffer&gt; bufferList = borrowBuffer();</span>
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">                bufferSize = bufferList.stream().mapToInt(ByteBuffer::remaining).sum()</span>
+<span class="pc" id="L385">                    + (codaBuffer != null ? codaBuffer.remaining() : 0);</span>
+<span class="pc bpc" id="L386" title="1 of 2 branches missed.">                if (bufferSize == 0) {</span>
+<span class="nc" id="L387">                    releaseCommitLock();</span>
+<span class="nc" id="L388">                    return CompletableFuture.completedFuture(true);</span>
+                }
+<span class="fc" id="L390">                fileSegmentInputStream = FileSegmentInputStreamFactory.build(</span>
+                    fileType, baseOffset + commitPosition, bufferList, codaBuffer, bufferSize);
+            }
+
+<span class="pc bpc" id="L394" title="1 of 2 branches missed.">            return flightCommitRequest = this</span>
+<span class="nc" id="L395">                .commit0(fileSegmentInputStream, commitPosition, bufferSize, fileType != FileSegmentType.INDEX)</span>
+<span class="nc" id="L396">                .thenApply(result -&gt; {</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">                    if (result) {</span>
+<span class="nc" id="L398">                        updateDispatchCommitOffset(fileSegmentInputStream.getBufferList());</span>
+<span class="nc" id="L399">                        commitPosition += bufferSize;</span>
+<span class="nc" id="L400">                        fileSegmentInputStream = null;</span>
+<span class="nc" id="L401">                        return true;</span>
+                    } else {
+<span class="nc" id="L403">                        fileSegmentInputStream.rewind();</span>
+<span class="nc" id="L404">                        return false;</span>
+                    }
+                })
+<span class="nc" id="L407">                .exceptionally(this::handleCommitException)</span>
+<span class="nc" id="L408">                .whenComplete((result, e) -&gt; releaseCommitLock());</span>
+
+<span class="fc" id="L410">        } catch (Exception e) {</span>
+<span class="fc" id="L411">            handleCommitException(e);</span>
+<span class="fc" id="L412">            releaseCommitLock();</span>
+        }
+<span class="fc" id="L414">        return CompletableFuture.completedFuture(false);</span>
+    }
+
+    private long getCorrectFileSize(Throwable throwable) {
+<span class="pc bpc" id="L418" title="1 of 2 branches missed.">        if (throwable instanceof TieredStoreException) {</span>
+<span class="nc" id="L419">            long fileSize = ((TieredStoreException) throwable).getPosition();</span>
+<span class="nc bnc" id="L420" title="All 2 branches missed.">            if (fileSize &gt; 0) {</span>
+<span class="nc" id="L421">                return fileSize;</span>
+            }
+        }
+<span class="fc" id="L424">        return getSize();</span>
+    }
+
+    private boolean handleCommitException(Throwable e) {
+        // Get root cause here
+<span class="pc bpc" id="L429" title="1 of 2 branches missed.">        Throwable cause = e.getCause() != null ? e.getCause() : e;</span>
+<span class="fc" id="L430">        long fileSize = this.getCorrectFileSize(cause);</span>
+
+<span class="pc bpc" id="L432" title="1 of 2 branches missed.">        if (fileSize == -1L) {</span>
+<span class="nc" id="L433">            logger.error(&quot;Get commit position error, Commit: %d, Expect: %d, Current Max: %d, FileName: %s&quot;,</span>
+<span class="nc" id="L434">                commitPosition, commitPosition + fileSegmentInputStream.getContentLength(), appendPosition, getPath());</span>
+<span class="nc" id="L435">            fileSegmentInputStream.rewind();</span>
+<span class="nc" id="L436">            return false;</span>
+        }
+
+<span class="pc bpc" id="L439" title="1 of 2 branches missed.">        if (correctPosition(fileSize, cause)) {</span>
+<span class="nc" id="L440">            updateDispatchCommitOffset(fileSegmentInputStream.getBufferList());</span>
+<span class="nc" id="L441">            fileSegmentInputStream = null;</span>
+<span class="nc" id="L442">            return true;</span>
+        } else {
+<span class="fc" id="L444">            fileSegmentInputStream.rewind();</span>
+<span class="fc" id="L445">            return false;</span>
+        }
+    }
+
+    /**
+     * return true to clear buffer
+     */
+    private boolean correctPosition(long fileSize, Throwable throwable) {
+
+        // Current we have three offsets here: commit offset, expect offset, file size.
+        // We guarantee that the commit offset is less than or equal to the expect offset.
+        // Max offset will increase because we can continuously put in new buffers
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">        String handleInfo = throwable == null ? &quot;before commit&quot; : &quot;after commit&quot;;</span>
+<span class="fc" id="L458">        long expectPosition = commitPosition + fileSegmentInputStream.getContentLength();</span>
+
+<span class="fc" id="L460">        String offsetInfo = String.format(&quot;Correct Commit Position, %s, result=[{}], &quot; +</span>
+                &quot;Commit: %d, Expect: %d, Current Max: %d, FileSize: %d, FileName: %s&quot;,
+<span class="fc" id="L462">            handleInfo, commitPosition, expectPosition, appendPosition, fileSize, this.getPath());</span>
+
+        // We are believing that the file size returned by the server is correct,
+        // can reset the commit offset to the file size reported by the storage system.
+<span class="pc bpc" id="L466" title="1 of 2 branches missed.">        if (fileSize == expectPosition) {</span>
+<span class="nc" id="L467">            logger.info(offsetInfo, &quot;Success&quot;, throwable);</span>
+<span class="nc" id="L468">            commitPosition = fileSize;</span>
+<span class="nc" id="L469">            return true;</span>
+        }
+
+<span class="pc bpc" id="L472" title="1 of 2 branches missed.">        if (fileSize &lt; commitPosition) {</span>
+<span class="nc" id="L473">            logger.error(offsetInfo, &quot;FileSizeIncorrect&quot;, throwable);</span>
+<span class="pc bpc" id="L474" title="1 of 2 branches missed.">        } else if (fileSize == commitPosition) {</span>
+<span class="nc" id="L475">            logger.warn(offsetInfo, &quot;CommitFailed&quot;, throwable);</span>
+<span class="pc bpc" id="L476" title="1 of 2 branches missed.">        } else if (fileSize &gt; commitPosition) {</span>
+<span class="fc" id="L477">            logger.warn(offsetInfo, &quot;PartialSuccess&quot;, throwable);</span>
+        }
+<span class="fc" id="L479">        commitPosition = fileSize;</span>
+<span class="fc" id="L480">        return false;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

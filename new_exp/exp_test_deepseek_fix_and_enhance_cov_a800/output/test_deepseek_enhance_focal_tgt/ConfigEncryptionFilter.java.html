@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConfigEncryptionFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">nacos-client 2.3.0-BETA</a> &gt; <a href="index.source.html" class="el_package">com.alibaba.nacos.client.config.filter.impl</a> &gt; <span class="el_source">ConfigEncryptionFilter.java</span></div><h1>ConfigEncryptionFilter.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.alibaba.nacos.client.config.filter.impl;
+
+import com.alibaba.nacos.api.config.filter.AbstractConfigFilter;
+import com.alibaba.nacos.api.config.filter.IConfigFilterChain;
+import com.alibaba.nacos.api.config.filter.IConfigRequest;
+import com.alibaba.nacos.api.config.filter.IConfigResponse;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.common.utils.Pair;
+import com.alibaba.nacos.common.utils.StringUtils;
+import com.alibaba.nacos.plugin.encryption.handler.EncryptionHandler;
+
+import java.util.Objects;
+import java.util.Properties;
+
+/**
+ * Configure encryption filter.
+ *
+ * @author lixiaoshuang
+ */
+<span class="fc" id="L36">public class ConfigEncryptionFilter extends AbstractConfigFilter {</span>
+    
+<span class="fc" id="L38">    private static final String DEFAULT_NAME = ConfigEncryptionFilter.class.getName();</span>
+    
+    @Override
+    public void init(Properties properties) {
+    
+<span class="nc" id="L43">    }</span>
+    
+    @Override
+    public void doFilter(IConfigRequest request, IConfigResponse response, IConfigFilterChain filterChain)
+            throws NacosException {
+<span class="pc bpc" id="L48" title="3 of 6 branches missed.">        if (Objects.nonNull(request) &amp;&amp; request instanceof ConfigRequest &amp;&amp; Objects.isNull(response)) {</span>
+            
+            // Publish configuration, encrypt
+<span class="fc" id="L51">            ConfigRequest configRequest = (ConfigRequest) request;</span>
+<span class="fc" id="L52">            String dataId = configRequest.getDataId();</span>
+<span class="fc" id="L53">            String content = configRequest.getContent();</span>
+            
+<span class="fc" id="L55">            Pair&lt;String, String&gt; pair = EncryptionHandler.encryptHandler(dataId, content);</span>
+<span class="fc" id="L56">            String secretKey = pair.getFirst();</span>
+<span class="fc" id="L57">            String encryptContent = pair.getSecond();</span>
+<span class="pc bpc" id="L58" title="2 of 4 branches missed.">            if (!StringUtils.isBlank(encryptContent) &amp;&amp; !encryptContent.equals(content)) {</span>
+<span class="nc" id="L59">                ((ConfigRequest) request).setContent(encryptContent);</span>
+            }
+<span class="pc bpc" id="L61" title="3 of 4 branches missed.">            if (!StringUtils.isBlank(secretKey) &amp;&amp; !secretKey.equals(((ConfigRequest) request).getEncryptedDataKey())) {</span>
+<span class="nc" id="L62">                ((ConfigRequest) request).setEncryptedDataKey(secretKey);</span>
+<span class="pc bpc" id="L63" title="2 of 4 branches missed.">            } else if (StringUtils.isBlank(((ConfigRequest) request).getEncryptedDataKey()) &amp;&amp; StringUtils.isBlank(secretKey)) {</span>
+<span class="fc" id="L64">                ((ConfigRequest) request).setEncryptedDataKey(&quot;&quot;);</span>
+            }
+        }
+<span class="pc bpc" id="L67" title="5 of 6 branches missed.">        if (Objects.nonNull(response) &amp;&amp; response instanceof ConfigResponse &amp;&amp; Objects.isNull(request)) {</span>
+            
+            // Get configuration, decrypt
+<span class="nc" id="L70">            ConfigResponse configResponse = (ConfigResponse) response;</span>
+            
+<span class="nc" id="L72">            String dataId = configResponse.getDataId();</span>
+<span class="nc" id="L73">            String encryptedDataKey = configResponse.getEncryptedDataKey();</span>
+<span class="nc" id="L74">            String content = configResponse.getContent();</span>
+            
+<span class="nc" id="L76">            Pair&lt;String, String&gt; pair = EncryptionHandler.decryptHandler(dataId, encryptedDataKey, content);</span>
+<span class="nc" id="L77">            String secretKey = pair.getFirst();</span>
+<span class="nc" id="L78">            String decryptContent = pair.getSecond();</span>
+<span class="nc bnc" id="L79" title="All 4 branches missed.">            if (!StringUtils.isBlank(decryptContent) &amp;&amp; !decryptContent.equals(content)) {</span>
+<span class="nc" id="L80">                ((ConfigResponse) response).setContent(decryptContent);</span>
+            }
+<span class="nc bnc" id="L82" title="All 4 branches missed.">            if (!StringUtils.isBlank(secretKey) &amp;&amp; !secretKey.equals(((ConfigResponse) response).getEncryptedDataKey())) {</span>
+<span class="nc" id="L83">                ((ConfigResponse) response).setEncryptedDataKey(secretKey);</span>
+<span class="nc bnc" id="L84" title="All 4 branches missed.">            } else if (StringUtils.isBlank(((ConfigResponse) response).getEncryptedDataKey()) &amp;&amp; StringUtils.isBlank(secretKey)) {</span>
+<span class="nc" id="L85">                ((ConfigResponse) response).setEncryptedDataKey(&quot;&quot;);</span>
+            }
+        }
+<span class="fc" id="L88">        filterChain.doFilter(request, response);</span>
+<span class="fc" id="L89">    }</span>
+    
+    @Override
+    public int getOrder() {
+<span class="nc" id="L93">        return 0;</span>
+    }
+    
+    @Override
+    public String getFilterName() {
+<span class="nc" id="L98">        return DEFAULT_NAME;</span>
+    }
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,524 @@
+{
+  "1": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoService.java#instanceDeregister": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "28"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoService.java#instanceDeregister": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "28"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "2": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoService.java#removeInstanceForRedo": {
+        "INSTRUCTION": {
+          "missed": "5",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoService.java#removeInstanceForRedo": {
+        "INSTRUCTION": {
+          "missed": "5",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "3": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoService.java#removeSubscriberForRedo": {
+        "INSTRUCTION": {
+          "missed": "5",
+          "covered": "27"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "client/src/main/java/com/alibaba/nacos/client/naming/remote/gprc/redo/NamingGrpcRedoService.java#removeSubscriberForRedo": {
+        "INSTRUCTION": {
+          "missed": "5",
+          "covered": "27"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "4": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "plugin/datasource/src/main/java/com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoAggrMapperByMySql.java#findConfigInfoAggrByPageFetchRows": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "58"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "plugin/datasource/src/main/java/com/alibaba/nacos/plugin/datasource/impl/mysql/ConfigInfoAggrMapperByMySql.java#findConfigInfoAggrByPageFetchRows": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "58"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "5": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/com/alibaba/nacos/common/remote/client/RpcClient.java#requestFuture": {
+        "INSTRUCTION": {
+          "missed": "34",
+          "covered": "70"
+        },
+        "BRANCH": {
+          "missed": "9",
+          "covered": "7"
+        },
+        "LINE": {
+          "missed": "8",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "7",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/com/alibaba/nacos/common/remote/client/RpcClient.java#requestFuture": {
+        "INSTRUCTION": {
+          "missed": "34",
+          "covered": "70"
+        },
+        "BRANCH": {
+          "missed": "9",
+          "covered": "7"
+        },
+        "LINE": {
+          "missed": "8",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "7",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "6": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "core/src/main/java/com/alibaba/nacos/core/cluster/MemberUtil.java#isBasicInfoChanged": {
+        "INSTRUCTION": {
+          "missed": "52",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "14",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "13",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "8",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "core/src/main/java/com/alibaba/nacos/core/cluster/MemberUtil.java#isBasicInfoChanged": {
+        "INSTRUCTION": {
+          "missed": "52",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "14",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "13",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "8",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    }
+  },
+  "7": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "8": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "9": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "client/src/main/java/com/alibaba/nacos/client/config/filter/impl/ConfigEncryptionFilter.java#doFilter": {
+        "INSTRUCTION": {
+          "missed": "83",
+          "covered": "60"
+        },
+        "BRANCH": {
+          "missed": "27",
+          "covered": "9"
+        },
+        "LINE": {
+          "missed": "15",
+          "covered": "14"
+        },
+        "COMPLEXITY": {
+          "missed": "18",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "client/src/main/java/com/alibaba/nacos/client/config/filter/impl/ConfigEncryptionFilter.java#doFilter": {
+        "INSTRUCTION": {
+          "missed": "83",
+          "covered": "60"
+        },
+        "BRANCH": {
+          "missed": "27",
+          "covered": "9"
+        },
+        "LINE": {
+          "missed": "15",
+          "covered": "14"
+        },
+        "COMPLEXITY": {
+          "missed": "18",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "10": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "11": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "12": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build": {
+        "INSTRUCTION": {
+          "missed": "10",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build": {
+        "INSTRUCTION": {
+          "missed": "10",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    }
+  },
+  "13": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build": {
+        "INSTRUCTION": {
+          "missed": "10",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build": {
+        "INSTRUCTION": {
+          "missed": "10",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    }
+  },
+  "14": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build": {
+        "INSTRUCTION": {
+          "missed": "10",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "api/src/main/java/com/alibaba/nacos/api/remote/response/ErrorResponse.java#build": {
+        "INSTRUCTION": {
+          "missed": "10",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    }
+  }
+}

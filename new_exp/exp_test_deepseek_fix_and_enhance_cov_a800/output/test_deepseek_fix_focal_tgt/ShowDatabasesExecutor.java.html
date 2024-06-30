@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ShowDatabasesExecutor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">shardingsphere-proxy-backend-mysql</a> &gt; <a href="index.source.html" class="el_package">org.apache.shardingsphere.proxy.backend.mysql.handler.admin.executor</a> &gt; <span class="el_source">ShowDatabasesExecutor.java</span></div><h1>ShowDatabasesExecutor.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.shardingsphere.proxy.backend.mysql.handler.admin.executor;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.apache.shardingsphere.authority.checker.AuthorityChecker;
+import org.apache.shardingsphere.authority.rule.AuthorityRule;
+import org.apache.shardingsphere.infra.executor.sql.execute.result.query.QueryResultMetaData;
+import org.apache.shardingsphere.infra.executor.sql.execute.result.query.impl.raw.metadata.RawQueryResultColumnMetaData;
+import org.apache.shardingsphere.infra.executor.sql.execute.result.query.impl.raw.metadata.RawQueryResultMetaData;
+import org.apache.shardingsphere.infra.merge.result.MergedResult;
+import org.apache.shardingsphere.infra.merge.result.impl.local.LocalDataMergedResult;
+import org.apache.shardingsphere.infra.merge.result.impl.local.LocalDataQueryResultRow;
+import org.apache.shardingsphere.proxy.backend.context.ProxyContext;
+import org.apache.shardingsphere.proxy.backend.handler.admin.executor.DatabaseAdminQueryExecutor;
+import org.apache.shardingsphere.proxy.backend.session.ConnectionSession;
+import org.apache.shardingsphere.sql.parser.sql.common.util.SQLUtils;
+import org.apache.shardingsphere.sql.parser.sql.dialect.statement.mysql.dal.MySQLShowDatabasesStatement;
+
+import java.sql.Types;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+/**
+ * Show databases executor.
+ */
+@RequiredArgsConstructor
+@Getter
+public final class ShowDatabasesExecutor implements DatabaseAdminQueryExecutor {
+    
+    private final MySQLShowDatabasesStatement showDatabasesStatement;
+    
+    private MergedResult mergedResult;
+    
+    @Override
+    public void execute(final ConnectionSession connectionSession) {
+<span class="fc" id="L55">        mergedResult = new LocalDataMergedResult(getDatabaseNames(connectionSession));</span>
+<span class="fc" id="L56">    }</span>
+    
+    private Collection&lt;LocalDataQueryResultRow&gt; getDatabaseNames(final ConnectionSession connectionSession) {
+<span class="fc" id="L59">        AuthorityRule authorityRule = ProxyContext.getInstance().getContextManager().getMetaDataContexts().getMetaData().getGlobalRuleMetaData().getSingleRule(AuthorityRule.class);</span>
+<span class="fc" id="L60">        AuthorityChecker authorityChecker = new AuthorityChecker(authorityRule, connectionSession.getGrantee());</span>
+<span class="fc" id="L61">        return ProxyContext.getInstance().getAllDatabaseNames().stream().sorted()</span>
+<span class="pc bpc" id="L62" title="2 of 4 branches missed.">                .filter(each -&gt; checkLikePattern(each) &amp;&amp; authorityChecker.isAuthorized(each)).map(LocalDataQueryResultRow::new).collect(Collectors.toList());</span>
+    }
+    
+    private boolean checkLikePattern(final String databaseName) {
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        if (showDatabasesStatement.getFilter().isPresent()) {</span>
+<span class="nc" id="L67">            Optional&lt;String&gt; pattern = showDatabasesStatement.getFilter().get().getLike().map(optional -&gt; SQLUtils.convertLikePatternToRegex(optional.getPattern()));</span>
+<span class="nc bnc" id="L68" title="All 4 branches missed.">            return !pattern.isPresent() || databaseName.matches(pattern.get());</span>
+        }
+<span class="fc" id="L70">        return true;</span>
+    }
+    
+    @Override
+    public QueryResultMetaData getQueryResultMetaData() {
+<span class="fc" id="L75">        return new RawQueryResultMetaData(Collections.singletonList(new RawQueryResultColumnMetaData(&quot;SCHEMATA&quot;, &quot;SCHEMA_NAME&quot;, &quot;Database&quot;, Types.VARCHAR, &quot;VARCHAR&quot;, 255, 0)));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

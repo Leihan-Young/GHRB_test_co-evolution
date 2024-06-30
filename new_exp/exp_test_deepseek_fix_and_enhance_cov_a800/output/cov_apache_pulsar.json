@@ -1,0 +1,279 @@
+{
+  "1": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "2": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "pulsar-functions/instance/src/main/java/org/apache/pulsar/functions/source/TopicSchema.java#TopicSchema": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "17"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "pulsar-functions/instance/src/main/java/org/apache/pulsar/functions/source/TopicSchema.java#TopicSchema": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "17"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "3": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "4": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "5": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/v2/Bookies.java#getBookieRackInfo": {
+        "INSTRUCTION": {
+          "missed": "15",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      },
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/v2/Bookies.java#deleteBookieRackInfo": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "6",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/v2/Bookies.java#getBookieRackInfo": {
+        "INSTRUCTION": {
+          "missed": "15",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      },
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/admin/v2/Bookies.java#deleteBookieRackInfo": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "6",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    }
+  },
+  "6": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/compaction/CompactedTopicUtils.java#asyncReadCompactedEntries": {
+        "INSTRUCTION": {
+          "missed": "4",
+          "covered": "45"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "12"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/compaction/CompactedTopicUtils.java#asyncReadCompactedEntries": {
+        "INSTRUCTION": {
+          "missed": "4",
+          "covered": "45"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "12"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "7": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "8": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "9": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "10": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "11": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "12": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSink.java#open": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "50"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "pulsar-io/redis/src/main/java/org/apache/pulsar/io/redis/sink/RedisSink.java#open": null
+    }
+  },
+  "13": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/service/ConsistentHashingStickyKeyConsumerSelector.java#addConsumer": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "33"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "pulsar-broker/src/main/java/org/apache/pulsar/broker/service/ConsistentHashingStickyKeyConsumerSelector.java#addConsumer": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "33"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  }
+}

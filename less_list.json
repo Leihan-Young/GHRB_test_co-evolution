@@ -1,0 +1,17 @@
+[
+  "nacos:2",
+  "nacos:3",
+  "rocketmq:1",
+  "rocketmq:2",
+  "rocketmq:3",
+  "rocketmq:4",
+  "rocketmq:18",
+  "rocketmq:19",
+  "rocketmq:22",
+  "rocketmq:53",
+  "rocketmq:59",
+  "rocketmq:61",
+  "rocketmq:62",
+  "rocketmq:69",
+  "rocketmq:80"
+]

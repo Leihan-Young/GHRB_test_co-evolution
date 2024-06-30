@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TopicSchema.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pulsar Functions :: Instance</a> &gt; <a href="index.source.html" class="el_package">org.apache.pulsar.functions.source</a> &gt; <span class="el_source">TopicSchema.java</span></div><h1>TopicSchema.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.pulsar.functions.source;
+
+import io.netty.buffer.ByteBuf;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.ByteBuffer;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.api.Schema;
+import org.apache.pulsar.client.api.schema.GenericObject;
+import org.apache.pulsar.client.api.schema.SchemaDefinition;
+import org.apache.pulsar.client.impl.PulsarClientImpl;
+import org.apache.pulsar.client.impl.schema.AvroSchema;
+import org.apache.pulsar.client.impl.schema.JSONSchema;
+import org.apache.pulsar.client.impl.schema.ProtobufNativeSchema;
+import org.apache.pulsar.client.impl.schema.ProtobufSchema;
+import org.apache.pulsar.common.functions.ConsumerConfig;
+import org.apache.pulsar.common.schema.KeyValue;
+import org.apache.pulsar.common.schema.SchemaInfo;
+import org.apache.pulsar.common.schema.SchemaType;
+import org.apache.pulsar.functions.api.SerDe;
+import org.apache.pulsar.functions.instance.InstanceUtils;
+
+<span class="fc" id="L48">@Slf4j</span>
+public class TopicSchema {
+
+<span class="fc" id="L51">    private final Map&lt;String, Schema&lt;?&gt;&gt; cachedSchemas = new HashMap&lt;&gt;();</span>
+    private final PulsarClient client;
+
+    private final ClassLoader functionsClassloader;
+
+<span class="fc" id="L56">    public TopicSchema(PulsarClient client, ClassLoader functionsClassloader) {</span>
+<span class="fc" id="L57">        this.client = client;</span>
+<span class="fc" id="L58">        this.functionsClassloader = AccessController.doPrivileged(</span>
+<span class="fc" id="L59">                (PrivilegedAction&lt;URLClassLoader&gt;) () -&gt; new URLClassLoader(new URL[0], functionsClassloader)</span>
+        );
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * If there is no other information available, use JSON as default schema type.
+     */
+<span class="fc" id="L66">    private static final SchemaType DEFAULT_SCHEMA_TYPE = SchemaType.JSON;</span>
+
+    public static final String DEFAULT_SERDE = &quot;org.apache.pulsar.functions.api.utils.DefaultSerDe&quot;;
+
+    public Schema&lt;?&gt; getSchema(String topic, Object object, String schemaTypeOrClassName, boolean input) {
+<span class="nc" id="L71">        return getSchema(topic, object.getClass(), schemaTypeOrClassName, input);</span>
+    }
+
+    public Schema&lt;?&gt; getSchema(String topic, Class&lt;?&gt; clazz, String schemaTypeOrClassName, boolean input) {
+<span class="nc" id="L75">        return cachedSchemas.computeIfAbsent(topic, t -&gt; newSchemaInstance(topic, clazz, schemaTypeOrClassName, input));</span>
+    }
+
+    public Schema&lt;?&gt; getSchema(String topic, Class&lt;?&gt; clazz, ConsumerConfig conf, boolean input) {
+<span class="nc" id="L79">        return cachedSchemas.computeIfAbsent(topic, t -&gt; newSchemaInstance(topic, clazz, conf, input));</span>
+    }
+
+    public Schema&lt;?&gt; getSchema(String topic, Class&lt;?&gt; clazz, Optional&lt;SchemaType&gt; schemaType) {
+<span class="fc" id="L83">        return cachedSchemas.computeIfAbsent(topic, key -&gt; {</span>
+            // If schema type was not provided, try to get it from schema registry, or fallback to default types
+<span class="pc" id="L85">            SchemaType type = schemaType.orElseGet(() -&gt; getSchemaTypeOrDefault(topic, clazz));</span>
+<span class="fc" id="L86">            return newSchemaInstance(clazz, type);</span>
+        });
+    }
+
+    public Schema&lt;?&gt; getSchema(String topic, Class&lt;?&gt; clazz, SchemaType schemaType) {
+<span class="nc" id="L91">        return cachedSchemas.computeIfAbsent(topic, t -&gt; newSchemaInstance(clazz, schemaType));</span>
+    }
+
+    public Schema&lt;?&gt; getSchema(String topic, Class&lt;?&gt; clazz, String schemaTypeOrClassName, boolean input,
+                               ClassLoader classLoader) {
+<span class="nc" id="L96">        return cachedSchemas.computeIfAbsent(topic,</span>
+<span class="nc" id="L97">                t -&gt; newSchemaInstance(topic, clazz, schemaTypeOrClassName, input, classLoader));</span>
+    }
+
+    public Schema&lt;?&gt; getSchema(String topic, Class&lt;?&gt; clazz, ConsumerConfig conf, boolean input,
+                               ClassLoader classLoader) {
+<span class="nc" id="L102">        return cachedSchemas.computeIfAbsent(topic, t -&gt; newSchemaInstance(topic, clazz, conf, input, classLoader));</span>
+    }
+
+
+    /**
+     * If the topic is already created, we should be able to fetch the schema type (avro, json, ...).
+     */
+    private SchemaType getSchemaTypeOrDefault(String topic, Class&lt;?&gt; clazz) {
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (GenericObject.class.isAssignableFrom(clazz)) {</span>
+<span class="nc" id="L111">            return SchemaType.AUTO_CONSUME;</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        } else if (byte[].class.equals(clazz)</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">                || ByteBuf.class.equals(clazz)</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">                || ByteBuffer.class.equals(clazz)) {</span>
+            // if function uses bytes, we should ignore
+<span class="nc" id="L116">            return SchemaType.NONE;</span>
+        } else {
+<span class="nc" id="L118">            Optional&lt;SchemaInfo&gt; schema = ((PulsarClientImpl) client).getSchema(topic).join();</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            if (schema.isPresent()) {</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">                if (schema.get().getType() == SchemaType.NONE) {</span>
+<span class="nc" id="L121">                    return getDefaultSchemaType(clazz);</span>
+                } else {
+<span class="nc" id="L123">                    return schema.get().getType();</span>
+                }
+            } else {
+<span class="nc" id="L126">                return getDefaultSchemaType(clazz);</span>
+            }
+        }
+    }
+
+    private static SchemaType getDefaultSchemaType(Class&lt;?&gt; clazz) {
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        if (byte[].class.equals(clazz)</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">            || ByteBuf.class.equals(clazz)</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">            || ByteBuffer.class.equals(clazz)) {</span>
+<span class="nc" id="L135">            return SchemaType.NONE;</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        } else if (GenericObject.class.isAssignableFrom(clazz)) {</span>
+            // the function is taking generic record/object, so we do auto schema detection
+<span class="nc" id="L138">            return SchemaType.AUTO_CONSUME;</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        } else if (String.class.equals(clazz)) {</span>
+            // If type is String, then we use schema type string, otherwise we fallback on default schema
+<span class="nc" id="L141">            return SchemaType.STRING;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        } else if (isProtobufClass(clazz)) {</span>
+<span class="nc" id="L143">            return SchemaType.PROTOBUF;</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        } else if (KeyValue.class.equals(clazz)) {</span>
+<span class="nc" id="L145">            return SchemaType.KEY_VALUE;</span>
+        } else {
+<span class="nc" id="L147">            return DEFAULT_SCHEMA_TYPE;</span>
+        }
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private static &lt;T&gt; Schema&lt;T&gt; newSchemaInstance(Class&lt;T&gt; clazz, SchemaType type) {
+<span class="fc" id="L153">        return newSchemaInstance(clazz, type, new ConsumerConfig());</span>
+    }
+
+    private static &lt;T&gt; Schema&lt;T&gt; newSchemaInstance(Class&lt;T&gt; clazz, SchemaType type, ConsumerConfig conf) {
+<span class="pc bpc" id="L157" title="6 of 10 branches missed.">        switch (type) {</span>
+        case NONE:
+<span class="nc bnc" id="L159" title="All 2 branches missed.">            if (ByteBuffer.class.isAssignableFrom(clazz)) {</span>
+<span class="nc" id="L160">                return (Schema&lt;T&gt;) Schema.BYTEBUFFER;</span>
+            } else {
+<span class="nc" id="L162">                return (Schema&lt;T&gt;) Schema.BYTES;</span>
+            }
+
+        case AUTO_CONSUME:
+        case AUTO:
+<span class="nc" id="L167">            return (Schema&lt;T&gt;) Schema.AUTO_CONSUME();</span>
+
+        case STRING:
+<span class="nc" id="L170">            return (Schema&lt;T&gt;) Schema.STRING;</span>
+
+        case AVRO:
+<span class="fc" id="L173">            return AvroSchema.of(SchemaDefinition.&lt;T&gt;builder()</span>
+<span class="fc" id="L174">                    .withProperties(new HashMap&lt;&gt;(conf.getSchemaProperties()))</span>
+<span class="fc" id="L175">                    .withPojo(clazz).build());</span>
+
+        case JSON:
+<span class="fc" id="L178">            return JSONSchema.of(SchemaDefinition.&lt;T&gt;builder().withPojo(clazz).build());</span>
+
+        case KEY_VALUE:
+<span class="nc" id="L181">            return (Schema&lt;T&gt;) Schema.KV_BYTES();</span>
+
+        case PROTOBUF:
+<span class="fc" id="L184">            return ProtobufSchema.ofGenericClass(clazz, new HashMap&lt;&gt;());</span>
+
+        case PROTOBUF_NATIVE:
+<span class="fc" id="L187">            return ProtobufNativeSchema.ofGenericClass(clazz, new HashMap&lt;&gt;());</span>
+
+        case AUTO_PUBLISH:
+<span class="nc" id="L190">            return (Schema&lt;T&gt;) Schema.AUTO_PRODUCE_BYTES();</span>
+
+        default:
+<span class="nc" id="L193">            throw new RuntimeException(&quot;Unsupported schema type&quot; + type);</span>
+        }
+    }
+
+    private static boolean isProtobufClass(Class&lt;?&gt; pojoClazz) {
+        try {
+<span class="nc" id="L199">            Class&lt;?&gt; protobufBaseClass = Class.forName(&quot;com.google.protobuf.GeneratedMessageV3&quot;);</span>
+<span class="nc" id="L200">            return protobufBaseClass.isAssignableFrom(pojoClazz);</span>
+<span class="nc" id="L201">        } catch (ClassNotFoundException | NoClassDefFoundError e) {</span>
+            // If function does not have protobuf in classpath then it cannot be protobuf
+<span class="nc" id="L203">            return false;</span>
+        }
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private &lt;T&gt; Schema&lt;T&gt; newSchemaInstance(String topic, Class&lt;T&gt; clazz, String schemaTypeOrClassName, boolean input,
+                                            ClassLoader classLoader) {
+<span class="nc" id="L210">        return newSchemaInstance(topic, clazz, new ConsumerConfig(schemaTypeOrClassName), input, classLoader);</span>
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private &lt;T&gt; Schema&lt;T&gt; newSchemaInstance(String topic, Class&lt;T&gt; clazz, ConsumerConfig conf, boolean input,
+                                            ClassLoader classLoader) {
+        // The schemaTypeOrClassName can represent multiple thing, either a schema type, a schema class name or a ser-de
+        // class name.
+<span class="nc" id="L218">        String schemaTypeOrClassName = conf.getSchemaType();</span>
+<span class="nc bnc" id="L219" title="All 4 branches missed.">        if (StringUtils.isEmpty(schemaTypeOrClassName) || DEFAULT_SERDE.equals(schemaTypeOrClassName)) {</span>
+            // No preferred schema was provided, auto-discover schema or fallback to defaults
+<span class="nc" id="L221">            return newSchemaInstance(clazz, getSchemaTypeOrDefault(topic, clazz));</span>
+        }
+
+<span class="nc" id="L224">        SchemaType schemaType = null;</span>
+        try {
+<span class="nc" id="L226">            schemaType = SchemaType.valueOf(schemaTypeOrClassName.toUpperCase());</span>
+<span class="nc" id="L227">        } catch (IllegalArgumentException e) {</span>
+            // schemaType is not referring to builtin type
+<span class="nc" id="L229">        }</span>
+
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        if (schemaType != null) {</span>
+            // The parameter passed was indeed a valid builtin schema type
+<span class="nc" id="L233">            return newSchemaInstance(clazz, schemaType, conf);</span>
+        }
+
+        // At this point, the string can represent either a schema or serde class name. Create an instance and
+        // check if it complies with either interface
+
+        // First try with Schema
+        try {
+<span class="nc" id="L241">            return (Schema&lt;T&gt;) InstanceUtils.initializeCustomSchema(schemaTypeOrClassName,</span>
+                    classLoader, clazz, input);
+<span class="nc" id="L243">        } catch (Throwable t) {</span>
+            // Now try with Serde or just fail
+<span class="nc" id="L245">            SerDe&lt;T&gt; serDe = (SerDe&lt;T&gt;) InstanceUtils.initializeSerDe(schemaTypeOrClassName,</span>
+                    classLoader, clazz, input);
+<span class="nc" id="L247">            return new SerDeSchema&lt;&gt;(serDe);</span>
+        }
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private &lt;T&gt; Schema&lt;T&gt; newSchemaInstance(String topic, Class&lt;T&gt; clazz, String schemaTypeOrClassName, boolean input) {
+<span class="nc" id="L253">        return newSchemaInstance(topic, clazz, new ConsumerConfig(schemaTypeOrClassName), input,</span>
+                functionsClassloader);
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private &lt;T&gt; Schema&lt;T&gt; newSchemaInstance(String topic, Class&lt;T&gt; clazz, ConsumerConfig conf, boolean input) {
+<span class="nc" id="L259">        return newSchemaInstance(topic, clazz, conf, input, functionsClassloader);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

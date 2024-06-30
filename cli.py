@@ -1,9 +1,5 @@
-#!/usr/bin/python3.9
-
 import os
 import json
-
-#from util import config, fix_build_env
 import re
 import subprocess as sp
 import argparse
@@ -189,18 +185,18 @@ def find_env (pid):
 
     JAVA_HOME = mvn_path = None
     if jdk_required == '8':
-        JAVA_HOME = r'/Java/jdk-1.8'
+        JAVA_HOME = r'/data/zhiquanyang/Java/jdk-1.8'
     elif jdk_required == '11':
-        JAVA_HOME = r'/Java/jdk-11'
+        JAVA_HOME = r'/data/zhiquanyang/Java/jdk-11'
     elif jdk_required == '17':
-        JAVA_HOME = r'/Java/jdk-17'
+        JAVA_HOME = r'/data/zhiquanyang/Java/jdk-17'
     
     if mvn_required is None:
         mvn_path = ""
     elif mvn_required == '3.8.6':
-        mvn_path = r'/Maven/apache-maven-3.8.6/bin'
+        mvn_path = r'/data/zhiquanyang/Maven/apache-maven-3.8.6/bin'
     elif mvn_required == '3.8.1':
-        mvn_path = r'/Maven/apache-maven-3.8.1/bin'
+        mvn_path = r'/data/zhiquanyang/Maven/apache-maven-3.8.1/bin'
 
     new_env = os.environ.copy()
     new_env['JAVA_HOME'] = JAVA_HOME
@@ -244,26 +240,24 @@ def call_compile(dir):
     new_env, mvnw, gradlew = find_env(pid)
 
     path = repo_path if dir is None else dir
-    #print(path)
-    if pid == "jackson-core" or pid == "jackson-databind":
-        fix_build_env(pid, path)
+
+    is_install = False
+    if pid == 'pulsar' or pid == 'shardingsphere':
+        is_install = True
+    run_clean(new_env, mvnw, gradlew, dir, is_install)
 
     if not mvnw and not gradlew:
-        out = sp.run(f'{new_env["MAVEN_HOME"]}/mvn clean compile', env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
+        out = sp.run(f'{new_env["MAVEN_HOME"]}/mvn compile', env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
     elif mvnw:
-        out = sp.run(['./mvnw clean compile'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
+        out = sp.run(['./mvnw compile'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
     
     elif gradlew:
-        out = sp.run(['./gradlew clean compileJava'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
+        out = sp.run(['./gradlew compileJava'], env=new_env, stdout=sp.PIPE, stderr=sp.PIPE, check=True, cwd=path, shell=True)
 
     if "BUILD SUCCESS" in out.stdout.decode(encoding='utf-8', errors='ignore'):
         output += "\033[92mBuild Success\033[0m"
     else:
         output += "\033[91mBuild Failed\033[0m"
-    '''
-    mvn clean install -DskipTests=true
-    mvn clean package -Dmaven.buildDirectory='target'
-    '''
     return output
 
 def run_test (new_env, mvnw, gradlew, test_case, path, command=None, tidy_pom = False, verify = False):
@@ -387,7 +381,7 @@ def call_clean(dir):
     if pid == 'pulsar' or pid == 'shardingsphere':
         is_install = True
     stdout, stderr = run_clean(new_env, mvnw, gradlew, dir, is_install)
-    output = f"stdout={stdout}\nstderr={stderr}"
+    # output = f"stdout={stdout}\nstderr={stderr}"
     return output
 
 def run_clean (new_env, mvnw, gradlew, path, is_install):
@@ -415,119 +409,6 @@ def run_clean (new_env, mvnw, gradlew, path, is_install):
 
     return stdout, stderr
 
-def call_test(dir, test_case, test_class, test_suite, log, quiet):
-    '''
-    default is the current directory
-    test_case -> By default all tests are executed
-    test_suite -> The archive file name of an external test suite. 
-    test_class
-    '''
-    output = ""
-
-    if not os.path.isfile(os.path.join(dir, ".ghrb.config")):
-        output += "GHRB config file not found...\n"
-        output += "Re-run compile"
-        return output
-    
-    with open(f"{dir}/.ghrb.config", "r") as f:
-        content = f.read()
-
-    pid_pattern = r'(pid=)(.*)\n'
-    out = re.search(pid_pattern, content)
-    pid = out.group(2)
-
-    vid_pattern = r'(vid=)(.*)'
-    out = re.search(vid_pattern, content)
-    vid = out.group(2)
-    bid = vid[:-1]
-
-    with open("/root/framework/data/project_id.json", "r") as f:
-        project_id = json.load(f)
-
-    if pid not in project_id.keys():
-        output = "No matching project id"
-        return output
-
-    commit_db = project_id[pid]["commit_db"]
-    repo_path = project_id[pid]["repo_path"]
-
-    owner = project_id[pid]["owner"]
-
-    repo_name = owner + "_" + pid
-
-    command = None
-
-    if len(project_id[pid]['requirements']['extra']) != 0:
-        command = project_id[pid]['requirements']['extra']['command']
-    
-    with open(f"verified_bug/verified_bugs_{repo_name}.json", "r") as f:
-        verified_bugs = json.load(f)
-
-    active_bugs = pd.read_csv(commit_db)
-    report_id = active_bugs.loc[active_bugs['bug_id'] == int(bid)]['report.id'].values[0]
-    
-    target_tests = verified_bugs[report_id]["execution_result"]["success_tests"]
-
-    new_env, mvnw, gradlew = find_env(pid)
-
-    path = repo_path if dir is None else dir
-
-    def find_test (input):
-        for test in target_tests:
-            if test.find(input) != -1:
-                return test
-            else:
-                return None
-    
-    def write_output (_content, _test_output, _quiet, _output):
-        if _test_output is True and _quiet is True:
-            pass
-        else:
-            _output += _content
-        return _output
-            
-    if test_case is not None:
-        found_test_case = find_test(test_case)
-        test_case = test_case.replace(":", "#")
-
-        if found_test_case is None:
-            content, test_output, stdout = run_test(new_env, mvnw, gradlew, test_case, path, command)
-            output = write_output(content, test_output, quiet, output)
-        else:
-            content, test_output, stdout = run_test(new_env, mvnw, gradlew, test_case, path, command)
-            output = write_output(content, test_output, quiet, output)
-    elif test_class is not None:
-        content, test_output, stdout = run_test(new_env, mvnw, gradlew, test_class, path, command)
-        output = write_output(content, test_output, quiet, output)
-    elif test_suite is not None:
-        pass
-    else:
-        for test in target_tests:
-            content, test_output, stdout = run_test(new_env, mvnw, gradlew, test, path, command)
-            output = write_output(content, test_output, quiet, output)
-
-    marker = ""
-
-    if test_case is not None:
-        marker += "_" + test_case
-    elif test_class is not None:
-        marker += "_" + test_class
-    elif test_suite is not None:
-        marker += "_" + test_suite
-    
-    if quiet is True:
-        marker += "_quiet"
-
-    if log is True:
-        if not os.path.isdir("log"):
-            os.mkdir("log")
-        
-        with open(f"log/{pid}_{vid}{marker}.log", "w") as f:
-            f.writelines(stdout)
-        
-        f.close()
-    
-    return output
 
 def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
     output = ""
@@ -747,6 +628,206 @@ def call_coverage(work_dir, input_file, output_dir, use_test_tgt):
     output += (f"Jacoco report html is written to \033[4m{','.join([os.path.join(output_dir, x.split('/')[-1]) for x in tgt_cov_html_files])}\033[0m\n")
 
     return output
+
+def call_evosuite(work_dir, output_dir, total_budget, random_seed):
+    output = ""
+
+    if not os.path.isfile(os.path.join(work_dir, ".pidtid.config")):
+        output += "pidtid config file not found...\n"
+        output += "Re-run compile"
+        return output
+    
+    with open(f"{work_dir}/.pidtid.config", "r") as f:
+        content = f.read()
+
+    pid_pattern = r'(pid=)(.*)\n'
+    out = re.search(pid_pattern, content)
+    pid = out.group(2)
+
+    tid_pattern = r'(tid=)(.*)'
+    out = re.search(tid_pattern, content)
+    full_tid = out.group(2)
+    tid = full_tid[:-1]
+    version = full_tid[-1]
+
+    with open("./project_id.json", "r") as f:
+        project_id = json.load(f)
+
+    if pid not in project_id.keys():
+        output = "No matching project id"
+        return output
+
+    with open(project_id[pid]["verified_db"], 'r', encoding='utf-8') as f:
+        verified_db = json.load(f)
+    repo_path = project_id[pid]["repo_path"]
+
+    owner = project_id[pid]["owner"]
+
+    repo_name = owner + "_" + pid
+
+    command = None
+
+    test_src = verified_db[tid]['test_src']
+    test_tgt = verified_db[tid]['test_tgt']
+    focal_src_path = verified_db[tid]['focal_path_src']
+    changed_tests = verified_db[tid]['changed_tests']
+
+    new_env, mvnw, gradlew = find_env(pid)
+
+    if version == 's':
+        focal_code = verified_db[tid]['focal_src']
+    elif version == 't':
+        focal_code = verified_db[tid]['focal_tgt']
+    else:
+        return "Wrong test id!"
+    
+    test_signs = [extract_method_signature(code) for code in focal_code]
+
+    compile_output = call_compile(work_dir)
+    if "Build Success" in compile_output:
+        print("Compile Project Success")
+    else:
+        return "Compile Project Failure"
+    
+    class_path = []
+    class_name = []
+    for l in focal_src_path:
+        l = l.replace('src/main/java', 'target/classes')
+        path = '/'.join(l.split('.java')[0].split('/')[:-1])
+        name = l.split('.java')[0].split('/')[-1]
+
+def get_method_internal_name(class_name, method_signature, env):
+    # 调用javap命令，获取类的反汇编信息
+    cmd = ['javap', '-verbose', class_name]
+    result = sp.run(cmd, capture_output=True, text=True, env=env)
+    if result.returncode != 0:
+        print("Failed to execute javap:", result.stderr)
+        return None
+    
+    method_prefix = method_signature.split('(')[0].split(' ')[-1]
+    params = split_params(method_signature[method_signature.find('(')+1:method_signature.find(')')])
+    params_type = get_params_type(params)
+
+    internal_name = None
+    stdout = result.stdout.split('\n')
+    for i, line in enumerate(stdout):
+        if f'{method_prefix}' in line:
+            javap_method_signature = line.lstrip().rstrip()
+            javap_params_type = split_params(javap_method_signature[javap_method_signature.find('(')+1:javap_method_signature.find(')')])
+            javap_params_type = [remove_packages(t) for t in javap_params_type]
+            param_equal = True
+            for j, param_type in enumerate(params_type):
+                if param_type.lower().replace(' ', '') != javap_params_type[j].lower().replace(' ', ''):
+                    param_equal = False
+                    break
+            if param_equal:
+                descriptor_line = stdout[i+1]
+                internal_name = descriptor_line.split('descriptor:')[1].lstrip().rstrip()
+                break
+    return internal_name
+
+
+def remove_packages(type):
+    result = ""
+    flag = 0
+    for i, char in enumerate(type):
+        if not char.isalpha():
+            if char == '.':
+                flag = i + 1
+            else:
+                result += type[flag:i+1]
+                flag = i + 1
+    return result
+
+def get_params_type(params):
+    result = []
+    for param in params:
+        c1 = 0
+        c2 = 0
+        c3 = 0
+        c4 = 0
+        for i, char in enumerate(param):
+            if char == '(':
+                c1 += 1
+            elif char == ')':
+                c1 -= 1
+            elif char == '{':
+                c2 += 1
+            elif char == '}':
+                c2 -= 1
+            elif char == '[':
+                c3 += 1
+            elif char == ']':
+                c3 -= 1
+            elif char == '<':
+                c4 += 1
+            elif char == '>':
+                c4 -= 1
+            
+            if char == ' ' and (c1 + c2 + c3 + c4 == 0):
+                result.append(param[:i])
+                break
+    return result
+
+def split_params(params):
+    result = []
+    c1 = 0
+    c2 = 0
+    c3 = 0
+    c4 = 0
+    flag = 0
+    for i, char in enumerate(params):
+        if char == '(':
+            c1 += 1
+        elif char == ')':
+            c1 -= 1
+        elif char == '{':
+            c2 += 1
+        elif char == '}':
+            c2 -= 1
+        elif char == '[':
+            c3 += 1
+        elif char == ']':
+            c3 -= 1
+        elif char == '<':
+            c4 += 1
+        elif char == '>':
+            c4 -= 1
+        
+        if char == ',' and (c1 + c2 + c3 + c4 == 0):
+            result.append(params[flag:i].lstrip().rstrip())
+            flag = i+1
+    result.append(params[flag:].lstrip().rstrip())
+    return result
+
+def extract_method_signature(java_code):
+    lines = java_code.split('\n')
+    start_index = None
+    in_comment = False
+
+    for i, line in enumerate(lines):
+        if '/*' in line:
+            in_comment = True
+        elif '*/' in line:
+            in_comment = False
+            continue
+        if in_comment:
+            continue
+        if line.lstrip().startswith('//'):
+            continue
+        
+        if not start_index and ("public " in line or "private" in line or "protected" in line):
+            start_index = i
+            break
+
+    if start_index is not None:
+        code = '\n'.join(lines[start_index:])
+        ind = code.find('{')
+        signature = code[:ind].lstrip().rstrip()
+        if signature.endswith('\n'):
+            signature = signature[:-1]
+        return signature
+    return None
 
 def delete_test_methods_with_code_lines(code_lines, test_cases):
     tree = javalang.parse.parse(''.join(code_lines))
@@ -1453,6 +1534,24 @@ if __name__ == '__main__':
     parser_export.add_argument("-o", dest="output_dir", action="store",
                                  help="The output dir where the infomation stores")
     
+    # generate tests with evosuite for focal_tgt code
+    parser_evosuite = subparsers.add_parser('evosuite',
+                                          help="Generate tests with evosuite for focal_tgt")
+
+    parser_evosuite.add_argument("-w", dest="work_dir", action="store",
+                             help="The working directory of the checked-out project version (optional). Default is the current directory")
+
+    parser_evosuite.add_argument("-o", dest="output_dir", action="store",
+                                 help="The output dir where the infomation stores")
+    
+    parser_evosuite.add_argument("-b", dest="total_budget", action="store", default=20,
+                                 help="The total time in seconds allowed for test generation.")
+    
+    parser_evosuite.add_argument("-s", dest="random_seed", action="store", default=None,
+                                 help="The random seed used for test generation (optional). By default, the random seed is set <test_id>.")
+
+
+    
     #   extra--portrait
 
     # parser_portrait = subparsers.add_parser('ptr',
@@ -1514,6 +1613,9 @@ if __name__ == '__main__':
         print(output)
     elif args.command == "clean":
         output = call_clean(args.work_dir)
+        print(output)
+    elif args.command == "evosuite":
+        output = call_evosuite(args.work_dir, args.output_dir, args.total_budget, args.random_seed)
         print(output)
     # elif args.command == "ptr":
     #     output = call_ptr(args.project_id)

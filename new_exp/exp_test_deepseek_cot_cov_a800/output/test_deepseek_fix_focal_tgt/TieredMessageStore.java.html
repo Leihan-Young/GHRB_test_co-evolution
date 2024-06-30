@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TieredMessageStore.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-tiered-store 5.1.4-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.tieredstore</a> &gt; <span class="el_source">TieredMessageStore.java</span></div><h1>TieredMessageStore.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.rocketmq.tieredstore;
+
+import com.google.common.base.Stopwatch;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.ViewBuilder;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.common.BoundaryType;
+import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.Pair;
+import org.apache.rocketmq.common.PopAckConstants;
+import org.apache.rocketmq.common.message.MessageExtBrokerInner;
+import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.common.topic.TopicValidator;
+import org.apache.rocketmq.logging.org.slf4j.Logger;
+import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+import org.apache.rocketmq.store.GetMessageResult;
+import org.apache.rocketmq.store.GetMessageStatus;
+import org.apache.rocketmq.store.MessageFilter;
+import org.apache.rocketmq.store.MessageStore;
+import org.apache.rocketmq.store.PutMessageResult;
+import org.apache.rocketmq.store.QueryMessageResult;
+import org.apache.rocketmq.store.SelectMappedBufferResult;
+import org.apache.rocketmq.store.plugin.AbstractPluginMessageStore;
+import org.apache.rocketmq.store.plugin.MessageStorePluginContext;
+import org.apache.rocketmq.tieredstore.common.TieredMessageStoreConfig;
+import org.apache.rocketmq.tieredstore.common.TieredStoreExecutor;
+import org.apache.rocketmq.tieredstore.file.CompositeFlatFile;
+import org.apache.rocketmq.tieredstore.file.TieredFlatFileManager;
+import org.apache.rocketmq.tieredstore.metadata.TieredMetadataStore;
+import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsConstant;
+import org.apache.rocketmq.tieredstore.metrics.TieredStoreMetricsManager;
+import org.apache.rocketmq.tieredstore.util.TieredStoreUtil;
+
+public class TieredMessageStore extends AbstractPluginMessageStore {
+
+<span class="fc" id="L60">    protected static final Logger logger = LoggerFactory.getLogger(TieredStoreUtil.TIERED_STORE_LOGGER_NAME);</span>
+
+    protected final String brokerName;
+    protected final TieredMessageStoreConfig storeConfig;
+    protected final TieredMetadataStore metadataStore;
+
+    protected final TieredDispatcher dispatcher;
+    protected final TieredMessageFetcher fetcher;
+    protected final TieredFlatFileManager flatFileManager;
+
+    public TieredMessageStore(MessageStorePluginContext context, MessageStore next) {
+<span class="fc" id="L71">        super(context, next);</span>
+<span class="fc" id="L72">        this.storeConfig = new TieredMessageStoreConfig();</span>
+<span class="fc" id="L73">        context.registerConfiguration(storeConfig);</span>
+<span class="fc" id="L74">        this.brokerName = storeConfig.getBrokerName();</span>
+<span class="fc" id="L75">        TieredStoreUtil.addSystemTopic(storeConfig.getBrokerClusterName());</span>
+<span class="fc" id="L76">        TieredStoreUtil.addSystemTopic(brokerName);</span>
+
+<span class="fc" id="L78">        TieredStoreExecutor.init();</span>
+<span class="fc" id="L79">        this.metadataStore = TieredStoreUtil.getMetadataStore(storeConfig);</span>
+<span class="fc" id="L80">        this.fetcher = new TieredMessageFetcher(storeConfig);</span>
+<span class="fc" id="L81">        this.dispatcher = new TieredDispatcher(next, storeConfig);</span>
+
+<span class="fc" id="L83">        this.flatFileManager = TieredFlatFileManager.getInstance(storeConfig);</span>
+<span class="fc" id="L84">        next.addDispatcher(dispatcher);</span>
+<span class="fc" id="L85">    }</span>
+
+    @Override
+    public boolean load() {
+<span class="nc" id="L89">        boolean loadFlatFile = flatFileManager.load();</span>
+<span class="nc" id="L90">        boolean loadNextStore = next.load();</span>
+<span class="nc bnc" id="L91" title="All 4 branches missed.">        boolean result = loadFlatFile &amp;&amp; loadNextStore;</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (result) {</span>
+<span class="nc" id="L93">            dispatcher.initScheduleTask();</span>
+<span class="nc" id="L94">            dispatcher.start();</span>
+        }
+<span class="nc" id="L96">        return result;</span>
+    }
+
+    public TieredMessageStoreConfig getStoreConfig() {
+<span class="fc" id="L100">        return storeConfig;</span>
+    }
+
+    public boolean fetchFromCurrentStore(String topic, int queueId, long offset) {
+<span class="nc" id="L104">        return fetchFromCurrentStore(topic, queueId, offset, 1);</span>
+    }
+
+    public boolean fetchFromCurrentStore(String topic, int queueId, long offset, int batchSize) {
+<span class="fc" id="L108">        TieredMessageStoreConfig.TieredStorageLevel deepStorageLevel = storeConfig.getTieredStorageLevel();</span>
+
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (deepStorageLevel.check(TieredMessageStoreConfig.TieredStorageLevel.FORCE)) {</span>
+<span class="fc" id="L111">            return true;</span>
+        }
+
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">        if (!deepStorageLevel.isEnable()) {</span>
+<span class="nc" id="L115">            return false;</span>
+        }
+
+<span class="fc" id="L118">        CompositeFlatFile flatFile = flatFileManager.getFlatFile(new MessageQueue(topic, brokerName, queueId));</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        if (flatFile == null) {</span>
+<span class="nc" id="L120">            return false;</span>
+        }
+
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">        if (offset &gt;= flatFile.getConsumeQueueCommitOffset()) {</span>
+<span class="nc" id="L124">            return false;</span>
+        }
+
+        // determine whether tiered storage path conditions are met
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        if (deepStorageLevel.check(TieredMessageStoreConfig.TieredStorageLevel.NOT_IN_DISK)</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">            &amp;&amp; !next.checkInStoreByConsumeOffset(topic, queueId, offset)) {</span>
+<span class="fc" id="L130">            return true;</span>
+        }
+
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (deepStorageLevel.check(TieredMessageStoreConfig.TieredStorageLevel.NOT_IN_MEM)</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">            &amp;&amp; !next.checkInMemByConsumeOffset(topic, queueId, offset, batchSize)) {</span>
+<span class="nc" id="L135">            return true;</span>
+        }
+<span class="nc" id="L137">        return false;</span>
+    }
+
+    @Override
+    public GetMessageResult getMessage(String group, String topic, int queueId, long offset, int maxMsgNums,
+        MessageFilter messageFilter) {
+<span class="fc" id="L143">        return getMessageAsync(group, topic, queueId, offset, maxMsgNums, messageFilter).join();</span>
+    }
+
+    @Override
+    public CompletableFuture&lt;GetMessageResult&gt; getMessageAsync(String group, String topic,
+        int queueId, long offset, int maxMsgNums, MessageFilter messageFilter) {
+
+        // For system topic, force reading from local store
+<span class="pc bpc" id="L151" title="2 of 4 branches missed.">        if (TieredStoreUtil.isSystemTopic(topic) || PopAckConstants.isStartWithRevivePrefix(topic)) {</span>
+<span class="nc" id="L152">            return next.getMessageAsync(group, topic, queueId, offset, maxMsgNums, messageFilter);</span>
+        }
+
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        if (fetchFromCurrentStore(topic, queueId, offset, maxMsgNums)) {</span>
+<span class="fc" id="L156">            logger.trace(&quot;GetMessageAsync from current store, topic: {}, queue: {}, offset: {}&quot;, topic, queueId, offset);</span>
+        } else {
+<span class="nc" id="L158">            logger.trace(&quot;GetMessageAsync from next store, topic: {}, queue: {}, offset: {}&quot;, topic, queueId, offset);</span>
+<span class="nc" id="L159">            return next.getMessageAsync(group, topic, queueId, offset, maxMsgNums, messageFilter);</span>
+        }
+
+<span class="fc" id="L162">        Stopwatch stopwatch = Stopwatch.createStarted();</span>
+<span class="fc" id="L163">        return fetcher</span>
+<span class="fc" id="L164">            .getMessageAsync(group, topic, queueId, offset, maxMsgNums, messageFilter)</span>
+<span class="fc" id="L165">            .thenApply(result -&gt; {</span>
+
+<span class="fc" id="L167">                Attributes latencyAttributes = TieredStoreMetricsManager.newAttributesBuilder()</span>
+<span class="fc" id="L168">                    .put(TieredStoreMetricsConstant.LABEL_OPERATION, TieredStoreMetricsConstant.OPERATION_API_GET_MESSAGE)</span>
+<span class="fc" id="L169">                    .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)</span>
+<span class="fc" id="L170">                    .put(TieredStoreMetricsConstant.LABEL_GROUP, group)</span>
+<span class="fc" id="L171">                    .build();</span>
+<span class="fc" id="L172">                TieredStoreMetricsManager.apiLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), latencyAttributes);</span>
+
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">                if (result.getStatus() == GetMessageStatus.OFFSET_FOUND_NULL ||</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">                    result.getStatus() == GetMessageStatus.NO_MATCHED_LOGIC_QUEUE) {</span>
+
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">                    if (next.checkInStoreByConsumeOffset(topic, queueId, offset)) {</span>
+<span class="nc" id="L178">                        TieredStoreMetricsManager.fallbackTotal.add(1, latencyAttributes);</span>
+<span class="nc" id="L179">                        logger.debug(&quot;GetMessageAsync not found, then back to next store, result: {}, &quot; +</span>
+                                &quot;topic: {}, queue: {}, queue offset: {}, offset range: {}-{}&quot;,
+<span class="nc" id="L181">                            result.getStatus(), topic, queueId, offset, result.getMinOffset(), result.getMaxOffset());</span>
+<span class="nc" id="L182">                        return next.getMessage(group, topic, queueId, offset, maxMsgNums, messageFilter);</span>
+                    }
+                }
+
+<span class="fc bfc" id="L186" title="All 2 branches covered.">                if (result.getStatus() != GetMessageStatus.FOUND &amp;&amp;</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">                    result.getStatus() != GetMessageStatus.NO_MATCHED_LOGIC_QUEUE &amp;&amp;</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">                    result.getStatus() != GetMessageStatus.OFFSET_OVERFLOW_ONE &amp;&amp;</span>
+<span class="pc bpc" id="L189" title="1 of 2 branches missed.">                    result.getStatus() != GetMessageStatus.OFFSET_OVERFLOW_BADLY) {</span>
+<span class="nc" id="L190">                    logger.warn(&quot;GetMessageAsync not found and message is not in next store, result: {}, &quot; +</span>
+                            &quot;topic: {}, queue: {}, queue offset: {}, offset range: {}-{}&quot;,
+<span class="nc" id="L192">                        result.getStatus(), topic, queueId, offset, result.getMinOffset(), result.getMaxOffset());</span>
+                }
+
+<span class="fc bfc" id="L195" title="All 2 branches covered.">                if (result.getStatus() == GetMessageStatus.FOUND) {</span>
+<span class="fc" id="L196">                    Attributes messagesOutAttributes = TieredStoreMetricsManager.newAttributesBuilder()</span>
+<span class="fc" id="L197">                        .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)</span>
+<span class="fc" id="L198">                        .put(TieredStoreMetricsConstant.LABEL_GROUP, group)</span>
+<span class="fc" id="L199">                        .build();</span>
+<span class="fc" id="L200">                    TieredStoreMetricsManager.messagesOutTotal.add(result.getMessageCount(), messagesOutAttributes);</span>
+                }
+
+                // Fix min or max offset according next store at last
+<span class="fc" id="L204">                long minOffsetInQueue = next.getMinOffsetInQueue(topic, queueId);</span>
+<span class="pc bpc" id="L205" title="2 of 4 branches missed.">                if (minOffsetInQueue &gt;= 0 &amp;&amp; minOffsetInQueue &lt; result.getMinOffset()) {</span>
+<span class="nc" id="L206">                    result.setMinOffset(minOffsetInQueue);</span>
+                }
+
+                // In general, the local cq offset is slightly greater than the commit offset in read message,
+                // so there is no need to update the maximum offset to the local cq offset here,
+                // otherwise it will cause repeated consumption after next begin offset over commit offset.
+
+<span class="fc" id="L213">                logger.trace(&quot;GetMessageAsync result, group: {}, topic: {}, queueId: {}, offset: {}, count:{}, {}&quot;,</span>
+<span class="fc" id="L214">                    group, topic, queueId, offset, maxMsgNums, result);</span>
+
+<span class="fc" id="L216">                return result;</span>
+<span class="fc" id="L217">            }).exceptionally(e -&gt; {</span>
+<span class="nc" id="L218">                logger.error(&quot;GetMessageAsync from tiered store failed&quot;, e);</span>
+<span class="nc" id="L219">                return next.getMessage(group, topic, queueId, offset, maxMsgNums, messageFilter);</span>
+            });
+    }
+
+    @Override
+    public CompletableFuture&lt;PutMessageResult&gt; asyncPutMessage(MessageExtBrokerInner msg) {
+<span class="nc" id="L225">        return super.asyncPutMessage(msg);</span>
+    }
+
+    @Override
+    public long getMinOffsetInQueue(String topic, int queueId) {
+<span class="nc" id="L230">        long minOffsetInNextStore = next.getMinOffsetInQueue(topic, queueId);</span>
+<span class="nc" id="L231">        CompositeFlatFile flatFile = flatFileManager.getFlatFile(new MessageQueue(topic, brokerName, queueId));</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        if (flatFile == null) {</span>
+<span class="nc" id="L233">            return minOffsetInNextStore;</span>
+        }
+<span class="nc" id="L235">        long minOffsetInTieredStore = flatFile.getConsumeQueueMinOffset();</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        if (minOffsetInTieredStore &lt; 0) {</span>
+<span class="nc" id="L237">            return minOffsetInNextStore;</span>
+        }
+<span class="nc" id="L239">        return Math.min(minOffsetInNextStore, minOffsetInTieredStore);</span>
+    }
+
+    @Override
+    public long getEarliestMessageTime(String topic, int queueId) {
+<span class="nc" id="L244">        return getEarliestMessageTimeAsync(topic, queueId).join();</span>
+    }
+
+    @Override
+    public CompletableFuture&lt;Long&gt; getEarliestMessageTimeAsync(String topic, int queueId) {
+<span class="nc" id="L249">        long nextEarliestMessageTime = next.getEarliestMessageTime(topic, queueId);</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        long finalNextEarliestMessageTime = nextEarliestMessageTime &gt; 0 ? nextEarliestMessageTime : Long.MAX_VALUE;</span>
+<span class="nc" id="L251">        Stopwatch stopwatch = Stopwatch.createStarted();</span>
+<span class="nc" id="L252">        return fetcher.getEarliestMessageTimeAsync(topic, queueId)</span>
+<span class="nc" id="L253">            .thenApply(time -&gt; {</span>
+<span class="nc" id="L254">                Attributes latencyAttributes = TieredStoreMetricsManager.newAttributesBuilder()</span>
+<span class="nc" id="L255">                    .put(TieredStoreMetricsConstant.LABEL_OPERATION, TieredStoreMetricsConstant.OPERATION_API_GET_EARLIEST_MESSAGE_TIME)</span>
+<span class="nc" id="L256">                    .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)</span>
+<span class="nc" id="L257">                    .build();</span>
+<span class="nc" id="L258">                TieredStoreMetricsManager.apiLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), latencyAttributes);</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">                if (time &lt; 0) {</span>
+<span class="nc" id="L260">                    logger.debug(&quot;GetEarliestMessageTimeAsync failed, try to get earliest message time from next store: topic: {}, queue: {}&quot;,</span>
+<span class="nc" id="L261">                        topic, queueId);</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">                    return finalNextEarliestMessageTime != Long.MAX_VALUE ? finalNextEarliestMessageTime : -1;</span>
+                }
+<span class="nc" id="L264">                return Math.min(finalNextEarliestMessageTime, time);</span>
+            });
+    }
+
+    @Override
+    public CompletableFuture&lt;Long&gt; getMessageStoreTimeStampAsync(String topic, int queueId,
+        long consumeQueueOffset) {
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        if (fetchFromCurrentStore(topic, queueId, consumeQueueOffset)) {</span>
+<span class="nc" id="L272">            Stopwatch stopwatch = Stopwatch.createStarted();</span>
+<span class="nc" id="L273">            return fetcher.getMessageStoreTimeStampAsync(topic, queueId, consumeQueueOffset)</span>
+<span class="nc" id="L274">                .thenApply(time -&gt; {</span>
+<span class="nc" id="L275">                    Attributes latencyAttributes = TieredStoreMetricsManager.newAttributesBuilder()</span>
+<span class="nc" id="L276">                        .put(TieredStoreMetricsConstant.LABEL_OPERATION, TieredStoreMetricsConstant.OPERATION_API_GET_TIME_BY_OFFSET)</span>
+<span class="nc" id="L277">                        .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)</span>
+<span class="nc" id="L278">                        .build();</span>
+<span class="nc" id="L279">                    TieredStoreMetricsManager.apiLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), latencyAttributes);</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">                    if (time == -1) {</span>
+<span class="nc" id="L281">                        logger.debug(&quot;GetEarliestMessageTimeAsync failed, try to get message time from next store, topic: {}, queue: {}, queue offset: {}&quot;,</span>
+<span class="nc" id="L282">                            topic, queueId, consumeQueueOffset);</span>
+<span class="nc" id="L283">                        return next.getMessageStoreTimeStamp(topic, queueId, consumeQueueOffset);</span>
+                    }
+<span class="nc" id="L285">                    return time;</span>
+                });
+        }
+<span class="nc" id="L288">        return next.getMessageStoreTimeStampAsync(topic, queueId, consumeQueueOffset);</span>
+    }
+
+    @Override
+    public long getOffsetInQueueByTime(String topic, int queueId, long timestamp) {
+<span class="nc" id="L293">        return getOffsetInQueueByTime(topic, queueId, timestamp, BoundaryType.LOWER);</span>
+    }
+
+    @Override
+    public long getOffsetInQueueByTime(String topic, int queueId, long timestamp, BoundaryType boundaryType) {
+<span class="nc" id="L298">        long earliestTimeInNextStore = next.getEarliestMessageTime();</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        if (earliestTimeInNextStore &lt;= 0) {</span>
+<span class="nc" id="L300">            logger.warn(&quot;TieredMessageStore#getOffsetInQueueByTimeAsync: get earliest message time in next store failed: {}&quot;, earliestTimeInNextStore);</span>
+<span class="nc" id="L301">            return next.getOffsetInQueueByTime(topic, queueId, timestamp);</span>
+        }
+<span class="nc bnc" id="L303" title="All 2 branches missed.">        boolean isForce = storeConfig.getTieredStorageLevel() == TieredMessageStoreConfig.TieredStorageLevel.FORCE;</span>
+<span class="nc bnc" id="L304" title="All 4 branches missed.">        if (timestamp &lt; earliestTimeInNextStore || isForce) {</span>
+<span class="nc" id="L305">            Stopwatch stopwatch = Stopwatch.createStarted();</span>
+<span class="nc" id="L306">            long offsetInTieredStore = fetcher.getOffsetInQueueByTime(topic, queueId, timestamp, boundaryType);</span>
+<span class="nc" id="L307">            Attributes latencyAttributes = TieredStoreMetricsManager.newAttributesBuilder()</span>
+<span class="nc" id="L308">                .put(TieredStoreMetricsConstant.LABEL_OPERATION, TieredStoreMetricsConstant.OPERATION_API_GET_OFFSET_BY_TIME)</span>
+<span class="nc" id="L309">                .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)</span>
+<span class="nc" id="L310">                .build();</span>
+<span class="nc" id="L311">            TieredStoreMetricsManager.apiLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), latencyAttributes);</span>
+<span class="nc bnc" id="L312" title="All 4 branches missed.">            if (offsetInTieredStore == -1 &amp;&amp; !isForce) {</span>
+<span class="nc" id="L313">                return next.getOffsetInQueueByTime(topic, queueId, timestamp);</span>
+            }
+<span class="nc" id="L315">            return offsetInTieredStore;</span>
+        }
+<span class="nc" id="L317">        return next.getOffsetInQueueByTime(topic, queueId, timestamp);</span>
+    }
+
+    @Override
+    public QueryMessageResult queryMessage(String topic, String key, int maxNum, long begin, long end) {
+<span class="nc" id="L322">        return queryMessageAsync(topic, key, maxNum, begin, end).join();</span>
+    }
+
+    @Override
+    public CompletableFuture&lt;QueryMessageResult&gt; queryMessageAsync(String topic, String key,
+        int maxNum, long begin, long end) {
+<span class="nc" id="L328">        long earliestTimeInNextStore = next.getEarliestMessageTime();</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">        if (earliestTimeInNextStore &lt;= 0) {</span>
+<span class="nc" id="L330">            logger.warn(&quot;TieredMessageStore#queryMessageAsync: get earliest message time in next store failed: {}&quot;, earliestTimeInNextStore);</span>
+        }
+<span class="nc bnc" id="L332" title="All 2 branches missed.">        boolean isForce = storeConfig.getTieredStorageLevel() == TieredMessageStoreConfig.TieredStorageLevel.FORCE;</span>
+<span class="nc bnc" id="L333" title="All 4 branches missed.">        QueryMessageResult result = end &lt; earliestTimeInNextStore || isForce ?</span>
+            new QueryMessageResult() :
+<span class="nc" id="L335">            next.queryMessage(topic, key, maxNum, begin, end);</span>
+<span class="nc" id="L336">        int resultSize = result.getMessageBufferList().size();</span>
+<span class="nc bnc" id="L337" title="All 6 branches missed.">        if (resultSize &lt; maxNum &amp;&amp; begin &lt; earliestTimeInNextStore || isForce) {</span>
+<span class="nc" id="L338">            Stopwatch stopwatch = Stopwatch.createStarted();</span>
+            try {
+<span class="nc bnc" id="L340" title="All 2 branches missed.">                return fetcher.queryMessageAsync(topic, key, maxNum - resultSize, begin, isForce ? end : earliestTimeInNextStore)</span>
+<span class="nc" id="L341">                    .thenApply(tieredStoreResult -&gt; {</span>
+<span class="nc" id="L342">                        Attributes latencyAttributes = TieredStoreMetricsManager.newAttributesBuilder()</span>
+<span class="nc" id="L343">                            .put(TieredStoreMetricsConstant.LABEL_OPERATION, TieredStoreMetricsConstant.OPERATION_API_QUERY_MESSAGE)</span>
+<span class="nc" id="L344">                            .put(TieredStoreMetricsConstant.LABEL_TOPIC, topic)</span>
+<span class="nc" id="L345">                            .build();</span>
+<span class="nc" id="L346">                        TieredStoreMetricsManager.apiLatency.record(stopwatch.elapsed(TimeUnit.MILLISECONDS), latencyAttributes);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">                        for (SelectMappedBufferResult msg : tieredStoreResult.getMessageMapedList()) {</span>
+<span class="nc" id="L348">                            result.addMessage(msg);</span>
+<span class="nc" id="L349">                        }</span>
+<span class="nc" id="L350">                        return result;</span>
+                    });
+<span class="nc" id="L352">            } catch (Exception e) {</span>
+<span class="nc" id="L353">                logger.error(&quot;TieredMessageStore#queryMessageAsync: query message in tiered store failed&quot;, e);</span>
+<span class="nc" id="L354">                return CompletableFuture.completedFuture(result);</span>
+            }
+        }
+<span class="nc" id="L357">        return CompletableFuture.completedFuture(result);</span>
+    }
+
+    @Override
+    public List&lt;Pair&lt;InstrumentSelector, ViewBuilder&gt;&gt; getMetricsView() {
+<span class="nc" id="L362">        List&lt;Pair&lt;InstrumentSelector, ViewBuilder&gt;&gt; res = super.getMetricsView();</span>
+<span class="nc" id="L363">        res.addAll(TieredStoreMetricsManager.getMetricsView());</span>
+<span class="nc" id="L364">        return res;</span>
+    }
+
+    @Override
+    public void initMetrics(Meter meter, Supplier&lt;AttributesBuilder&gt; attributesBuilderSupplier) {
+<span class="nc" id="L369">        super.initMetrics(meter, attributesBuilderSupplier);</span>
+<span class="nc" id="L370">        TieredStoreMetricsManager.init(meter, attributesBuilderSupplier, storeConfig, fetcher, next);</span>
+<span class="nc" id="L371">    }</span>
+
+    @Override
+    public void shutdown() {
+<span class="nc" id="L375">        next.shutdown();</span>
+
+<span class="nc" id="L377">        dispatcher.shutdown();</span>
+<span class="nc" id="L378">        TieredFlatFileManager.getInstance(storeConfig).shutdown();</span>
+<span class="nc" id="L379">        TieredStoreExecutor.shutdown();</span>
+<span class="nc" id="L380">    }</span>
+
+    @Override
+    public void destroy() {
+<span class="nc" id="L384">        next.destroy();</span>
+
+<span class="nc" id="L386">        TieredFlatFileManager.getInstance(storeConfig).destroy();</span>
+        try {
+<span class="nc" id="L388">            metadataStore.destroy();</span>
+<span class="nc" id="L389">        } catch (Exception e) {</span>
+<span class="nc" id="L390">            logger.error(&quot;TieredMessageStore#destroy: destroy metadata store failed&quot;, e);</span>
+<span class="nc" id="L391">        }</span>
+<span class="nc" id="L392">    }</span>
+
+    @Override
+    public int cleanUnusedTopic(Set&lt;String&gt; retainTopics) {
+        try {
+<span class="nc" id="L397">            metadataStore.iterateTopic(topicMetadata -&gt; {</span>
+<span class="nc" id="L398">                String topic = topicMetadata.getTopic();</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">                if (retainTopics.contains(topic) ||</span>
+<span class="nc bnc" id="L400" title="All 2 branches missed.">                    TopicValidator.isSystemTopic(topic) ||</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">                    MixAll.isLmq(topic)) {</span>
+<span class="nc" id="L402">                    return;</span>
+                }
+<span class="nc" id="L404">                this.destroyCompositeFlatFile(topicMetadata.getTopic());</span>
+<span class="nc" id="L405">            });</span>
+<span class="nc" id="L406">        } catch (Exception e) {</span>
+<span class="nc" id="L407">            logger.error(&quot;TieredMessageStore#cleanUnusedTopic: iterate topic metadata failed&quot;, e);</span>
+<span class="nc" id="L408">        }</span>
+<span class="nc" id="L409">        return next.cleanUnusedTopic(retainTopics);</span>
+    }
+
+    @Override
+    public int deleteTopics(Set&lt;String&gt; deleteTopics) {
+<span class="nc bnc" id="L414" title="All 2 branches missed.">        for (String topic : deleteTopics) {</span>
+<span class="nc" id="L415">            this.destroyCompositeFlatFile(topic);</span>
+<span class="nc" id="L416">        }</span>
+<span class="nc" id="L417">        return next.deleteTopics(deleteTopics);</span>
+    }
+
+    public void destroyCompositeFlatFile(String topic) {
+        try {
+<span class="nc bnc" id="L422" title="All 2 branches missed.">            if (StringUtils.isBlank(topic)) {</span>
+<span class="nc" id="L423">                return;</span>
+            }
+<span class="nc" id="L425">            metadataStore.iterateQueue(topic, queueMetadata -&gt; {</span>
+<span class="nc" id="L426">                flatFileManager.destroyCompositeFile(queueMetadata.getQueue());</span>
+<span class="nc" id="L427">            });</span>
+            // delete topic metadata
+<span class="nc" id="L429">            metadataStore.deleteTopic(topic);</span>
+<span class="nc" id="L430">            logger.info(&quot;Destroy composite flat file in message store, topic={}&quot;, topic);</span>
+<span class="nc" id="L431">        } catch (Exception e) {</span>
+<span class="nc" id="L432">            logger.error(&quot;Destroy composite flat file in message store failed, topic={}&quot;, topic, e);</span>
+<span class="nc" id="L433">        }</span>
+<span class="nc" id="L434">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

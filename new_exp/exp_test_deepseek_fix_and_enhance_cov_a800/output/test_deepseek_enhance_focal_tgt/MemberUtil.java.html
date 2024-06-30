@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MemberUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">nacos-core 2.3.0-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">com.alibaba.nacos.core.cluster</a> &gt; <span class="el_source">MemberUtil.java</span></div><h1>MemberUtil.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.alibaba.nacos.core.cluster;
+
+import com.alibaba.nacos.common.utils.ExceptionUtil;
+import com.alibaba.nacos.common.utils.InternetAddressUtil;
+import com.alibaba.nacos.common.utils.StringUtils;
+import com.alibaba.nacos.core.utils.Loggers;
+import com.alibaba.nacos.sys.env.EnvUtil;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+/**
+ * Member node tool class.
+ *
+ * @author &lt;a href=&quot;mailto:liaochuntao@live.com&quot;&gt;liaochuntao&lt;/a&gt;
+ */
+<span class="nc" id="L42">public class MemberUtil {</span>
+    
+    protected static final String TARGET_MEMBER_CONNECT_REFUSE_ERRMSG = &quot;Connection refused&quot;;
+    
+    private static final String SERVER_PORT_PROPERTY = &quot;server.port&quot;;
+    
+    private static final int DEFAULT_SERVER_PORT = 8848;
+    
+    private static final int DEFAULT_RAFT_OFFSET_PORT = 1000;
+    
+    private static final String MEMBER_FAIL_ACCESS_CNT_PROPERTY = &quot;nacos.core.member.fail-access-cnt&quot;;
+    
+    private static final int DEFAULT_MEMBER_FAIL_ACCESS_CNT = 3;
+    
+    /**
+     * Information copy.
+     *
+     * @param newMember {@link Member}
+     * @param oldMember {@link Member}
+     */
+    public static void copy(Member newMember, Member oldMember) {
+<span class="nc" id="L63">        oldMember.setIp(newMember.getIp());</span>
+<span class="nc" id="L64">        oldMember.setPort(newMember.getPort());</span>
+<span class="nc" id="L65">        oldMember.setState(newMember.getState());</span>
+<span class="nc" id="L66">        oldMember.setExtendInfo(newMember.getExtendInfo());</span>
+<span class="nc" id="L67">        oldMember.setAddress(newMember.getAddress());</span>
+<span class="nc" id="L68">        oldMember.setAbilities(newMember.getAbilities());</span>
+<span class="nc" id="L69">        oldMember.setGrpcReportEnabled(newMember.isGrpcReportEnabled());</span>
+<span class="nc" id="L70">    }</span>
+    
+    /**
+     * parse ip:port to member.
+     *
+     * @param member ip:port
+     * @return {@link Member}
+     */
+    @SuppressWarnings(&quot;PMD.UndefineMagicConstantRule&quot;)
+    public static Member singleParse(String member) {
+        // Nacos default port is 8848
+<span class="nc" id="L81">        int defaultPort = EnvUtil.getProperty(SERVER_PORT_PROPERTY, Integer.class, DEFAULT_SERVER_PORT);</span>
+        // Set the default Raft port information for securit
+        
+<span class="nc" id="L84">        String address = member;</span>
+<span class="nc" id="L85">        int port = defaultPort;</span>
+<span class="nc" id="L86">        String[] info = InternetAddressUtil.splitIPPortStr(address);</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (info.length &gt; 1) {</span>
+<span class="nc" id="L88">            address = info[0];</span>
+<span class="nc" id="L89">            port = Integer.parseInt(info[1]);</span>
+        }
+        
+<span class="nc" id="L92">        Member target = Member.builder().ip(address).port(port).state(NodeState.UP).build();</span>
+<span class="nc" id="L93">        Map&lt;String, Object&gt; extendInfo = new HashMap&lt;&gt;(4);</span>
+        // The Raft Port information needs to be set by default
+<span class="nc" id="L95">        extendInfo.put(MemberMetaDataConstants.RAFT_PORT, String.valueOf(calculateRaftPort(target)));</span>
+<span class="nc" id="L96">        extendInfo.put(MemberMetaDataConstants.READY_TO_UPGRADE, true);</span>
+<span class="nc" id="L97">        target.setExtendInfo(extendInfo);</span>
+        // use grpc to report default
+<span class="nc" id="L99">        target.setGrpcReportEnabled(true);</span>
+<span class="nc" id="L100">        return target;</span>
+    }
+    
+    /**
+     * check whether the member support long connection or not.
+     *
+     * @param member member instance of server.
+     * @return support long connection or not.
+     */
+    public static boolean isSupportedLongCon(Member member) {
+<span class="nc bnc" id="L110" title="All 4 branches missed.">        if (member.getAbilities() == null || member.getAbilities().getRemoteAbility() == null) {</span>
+<span class="nc" id="L111">            return false;</span>
+        }
+        
+<span class="nc" id="L114">        boolean oldVerJudge = member.getAbilities().getRemoteAbility().isSupportRemoteConnection();</span>
+        
+<span class="nc bnc" id="L116" title="All 4 branches missed.">        return member.isGrpcReportEnabled() || oldVerJudge;</span>
+    }
+    
+    public static int calculateRaftPort(Member member) {
+<span class="nc" id="L120">        return member.getPort() - DEFAULT_RAFT_OFFSET_PORT;</span>
+    }
+    
+    /**
+     * Resolves to Member list.
+     *
+     * @param addresses ip list, example [127.0.0.1:8847,127.0.0.1:8848,127.0.0.1:8849]
+     * @return member list
+     */
+    public static Collection&lt;Member&gt; multiParse(Collection&lt;String&gt; addresses) {
+<span class="nc" id="L130">        List&lt;Member&gt; members = new ArrayList&lt;&gt;(addresses.size());</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        for (String address : addresses) {</span>
+<span class="nc" id="L132">            Member member = singleParse(address);</span>
+<span class="nc" id="L133">            members.add(member);</span>
+<span class="nc" id="L134">        }</span>
+<span class="nc" id="L135">        return members;</span>
+    }
+    
+    /**
+     * Successful processing of the operation on the node.
+     *
+     * @param member {@link Member}
+     */
+    public static void onSuccess(final ServerMemberManager manager, final Member member) {
+<span class="nc" id="L144">        final NodeState old = member.getState();</span>
+<span class="nc" id="L145">        manager.getMemberAddressInfos().add(member.getAddress());</span>
+<span class="nc" id="L146">        member.setState(NodeState.UP);</span>
+<span class="nc" id="L147">        member.setFailAccessCnt(0);</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (!Objects.equals(old, member.getState())) {</span>
+<span class="nc" id="L149">            manager.notifyMemberChange(member);</span>
+        }
+<span class="nc" id="L151">    }</span>
+    
+    /**
+     * Successful processing of the operation on the node and update metadata.
+     *
+     * @param member {@link Member}
+     * @since 2.1.2
+     */
+    public static void onSuccess(final ServerMemberManager manager, final Member member, final Member receivedMember) {
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (isMetadataChanged(member, receivedMember)) {</span>
+<span class="nc" id="L161">            manager.getMemberAddressInfos().add(member.getAddress());</span>
+<span class="nc" id="L162">            member.setState(NodeState.UP);</span>
+<span class="nc" id="L163">            member.setFailAccessCnt(0);</span>
+<span class="nc" id="L164">            member.setExtendInfo(receivedMember.getExtendInfo());</span>
+<span class="nc" id="L165">            member.setAbilities(receivedMember.getAbilities());</span>
+<span class="nc" id="L166">            manager.notifyMemberChange(member);</span>
+        } else {
+<span class="nc" id="L168">            onSuccess(manager, member);</span>
+        }
+<span class="nc" id="L170">    }</span>
+    
+    private static boolean isMetadataChanged(Member expected, Member actual) {
+<span class="nc bnc" id="L173" title="All 4 branches missed.">        return !Objects.equals(expected.getAbilities(), actual.getAbilities()) || isBasicInfoChangedInExtendInfo(</span>
+                expected, actual);
+    }
+    
+    public static void onFail(final ServerMemberManager manager, final Member member) {
+        // To avoid null pointer judgments, pass in one NONE_EXCEPTION
+<span class="nc" id="L179">        onFail(manager, member, ExceptionUtil.NONE_EXCEPTION);</span>
+<span class="nc" id="L180">    }</span>
+    
+    /**
+     * Failure processing of the operation on the node.
+     *
+     * @param member {@link Member}
+     * @param ex     {@link Throwable}
+     */
+    public static void onFail(final ServerMemberManager manager, final Member member, Throwable ex) {
+<span class="nc" id="L189">        manager.getMemberAddressInfos().remove(member.getAddress());</span>
+<span class="nc" id="L190">        final NodeState old = member.getState();</span>
+<span class="nc" id="L191">        member.setState(NodeState.SUSPICIOUS);</span>
+<span class="nc" id="L192">        member.setFailAccessCnt(member.getFailAccessCnt() + 1);</span>
+<span class="nc" id="L193">        int maxFailAccessCnt = EnvUtil</span>
+<span class="nc" id="L194">                .getProperty(MEMBER_FAIL_ACCESS_CNT_PROPERTY, Integer.class, DEFAULT_MEMBER_FAIL_ACCESS_CNT);</span>
+        
+        // If the number of consecutive failures to access the target node reaches
+        // a maximum, or the link request is rejected, the state is directly down
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (member.getFailAccessCnt() &gt; maxFailAccessCnt || StringUtils</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">                .containsIgnoreCase(ex.getMessage(), TARGET_MEMBER_CONNECT_REFUSE_ERRMSG)) {</span>
+<span class="nc" id="L200">            member.setState(NodeState.DOWN);</span>
+        }
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        if (!Objects.equals(old, member.getState())) {</span>
+<span class="nc" id="L203">            manager.notifyMemberChange(member);</span>
+        }
+<span class="nc" id="L205">    }</span>
+    
+    /**
+     * Node list information persistence.
+     *
+     * @param members member list
+     */
+    public static void syncToFile(Collection&lt;Member&gt; members) {
+        try {
+<span class="nc" id="L214">            StringBuilder builder = new StringBuilder();</span>
+<span class="nc" id="L215">            builder.append('#').append(LocalDateTime.now()).append(StringUtils.LF);</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">            for (String member : simpleMembers(members)) {</span>
+<span class="nc" id="L217">                builder.append(member).append(StringUtils.LF);</span>
+<span class="nc" id="L218">            }</span>
+<span class="nc" id="L219">            EnvUtil.writeClusterConf(builder.toString());</span>
+<span class="nc" id="L220">        } catch (Throwable ex) {</span>
+<span class="nc" id="L221">            Loggers.CLUSTER.error(&quot;cluster member node persistence failed : {}&quot;, ExceptionUtil.getAllExceptionMsg(ex));</span>
+<span class="nc" id="L222">        }</span>
+<span class="nc" id="L223">    }</span>
+    
+    /**
+     * Default configuration format resolution, only NACos-Server IP or IP :port or hostname: Port information.
+     */
+    public static Collection&lt;Member&gt; readServerConf(Collection&lt;String&gt; members) {
+<span class="nc" id="L229">        Set&lt;Member&gt; nodes = new HashSet&lt;&gt;();</span>
+        
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        for (String member : members) {</span>
+<span class="nc" id="L232">            Member target = singleParse(member);</span>
+<span class="nc" id="L233">            nodes.add(target);</span>
+<span class="nc" id="L234">        }</span>
+        
+<span class="nc" id="L236">        return nodes;</span>
+    }
+    
+    /**
+     * Select target members with filter.
+     *
+     * @param members original members
+     * @param filter  filter
+     * @return target members
+     */
+    public static Set&lt;Member&gt; selectTargetMembers(Collection&lt;Member&gt; members, Predicate&lt;Member&gt; filter) {
+<span class="nc" id="L247">        return members.stream().filter(filter).collect(Collectors.toSet());</span>
+    }
+    
+    /**
+     * Get address list of members.
+     *
+     * @param members members
+     * @return address list
+     */
+    public static List&lt;String&gt; simpleMembers(Collection&lt;Member&gt; members) {
+<span class="nc" id="L257">        return members.stream().map(Member::getAddress).sorted()</span>
+<span class="nc" id="L258">                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);</span>
+    }
+    
+    /**
+     * Judge whether basic info has changed.
+     *
+     * @param actual   actual member
+     * @param expected expected member
+     * @return true if one content is different, otherwise false
+     */
+    public static boolean isBasicInfoChanged(Member actual, Member expected) {
+<span class="nc bnc" id="L269" title="All 2 branches missed.">        if (null == expected) {</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">            return null != actual;</span>
+        }
+<span class="nc bnc" id="L272" title="All 2 branches missed.">        if (!expected.getIp().equals(actual.getIp())) {</span>
+<span class="nc" id="L273">            return true;</span>
+        }
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        if (expected.getPort() != actual.getPort()) {</span>
+<span class="nc" id="L276">            return true;</span>
+        }
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        if (!expected.getAddress().equals(actual.getAddress())) {</span>
+<span class="nc" id="L279">            return true;</span>
+        }
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        if (!expected.getState().equals(actual.getState())) {</span>
+<span class="nc" id="L282">            return true;</span>
+        }
+    
+        // if change
+<span class="nc bnc" id="L286" title="All 2 branches missed.">        if (expected.isGrpcReportEnabled() != actual.isGrpcReportEnabled()) {</span>
+<span class="nc" id="L287">            return true;</span>
+        }
+        
+<span class="nc" id="L290">        return isBasicInfoChangedInExtendInfo(expected, actual);</span>
+    }
+    
+    private static boolean isBasicInfoChangedInExtendInfo(Member expected, Member actual) {
+<span class="nc bnc" id="L294" title="All 2 branches missed.">        for (String each : MemberMetaDataConstants.BASIC_META_KEYS) {</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">            if (expected.getExtendInfo().containsKey(each) != actual.getExtendInfo().containsKey(each)) {</span>
+<span class="nc" id="L296">                return true;</span>
+            }
+<span class="nc bnc" id="L298" title="All 2 branches missed.">            if (!Objects.equals(expected.getExtendVal(each), actual.getExtendVal(each))) {</span>
+<span class="nc" id="L299">                return true;</span>
+            }
+        }
+<span class="nc" id="L302">        return false;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

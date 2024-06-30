@@ -1,0 +1,4144 @@
+{
+  "1": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "2": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "3": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "4": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopMessageProcessor.java#processRequest": {
+        "INSTRUCTION": {
+          "missed": "6",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "5": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "6": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "7": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "8": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "9": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "acl/src/main/java/org/apache/rocketmq/acl/plain/PlainPermissionManager.java#updateAclConfigFileVersion": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "63"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "acl/src/main/java/org/apache/rocketmq/acl/plain/PlainPermissionManager.java#updateAclConfigFileVersion": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "63"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "10": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "acl/src/main/java/org/apache/rocketmq/acl/plain/PlainPermissionManager.java#createAclAccessConfigMap": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "111"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "21"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "27"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "11"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "acl/src/main/java/org/apache/rocketmq/acl/plain/PlainPermissionManager.java#createAclAccessConfigMap": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "111"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "21"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "27"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "11"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "11": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java#getMessageAsync": {
+        "INSTRUCTION": {
+          "missed": "10",
+          "covered": "38"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java#getMessageAsync": {
+        "INSTRUCTION": {
+          "missed": "10",
+          "covered": "38"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "12": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "67",
+          "covered": "71"
+        },
+        "BRANCH": {
+          "missed": "8",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "6",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "67",
+          "covered": "71"
+        },
+        "BRANCH": {
+          "missed": "8",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "6",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "13": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "67",
+          "covered": "71"
+        },
+        "BRANCH": {
+          "missed": "8",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "6",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "67",
+          "covered": "71"
+        },
+        "BRANCH": {
+          "missed": "8",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "6",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "14": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "67",
+          "covered": "71"
+        },
+        "BRANCH": {
+          "missed": "8",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "6",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "67",
+          "covered": "71"
+        },
+        "BRANCH": {
+          "missed": "8",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "6",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "15": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "28",
+          "covered": "110"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "9"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "26"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "4"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "28",
+          "covered": "110"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "9"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "26"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "4"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "16": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "67",
+          "covered": "71"
+        },
+        "BRANCH": {
+          "missed": "8",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "6",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "67",
+          "covered": "71"
+        },
+        "BRANCH": {
+          "missed": "8",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "6",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "17": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "18": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "136"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "30"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "136"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "30"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "19": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "136"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "30"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "136"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "30"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "20": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "28",
+          "covered": "110"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "9"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "26"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "4"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#checkBlock": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "4",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "28",
+          "covered": "110"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "9"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "26"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "4"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#checkBlock": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "4",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "21": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "136"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "30"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "136"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "30"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "22": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "67",
+          "covered": "71"
+        },
+        "BRANCH": {
+          "missed": "8",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "6",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#checkBlock": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "4",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#update": {
+        "INSTRUCTION": {
+          "missed": "67",
+          "covered": "71"
+        },
+        "BRANCH": {
+          "missed": "8",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "17"
+        },
+        "COMPLEXITY": {
+          "missed": "6",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "broker/src/main/java/org/apache/rocketmq/broker/offset/ConsumerOrderInfoManager.java#checkBlock": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "4",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "23": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#put": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#get": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent": {
+        "INSTRUCTION": {
+          "missed": "1",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#put": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#get": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent": {
+        "INSTRUCTION": {
+          "missed": "1",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "24": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#put": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#get": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent": {
+        "INSTRUCTION": {
+          "missed": "1",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#put": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#get": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent": {
+        "INSTRUCTION": {
+          "missed": "1",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "25": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#put": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#get": {
+        "INSTRUCTION": {
+          "missed": "31",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "7",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#remove": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "34"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent": {
+        "INSTRUCTION": {
+          "missed": "1",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#put": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#get": {
+        "INSTRUCTION": {
+          "missed": "31",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "7",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#remove": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "34"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent": {
+        "INSTRUCTION": {
+          "missed": "1",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "26": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#put": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#get": {
+        "INSTRUCTION": {
+          "missed": "31",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "7",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#remove": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "34"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent": {
+        "INSTRUCTION": {
+          "missed": "1",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#put": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#get": {
+        "INSTRUCTION": {
+          "missed": "31",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "7",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#remove": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "34"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#computeIfPresent": {
+        "INSTRUCTION": {
+          "missed": "1",
+          "covered": "25"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "27": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#put": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#get": {
+        "INSTRUCTION": {
+          "missed": "21",
+          "covered": "10"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "4",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#remove": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "34"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#put": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#get": {
+        "INSTRUCTION": {
+          "missed": "21",
+          "covered": "10"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "4",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/common/ReceiptHandleGroup.java#remove": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "34"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "28": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "29": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "30": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "31": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "32": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "33": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "34": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "35": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "36": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "37": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "38": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "39": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "40": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "41": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/processor/ReceiptHandleProcessor.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "42": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopInflightMessageCounter.java#decrementInFlightMessageNum": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "14"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "broker/src/main/java/org/apache/rocketmq/broker/processor/PopInflightMessageCounter.java#decrementInFlightMessageNum": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "14"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "43": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "44": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java#getTopicMessageType": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "19"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "7"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java#getTopicMessageType": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "19"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "7"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "45": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java#getSubscriptionGroupConfig": {
+        "INSTRUCTION": {
+          "missed": "5",
+          "covered": "12"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/metadata/ClusterMetadataService.java#getSubscriptionGroupConfig": {
+        "INSTRUCTION": {
+          "missed": "5",
+          "covered": "12"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "46": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java#getCurrentMessageQueueView": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java#getCurrentMessageQueueView": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "47": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java#getTopicRouteForProxy": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "64"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "13"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/ClusterTopicRouteService.java#getTopicRouteForProxy": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "64"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "13"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "48": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java#getCurrentMessageQueueView": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "16"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java#getBrokerAddr": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java#getCurrentMessageQueueView": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "16"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/route/LocalTopicRouteService.java#getBrokerAddr": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "49": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "50": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/utils/ConcurrentHashMapUtils.java#computeIfAbsent": {
+        "INSTRUCTION": {
+          "missed": "9",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "9"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/utils/ConcurrentHashMapUtils.java#computeIfAbsent": {
+        "INSTRUCTION": {
+          "missed": "9",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "9"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "51": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "52": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "53": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "client/src/main/java/org/apache/rocketmq/client/trace/TraceDataEncoder.java#encoderFromContextBean": {
+        "INSTRUCTION": {
+          "missed": "225",
+          "covered": "114"
+        },
+        "BRANCH": {
+          "missed": "10",
+          "covered": "9"
+        },
+        "LINE": {
+          "missed": "45",
+          "covered": "23"
+        },
+        "COMPLEXITY": {
+          "missed": "9",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "client/src/main/java/org/apache/rocketmq/client/trace/TraceDataEncoder.java#encoderFromContextBean": {
+        "INSTRUCTION": {
+          "missed": "225",
+          "covered": "114"
+        },
+        "BRANCH": {
+          "missed": "10",
+          "covered": "9"
+        },
+        "LINE": {
+          "missed": "45",
+          "covered": "23"
+        },
+        "COMPLEXITY": {
+          "missed": "9",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "54": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#getClientSettings": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "35"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#updateClientSettings": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#getClientSettings": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "35"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#updateClientSettings": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "55": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#getClientSettings": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "35"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#updateClientSettings": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#removeAndGetClientSettings": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "28"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "3"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#getClientSettings": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "35"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#updateClientSettings": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "15"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/common/GrpcClientSettingsManager.java#removeAndGetClientSettings": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "28"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "3"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "56": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "57": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "58": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManager.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "14"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManager.java#scheduleRenewTask": {
+        "INSTRUCTION": {
+          "missed": "33",
+          "covered": "21"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "9",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManager.java#clearGroup": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "20"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManager.java#addReceiptHandle": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "14"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManager.java#scheduleRenewTask": {
+        "INSTRUCTION": {
+          "missed": "33",
+          "covered": "21"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "9",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "proxy/src/main/java/org/apache/rocketmq/proxy/service/receipt/DefaultReceiptHandleManager.java#clearGroup": {
+        "INSTRUCTION": {
+          "missed": "2",
+          "covered": "20"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "59": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredDispatcher.java#dispatchFlatFile": {
+        "INSTRUCTION": {
+          "missed": "365",
+          "covered": "9"
+        },
+        "BRANCH": {
+          "missed": "27",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "73",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "15",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredDispatcher.java#dispatchFlatFile": {
+        "INSTRUCTION": {
+          "missed": "365",
+          "covered": "9"
+        },
+        "BRANCH": {
+          "missed": "27",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "73",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "15",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "60": {
+    "cov_test_deepseek_fix_focal_tgt": null,
+    "cov_test_deepseek_enhance_focal_tgt": null
+  },
+  "61": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/TieredFlatFileManager.java#getInstance": {
+        "INSTRUCTION": {
+          "missed": "5",
+          "covered": "23"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/TieredFlatFileManager.java#load": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "19"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "7"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/TieredFlatFileManager.java#getFlatFile": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/TieredFlatFileManager.java#deepCopyFlatFileToList": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/TieredFlatFileManager.java#destroyCompositeFile": {
+        "INSTRUCTION": {
+          "missed": "25",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "4",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "9",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/TieredFlatFileManager.java#getInstance": {
+        "INSTRUCTION": {
+          "missed": "5",
+          "covered": "23"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/TieredFlatFileManager.java#load": {
+        "INSTRUCTION": {
+          "missed": "18",
+          "covered": "19"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "7"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/TieredFlatFileManager.java#getFlatFile": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/TieredFlatFileManager.java#deepCopyFlatFileToList": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      },
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/TieredFlatFileManager.java#destroyCompositeFile": {
+        "INSTRUCTION": {
+          "missed": "25",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "4",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "9",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    }
+  },
+  "62": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivity.java#ackMessage": {
+        "INSTRUCTION": {
+          "missed": "13",
+          "covered": "33"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "proxy/src/main/java/org/apache/rocketmq/proxy/grpc/v2/consumer/AckMessageActivity.java#ackMessage": {
+        "INSTRUCTION": {
+          "missed": "13",
+          "covered": "33"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "63": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java#append": {
+        "INSTRUCTION": {
+          "missed": "74",
+          "covered": "100"
+        },
+        "BRANCH": {
+          "missed": "9",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "20"
+        },
+        "COMPLEXITY": {
+          "missed": "9",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/provider/TieredFileSegment.java#append": {
+        "INSTRUCTION": {
+          "missed": "74",
+          "covered": "100"
+        },
+        "BRANCH": {
+          "missed": "9",
+          "covered": "11"
+        },
+        "LINE": {
+          "missed": "14",
+          "covered": "20"
+        },
+        "COMPLEXITY": {
+          "missed": "9",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "64": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingAbstract.java#processResponseCommand": {
+        "INSTRUCTION": {
+          "missed": "13",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingAbstract.java#processResponseCommand": {
+        "INSTRUCTION": {
+          "missed": "13",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "65": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingAbstract.java#processResponseCommand": {
+        "INSTRUCTION": {
+          "missed": "7",
+          "covered": "35"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "3"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "10"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingAbstract.java#processResponseCommand": {
+        "INSTRUCTION": {
+          "missed": "7",
+          "covered": "35"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "3"
+        },
+        "LINE": {
+          "missed": "1",
+          "covered": "10"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "66": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingAbstract.java#processResponseCommand": {
+        "INSTRUCTION": {
+          "missed": "13",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "remoting/src/main/java/org/apache/rocketmq/remoting/netty/NettyRemotingAbstract.java#processResponseCommand": {
+        "INSTRUCTION": {
+          "missed": "13",
+          "covered": "29"
+        },
+        "BRANCH": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "2",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "67": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java#getMessageAsync": {
+        "INSTRUCTION": {
+          "missed": "39",
+          "covered": "64"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "3"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/TieredMessageStore.java#getMessageAsync": {
+        "INSTRUCTION": {
+          "missed": "39",
+          "covered": "64"
+        },
+        "BRANCH": {
+          "missed": "3",
+          "covered": "3"
+        },
+        "LINE": {
+          "missed": "3",
+          "covered": "8"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "68": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "store/src/main/java/org/apache/rocketmq/store/timer/TimerMetrics.java#addAndGet": {
+        "INSTRUCTION": {
+          "missed": "16",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "4",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "store/src/main/java/org/apache/rocketmq/store/timer/TimerMetrics.java#addAndGet": {
+        "INSTRUCTION": {
+          "missed": "16",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "4",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "69": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/UtilAll.java#cleanBuffer": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/UtilAll.java#cleanBuffer": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "11"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "6"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "70": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#parseNormalTopic": {
+        "INSTRUCTION": {
+          "missed": "47",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "4",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#parseNormalTopic": {
+        "INSTRUCTION": {
+          "missed": "47",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "4",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    }
+  },
+  "71": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#parseNormalTopic": {
+        "INSTRUCTION": {
+          "missed": "47",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "4",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#parseNormalTopic": {
+        "INSTRUCTION": {
+          "missed": "47",
+          "covered": "0"
+        },
+        "BRANCH": {
+          "missed": "4",
+          "covered": "0"
+        },
+        "LINE": {
+          "missed": "5",
+          "covered": "0"
+        },
+        "COMPLEXITY": {
+          "missed": "3",
+          "covered": "0"
+        },
+        "METHOD": {
+          "missed": "1",
+          "covered": "0"
+        }
+      }
+    }
+  },
+  "72": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#parseGroup": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "3"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#parseGroup": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "23"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "3"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "5"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "73": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#isPopRetryTopicV2": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "13"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#isPopRetryTopicV2": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "13"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "1"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "74": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#buildPopRetryTopic": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#buildPopRetryTopic": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "75": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#buildPopRetryTopic": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#buildPopRetryTopic": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "76": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#buildPopRetryTopic": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#buildPopRetryTopic": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "77": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#buildPopRetryTopic": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "common/src/main/java/org/apache/rocketmq/common/KeyBuilder.java#buildPopRetryTopic": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "10"
+        },
+        "BRANCH": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "3"
+        },
+        "COMPLEXITY": {
+          "missed": "0",
+          "covered": "2"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "78": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "client/src/main/java/org/apache/rocketmq/client/rpchook/NamespaceRpcHook.java#doBeforeRequest": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "16"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "client/src/main/java/org/apache/rocketmq/client/rpchook/NamespaceRpcHook.java#doBeforeRequest": {
+        "INSTRUCTION": {
+          "missed": "0",
+          "covered": "16"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "0",
+          "covered": "4"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "79": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "client/src/main/java/org/apache/rocketmq/client/rpchook/NamespaceRpcHook.java#doBeforeRequest": {
+        "INSTRUCTION": {
+          "missed": "10",
+          "covered": "6"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "client/src/main/java/org/apache/rocketmq/client/rpchook/NamespaceRpcHook.java#doBeforeRequest": {
+        "INSTRUCTION": {
+          "missed": "10",
+          "covered": "6"
+        },
+        "BRANCH": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "LINE": {
+          "missed": "2",
+          "covered": "2"
+        },
+        "COMPLEXITY": {
+          "missed": "1",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  },
+  "80": {
+    "cov_test_deepseek_fix_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/FlatMessageFile.java#getQueueOffsetByTimeAsync": {
+        "INSTRUCTION": {
+          "missed": "175",
+          "covered": "57"
+        },
+        "BRANCH": {
+          "missed": "15",
+          "covered": "3"
+        },
+        "LINE": {
+          "missed": "33",
+          "covered": "9"
+        },
+        "COMPLEXITY": {
+          "missed": "9",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    },
+    "cov_test_deepseek_enhance_focal_tgt": {
+      "tieredstore/src/main/java/org/apache/rocketmq/tieredstore/file/FlatMessageFile.java#getQueueOffsetByTimeAsync": {
+        "INSTRUCTION": {
+          "missed": "175",
+          "covered": "57"
+        },
+        "BRANCH": {
+          "missed": "15",
+          "covered": "3"
+        },
+        "LINE": {
+          "missed": "33",
+          "covered": "9"
+        },
+        "COMPLEXITY": {
+          "missed": "9",
+          "covered": "1"
+        },
+        "METHOD": {
+          "missed": "0",
+          "covered": "1"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReceiptHandleGroup.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-proxy 5.1.4-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.proxy.common</a> &gt; <span class="el_source">ReceiptHandleGroup.java</span></div><h1>ReceiptHandleGroup.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.rocketmq.proxy.common;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.rocketmq.common.consumer.ReceiptHandle;
+import org.apache.rocketmq.common.utils.ConcurrentHashMapUtils;
+import org.apache.rocketmq.proxy.config.ConfigurationManager;
+
+<span class="fc" id="L34">public class ReceiptHandleGroup {</span>
+
+    // The messages having the same messageId will be deduplicated based on the parameters of broker, queueId, and offset
+<span class="fc" id="L37">    protected final Map&lt;String /* msgID */, Map&lt;HandleKey, HandleData&gt;&gt; receiptHandleMap = new ConcurrentHashMap&lt;&gt;();</span>
+
+    public static class HandleKey {
+        private final String originalHandle;
+        private final String broker;
+        private final int queueId;
+        private final long offset;
+
+        public HandleKey(String handle) {
+<span class="fc" id="L46">            this(ReceiptHandle.decode(handle));</span>
+<span class="fc" id="L47">        }</span>
+
+<span class="fc" id="L49">        public HandleKey(ReceiptHandle receiptHandle) {</span>
+<span class="fc" id="L50">            this.originalHandle = receiptHandle.getReceiptHandle();</span>
+<span class="fc" id="L51">            this.broker = receiptHandle.getBrokerName();</span>
+<span class="fc" id="L52">            this.queueId = receiptHandle.getQueueId();</span>
+<span class="fc" id="L53">            this.offset = receiptHandle.getOffset();</span>
+<span class="fc" id="L54">        }</span>
+
+        @Override
+        public boolean equals(Object o) {
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">            if (this == o)</span>
+<span class="nc" id="L59">                return true;</span>
+<span class="pc bpc" id="L60" title="2 of 4 branches missed.">            if (o == null || getClass() != o.getClass())</span>
+<span class="nc" id="L61">                return false;</span>
+<span class="fc" id="L62">            HandleKey key = (HandleKey) o;</span>
+<span class="pc bpc" id="L63" title="3 of 6 branches missed.">            return queueId == key.queueId &amp;&amp; offset == key.offset &amp;&amp; Objects.equal(broker, key.broker);</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="fc" id="L68">            return Objects.hashCode(broker, queueId, offset);</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L73">            return new ToStringBuilder(this)</span>
+<span class="nc" id="L74">                .append(&quot;originalHandle&quot;, originalHandle)</span>
+<span class="nc" id="L75">                .append(&quot;broker&quot;, broker)</span>
+<span class="nc" id="L76">                .append(&quot;queueId&quot;, queueId)</span>
+<span class="nc" id="L77">                .append(&quot;offset&quot;, offset)</span>
+<span class="nc" id="L78">                .toString();</span>
+        }
+    }
+
+    public static class HandleData {
+<span class="fc" id="L83">        private final Semaphore semaphore = new Semaphore(1);</span>
+<span class="fc" id="L84">        private volatile boolean needRemove = false;</span>
+        private volatile MessageReceiptHandle messageReceiptHandle;
+
+<span class="fc" id="L87">        public HandleData(MessageReceiptHandle messageReceiptHandle) {</span>
+<span class="fc" id="L88">            this.messageReceiptHandle = messageReceiptHandle;</span>
+<span class="fc" id="L89">        }</span>
+
+        public boolean lock(long timeoutMs) {
+            try {
+<span class="fc" id="L93">                return this.semaphore.tryAcquire(timeoutMs, TimeUnit.MILLISECONDS);</span>
+<span class="nc" id="L94">            } catch (InterruptedException e) {</span>
+<span class="nc" id="L95">                return false;</span>
+            }
+        }
+
+        public void unlock() {
+<span class="fc" id="L100">            this.semaphore.release();</span>
+<span class="fc" id="L101">        }</span>
+
+        @Override
+        public boolean equals(Object o) {
+<span class="nc bnc" id="L105" title="All 2 branches missed.">            return this == o;</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L110">            return Objects.hashCode(semaphore, needRemove, messageReceiptHandle);</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L115">            return MoreObjects.toStringHelper(this)</span>
+<span class="nc" id="L116">                .add(&quot;semaphore&quot;, semaphore)</span>
+<span class="nc" id="L117">                .add(&quot;needRemove&quot;, needRemove)</span>
+<span class="nc" id="L118">                .add(&quot;messageReceiptHandle&quot;, messageReceiptHandle)</span>
+<span class="nc" id="L119">                .toString();</span>
+        }
+    }
+
+    public void put(String msgID, MessageReceiptHandle value) {
+<span class="fc" id="L124">        long timeout = ConfigurationManager.getProxyConfig().getLockTimeoutMsInHandleGroup();</span>
+<span class="fc" id="L125">        Map&lt;HandleKey, HandleData&gt; handleMap = ConcurrentHashMapUtils.computeIfAbsent((ConcurrentHashMap&lt;String, Map&lt;HandleKey, HandleData&gt;&gt;) this.receiptHandleMap,</span>
+<span class="fc" id="L126">            msgID, msgIDKey -&gt; new ConcurrentHashMap&lt;&gt;());</span>
+<span class="fc" id="L127">        handleMap.compute(new HandleKey(value.getOriginalReceiptHandle()), (handleKey, handleData) -&gt; {</span>
+<span class="pc bpc" id="L128" title="3 of 4 branches missed.">            if (handleData == null || handleData.needRemove) {</span>
+<span class="fc" id="L129">                return new HandleData(value);</span>
+            }
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            if (!handleData.lock(timeout)) {</span>
+<span class="nc" id="L132">                throw new ProxyException(ProxyExceptionCode.INTERNAL_SERVER_ERROR, &quot;try to put handle failed&quot;);</span>
+            }
+            try {
+<span class="nc bnc" id="L135" title="All 2 branches missed.">                if (handleData.needRemove) {</span>
+<span class="nc" id="L136">                    return new HandleData(value);</span>
+                }
+<span class="nc" id="L138">                handleData.messageReceiptHandle = value;</span>
+            } finally {
+<span class="nc" id="L140">                handleData.unlock();</span>
+            }
+<span class="nc" id="L142">            return handleData;</span>
+        });
+<span class="fc" id="L144">    }</span>
+
+    public boolean isEmpty() {
+<span class="fc" id="L147">        return this.receiptHandleMap.isEmpty();</span>
+    }
+
+    public MessageReceiptHandle get(String msgID, String handle) {
+<span class="fc" id="L151">        Map&lt;HandleKey, HandleData&gt; handleMap = this.receiptHandleMap.get(msgID);</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        if (handleMap == null) {</span>
+<span class="fc" id="L153">            return null;</span>
+        }
+<span class="nc" id="L155">        long timeout = ConfigurationManager.getProxyConfig().getLockTimeoutMsInHandleGroup();</span>
+<span class="nc" id="L156">        AtomicReference&lt;MessageReceiptHandle&gt; res = new AtomicReference&lt;&gt;();</span>
+<span class="nc" id="L157">        handleMap.computeIfPresent(new HandleKey(handle), (handleKey, handleData) -&gt; {</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (!handleData.lock(timeout)) {</span>
+<span class="nc" id="L159">                throw new ProxyException(ProxyExceptionCode.INTERNAL_SERVER_ERROR, &quot;try to get handle failed&quot;);</span>
+            }
+            try {
+<span class="nc bnc" id="L162" title="All 2 branches missed.">                if (handleData.needRemove) {</span>
+<span class="nc" id="L163">                    return null;</span>
+                }
+<span class="nc" id="L165">                res.set(handleData.messageReceiptHandle);</span>
+            } finally {
+<span class="nc" id="L167">                handleData.unlock();</span>
+            }
+<span class="nc" id="L169">            return handleData;</span>
+        });
+<span class="nc" id="L171">        return res.get();</span>
+    }
+
+    public MessageReceiptHandle remove(String msgID, String handle) {
+<span class="fc" id="L175">        Map&lt;HandleKey, HandleData&gt; handleMap = this.receiptHandleMap.get(msgID);</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">        if (handleMap == null) {</span>
+<span class="fc" id="L177">            return null;</span>
+        }
+<span class="fc" id="L179">        long timeout = ConfigurationManager.getProxyConfig().getLockTimeoutMsInHandleGroup();</span>
+<span class="fc" id="L180">        AtomicReference&lt;MessageReceiptHandle&gt; res = new AtomicReference&lt;&gt;();</span>
+<span class="fc" id="L181">        handleMap.computeIfPresent(new HandleKey(handle), (handleKey, handleData) -&gt; {</span>
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">            if (!handleData.lock(timeout)) {</span>
+<span class="nc" id="L183">                throw new ProxyException(ProxyExceptionCode.INTERNAL_SERVER_ERROR, &quot;try to remove and get handle failed&quot;);</span>
+            }
+            try {
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">                if (!handleData.needRemove) {</span>
+<span class="fc" id="L187">                    handleData.needRemove = true;</span>
+<span class="fc" id="L188">                    res.set(handleData.messageReceiptHandle);</span>
+                }
+<span class="fc" id="L190">                return null;</span>
+            } finally {
+<span class="fc" id="L192">                handleData.unlock();</span>
+            }
+        });
+<span class="fc" id="L195">        removeHandleMapKeyIfNeed(msgID);</span>
+<span class="fc" id="L196">        return res.get();</span>
+    }
+
+    public void computeIfPresent(String msgID, String handle,
+        Function&lt;MessageReceiptHandle, CompletableFuture&lt;MessageReceiptHandle&gt;&gt; function) {
+<span class="nc" id="L201">        Map&lt;HandleKey, HandleData&gt; handleMap = this.receiptHandleMap.get(msgID);</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        if (handleMap == null) {</span>
+<span class="nc" id="L203">            return;</span>
+        }
+<span class="nc" id="L205">        long timeout = ConfigurationManager.getProxyConfig().getLockTimeoutMsInHandleGroup();</span>
+<span class="nc" id="L206">        handleMap.computeIfPresent(new HandleKey(handle), (handleKey, handleData) -&gt; {</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            if (!handleData.lock(timeout)) {</span>
+<span class="nc" id="L208">                throw new ProxyException(ProxyExceptionCode.INTERNAL_SERVER_ERROR, &quot;try to compute failed&quot;);</span>
+            }
+<span class="nc" id="L210">            CompletableFuture&lt;MessageReceiptHandle&gt; future = function.apply(handleData.messageReceiptHandle);</span>
+<span class="nc" id="L211">            future.whenComplete((messageReceiptHandle, throwable) -&gt; {</span>
+                try {
+<span class="nc bnc" id="L213" title="All 2 branches missed.">                    if (throwable != null) {</span>
+<span class="nc" id="L214">                        return;</span>
+                    }
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                    if (messageReceiptHandle == null) {</span>
+<span class="nc" id="L217">                        handleData.needRemove = true;</span>
+                    } else {
+<span class="nc" id="L219">                        handleData.messageReceiptHandle = messageReceiptHandle;</span>
+                    }
+                } finally {
+<span class="nc" id="L222">                    handleData.unlock();</span>
+                }
+<span class="nc bnc" id="L224" title="All 2 branches missed.">                if (handleData.needRemove) {</span>
+<span class="nc" id="L225">                    handleMap.remove(handleKey, handleData);</span>
+                }
+<span class="nc" id="L227">                removeHandleMapKeyIfNeed(msgID);</span>
+<span class="nc" id="L228">            });</span>
+<span class="nc" id="L229">            return handleData;</span>
+        });
+<span class="nc" id="L231">    }</span>
+
+    protected void removeHandleMapKeyIfNeed(String msgID) {
+<span class="fc" id="L234">        this.receiptHandleMap.computeIfPresent(msgID, (msgIDKey, handleMap) -&gt; {</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">            if (handleMap.isEmpty()) {</span>
+<span class="fc" id="L236">                return null;</span>
+            }
+<span class="nc" id="L238">            return handleMap;</span>
+        });
+<span class="fc" id="L240">    }</span>
+
+    public interface DataScanner {
+        void onData(String msgID, String handle, MessageReceiptHandle receiptHandle);
+    }
+
+    public void scan(DataScanner scanner) {
+<span class="nc" id="L247">        this.receiptHandleMap.forEach((msgID, handleMap) -&gt; {</span>
+<span class="nc" id="L248">            handleMap.forEach((handleKey, v) -&gt; {</span>
+<span class="nc" id="L249">                scanner.onData(msgID, handleKey.originalHandle, v.messageReceiptHandle);</span>
+<span class="nc" id="L250">            });</span>
+<span class="nc" id="L251">        });</span>
+<span class="nc" id="L252">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L256">        return MoreObjects.toStringHelper(this)</span>
+<span class="nc" id="L257">            .add(&quot;receiptHandleMap&quot;, receiptHandleMap)</span>
+<span class="nc" id="L258">            .toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

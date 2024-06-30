@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LocalTopicRouteService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-proxy 5.1.2-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.proxy.service.route</a> &gt; <span class="el_source">LocalTopicRouteService.java</span></div><h1>LocalTopicRouteService.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.rocketmq.proxy.service.route;
+
+import com.google.common.collect.Lists;
+import com.google.common.net.HostAndPort;
+import java.util.HashMap;
+import java.util.List;
+import org.apache.rocketmq.broker.BrokerController;
+import org.apache.rocketmq.common.BrokerConfig;
+import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.proxy.common.Address;
+import org.apache.rocketmq.proxy.common.ProxyContext;
+import org.apache.rocketmq.proxy.config.ConfigurationManager;
+import org.apache.rocketmq.client.impl.mqclient.MQClientAPIFactory;
+import org.apache.rocketmq.remoting.protocol.route.BrokerData;
+import org.apache.rocketmq.remoting.protocol.route.QueueData;
+import org.apache.rocketmq.remoting.protocol.route.TopicRouteData;
+
+public class LocalTopicRouteService extends TopicRouteService {
+
+    private final BrokerController brokerController;
+    private final List&lt;BrokerData&gt; brokerDataList;
+    private final int grpcPort;
+
+    public LocalTopicRouteService(BrokerController brokerController, MQClientAPIFactory mqClientAPIFactory) {
+<span class="fc" id="L43">        super(mqClientAPIFactory);</span>
+<span class="fc" id="L44">        this.brokerController = brokerController;</span>
+<span class="fc" id="L45">        BrokerConfig brokerConfig = this.brokerController.getBrokerConfig();</span>
+<span class="fc" id="L46">        HashMap&lt;Long, String&gt; brokerAddrs = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L47">        brokerAddrs.put(MixAll.MASTER_ID, this.brokerController.getBrokerAddr());</span>
+<span class="fc" id="L48">        this.brokerDataList = Lists.newArrayList(</span>
+<span class="fc" id="L49">            new BrokerData(brokerConfig.getBrokerClusterName(), brokerConfig.getBrokerName(), brokerAddrs)</span>
+        );
+<span class="fc" id="L51">        this.grpcPort = ConfigurationManager.getProxyConfig().getGrpcServerPort();</span>
+<span class="fc" id="L52">    }</span>
+
+    @Override
+    public MessageQueueView getCurrentMessageQueueView(ProxyContext ctx, String topic) throws Exception {
+<span class="fc" id="L56">        TopicConfig topicConfig = this.brokerController.getTopicConfigManager().getTopicConfigTable().get(topic);</span>
+<span class="fc" id="L57">        return new MessageQueueView(topic, toTopicRouteData(topicConfig));</span>
+    }
+
+    @Override
+    public ProxyTopicRouteData getTopicRouteForProxy(ProxyContext ctx, List&lt;Address&gt; requestHostAndPortList,
+        String topicName) throws Exception {
+<span class="nc" id="L63">        MessageQueueView messageQueueView = getAllMessageQueueView(ctx, topicName);</span>
+<span class="nc" id="L64">        TopicRouteData topicRouteData = messageQueueView.getTopicRouteData();</span>
+
+<span class="nc" id="L66">        ProxyTopicRouteData proxyTopicRouteData = new ProxyTopicRouteData();</span>
+<span class="nc" id="L67">        proxyTopicRouteData.setQueueDatas(topicRouteData.getQueueDatas());</span>
+
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        for (BrokerData brokerData : topicRouteData.getBrokerDatas()) {</span>
+<span class="nc" id="L70">            ProxyTopicRouteData.ProxyBrokerData proxyBrokerData = new ProxyTopicRouteData.ProxyBrokerData();</span>
+<span class="nc" id="L71">            proxyBrokerData.setCluster(brokerData.getCluster());</span>
+<span class="nc" id="L72">            proxyBrokerData.setBrokerName(brokerData.getBrokerName());</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">            for (Long brokerId : brokerData.getBrokerAddrs().keySet()) {</span>
+<span class="nc" id="L74">                String brokerAddr = brokerData.getBrokerAddrs().get(brokerId);</span>
+<span class="nc" id="L75">                HostAndPort brokerHostAndPort = HostAndPort.fromString(brokerAddr);</span>
+<span class="nc" id="L76">                HostAndPort grpcHostAndPort = HostAndPort.fromParts(brokerHostAndPort.getHost(), grpcPort);</span>
+
+<span class="nc" id="L78">                proxyBrokerData.getBrokerAddrs().put(brokerId, Lists.newArrayList(new Address(Address.AddressScheme.IPv4, grpcHostAndPort)));</span>
+<span class="nc" id="L79">            }</span>
+<span class="nc" id="L80">            proxyTopicRouteData.getBrokerDatas().add(proxyBrokerData);</span>
+<span class="nc" id="L81">        }</span>
+
+<span class="nc" id="L83">        return proxyTopicRouteData;</span>
+    }
+
+    @Override
+    public String getBrokerAddr(ProxyContext ctx, String brokerName) throws Exception {
+<span class="fc" id="L88">        return this.brokerController.getBrokerAddr();</span>
+    }
+
+    @Override
+    public AddressableMessageQueue buildAddressableMessageQueue(ProxyContext ctx, MessageQueue messageQueue) throws Exception {
+<span class="nc" id="L93">        String brokerAddress = getBrokerAddr(ctx, messageQueue.getBrokerName());</span>
+<span class="nc" id="L94">        return new AddressableMessageQueue(messageQueue, brokerAddress);</span>
+    }
+
+    protected TopicRouteData toTopicRouteData(TopicConfig topicConfig) {
+<span class="fc" id="L98">        TopicRouteData topicRouteData = new TopicRouteData();</span>
+<span class="fc" id="L99">        topicRouteData.setBrokerDatas(brokerDataList);</span>
+
+<span class="fc" id="L101">        QueueData queueData = new QueueData();</span>
+<span class="fc" id="L102">        queueData.setPerm(topicConfig.getPerm());</span>
+<span class="fc" id="L103">        queueData.setReadQueueNums(topicConfig.getReadQueueNums());</span>
+<span class="fc" id="L104">        queueData.setWriteQueueNums(topicConfig.getWriteQueueNums());</span>
+<span class="fc" id="L105">        queueData.setTopicSysFlag(topicConfig.getTopicSysFlag());</span>
+<span class="fc" id="L106">        queueData.setBrokerName(this.brokerController.getBrokerConfig().getBrokerName());</span>
+<span class="fc" id="L107">        topicRouteData.setQueueDatas(Lists.newArrayList(queueData));</span>
+
+<span class="fc" id="L109">        return topicRouteData;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

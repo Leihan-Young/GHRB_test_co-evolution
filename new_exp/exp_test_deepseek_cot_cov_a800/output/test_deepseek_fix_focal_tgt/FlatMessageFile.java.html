@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FlatMessageFile.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rocketmq-tiered-store 5.2.1-SNAPSHOT</a> &gt; <a href="index.source.html" class="el_package">org.apache.rocketmq.tieredstore.file</a> &gt; <span class="el_source">FlatMessageFile.java</span></div><h1>FlatMessageFile.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.rocketmq.tieredstore.file;
+
+import com.alibaba.fastjson.JSON;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.common.BoundaryType;
+import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.store.DispatchRequest;
+import org.apache.rocketmq.store.SelectMappedBufferResult;
+import org.apache.rocketmq.tieredstore.MessageStoreConfig;
+import org.apache.rocketmq.tieredstore.common.AppendResult;
+import org.apache.rocketmq.tieredstore.metadata.MetadataStore;
+import org.apache.rocketmq.tieredstore.metadata.entity.QueueMetadata;
+import org.apache.rocketmq.tieredstore.metadata.entity.TopicMetadata;
+import org.apache.rocketmq.tieredstore.util.MessageFormatUtil;
+import org.apache.rocketmq.tieredstore.util.MessageStoreUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class FlatMessageFile implements FlatFileInterface {
+
+<span class="fc" id="L46">    protected static final Logger log = LoggerFactory.getLogger(MessageStoreUtil.TIERED_STORE_LOGGER_NAME);</span>
+<span class="fc" id="L47">    protected volatile boolean closed = false;</span>
+
+    protected TopicMetadata topicMetadata;
+    protected QueueMetadata queueMetadata;
+
+    protected final String filePath;
+    protected final ReentrantLock fileLock;
+    protected final MessageStoreConfig storeConfig;
+    protected final MetadataStore metadataStore;
+    protected final FlatCommitLogFile commitLog;
+    protected final FlatConsumeQueueFile consumeQueue;
+    protected final AtomicLong lastDestroyTime;
+
+    protected final List&lt;SelectMappedBufferResult&gt; bufferResultList;
+    protected final List&lt;DispatchRequest&gt; dispatchRequestList;
+    protected final ConcurrentMap&lt;String, CompletableFuture&lt;?&gt;&gt; inFlightRequestMap;
+
+    public FlatMessageFile(FlatFileFactory fileFactory, String topic, int queueId) {
+<span class="nc" id="L65">        this(fileFactory, MessageStoreUtil.toFilePath(</span>
+<span class="nc" id="L66">            new MessageQueue(topic, fileFactory.getStoreConfig().getBrokerName(), queueId)));</span>
+<span class="nc" id="L67">        this.topicMetadata = this.recoverTopicMetadata(topic);</span>
+<span class="nc" id="L68">        this.queueMetadata = this.recoverQueueMetadata(topic, queueId);</span>
+<span class="nc" id="L69">    }</span>
+
+<span class="fc" id="L71">    public FlatMessageFile(FlatFileFactory fileFactory, String filePath) {</span>
+<span class="fc" id="L72">        this.filePath = filePath;</span>
+<span class="fc" id="L73">        this.fileLock = new ReentrantLock(false);</span>
+<span class="fc" id="L74">        this.storeConfig = fileFactory.getStoreConfig();</span>
+<span class="fc" id="L75">        this.metadataStore = fileFactory.getMetadataStore();</span>
+<span class="fc" id="L76">        this.commitLog = fileFactory.createFlatFileForCommitLog(filePath);</span>
+<span class="fc" id="L77">        this.consumeQueue = fileFactory.createFlatFileForConsumeQueue(filePath);</span>
+<span class="fc" id="L78">        this.lastDestroyTime = new AtomicLong();</span>
+<span class="fc" id="L79">        this.bufferResultList = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L80">        this.dispatchRequestList = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L81">        this.inFlightRequestMap = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L82">    }</span>
+
+    @Override
+    public long getTopicId() {
+<span class="nc" id="L86">        return topicMetadata.getTopicId();</span>
+    }
+
+    @Override
+    public MessageQueue getMessageQueue() {
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        return queueMetadata != null ? queueMetadata.getQueue() : null;</span>
+    }
+
+    @Override
+    public boolean isFlatFileInit() {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        return !this.consumeQueue.fileSegmentTable.isEmpty();</span>
+    }
+
+    public TopicMetadata recoverTopicMetadata(String topic) {
+<span class="nc" id="L100">        TopicMetadata topicMetadata = this.metadataStore.getTopic(topic);</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (topicMetadata == null) {</span>
+<span class="nc" id="L102">            topicMetadata = this.metadataStore.addTopic(topic, -1L);</span>
+        }
+<span class="nc" id="L104">        return topicMetadata;</span>
+    }
+
+    public QueueMetadata recoverQueueMetadata(String topic, int queueId) {
+<span class="nc" id="L108">        MessageQueue mq = new MessageQueue(topic, storeConfig.getBrokerName(), queueId);</span>
+<span class="nc" id="L109">        QueueMetadata queueMetadata = this.metadataStore.getQueue(mq);</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (queueMetadata == null) {</span>
+<span class="nc" id="L111">            queueMetadata = this.metadataStore.addQueue(mq, -1L);</span>
+        }
+<span class="nc" id="L113">        return queueMetadata;</span>
+    }
+
+    public void flushMetadata() {
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (queueMetadata != null) {</span>
+<span class="nc" id="L118">            queueMetadata.setMinOffset(this.getConsumeQueueMinOffset());</span>
+<span class="nc" id="L119">            queueMetadata.setMaxOffset(this.getConsumeQueueCommitOffset());</span>
+<span class="nc" id="L120">            queueMetadata.setUpdateTimestamp(System.currentTimeMillis());</span>
+<span class="nc" id="L121">            metadataStore.updateQueue(queueMetadata);</span>
+        }
+<span class="nc" id="L123">    }</span>
+
+    @Override
+    public Lock getFileLock() {
+<span class="nc" id="L127">        return this.fileLock;</span>
+    }
+
+    @Override
+    public boolean rollingFile(long interval) {
+<span class="nc" id="L132">        return this.commitLog.tryRollingFile(interval);</span>
+    }
+
+    @Override
+    public void initOffset(long offset) {
+<span class="fc" id="L137">        fileLock.lock();</span>
+        try {
+<span class="fc" id="L139">            this.commitLog.initOffset(0L);</span>
+<span class="fc" id="L140">            this.consumeQueue.initOffset(offset * MessageFormatUtil.CONSUME_QUEUE_UNIT_SIZE);</span>
+        } finally {
+<span class="fc" id="L142">            fileLock.unlock();</span>
+        }
+<span class="fc" id="L144">    }</span>
+
+    @Override
+    public AppendResult appendCommitLog(ByteBuffer message) {
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">        if (closed) {</span>
+<span class="nc" id="L149">            return AppendResult.FILE_CLOSED;</span>
+        }
+<span class="fc" id="L151">        return commitLog.append(message, MessageFormatUtil.getStoreTimeStamp(message));</span>
+    }
+
+    @Override
+    public AppendResult appendCommitLog(SelectMappedBufferResult message) {
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (closed) {</span>
+<span class="nc" id="L157">            return AppendResult.FILE_CLOSED;</span>
+        }
+<span class="nc" id="L159">        this.bufferResultList.add(message);</span>
+<span class="nc" id="L160">        return this.appendCommitLog(message.getByteBuffer());</span>
+    }
+
+    @Override
+    public AppendResult appendConsumeQueue(DispatchRequest request) {
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">        if (closed) {</span>
+<span class="nc" id="L166">            return AppendResult.FILE_CLOSED;</span>
+        }
+
+<span class="fc" id="L169">        ByteBuffer buffer = ByteBuffer.allocate(MessageFormatUtil.CONSUME_QUEUE_UNIT_SIZE);</span>
+<span class="fc" id="L170">        buffer.putLong(request.getCommitLogOffset());</span>
+<span class="fc" id="L171">        buffer.putInt(request.getMsgSize());</span>
+<span class="fc" id="L172">        buffer.putLong(request.getTagsCode());</span>
+<span class="fc" id="L173">        buffer.flip();</span>
+
+<span class="fc" id="L175">        this.dispatchRequestList.add(request);</span>
+<span class="fc" id="L176">        return consumeQueue.append(buffer, request.getStoreTimestamp());</span>
+    }
+
+    @Override
+    public List&lt;DispatchRequest&gt; getDispatchRequestList() {
+<span class="nc" id="L181">        return dispatchRequestList;</span>
+    }
+
+    @Override
+    public void release() {
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        for (SelectMappedBufferResult bufferResult : bufferResultList) {</span>
+<span class="nc" id="L187">            bufferResult.release();</span>
+<span class="nc" id="L188">        }</span>
+
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        if (queueMetadata != null) {</span>
+<span class="nc" id="L191">            log.trace(&quot;FlatMessageFile release, topic={}, queueId={}, bufferSize={}, requestListSize={}&quot;,</span>
+<span class="nc" id="L192">                queueMetadata.getQueue().getTopic(), queueMetadata.getQueue().getQueueId(),</span>
+<span class="nc" id="L193">                bufferResultList.size(), dispatchRequestList.size());</span>
+        }
+
+<span class="nc" id="L196">        bufferResultList.clear();</span>
+<span class="nc" id="L197">        dispatchRequestList.clear();</span>
+<span class="nc" id="L198">    }</span>
+
+    @Override
+    public long getMinStoreTimestamp() {
+<span class="nc" id="L202">        return commitLog.getMinTimestamp();</span>
+    }
+
+    @Override
+    public long getMaxStoreTimestamp() {
+<span class="nc" id="L207">        return commitLog.getMaxTimestamp();</span>
+    }
+
+    @Override
+    public long getFirstMessageOffset() {
+<span class="nc" id="L212">        return commitLog.getMinOffsetFromFile();</span>
+    }
+
+    @Override
+    public long getCommitLogMinOffset() {
+<span class="nc" id="L217">        return commitLog.getMinOffset();</span>
+    }
+
+    @Override
+    public long getCommitLogMaxOffset() {
+<span class="nc" id="L222">        return commitLog.getAppendOffset();</span>
+    }
+
+    @Override
+    public long getCommitLogCommitOffset() {
+<span class="nc" id="L227">        return commitLog.getCommitOffset();</span>
+    }
+
+    @Override
+    public long getConsumeQueueMinOffset() {
+<span class="fc" id="L232">        long cqOffset = consumeQueue.getMinOffset() / MessageFormatUtil.CONSUME_QUEUE_UNIT_SIZE;</span>
+<span class="fc" id="L233">        long effectiveOffset = this.commitLog.getMinOffsetFromFile();</span>
+<span class="fc" id="L234">        return Math.max(cqOffset, effectiveOffset);</span>
+    }
+
+    @Override
+    public long getConsumeQueueMaxOffset() {
+<span class="nc" id="L239">        return consumeQueue.getAppendOffset() / MessageFormatUtil.CONSUME_QUEUE_UNIT_SIZE;</span>
+    }
+
+    @Override
+    public long getConsumeQueueCommitOffset() {
+<span class="fc" id="L244">        return consumeQueue.getCommitOffset() / MessageFormatUtil.CONSUME_QUEUE_UNIT_SIZE;</span>
+    }
+
+    @Override
+    public CompletableFuture&lt;Boolean&gt; commitAsync() {
+<span class="fc" id="L249">        return this.commitLog.commitAsync()</span>
+<span class="fc" id="L250">            .thenCompose(result -&gt; {</span>
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">                if (result) {</span>
+<span class="fc" id="L252">                    return consumeQueue.commitAsync();</span>
+                }
+<span class="nc" id="L254">                return CompletableFuture.completedFuture(false);</span>
+            });
+    }
+
+    @Override
+    public CompletableFuture&lt;ByteBuffer&gt; getMessageAsync(long queueOffset) {
+<span class="fc" id="L260">        return getConsumeQueueAsync(queueOffset).thenCompose(cqBuffer -&gt; {</span>
+<span class="fc" id="L261">            long commitLogOffset = MessageFormatUtil.getCommitLogOffsetFromItem(cqBuffer);</span>
+<span class="fc" id="L262">            int length = MessageFormatUtil.getSizeFromItem(cqBuffer);</span>
+<span class="fc" id="L263">            return getCommitLogAsync(commitLogOffset, length);</span>
+        });
+    }
+
+    @Override
+    public CompletableFuture&lt;ByteBuffer&gt; getCommitLogAsync(long offset, int length) {
+<span class="fc" id="L269">        return commitLog.readAsync(offset, length);</span>
+    }
+
+    @Override
+    public CompletableFuture&lt;ByteBuffer&gt; getConsumeQueueAsync(long queueOffset) {
+<span class="fc" id="L274">        return this.getConsumeQueueAsync(queueOffset, 1);</span>
+    }
+
+    @Override
+    public CompletableFuture&lt;ByteBuffer&gt; getConsumeQueueAsync(long queueOffset, int count) {
+<span class="fc" id="L279">        return consumeQueue.readAsync(</span>
+            queueOffset * MessageFormatUtil.CONSUME_QUEUE_UNIT_SIZE,
+            count * MessageFormatUtil.CONSUME_QUEUE_UNIT_SIZE);
+    }
+
+    @Override
+    public CompletableFuture&lt;Long&gt; getQueueOffsetByTimeAsync(long timestamp, BoundaryType boundaryType) {
+<span class="fc" id="L286">        long cqMin = getConsumeQueueMinOffset();</span>
+<span class="fc" id="L287">        long cqMax = getConsumeQueueCommitOffset() - 1;</span>
+<span class="pc bpc" id="L288" title="2 of 4 branches missed.">        if (cqMax == -1 || cqMax &lt; cqMin) {</span>
+<span class="nc" id="L289">            return CompletableFuture.completedFuture(cqMin);</span>
+        }
+
+<span class="fc" id="L292">        ByteBuffer buffer = getMessageAsync(cqMax).join();</span>
+<span class="fc" id="L293">        long storeTime = MessageFormatUtil.getStoreTimeStamp(buffer);</span>
+<span class="pc bpc" id="L294" title="1 of 2 branches missed.">        if (storeTime &lt; timestamp) {</span>
+<span class="fc" id="L295">            log.info(&quot;FlatMessageFile getQueueOffsetByTimeAsync, exceeded maximum time, &quot; +</span>
+<span class="fc" id="L296">                &quot;filePath={}, timestamp={}, result={}&quot;, filePath, timestamp, cqMax + 1);</span>
+<span class="fc" id="L297">            return CompletableFuture.completedFuture(cqMax + 1);</span>
+        }
+
+<span class="nc" id="L300">        buffer = getMessageAsync(cqMin).join();</span>
+<span class="nc" id="L301">        storeTime = MessageFormatUtil.getStoreTimeStamp(buffer);</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">        if (storeTime &gt; timestamp) {</span>
+<span class="nc" id="L303">            log.info(&quot;FlatMessageFile getQueueOffsetByTimeAsync, less than minimum time, &quot; +</span>
+<span class="nc" id="L304">                &quot;filePath={}, timestamp={}, result={}&quot;, filePath, timestamp, cqMin);</span>
+<span class="nc" id="L305">            return CompletableFuture.completedFuture(cqMin);</span>
+        }
+
+        // binary search lower bound index in a sorted array
+<span class="nc" id="L309">        long minOffset = cqMin;</span>
+<span class="nc" id="L310">        long maxOffset = cqMax;</span>
+<span class="nc" id="L311">        List&lt;String&gt; queryLog = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">        while (minOffset &lt; maxOffset) {</span>
+<span class="nc" id="L313">            long middle = minOffset + (maxOffset - minOffset) / 2;</span>
+<span class="nc" id="L314">            buffer = this.getMessageAsync(middle).join();</span>
+<span class="nc" id="L315">            storeTime = MessageFormatUtil.getStoreTimeStamp(buffer);</span>
+<span class="nc" id="L316">            queryLog.add(String.format(&quot;(range=%d-%d, middle=%d, timestamp=%d, diff=%dms)&quot;,</span>
+<span class="nc" id="L317">                minOffset, maxOffset, middle, storeTime, timestamp - storeTime));</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">            if (storeTime &lt; timestamp) {</span>
+<span class="nc" id="L319">                minOffset = middle + 1;</span>
+            } else {
+<span class="nc" id="L321">                maxOffset = middle;</span>
+            }
+<span class="nc" id="L323">        }</span>
+
+<span class="nc" id="L325">        long offset = minOffset;</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">        if (boundaryType == BoundaryType.UPPER) {</span>
+            while (true) {
+<span class="nc" id="L328">                long next = offset + 1;</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">                if (next &gt; cqMax) {</span>
+<span class="nc" id="L330">                    break;</span>
+                }
+<span class="nc" id="L332">                buffer = this.getMessageAsync(next).join();</span>
+<span class="nc" id="L333">                storeTime = MessageFormatUtil.getStoreTimeStamp(buffer);</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">                if (storeTime == timestamp) {</span>
+<span class="nc" id="L335">                    offset = next;</span>
+                } else {
+                    break;
+                }
+<span class="nc" id="L339">            }</span>
+        }
+
+<span class="nc" id="L342">        log.info(&quot;FlatMessageFile getQueueOffsetByTimeAsync, filePath={}, timestamp={}, result={}, log={}&quot;,</span>
+<span class="nc" id="L343">            filePath, timestamp, offset, JSON.toJSONString(queryLog));</span>
+<span class="nc" id="L344">        return CompletableFuture.completedFuture(offset);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L349">        return filePath.hashCode();</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="nc bnc" id="L354" title="All 2 branches missed.">        if (this == obj) {</span>
+<span class="nc" id="L355">            return true;</span>
+        }
+<span class="nc bnc" id="L357" title="All 2 branches missed.">        if (obj == null) {</span>
+<span class="nc" id="L358">            return false;</span>
+        }
+<span class="nc bnc" id="L360" title="All 2 branches missed.">        if (getClass() != obj.getClass()) {</span>
+<span class="nc" id="L361">            return false;</span>
+        }
+<span class="nc" id="L363">        return StringUtils.equals(filePath, ((FlatMessageFile) obj).filePath);</span>
+    }
+
+    @Override
+    public void shutdown() {
+<span class="nc" id="L368">        closed = true;</span>
+<span class="nc" id="L369">        fileLock.lock();</span>
+        try {
+<span class="nc" id="L371">            commitLog.shutdown();</span>
+<span class="nc" id="L372">            consumeQueue.shutdown();</span>
+        } finally {
+<span class="nc" id="L374">            fileLock.unlock();</span>
+        }
+<span class="nc" id="L376">    }</span>
+
+    @Override
+    public void destroyExpiredFile(long timestamp) {
+<span class="nc" id="L380">        fileLock.lock();</span>
+        try {
+<span class="nc" id="L382">            commitLog.destroyExpiredFile(timestamp);</span>
+<span class="nc" id="L383">            consumeQueue.destroyExpiredFile(timestamp);</span>
+        } finally {
+<span class="nc" id="L385">            fileLock.unlock();</span>
+        }
+<span class="nc" id="L387">    }</span>
+
+    public void destroy() {
+<span class="nc" id="L390">        this.shutdown();</span>
+<span class="nc" id="L391">        fileLock.lock();</span>
+        try {
+<span class="nc" id="L393">            commitLog.destroyExpiredFile(Long.MAX_VALUE);</span>
+<span class="nc" id="L394">            consumeQueue.destroyExpiredFile(Long.MAX_VALUE);</span>
+<span class="nc bnc" id="L395" title="All 2 branches missed.">            if (queueMetadata != null) {</span>
+<span class="nc" id="L396">                metadataStore.deleteQueue(queueMetadata.getQueue());</span>
+            }
+        } finally {
+<span class="nc" id="L399">            fileLock.unlock();</span>
+        }
+<span class="nc" id="L401">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

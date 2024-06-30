@@ -2,6 +2,184 @@
   {
     "repository": {
       "pullRequest": {
+        "title": "Fix #2334",
+        "url": "https://github.com/google/gson/pull/2337",
+        "resourcePath": "/google/gson/pull/2337",
+        "createdAt": "2023-03-06T15:40:50Z",
+        "number": 2337,
+        "mergeCommit": {
+          "oid": "85ebaf7c3553a5d5c058fd6067824a7c5258d07f",
+          "message": "Fix #2334 (#2337)\n\n* Fix #2334\r\n\r\nThis commit replaces the `NumberFormatException` with `MalformedJsonException` in the `JsonReader#readEscapeCharacter()` and also fixes the tests.\r\n\r\n* Removes white-space",
+          "commitUrl": "https://github.com/google/gson/commit/85ebaf7c3553a5d5c058fd6067824a7c5258d07f",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "0adcdc80d5ef3a40086a8abd6e2f55164a7c2597",
+                "message": "Fail Maven build on warnings (#2335)\n\n* Fail Maven build on warnings\r\n\r\n* Fix configuration parameter name\r\n\r\nFor the Javadoc plugin it is \"warnings\" (plural) instead of \"warning\""
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "gson/src/main/java/com/google/gson/stream/JsonReader.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "gson/src/test/java/com/google/gson/stream/JsonReaderTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAfCA985LYgg92gAoMTFkYmFlNmVmYmY4MmMzNjM3ZDUwNGY1YjlhNTQxN2I4MjE2ZGMxOQ",
+                "url": "https://github.com/google/gson/pull/2337/commits/11dbae6efbf82c3637d504f5b9a5417b8216dc19"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 2334,
+                "url": "https://github.com/google/gson/issues/2334",
+                "title": "Malformed Unicode escape sequence causes `NumberFormatException` instead of `MalformedJsonException`",
+                "bodyHTML": "<h1 dir=\"auto\">Gson version</h1>\n<p dir=\"auto\">2.10.1</p>\n<h1 dir=\"auto\">Description</h1>\n<p dir=\"auto\"><code class=\"notranslate\">JsonReader</code> throws a <code class=\"notranslate\">NumberFormatException</code> instead of a <code class=\"notranslate\">MalformedJsonException</code> when it encounters a malformed Unicode escape sequence in the JSON data.<br>\nThis actually works as designed:<br>\n</p><div class=\"Box Box--condensed my-2\">\n  <div class=\"Box-header f6\">\n    <p class=\"mb-0 text-bold\">\n      <a href=\"https://github.com/google/gson/blob/19983737ae5e45f90cbc50cbd7b70a0db9ed7a83/gson/src/main/java/com/google/gson/stream/JsonReader.java#L1590-L1591\">gson/gson/src/main/java/com/google/gson/stream/JsonReader.java</a>\n    </p>\n    <p class=\"mb-0 color-fg-muted\">\n        Lines 1590 to 1591\n      in\n      <a data-pjax=\"true\" class=\"commit-tease-sha Link--inTextBlock\" href=\"/google/gson/commit/19983737ae5e45f90cbc50cbd7b70a0db9ed7a83\">1998373</a>\n    </p>\n  </div>\n  <div itemprop=\"text\" class=\"Box-body p-0 blob-wrapper blob-wrapper-embedded data\">\n    <table class=\"highlight tab-size mb-0 js-file-line-container\" data-tab-size=\"8\" data-paste-markdown-skip=\"\">\n\n        <tbody><tr class=\"border-0\">\n          <td id=\"L1590\" class=\"blob-num border-0 px-3 py-0 color-bg-default\" data-line-number=\"1590\"></td>\n          <td id=\"LC1590\" class=\"blob-code border-0 px-3 py-0 color-bg-default blob-code-inner js-file-line\"> <span class=\"pl-c\">   * @throws NumberFormatException if any unicode escape sequences are</span> </td>\n        </tr>\n\n        <tr class=\"border-0\">\n          <td id=\"L1591\" class=\"blob-num border-0 px-3 py-0 color-bg-default\" data-line-number=\"1591\"></td>\n          <td id=\"LC1591\" class=\"blob-code border-0 px-3 py-0 color-bg-default blob-code-inner js-file-line\"> <span class=\"pl-c\">   *     malformed.</span> </td>\n        </tr>\n    </tbody></table>\n  </div>\n</div>\n<p></p>\n<p dir=\"auto\">However, it is questionable whether that design is really a good choice because a <code class=\"notranslate\">MalformedJsonException</code> seems to fit better here, especially since other malformed escape sequences do cause a <code class=\"notranslate\">MalformedJsonException</code>.</p>\n<p dir=\"auto\">Note that <code class=\"notranslate\">NumberFormatException</code> being thrown is apparently not publicly documented, so changing this should be rather safe to do.</p>\n<h2 dir=\"auto\">Expected behavior</h2>\n<p dir=\"auto\">A <code class=\"notranslate\">MalformedJsonException</code> is thrown for malformed Unicode escape sequences.</p>\n<h2 dir=\"auto\">Actual behavior</h2>\n<p dir=\"auto\">A <code class=\"notranslate\">NumberFormatException</code> is thrown.</p>\n<h1 dir=\"auto\">Reproduction steps</h1>\n<div class=\"highlight highlight-source-java notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"Reader reader = new StringReader(&quot;\\&quot;\\\\uXYZ\\&quot;&quot;);\nJsonReader jsonReader = new JsonReader(reader);\njsonReader.nextString();\"><pre class=\"notranslate\"><span class=\"pl-smi\">Reader</span> <span class=\"pl-s1\">reader</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">StringReader</span>(<span class=\"pl-s\">\"<span class=\"pl-cce\">\\\"</span><span class=\"pl-cce\">\\\\</span>uXYZ<span class=\"pl-cce\">\\\"</span>\"</span>);\n<span class=\"pl-smi\">JsonReader</span> <span class=\"pl-s1\">jsonReader</span> = <span class=\"pl-k\">new</span> <span class=\"pl-smi\">JsonReader</span>(<span class=\"pl-s1\">reader</span>);\n<span class=\"pl-s1\">jsonReader</span>.<span class=\"pl-en\">nextString</span>();</pre></div>",
+                "resourcePath": "/google/gson/issues/2334",
+                "createdAt": "2023-03-04T11:49:51Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "bug"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
+        "title": "Use non-`null` `FormattingStyle`; configure space after separator",
+        "url": "https://github.com/google/gson/pull/2345",
+        "resourcePath": "/google/gson/pull/2345",
+        "createdAt": "2023-03-18T22:46:32Z",
+        "number": 2345,
+        "mergeCommit": {
+          "oid": "481ac9b82cd5713f43018fafc16218d4045dc4c4",
+          "message": "Use non-`null` `FormattingStyle`; configure space after separator (#2345)\n\n* Use non-`null` `FormattingStyle`; configure space after separator\r\n\r\n* Improve Javadoc and tests\r\n\r\n* Rename to plural separator*s*\r\n\r\n* Add explicit tests for default formatting styles\r\n\r\n---------\r\n\r\nCo-authored-by: \u00c9amonn McManus <emcmanus@google.com>",
+          "commitUrl": "https://github.com/google/gson/commit/481ac9b82cd5713f43018fafc16218d4045dc4c4",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "d3e17587fe8dbf1c6afd1acbad4878f19ff64c02",
+                "message": "Bump guava from 31.1-jre to 32.0.0-jre (#2399)\n\nBumps [guava](https://github.com/google/guava) from 31.1-jre to 32.0.0-jre.\r\n- [Release notes](https://github.com/google/guava/releases)\r\n- [Commits](https://github.com/google/guava/commits)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: com.google.guava:guava\r\n  dependency-type: direct:production\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
+              }
+            ]
+          }
+        },
+        "potentialMergeCommit": null,
+        "files": {
+          "edges": [
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "gson/src/main/java/com/google/gson/FormattingStyle.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "gson/src/main/java/com/google/gson/Gson.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "gson/src/main/java/com/google/gson/GsonBuilder.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "gson/src/main/java/com/google/gson/stream/JsonWriter.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "gson/src/test/java/com/google/gson/GsonTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "gson/src/test/java/com/google/gson/functional/FormattingStyleTest.java"
+              }
+            },
+            {
+              "node": {
+                "changeType": "MODIFIED",
+                "path": "gson/src/test/java/com/google/gson/stream/JsonWriterTest.java"
+              }
+            }
+          ]
+        },
+        "commits": {
+          "edges": [
+            {
+              "node": {
+                "id": "PURC_lADOAfCA985MYDW_2gAoM2M2YmFjYWI1MjA1M2M1NDdjYTE3NWUwNTlmZjk0MTBhNTkyZmZkOQ",
+                "url": "https://github.com/google/gson/pull/2345/commits/3c6bacab52053c547ca175e059ff9410a592ffd9"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "edges": [
+            {
+              "node": {
+                "number": 2344,
+                "url": "https://github.com/google/gson/issues/2344",
+                "title": "Support single line pretty-printed JSON output",
+                "bodyHTML": "<h1 dir=\"auto\">Problem solved by the feature</h1>\n<p dir=\"auto\">When users know in advance that the JSON data to write is rather small, but they still want increased readability, they might not want line breaks but a space after <code class=\"notranslate\">,</code> and <code class=\"notranslate\">:</code>. For example:</p>\n<div class=\"highlight highlight-source-json notranslate position-relative overflow-auto\" dir=\"auto\" data-snippet-clipboard-copy-content=\"{&quot;a&quot;: [1, 2, 3], &quot;b&quot;: true}\"><pre class=\"notranslate\">{<span class=\"pl-ent\">\"a\"</span>: [<span class=\"pl-c1\">1</span>, <span class=\"pl-c1\">2</span>, <span class=\"pl-c1\">3</span>], <span class=\"pl-ent\">\"b\"</span>: <span class=\"pl-c1\">true</span>}</pre></div>\n<p dir=\"auto\">Even with the upcoming <code class=\"notranslate\">FormattingStyle</code> (<a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1431858762\" data-permission-text=\"Title is private\" data-url=\"https://github.com/google/gson/issues/2231\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/google/gson/pull/2231/hovercard\" href=\"https://github.com/google/gson/pull/2231\">#2231</a>) this is currently not possible. See also slightly related discussion in <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"1599906618\" data-permission-text=\"Title is private\" data-url=\"https://github.com/google/gson/issues/2327\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/google/gson/pull/2327/hovercard?comment_id=1454741797&amp;comment_type=issue_comment\" href=\"https://github.com/google/gson/pull/2327#issuecomment-1454741797\">#2327 (comment)</a>.</p>\n<h1 dir=\"auto\">Feature description</h1>\n<p dir=\"auto\">Extend <code class=\"notranslate\">FormattingStyle</code> with a setting <code class=\"notranslate\">withSpaceAfterSeparator(boolean)</code> (or similar):</p>\n<ul dir=\"auto\">\n<li><code class=\"notranslate\">true</code>: always add a space after <code class=\"notranslate\">:</code>, and in case the newline value of the style is empty, also add a space after <code class=\"notranslate\">,</code></li>\n<li><code class=\"notranslate\">false</code>: don't add a space after <code class=\"notranslate\">:</code> and <code class=\"notranslate\">,</code></li>\n</ul>\n<p dir=\"auto\">Note: This has no effect on the newline value of the style. If the newline is not empty it will still be added after <code class=\"notranslate\">,</code> and no space will be added after the <code class=\"notranslate\">,</code>, regardless of the <code class=\"notranslate\">withSpaceAfterSeparator</code> value.</p>\n<h1 dir=\"auto\">Alternatives / workarounds</h1>\n<p dir=\"auto\">None?</p>\n<p dir=\"auto\">But maybe this use case is not common enough to justify adding a new <code class=\"notranslate\">FormattingStyle</code> method.</p>",
+                "resourcePath": "/google/gson/issues/2344",
+                "createdAt": "2023-03-18T22:02:43Z",
+                "labels": {
+                  "edges": [
+                    {
+                      "node": {
+                        "name": "enhancement"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "repository": {
+      "pullRequest": {
         "title": "Add strategies for unknown and missing fields",
         "url": "https://github.com/google/gson/pull/2358",
         "resourcePath": "/google/gson/pull/2358",
@@ -1061,23 +1239,7 @@
         "createdAt": "2023-07-21T15:46:19Z",
         "number": 2441,
         "mergeCommit": null,
-        "potentialMergeCommit": {
-          "oid": "4648e619b8aae1634d3cdf626eb067e83aedf461",
-          "message": "Merge bfd70ccf4f18c3cb7cac8c161af28b1f4d659bd5 into 570d91194e223132982d56b6fa499af15fd7b1ea",
-          "commitUrl": "https://github.com/google/gson/commit/4648e619b8aae1634d3cdf626eb067e83aedf461",
-          "parents": {
-            "nodes": [
-              {
-                "oid": "570d91194e223132982d56b6fa499af15fd7b1ea",
-                "message": "Bump the github-actions group with 4 updates (#2671)\n\nBumps the github-actions group with 4 updates: [actions/checkout](https://github.com/actions/checkout), [graalvm/setup-graalvm](https://github.com/graalvm/setup-graalvm), [actions/upload-artifact](https://github.com/actions/upload-artifact) and [github/codeql-action](https://github.com/github/codeql-action).\r\n\r\n\r\nUpdates `actions/checkout` from 4.1.2 to 4.1.4\r\n- [Release notes](https://github.com/actions/checkout/releases)\r\n- [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)\r\n- [Commits](https://github.com/actions/checkout/compare/9bb56186c3b09b4f86b1c65136769dd318469633...0ad4b8fadaa221de15dcec353f45205ec38ea70b)\r\n\r\nUpdates `graalvm/setup-graalvm` from 1.1.8.2 to 1.2.1\r\n- [Release notes](https://github.com/graalvm/setup-graalvm/releases)\r\n- [Commits](https://github.com/graalvm/setup-graalvm/compare/d3f9e14fc3771c0f5aaccb754e441b946b6703f9...2f25c0caae5b220866f732832d5e3e29ff493338)\r\n\r\nUpdates `actions/upload-artifact` from 4.3.1 to 4.3.3\r\n- [Release notes](https://github.com/actions/upload-artifact/releases)\r\n- [Commits](https://github.com/actions/upload-artifact/compare/5d5d22a31266ced268874388b861e4b58bb5c2f3...65462800fd760344b1a7b4382951275a0abb4808)\r\n\r\nUpdates `github/codeql-action` from 3.24.9 to 3.25.3\r\n- [Release notes](https://github.com/github/codeql-action/releases)\r\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\r\n- [Commits](https://github.com/github/codeql-action/compare/1b1aada464948af03b950897e5eb522f92603cc2...d39d31e687223d841ef683f52467bd88e9b21c14)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: actions/checkout\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n  dependency-group: github-actions\r\n- dependency-name: graalvm/setup-graalvm\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: github-actions\r\n- dependency-name: actions/upload-artifact\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n  dependency-group: github-actions\r\n- dependency-name: github/codeql-action\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: github-actions\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
-              },
-              {
-                "oid": "bfd70ccf4f18c3cb7cac8c161af28b1f4d659bd5",
-                "message": "update as per review suggestions"
-              }
-            ]
-          }
-        },
+        "potentialMergeCommit": null,
         "files": {
           "edges": [
             {
@@ -1906,23 +2068,7 @@
         "createdAt": "2023-12-11T10:08:31Z",
         "number": 2573,
         "mergeCommit": null,
-        "potentialMergeCommit": {
-          "oid": "2f17a222c269a596185a16fb2124201ca167a86d",
-          "message": "Merge 1f5fa7f12b7fe84b5012332941cd5f393cd96572 into 570d91194e223132982d56b6fa499af15fd7b1ea",
-          "commitUrl": "https://github.com/google/gson/commit/2f17a222c269a596185a16fb2124201ca167a86d",
-          "parents": {
-            "nodes": [
-              {
-                "oid": "570d91194e223132982d56b6fa499af15fd7b1ea",
-                "message": "Bump the github-actions group with 4 updates (#2671)\n\nBumps the github-actions group with 4 updates: [actions/checkout](https://github.com/actions/checkout), [graalvm/setup-graalvm](https://github.com/graalvm/setup-graalvm), [actions/upload-artifact](https://github.com/actions/upload-artifact) and [github/codeql-action](https://github.com/github/codeql-action).\r\n\r\n\r\nUpdates `actions/checkout` from 4.1.2 to 4.1.4\r\n- [Release notes](https://github.com/actions/checkout/releases)\r\n- [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)\r\n- [Commits](https://github.com/actions/checkout/compare/9bb56186c3b09b4f86b1c65136769dd318469633...0ad4b8fadaa221de15dcec353f45205ec38ea70b)\r\n\r\nUpdates `graalvm/setup-graalvm` from 1.1.8.2 to 1.2.1\r\n- [Release notes](https://github.com/graalvm/setup-graalvm/releases)\r\n- [Commits](https://github.com/graalvm/setup-graalvm/compare/d3f9e14fc3771c0f5aaccb754e441b946b6703f9...2f25c0caae5b220866f732832d5e3e29ff493338)\r\n\r\nUpdates `actions/upload-artifact` from 4.3.1 to 4.3.3\r\n- [Release notes](https://github.com/actions/upload-artifact/releases)\r\n- [Commits](https://github.com/actions/upload-artifact/compare/5d5d22a31266ced268874388b861e4b58bb5c2f3...65462800fd760344b1a7b4382951275a0abb4808)\r\n\r\nUpdates `github/codeql-action` from 3.24.9 to 3.25.3\r\n- [Release notes](https://github.com/github/codeql-action/releases)\r\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\r\n- [Commits](https://github.com/github/codeql-action/compare/1b1aada464948af03b950897e5eb522f92603cc2...d39d31e687223d841ef683f52467bd88e9b21c14)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: actions/checkout\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n  dependency-group: github-actions\r\n- dependency-name: graalvm/setup-graalvm\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: github-actions\r\n- dependency-name: actions/upload-artifact\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n  dependency-group: github-actions\r\n- dependency-name: github/codeql-action\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: github-actions\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
-              },
-              {
-                "oid": "1f5fa7f12b7fe84b5012332941cd5f393cd96572",
-                "message": "crlf"
-              }
-            ]
-          }
-        },
+        "potentialMergeCommit": null,
         "files": {
           "edges": [
             {
@@ -2324,23 +2470,7 @@
         "createdAt": "2024-03-29T11:53:24Z",
         "number": 2659,
         "mergeCommit": null,
-        "potentialMergeCommit": {
-          "oid": "d38408ca1a281edaa4b3f4ddb735a78d72937485",
-          "message": "Merge 791e0c88816dc5d9cb46c27533d20d382fe99419 into 570d91194e223132982d56b6fa499af15fd7b1ea",
-          "commitUrl": "https://github.com/google/gson/commit/d38408ca1a281edaa4b3f4ddb735a78d72937485",
-          "parents": {
-            "nodes": [
-              {
-                "oid": "570d91194e223132982d56b6fa499af15fd7b1ea",
-                "message": "Bump the github-actions group with 4 updates (#2671)\n\nBumps the github-actions group with 4 updates: [actions/checkout](https://github.com/actions/checkout), [graalvm/setup-graalvm](https://github.com/graalvm/setup-graalvm), [actions/upload-artifact](https://github.com/actions/upload-artifact) and [github/codeql-action](https://github.com/github/codeql-action).\r\n\r\n\r\nUpdates `actions/checkout` from 4.1.2 to 4.1.4\r\n- [Release notes](https://github.com/actions/checkout/releases)\r\n- [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)\r\n- [Commits](https://github.com/actions/checkout/compare/9bb56186c3b09b4f86b1c65136769dd318469633...0ad4b8fadaa221de15dcec353f45205ec38ea70b)\r\n\r\nUpdates `graalvm/setup-graalvm` from 1.1.8.2 to 1.2.1\r\n- [Release notes](https://github.com/graalvm/setup-graalvm/releases)\r\n- [Commits](https://github.com/graalvm/setup-graalvm/compare/d3f9e14fc3771c0f5aaccb754e441b946b6703f9...2f25c0caae5b220866f732832d5e3e29ff493338)\r\n\r\nUpdates `actions/upload-artifact` from 4.3.1 to 4.3.3\r\n- [Release notes](https://github.com/actions/upload-artifact/releases)\r\n- [Commits](https://github.com/actions/upload-artifact/compare/5d5d22a31266ced268874388b861e4b58bb5c2f3...65462800fd760344b1a7b4382951275a0abb4808)\r\n\r\nUpdates `github/codeql-action` from 3.24.9 to 3.25.3\r\n- [Release notes](https://github.com/github/codeql-action/releases)\r\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\r\n- [Commits](https://github.com/github/codeql-action/compare/1b1aada464948af03b950897e5eb522f92603cc2...d39d31e687223d841ef683f52467bd88e9b21c14)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: actions/checkout\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n  dependency-group: github-actions\r\n- dependency-name: graalvm/setup-graalvm\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: github-actions\r\n- dependency-name: actions/upload-artifact\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n  dependency-group: github-actions\r\n- dependency-name: github/codeql-action\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: github-actions\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
-              },
-              {
-                "oid": "791e0c88816dc5d9cb46c27533d20d382fe99419",
-                "message": "Refer to `JsonElement` documentation from subclasses"
-              }
-            ]
-          }
-        },
+        "potentialMergeCommit": null,
         "files": {
           "edges": [
             {
@@ -2443,130 +2573,6 @@
                     {
                       "node": {
                         "name": "enhancement"
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          ]
-        }
-      }
-    }
-  },
-  {
-    "repository": {
-      "pullRequest": {
-        "title": "Added FormattedDouble Class",
-        "url": "https://github.com/google/gson/pull/2668",
-        "resourcePath": "/google/gson/pull/2668",
-        "createdAt": "2024-04-09T01:27:49Z",
-        "number": 2668,
-        "mergeCommit": null,
-        "potentialMergeCommit": null,
-        "files": {
-          "edges": [
-            {
-              "node": {
-                "changeType": "ADDED",
-                "path": "gson/src/main/java/com/google/gson/internal/FormattedDouble.java"
-              }
-            }
-          ]
-        },
-        "commits": {
-          "edges": [
-            {
-              "node": {
-                "id": "PURC_lADOAfCA985sE-Yq2gAoNDE4MTJmY2I3ZmFkMTBiNWM5ZmE5ZWNmMDEzN2ViYzVjM2I1OTU1YQ",
-                "url": "https://github.com/google/gson/pull/2668/commits/41812fcb7fad10b5c9fa9ecf0137ebc5c3b5955a"
-              }
-            }
-          ]
-        },
-        "closingIssuesReferences": {
-          "edges": [
-            {
-              "node": {
-                "number": 1769,
-                "url": "https://github.com/google/gson/issues/1769",
-                "title": "00 as decimal places when serialize Double",
-                "bodyHTML": "<p dir=\"auto\">Hi team,</p>\n<p dir=\"auto\">For a specific reason, I want 2 decimal places for my double when serializing into JSON.<br>\nSomething like:</p>\n<p dir=\"auto\">9900          --&gt; 9900.00<br>\n9900.0       --&gt; 9900.00<br>\n9900.1234 --&gt; 9900.12</p>\n<p dir=\"auto\">My best result so far:</p>\n<p dir=\"auto\">9900          --&gt; 9900.0<br>\n9900.0       --&gt; 9900.0<br>\n9900.1234 --&gt; 9900.12</p>\n<p dir=\"auto\">My DoubleAdapter.java, please advice. Thanks a lot!</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"class DoubleAdapter extends TypeAdapter&lt;Double&gt;  {\n\n    @Override\n    public void write(JsonWriter jsonWriter, Double aDouble) throws IOException {\n        DecimalFormat df = new DecimalFormat(&quot;0.00&quot;);\n        jsonWriter.value(Double.valueOf(df.format(aDouble)));\n    }\n\n    @Override\n    public Double read(JsonReader jsonReader) throws IOException {\n        return jsonReader.nextDouble();\n    }\n}\"><pre class=\"notranslate\"><code class=\"notranslate\">class DoubleAdapter extends TypeAdapter&lt;Double&gt;  {\n\n    @Override\n    public void write(JsonWriter jsonWriter, Double aDouble) throws IOException {\n        DecimalFormat df = new DecimalFormat(\"0.00\");\n        jsonWriter.value(Double.valueOf(df.format(aDouble)));\n    }\n\n    @Override\n    public Double read(JsonReader jsonReader) throws IOException {\n        return jsonReader.nextDouble();\n    }\n}\n</code></pre></div>",
-                "resourcePath": "/google/gson/issues/1769",
-                "createdAt": "2020-08-27T05:58:06Z",
-                "labels": {
-                  "edges": [
-                    {
-                      "node": {
-                        "name": "enhancement"
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          ]
-        }
-      }
-    }
-  },
-  {
-    "repository": {
-      "pullRequest": {
-        "title": "Document that `JsonReader` methods throw `IllegalStateException`",
-        "url": "https://github.com/google/gson/pull/2670",
-        "resourcePath": "/google/gson/pull/2670",
-        "createdAt": "2024-04-30T21:34:21Z",
-        "number": 2670,
-        "mergeCommit": {
-          "oid": "e838516c1ed0865623384ad308006c99c04607e8",
-          "message": "Document that `JsonReader` methods throw `IllegalStateException` (#2670)",
-          "commitUrl": "https://github.com/google/gson/commit/e838516c1ed0865623384ad308006c99c04607e8",
-          "parents": {
-            "nodes": [
-              {
-                "oid": "18b08922537c16b0de1d503c82307d613aae0138",
-                "message": "Bump the maven group with 11 updates (#2660)\n\n* Bump the maven group with 11 updates\r\n\r\nBumps the maven group with 11 updates:\r\n\r\n| Package | From | To |\r\n| --- | --- | --- |\r\n| [com.google.errorprone:error_prone_core](https://github.com/google/error-prone) | `2.25.0` | `2.26.1` |\r\n| [org.apache.maven.plugins:maven-compiler-plugin](https://github.com/apache/maven-compiler-plugin) | `3.12.1` | `3.13.0` |\r\n| [org.apache.maven.plugins:maven-gpg-plugin](https://github.com/apache/maven-gpg-plugin) | `3.1.0` | `3.2.2` |\r\n| [com.github.siom79.japicmp:japicmp-maven-plugin](https://github.com/siom79/japicmp) | `0.18.5` | `0.20.0` |\r\n| [com.google.errorprone:error_prone_annotations](https://github.com/google/error-prone) | `2.25.0` | `2.26.1` |\r\n| [com.google.guava:guava-testlib](https://github.com/google/guava) | `33.0.0-jre` | `33.1.0-jre` |\r\n| [org.moditect:moditect-maven-plugin](https://github.com/moditect/moditect) | `1.1.0` | `1.2.1.Final` |\r\n| com.android.tools:r8 | `8.2.47` | `8.3.37` |\r\n| [com.fasterxml.jackson.core:jackson-databind](https://github.com/FasterXML/jackson) | `2.16.1` | `2.17.0` |\r\n| [com.google.protobuf:protobuf-java](https://github.com/protocolbuffers/protobuf) | `3.25.3` | `4.26.1` |\r\n| [com.google.guava:guava](https://github.com/google/guava) | `33.0.0-jre` | `33.1.0-jre` |\r\n\r\n\r\nUpdates `com.google.errorprone:error_prone_core` from 2.25.0 to 2.26.1\r\n- [Release notes](https://github.com/google/error-prone/releases)\r\n- [Commits](https://github.com/google/error-prone/compare/v2.25.0...v2.26.1)\r\n\r\nUpdates `org.apache.maven.plugins:maven-compiler-plugin` from 3.12.1 to 3.13.0\r\n- [Release notes](https://github.com/apache/maven-compiler-plugin/releases)\r\n- [Commits](https://github.com/apache/maven-compiler-plugin/compare/maven-compiler-plugin-3.12.1...maven-compiler-plugin-3.13.0)\r\n\r\nUpdates `org.apache.maven.plugins:maven-gpg-plugin` from 3.1.0 to 3.2.2\r\n- [Release notes](https://github.com/apache/maven-gpg-plugin/releases)\r\n- [Commits](https://github.com/apache/maven-gpg-plugin/compare/maven-gpg-plugin-3.1.0...maven-gpg-plugin-3.2.2)\r\n\r\nUpdates `com.github.siom79.japicmp:japicmp-maven-plugin` from 0.18.5 to 0.20.0\r\n- [Release notes](https://github.com/siom79/japicmp/releases)\r\n- [Changelog](https://github.com/siom79/japicmp/blob/master/release.py)\r\n- [Commits](https://github.com/siom79/japicmp/compare/japicmp-base-0.18.5...japicmp-base-0.20.0)\r\n\r\nUpdates `com.google.errorprone:error_prone_annotations` from 2.25.0 to 2.26.1\r\n- [Release notes](https://github.com/google/error-prone/releases)\r\n- [Commits](https://github.com/google/error-prone/compare/v2.25.0...v2.26.1)\r\n\r\nUpdates `com.google.guava:guava-testlib` from 33.0.0-jre to 33.1.0-jre\r\n- [Release notes](https://github.com/google/guava/releases)\r\n- [Commits](https://github.com/google/guava/commits)\r\n\r\nUpdates `org.moditect:moditect-maven-plugin` from 1.1.0 to 1.2.1.Final\r\n- [Release notes](https://github.com/moditect/moditect/releases)\r\n- [Commits](https://github.com/moditect/moditect/compare/1.1.0...1.2.1.Final)\r\n\r\nUpdates `com.android.tools:r8` from 8.2.47 to 8.3.37\r\n\r\nUpdates `com.fasterxml.jackson.core:jackson-databind` from 2.16.1 to 2.17.0\r\n- [Commits](https://github.com/FasterXML/jackson/commits)\r\n\r\nUpdates `com.google.protobuf:protobuf-java` from 3.25.3 to 4.26.1\r\n- [Release notes](https://github.com/protocolbuffers/protobuf/releases)\r\n- [Changelog](https://github.com/protocolbuffers/protobuf/blob/main/protobuf_release.bzl)\r\n- [Commits](https://github.com/protocolbuffers/protobuf/commits)\r\n\r\nUpdates `com.google.guava:guava` from 33.0.0-jre to 33.1.0-jre\r\n- [Release notes](https://github.com/google/guava/releases)\r\n- [Commits](https://github.com/google/guava/commits)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: com.google.errorprone:error_prone_core\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: maven\r\n- dependency-name: org.apache.maven.plugins:maven-compiler-plugin\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: maven\r\n- dependency-name: org.apache.maven.plugins:maven-gpg-plugin\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: maven\r\n- dependency-name: com.github.siom79.japicmp:japicmp-maven-plugin\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: maven\r\n- dependency-name: com.google.errorprone:error_prone_annotations\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: maven\r\n- dependency-name: com.google.guava:guava-testlib\r\n  dependency-type: direct:development\r\n  update-type: version-update:semver-minor\r\n  dependency-group: maven\r\n- dependency-name: org.moditect:moditect-maven-plugin\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: maven\r\n- dependency-name: com.android.tools:r8\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: maven\r\n- dependency-name: com.fasterxml.jackson.core:jackson-databind\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: maven\r\n- dependency-name: com.google.protobuf:protobuf-java\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-major\r\n  dependency-group: maven\r\n- dependency-name: com.google.guava:guava\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n  dependency-group: maven\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\n\r\n* Fix a Jackson deprecation warning.\r\n\r\n* Update to proto 4.26.1. (#2662)\r\n\r\nUse `GeneratedMessage` rather than `GeneratedMessageV3` in proto tests.\r\n[Proto v26.0] made a number of incompatible API changes, including\r\nchanging the base class for generated proto message code.\r\n\r\n---------\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>\r\nCo-authored-by: \u00c9amonn McManus <emcmanus@google.com>"
-              }
-            ]
-          }
-        },
-        "potentialMergeCommit": null,
-        "files": {
-          "edges": [
-            {
-              "node": {
-                "changeType": "MODIFIED",
-                "path": "gson/src/main/java/com/google/gson/stream/JsonReader.java"
-              }
-            }
-          ]
-        },
-        "commits": {
-          "edges": [
-            {
-              "node": {
-                "id": "PURC_lADOAfCA985uMlsN2gAoNTEyMGE1YmM3ZjJkZDk0YmMyY2Q0ODYzODBkNDRkZGI1NGNkNDY3Ng",
-                "url": "https://github.com/google/gson/pull/2670/commits/5120a5bc7f2dd94bc2cd486380d44ddb54cd4676"
-              }
-            }
-          ]
-        },
-        "closingIssuesReferences": {
-          "edges": [
-            {
-              "node": {
-                "number": 2663,
-                "url": "https://github.com/google/gson/issues/2663",
-                "title": "`JsonReader#beginObject` should throw checked exceptions, instead throws runtime `IllegalStateException`.",
-                "bodyHTML": "<h1 dir=\"auto\">Gson version</h1>\n<p dir=\"auto\">2.9.0</p>\n<h1 dir=\"auto\">Java / Android version</h1>\n<p dir=\"auto\">Unsure - if this is needed please let me know &amp; I can dig this up, though it should be of no consequence.</p>\n<h1 dir=\"auto\">Used tools</h1>\n<p dir=\"auto\">Nothing of consequence to this bug.</p>\n<h1 dir=\"auto\">Description</h1>\n<p dir=\"auto\">When parsing an JSON object that fails due to the value being an incorrect type, an unchecked exception is thrown.</p>\n<p dir=\"auto\"><code class=\"notranslate\">beginObject</code> specifies a checked exception of type <code class=\"notranslate\">IOException</code> here:<br>\n</p><div class=\"Box Box--condensed my-2\">\n  <div class=\"Box-header f6\">\n    <p class=\"mb-0 text-bold\">\n      <a href=\"https://github.com/google/gson/blob/18b08922537c16b0de1d503c82307d613aae0138/gson/src/main/java/com/google/gson/stream/JsonReader.java#L454\">gson/gson/src/main/java/com/google/gson/stream/JsonReader.java</a>\n    </p>\n    <p class=\"mb-0 color-fg-muted\">\n         Line 454\n      in\n      <a data-pjax=\"true\" class=\"commit-tease-sha Link--inTextBlock\" href=\"/google/gson/commit/18b08922537c16b0de1d503c82307d613aae0138\">18b0892</a>\n    </p>\n  </div>\n  <div itemprop=\"text\" class=\"Box-body p-0 blob-wrapper blob-wrapper-embedded data\">\n    <table class=\"highlight tab-size mb-0 js-file-line-container\" data-tab-size=\"8\" data-paste-markdown-skip=\"\">\n\n        <tbody><tr class=\"border-0\">\n          <td id=\"L454\" class=\"blob-num border-0 px-3 py-0 color-bg-default\" data-line-number=\"454\"></td>\n          <td id=\"LC454\" class=\"blob-code border-0 px-3 py-0 color-bg-default blob-code-inner js-file-line\"> <span class=\"pl-k\">public</span> <span class=\"pl-smi\">void</span> <span class=\"pl-en\">beginObject</span>() <span class=\"pl-k\">throws</span> <span class=\"pl-smi\">IOException</span> { </td>\n        </tr>\n    </tbody></table>\n  </div>\n</div>\n<p></p>\n<p dir=\"auto\">When it fails to find an object, however, it throws an <code class=\"notranslate\">IllegalStateException</code> here:<br>\n</p><div class=\"Box Box--condensed my-2\">\n  <div class=\"Box-header f6\">\n    <p class=\"mb-0 text-bold\">\n      <a href=\"https://github.com/google/gson/blob/18b08922537c16b0de1d503c82307d613aae0138/gson/src/main/java/com/google/gson/stream/JsonReader.java#L463\">gson/gson/src/main/java/com/google/gson/stream/JsonReader.java</a>\n    </p>\n    <p class=\"mb-0 color-fg-muted\">\n         Line 463\n      in\n      <a data-pjax=\"true\" class=\"commit-tease-sha Link--inTextBlock\" href=\"/google/gson/commit/18b08922537c16b0de1d503c82307d613aae0138\">18b0892</a>\n    </p>\n  </div>\n  <div itemprop=\"text\" class=\"Box-body p-0 blob-wrapper blob-wrapper-embedded data\">\n    <table class=\"highlight tab-size mb-0 js-file-line-container\" data-tab-size=\"8\" data-paste-markdown-skip=\"\">\n\n        <tbody><tr class=\"border-0\">\n          <td id=\"L463\" class=\"blob-num border-0 px-3 py-0 color-bg-default\" data-line-number=\"463\"></td>\n          <td id=\"LC463\" class=\"blob-code border-0 px-3 py-0 color-bg-default blob-code-inner js-file-line\"> <span class=\"pl-k\">throw</span> <span class=\"pl-en\">unexpectedTokenError</span>(<span class=\"pl-s\">\"BEGIN_OBJECT\"</span>); </td>\n        </tr>\n    </tbody></table>\n  </div>\n</div>\n<br>\nand here:<br>\n<div class=\"Box Box--condensed my-2\">\n  <div class=\"Box-header f6\">\n    <p class=\"mb-0 text-bold\">\n      <a href=\"https://github.com/google/gson/blob/18b08922537c16b0de1d503c82307d613aae0138/gson/src/main/java/com/google/gson/stream/JsonReader.java#L1744\">gson/gson/src/main/java/com/google/gson/stream/JsonReader.java</a>\n    </p>\n    <p class=\"mb-0 color-fg-muted\">\n         Line 1744\n      in\n      <a data-pjax=\"true\" class=\"commit-tease-sha Link--inTextBlock\" href=\"/google/gson/commit/18b08922537c16b0de1d503c82307d613aae0138\">18b0892</a>\n    </p>\n  </div>\n  <div itemprop=\"text\" class=\"Box-body p-0 blob-wrapper blob-wrapper-embedded data\">\n    <table class=\"highlight tab-size mb-0 js-file-line-container\" data-tab-size=\"8\" data-paste-markdown-skip=\"\">\n\n        <tbody><tr class=\"border-0\">\n          <td id=\"L1744\" class=\"blob-num border-0 px-3 py-0 color-bg-default\" data-line-number=\"1744\"></td>\n          <td id=\"LC1744\" class=\"blob-code border-0 px-3 py-0 color-bg-default blob-code-inner js-file-line\"> <span class=\"pl-k\">private</span> <span class=\"pl-smi\">IllegalStateException</span> <span class=\"pl-en\">unexpectedTokenError</span>(<span class=\"pl-smi\">String</span> <span class=\"pl-s1\">expected</span>) <span class=\"pl-k\">throws</span> <span class=\"pl-smi\">IOException</span> { </td>\n        </tr>\n    </tbody></table>\n  </div>\n</div>\n<p></p>\n<p dir=\"auto\">This isn't caught at compile time because <code class=\"notranslate\">IllegalStateException</code> is a <code class=\"notranslate\">RuntimeException</code>.  Note that <code class=\"notranslate\">unexpectedTokenError</code> says it <code class=\"notranslate\">throws IOException</code> but the IDE warns this throws is unused.</p>\n<h2 dir=\"auto\">Expected behavior</h2>\n<p dir=\"auto\">We expected an <code class=\"notranslate\">IOException</code> to be thrown.  Else, the <code class=\"notranslate\">beginObject</code> method should check any other exceptions.</p>\n<h2 dir=\"auto\">Actual behavior</h2>\n<p dir=\"auto\">An unchecked runtime exception was thrown.</p>\n<h1 dir=\"auto\">Reproduction steps</h1>\n<p dir=\"auto\">Attempt to parse a JSON payload expecting an object but finding another type.</p>\n<p dir=\"auto\">e.g.</p>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"JSON PAYLOAD:\n{\n  &quot;this_key_is_expected_to_be_an_object&quot;: false\n}\n\nJava class:\nclass Payload {\n   public NestedObject this_key_is_expected_to_be_an_object;\n}\n\nclass NestedObject {\n  public boolean inner_field;\n}\"><pre class=\"notranslate\"><code class=\"notranslate\">JSON PAYLOAD:\n{\n  \"this_key_is_expected_to_be_an_object\": false\n}\n\nJava class:\nclass Payload {\n   public NestedObject this_key_is_expected_to_be_an_object;\n}\n\nclass NestedObject {\n  public boolean inner_field;\n}\n</code></pre></div>\n<h1 dir=\"auto\">Exception stack trace</h1>\n<div class=\"snippet-clipboard-content notranslate position-relative overflow-auto\" data-snippet-clipboard-copy-content=\"java.lang.IllegalStateException: Expected BEGIN_OBJECT but was BOOLEAN at line 1 column 2691 path _REDACTED_\n        at com.google.gson.stream.JsonReader.beginObject(JsonReader.java:393)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:59)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:25)\n        at com.google.gson.TypeAdapter$1.read(TypeAdapter.java:204)\n        at com.google.gson.TypeAdapter$1.read(TypeAdapter.java:204)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:68)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:25)\n        at com.google.gson.TypeAdapter$1.read(TypeAdapter.java:204)\n        at com.google.gson.TypeAdapter$1.read(TypeAdapter.java:204)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:68)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:25)\n        at com.google.gson.TypeAdapter$1.read(TypeAdapter.java:204)\n        at retrofit2.converter.gson.GsonResponseBodyConverter.convert(GsonResponseBodyConverter.java:39)\n        at retrofit2.converter.gson.GsonResponseBodyConverter.convert(GsonResponseBodyConverter.java:27)\n        at retrofit2.OkHttpCall.parseResponse(OkHttpCall.java:227)\n        at retrofit2.OkHttpCall$1.onResponse(OkHttpCall.java:142)\n        at okhttp3.internal.connection.RealCall$AsyncCall.run(RealCall.kt:519)\n        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1162)\n        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:636)\n        at java.lang.Thread.run(Thread.java:764)\"><pre class=\"notranslate\"><code class=\"notranslate\">java.lang.IllegalStateException: Expected BEGIN_OBJECT but was BOOLEAN at line 1 column 2691 path _REDACTED_\n        at com.google.gson.stream.JsonReader.beginObject(JsonReader.java:393)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:59)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:25)\n        at com.google.gson.TypeAdapter$1.read(TypeAdapter.java:204)\n        at com.google.gson.TypeAdapter$1.read(TypeAdapter.java:204)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:68)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:25)\n        at com.google.gson.TypeAdapter$1.read(TypeAdapter.java:204)\n        at com.google.gson.TypeAdapter$1.read(TypeAdapter.java:204)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:68)\n        at com.squareup.wire.MessageTypeAdapter.read(MessageTypeAdapter.kt:25)\n        at com.google.gson.TypeAdapter$1.read(TypeAdapter.java:204)\n        at retrofit2.converter.gson.GsonResponseBodyConverter.convert(GsonResponseBodyConverter.java:39)\n        at retrofit2.converter.gson.GsonResponseBodyConverter.convert(GsonResponseBodyConverter.java:27)\n        at retrofit2.OkHttpCall.parseResponse(OkHttpCall.java:227)\n        at retrofit2.OkHttpCall$1.onResponse(OkHttpCall.java:142)\n        at okhttp3.internal.connection.RealCall$AsyncCall.run(RealCall.kt:519)\n        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1162)\n        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:636)\n        at java.lang.Thread.run(Thread.java:764)\n</code></pre></div>",
-                "resourcePath": "/google/gson/issues/2663",
-                "createdAt": "2024-04-01T23:53:57Z",
-                "labels": {
-                  "edges": [
-                    {
-                      "node": {
-                        "name": "bug"
                       }
                     }
                   ]

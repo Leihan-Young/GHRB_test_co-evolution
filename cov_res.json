@@ -23,11 +23,11 @@
       },
       "cov_test_deepseek_fix_focal_tgt": {
         "line_cov": 1.0,
-        "branch_cov": 0.5
+        "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
         "line_cov": 1.0,
-        "branch_cov": 0.5
+        "branch_cov": 1.0
       }
     },
     "2": {
@@ -262,12 +262,12 @@
         "branch_cov": 0.4722222222222222
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.4827586206896552,
-        "branch_cov": 0.25
+        "line_cov": 0.8275862068965517,
+        "branch_cov": 0.5
       },
       "cov_test_deepseek_enhance_focal_tgt": {
         "line_cov": 0.8275862068965517,
-        "branch_cov": 0.4722222222222222
+        "branch_cov": 0.5
       }
     },
     "10": {
@@ -322,11 +322,11 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.0,
+        "line_cov": 1.0,
         "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.0,
+        "line_cov": 1.0,
         "branch_cov": 1.0
       }
     },
@@ -474,12 +474,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 1.0,
+        "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 1.0,
+        "branch_cov": 1.0
       }
     },
     "3": {
@@ -564,8 +564,8 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 0.0,
+        "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
         "line_cov": 0.0,
@@ -744,8 +744,8 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.0,
-        "branch_cov": 1.0
+        "line_cov": null,
+        "branch_cov": null
       },
       "cov_test_deepseek_enhance_focal_tgt": {
         "line_cov": null,
@@ -1077,11 +1077,11 @@
       },
       "cov_test_deepseek_fix_focal_tgt": {
         "line_cov": 1.0,
-        "branch_cov": 0.5
+        "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
         "line_cov": 1.0,
-        "branch_cov": 0.75
+        "branch_cov": 1.0
       }
     },
     "10": {
@@ -1106,12 +1106,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.7777777777777778,
-        "branch_cov": 0.5
+        "line_cov": 1.0,
+        "branch_cov": 0.9545454545454546
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.9629629629629629,
-        "branch_cov": 0.7272727272727273
+        "line_cov": 1.0,
+        "branch_cov": 0.9545454545454546
       }
     },
     "11": {
@@ -1200,8 +1200,8 @@
         "branch_cov": 0.3333333333333333
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.8387096774193549,
-        "branch_cov": 0.75
+        "line_cov": 0.5483870967741935,
+        "branch_cov": 0.3333333333333333
       }
     },
     "14": {
@@ -1256,12 +1256,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.5483870967741935,
-        "branch_cov": 0.3333333333333333
+        "line_cov": 0.8387096774193549,
+        "branch_cov": 0.75
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.5483870967741935,
-        "branch_cov": 0.3333333333333333
+        "line_cov": 0.8387096774193549,
+        "branch_cov": 0.75
       }
     },
     "16": {
@@ -1346,12 +1346,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.8387096774193549,
-        "branch_cov": 0.75
+        "line_cov": 0.967741935483871,
+        "branch_cov": 0.9166666666666666
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.8387096774193549,
-        "branch_cov": 0.75
+        "line_cov": 0.967741935483871,
+        "branch_cov": 0.9166666666666666
       }
     },
     "19": {
@@ -1376,12 +1376,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.8387096774193549,
-        "branch_cov": 0.75
+        "line_cov": 0.967741935483871,
+        "branch_cov": 0.9166666666666666
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.8387096774193549,
-        "branch_cov": 0.75
+        "line_cov": 0.967741935483871,
+        "branch_cov": 0.9166666666666666
       }
     },
     "20": {
@@ -1406,12 +1406,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 0.6920821114369502,
+        "branch_cov": 0.5416666666666666
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 0.6920821114369502,
+        "branch_cov": 0.5416666666666666
       }
     },
     "21": {
@@ -1436,12 +1436,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.5483870967741935,
-        "branch_cov": 0.3333333333333333
+        "line_cov": 0.967741935483871,
+        "branch_cov": 0.9166666666666666
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.8387096774193549,
-        "branch_cov": 0.75
+        "line_cov": 0.967741935483871,
+        "branch_cov": 0.9166666666666666
       }
     },
     "22": {
@@ -1556,8 +1556,8 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.6770833333333334,
-        "branch_cov": 0.5
+        "line_cov": 0.7083333333333334,
+        "branch_cov": 0.625
       },
       "cov_test_deepseek_enhance_focal_tgt": {
         "line_cov": 0.7083333333333334,
@@ -1586,8 +1586,8 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.6770833333333334,
-        "branch_cov": 0.5
+        "line_cov": 0.7083333333333334,
+        "branch_cov": 0.625
       },
       "cov_test_deepseek_enhance_focal_tgt": {
         "line_cov": 0.7083333333333334,
@@ -1616,12 +1616,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 0.8095238095238096,
+        "branch_cov": 0.8333333333333334
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 0.8095238095238096,
+        "branch_cov": 0.8333333333333334
       }
     },
     "28": {
@@ -1976,12 +1976,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 1.0,
+        "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 1.0,
+        "branch_cov": 1.0
       }
     },
     "40": {
@@ -2126,11 +2126,11 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.7142857142857143,
+        "line_cov": 1.0,
         "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.7142857142857143,
+        "line_cov": 1.0,
         "branch_cov": 1.0
       }
     },
@@ -2246,11 +2246,11 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.5,
+        "line_cov": 1.0,
         "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.5,
+        "line_cov": 1.0,
         "branch_cov": 1.0
       }
     },
@@ -2276,12 +2276,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 1.0,
-        "branch_cov": 1.0
+        "line_cov": null,
+        "branch_cov": null
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 1.0,
-        "branch_cov": 1.0
+        "line_cov": null,
+        "branch_cov": null
       }
     },
     "50": {
@@ -2396,12 +2396,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.17647058823529413,
-        "branch_cov": 0.15789473684210525
+        "line_cov": 0.3382352941176471,
+        "branch_cov": 0.47368421052631576
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.17647058823529413,
-        "branch_cov": 0.15789473684210525
+        "line_cov": 0.3382352941176471,
+        "branch_cov": 0.47368421052631576
       }
     },
     "54": {
@@ -2426,12 +2426,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.675,
-        "branch_cov": 0.41666666666666663
+        "line_cov": 1.0,
+        "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.725,
-        "branch_cov": 0.5
+        "line_cov": 1.0,
+        "branch_cov": 1.0
       }
     },
     "55": {
@@ -2456,12 +2456,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.9666666666666667,
-        "branch_cov": 0.6388888888888888
+        "line_cov": 1.0,
+        "branch_cov": 0.9166666666666666
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.9666666666666667,
-        "branch_cov": 0.6388888888888888
+        "line_cov": 1.0,
+        "branch_cov": 0.9166666666666666
       }
     },
     "56": {
@@ -2756,12 +2756,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.7272727272727273,
-        "branch_cov": 0.5
+        "line_cov": 0.9090909090909091,
+        "branch_cov": 0.75
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.7272727272727273,
-        "branch_cov": 0.5
+        "line_cov": 0.9090909090909091,
+        "branch_cov": 0.75
       }
     },
     "66": {
@@ -2846,12 +2846,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 0.2,
+        "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": null,
-        "branch_cov": null
+        "line_cov": 0.2,
+        "branch_cov": 1.0
       }
     },
     "69": {
@@ -2876,12 +2876,12 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.6666666666666666,
-        "branch_cov": 0.5
+        "line_cov": 1.0,
+        "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.6666666666666666,
-        "branch_cov": 0.5
+        "line_cov": 1.0,
+        "branch_cov": 1.0
       }
     },
     "70": {
@@ -2966,11 +2966,11 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.8,
-        "branch_cov": 0.5
+        "line_cov": 1.0,
+        "branch_cov": 0.75
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.8,
+        "line_cov": 1.0,
         "branch_cov": 0.75
       }
     },
@@ -2997,11 +2997,11 @@
       },
       "cov_test_deepseek_fix_focal_tgt": {
         "line_cov": 1.0,
-        "branch_cov": 0.75
+        "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
         "line_cov": 1.0,
-        "branch_cov": 0.75
+        "branch_cov": 1.0
       }
     },
     "74": {
@@ -3086,8 +3086,8 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.6666666666666666,
-        "branch_cov": 0.5
+        "line_cov": 1.0,
+        "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
         "line_cov": 1.0,
@@ -3151,7 +3151,7 @@
       },
       "cov_test_deepseek_enhance_focal_tgt": {
         "line_cov": 1.0,
-        "branch_cov": 1.0
+        "branch_cov": 0.5
       }
     },
     "79": {
@@ -3238,11 +3238,11 @@
         "branch_cov": null
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.8888888888888888,
+        "line_cov": 1.0,
         "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
-        "line_cov": 0.8888888888888888,
+        "line_cov": 1.0,
         "branch_cov": 1.0
       }
     },
@@ -3568,7 +3568,7 @@
         "branch_cov": 1.0
       },
       "cov_test_deepseek_fix_focal_tgt": {
-        "line_cov": 0.0,
+        "line_cov": 1.0,
         "branch_cov": 1.0
       },
       "cov_test_deepseek_enhance_focal_tgt": {
